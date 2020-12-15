@@ -1,4 +1,7 @@
 # Edrumulus
+
+![Homepage picture](algorithm/images/edrumulus.png)
+
 Open Source E-Drum Trigger Module Software
 
 
