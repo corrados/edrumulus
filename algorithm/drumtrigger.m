@@ -12,6 +12,7 @@ Fs = 8000; % Hz
 % continuous_recording(1, Fs, @(x, Fs, do_realtime) processing(x, Fs, do_realtime));
 
 % TEST process recordings
+% x = audioread("signals/esp32_pd120.wav");
 % x = audioread("signals/pd120_pos_sense.wav");
 x = audioread("signals/pd120_pos_sense2.wav");
 % x = audioread("signals/pd120_single_hits.wav");
