@@ -12,15 +12,15 @@ Fs = 8000; % Hz
 % continuous_recording(1, Fs, @(x, Fs, do_realtime) processing(x, Fs, do_realtime));
 
 % TEST process recordings
-% x = audioread("pd120_pos_sense.wav");
-x = audioread("pd120_pos_sense2.wav");
-% x = audioread("pd120_single_hits.wav");
-% x = audioread("pd120_roll.wav");
-% x = audioread("pd120_middle_velocity.wav");
-% x = audioread("pd120_hot_spot.wav");
-% x = audioread("pd6.wav");
-% org = audioread("snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
-% org = audioread("snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
+% x = audioread("signals/pd120_pos_sense.wav");
+x = audioread("signals/pd120_pos_sense2.wav");
+% x = audioread("signals/pd120_single_hits.wav");
+% x = audioread("signals/pd120_roll.wav");
+% x = audioread("signals/pd120_middle_velocity.wav");
+% x = audioread("signals/pd120_hot_spot.wav");
+% x = audioread("signals/pd6.wav");
+% org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
+% org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
 
 
 % % TEST use 4 kHz sampling rate, TODO fix the "must be adjusted for the sampling rate"
