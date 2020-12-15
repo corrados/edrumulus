@@ -45,3 +45,8 @@ my sound card and recorded the signal with Audacity. I now measured the latency 
 peak of the pad trigger to the first peak of the synthesized signal from the TDW-20. As seen in the
 screen shot, there is a latency of about **7 ms**:
 ![Roland TDW-20 drum module measured latency](algorithm/images/roland_td20_latency.jpg)
+
+
+## Algorithm
+
+The algorithm is described in [this document](algorithm/README.md).
