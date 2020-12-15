@@ -24,7 +24,7 @@ x = audioread("signals/pd120_pos_sense2.wav");
 % org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
 
 
-% % TEST use 4 kHz sampling rate, TODO fix the "must be adjusted for the sampling rate"
+% % TEST use 4 kHz sampling rate
 % x = resample(x, 1, 2); Fs = Fs / 2;
 
 % % TEST simulate a DC offset -> TODO the algorithms needs a DC offset compensation
@@ -54,7 +54,7 @@ end
 
 function hil = myhilbert(x)
 
-a   = fir1(6, 0.4); % TODO must be adjusted for the sampling rate
+a   = fir1(6, 0.4);
 a   = a .* exp(1j * 2 * pi * (0:length(a) - 1) * 0.3) * length(a);
 hil = filter(a, 1, x);
 
@@ -155,7 +155,7 @@ energy_window_len = round(2e-3 * Fs); % scan time (e.g. 2 ms)
 % hil_low   = filter(a, 1, hil);
 % hil_low   = hil_low(lp_ir_len / 2:end);
 % use a simple one-pole IIR filter for less CPU processing and shorter delay
-alpha   = 0.025; % TODO must be adjusted for the sampling rate
+alpha   = 0.025 * 8e3 / Fs;
 hil_low = filter(alpha, [1, alpha - 1], hil);
 
 % figure; plot(20 * log10(abs([hil(1:length(hil_low)), hil_low]))); hold on;
