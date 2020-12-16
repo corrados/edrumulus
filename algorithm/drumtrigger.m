@@ -47,6 +47,8 @@ x = audioread("signals/pd120_pos_sense2.wav");
 % org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
 % org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
 
+% % TEST call reference mode for C++ implementation
+% edrumulus(x); return;
 
 % % TEST use 4 kHz sampling rate
 % x = resample(x, 1, 2); Fs = Fs / 2;
