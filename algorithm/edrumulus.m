@@ -66,10 +66,10 @@ global hil_hist;
 
 % Calculate peak detection -----------------------------------------------------
 % hilbert filter
-hil_hist(2:hil_filt_len) = hil_hist(1:hil_filt_len - 1);
-hil_hist(1)              = x;
-hil_re                   = sum(hil_hist .* a_re);
-hil_im                   = sum(hil_hist .* a_im);
+hil_hist(1:hil_filt_len - 1) = hil_hist(2:hil_filt_len);
+hil_hist(hil_filt_len)       = x;
+hil_re                       = sum(hil_hist .* a_re);
+hil_im                       = sum(hil_hist .* a_im);
 
 hil_debug = complex(hil_re, hil_im); % just for debugging
 
