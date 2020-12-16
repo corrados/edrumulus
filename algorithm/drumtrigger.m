@@ -69,10 +69,6 @@ x = audioread("signals/pd120_pos_sense2.wav");
 %subplot(2, 1, 2), pwelch(x_edge,[],[],[],[],'twosided','db'); title('edge');
 %figure; freqz(fir1(80, 0.02));
 
-% hil = myhilbert(x);
-% figure; plot(20 * log10(abs([x, hilbert(x)])));
-% figure; plot(20 * log10(abs([x, myhilbert(x)]))); title('myhilbert');
-
 processing(x, Fs, false);
 
 end
@@ -100,7 +96,7 @@ function [all_peaks, hil_filt_org, hil] = calc_peak_detection(x, Fs)
 hil = myhilbert(x);
 
 threshold_db      = -64;
-energy_window_len = round(2e-3 * Fs); % scan time (e.g. 2 ms)
+energy_window_len = round(2e-3 * Fs); % may be set to main peak length (e.g. 2 ms)
 mask_time         = round(8.125e-3 * Fs); % mask time (e.g. 8.125 ms)
 
 % the following settings are trigger pad-specific (here, a PD-120 is used)
@@ -109,7 +105,7 @@ decay_att_db = 1; % decay attenuation in dB
 decay_grad   = 200 / Fs; % decay gradient factor
 
 % moving average filter
-hil_filt     = abs(filter(ones(energy_window_len, 1) / energy_window_len, 1, hil)); % moving average
+hil_filt     = abs(filter(ones(energy_window_len, 1) / energy_window_len, 1, hil)) .^ 2; % moving average
 hil_filt_org = hil_filt;
 
 last_peak_idx = 0;
@@ -121,7 +117,7 @@ decay_all     = nan(size(x)); % only for debugging
 while ~no_more_peak
 
   % find values above threshold, masking regions which are already done
-  above_thresh = (hil_filt > 10 ^ (threshold_db / 20)) & [zeros(last_peak_idx, 1); ones(length(hil_filt) - last_peak_idx, 1)];
+  above_thresh = (hil_filt > 10 ^ (threshold_db / 10)) & [zeros(last_peak_idx, 1); ones(length(hil_filt) - last_peak_idx, 1)];
   peak_start   = find(diff(above_thresh) > 0);
 
   % exit condition
@@ -146,7 +142,7 @@ while ~no_more_peak
 
   % exponential decay assumption (note that we must not use hil_filt_org since a
   % previous peak might not be faded out and the peak detection works on hil_filt)
-  decay           = hil_filt(peak_idx) * 10 ^ (-decay_att_db / 20) * 10 .^ (-(0:decay_len - 1) / 20 * decay_grad);
+  decay           = hil_filt(peak_idx) * 10 ^ (-decay_att_db / 10) * 10 .^ (-(0:decay_len - 1) / 10 * decay_grad);
   decay_x         = peak_idx + (0:decay_len - 1);
   valid_decay_idx = decay_x <= length(hil_filt);
   decay           = decay(valid_decay_idx);
@@ -154,6 +150,10 @@ while ~no_more_peak
 
   % subtract decay (with clipping at zero)
   hil_filt_new                   = hil_filt(decay_x) - decay.';
+
+% TEST it seems that subtracting the amplitude instead of the power seems to work better somehow...
+% hil_filt_new = (sqrt(hil_filt(decay_x)) - sqrt(decay.')) .^ 2;
+
   hil_filt_new(hil_filt_new < 0) = 0;
 
   % update filtered signal
@@ -164,8 +164,8 @@ while ~no_more_peak
 
 end
 
-% figure; plot(20 * log10([hil_filt_org, hil_filt, decay_all])); hold on;
-% plot(all_peaks, 20 * log10(hil_filt_org(all_peaks)), 'k*');
+figure; plot(10 * log10([hil_filt_org, hil_filt, decay_all])); hold on;
+plot(all_peaks, 10 * log10(hil_filt_org(all_peaks)), 'k*');
 
 end
 
@@ -225,8 +225,8 @@ end
 
 % plot results
 cla
-plot(20 * log10(abs([x, hil_filt]))); grid on; hold on;
-plot(all_peaks, 20 * log10(hil_filt(all_peaks)), 'g*');
+plot(10 * log10([abs(x) .^ 2, hil_filt])); grid on; hold on;
+plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'g*');
 plot(all_peaks, pos_sense_metric - 40, 'k*');
 title('Green marker: level; Black marker: position');
 xlabel('samples'); ylabel('dB');
