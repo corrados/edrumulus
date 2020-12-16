@@ -32,6 +32,9 @@ global a_re;
 global a_im;
 global hil_filt_len;
 global hil_hist;
+global energy_window_len;
+global mov_av_hist_re;
+global mov_av_hist_im;
 
 Fs           = 8000;
 hil_filt_len = 7;
@@ -40,28 +43,35 @@ a_re = [-0.037749783581601, -0.069256807147465, -1.443799477299919,  2.473967088
          0.551482327389238, -0.224119735833791, -0.011665324660691]';
 a_im = [ 0,                  0.213150535195075, -1.048981722170302, -1.797442302898130, ...
          1.697288080048948,  0,                  0.035902177664014]';
+energy_window_len = round(2e-3 * Fs); % scan time (e.g. 2 ms)
+mov_av_hist_re    = zeros(energy_window_len, 1); % real part memory for moving average filter history
+mov_av_hist_im    = zeros(energy_window_len, 1); % imaginary part memory for moving average filter history
 
 
 % Loop (loop over all samples -> per sample processing as on the hardware) -----
-hil_debug = zeros(length(x), 1);
+hil_debug      = zeros(length(x), 1);
+hil_filt_debug = zeros(length(x), 1);
 
 for i = 1:length(x)
-  [hil_debug(i)] = process_sample(x(i));
+  [hil_debug(i), hil_filt_debug(i)] = process_sample(x(i));
 end
 
 figure;
-plot(20 * log10(abs([x, hil_debug])));
+plot(20 * log10(abs([x, hil_debug, hil_filt_debug])));
 
 end
 
 
-function [hil_debug] = process_sample(x)
+function [hil_debug, hil_filt_debug] = process_sample(x)
 
 global Fs;
 global a_re;
 global a_im;
 global hil_filt_len;
 global hil_hist;
+global energy_window_len;
+global mov_av_hist_re;
+global mov_av_hist_im;
 
 
 % Calculate peak detection -----------------------------------------------------
@@ -74,11 +84,17 @@ hil_im                       = sum(hil_hist .* a_im);
 hil_debug = complex(hil_re, hil_im); % just for debugging
 
 
+% moving average filter
+mov_av_hist_re(1:energy_window_len - 1) = mov_av_hist_re(2:energy_window_len);
+mov_av_hist_im(1:energy_window_len - 1) = mov_av_hist_im(2:energy_window_len);
+mov_av_hist_re(energy_window_len)       = hil_re;
+mov_av_hist_im(energy_window_len)       = hil_im;
+mov_av_re                               = sum(mov_av_hist_re) / energy_window_len;
+mov_av_im                               = sum(mov_av_hist_im) / energy_window_len;
 
+hil_filt = sqrt(mov_av_re * mov_av_re + mov_av_im * mov_av_im);
 
-
-
-
+hil_filt_debug = hil_filt; % just for debugging
 
 
 
