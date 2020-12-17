@@ -59,50 +59,50 @@ void loop()
   {
     const float fIn = Serial.parseFloat();
 
+    const float fOut = process_sample ( fIn );
 
-    // Calculate peak detection -----------------------------------------------------
-    // hilbert filter
-    for ( int i = 0; i < hil_filt_len - 1; i++ )
-    {
-      hil_hist[i] = hil_hist[i + 1];
-    }
-    hil_hist[hil_filt_len - 1] = fIn;
+    Serial.println ( fOut, 7 );
+  }
+}
 
-    float hil_re = 0;
-    float hil_im = 0;
-    for ( int i = 0; i < hil_filt_len; i++ )
-    {
-      hil_re += hil_hist[i] * a_re[i];
-      hil_im += hil_hist[i] * a_im[i];
-    }
+float process_sample ( const float fIn )
+{
+  // Calculate peak detection -----------------------------------------------------
+  // hilbert filter
+  for ( int i = 0; i < hil_filt_len - 1; i++ )
+  {
+    hil_hist[i] = hil_hist[i + 1];
+  }
+  hil_hist[hil_filt_len - 1] = fIn;
 
-    // moving average filter
-    for ( int i = 0; i < energy_window_len - 1; i++ )
-    {
-      mov_av_hist_re[i] = mov_av_hist_re[i + 1];
-      mov_av_hist_im[i] = mov_av_hist_im[i + 1];
-    }
-    mov_av_hist_re[energy_window_len - 1] = hil_re;
-    mov_av_hist_im[energy_window_len - 1] = hil_im;
-
-    float mov_av_re = 0;
-    float mov_av_im = 0;
-    for ( int i = 0; i < energy_window_len; i++ )
-    {
-      mov_av_re += mov_av_hist_re[i];
-      mov_av_im += mov_av_hist_im[i];
-    }
-    mov_av_re /= energy_window_len;
-    mov_av_im /= energy_window_len;
-
-    const float hil_filt = sqrt ( mov_av_re * mov_av_re + mov_av_im * mov_av_im );
-
-    Serial.println ( hil_filt, 7 );
-
-//    Serial.println ( hil_re, 7 );
-//    Serial.println ( hil_im, 7 );
+  float hil_re = 0;
+  float hil_im = 0;
+  for ( int i = 0; i < hil_filt_len; i++ )
+  {
+    hil_re += hil_hist[i] * a_re[i];
+    hil_im += hil_hist[i] * a_im[i];
   }
 
+  // moving average filter
+  for ( int i = 0; i < energy_window_len - 1; i++ )
+  {
+    mov_av_hist_re[i] = mov_av_hist_re[i + 1];
+    mov_av_hist_im[i] = mov_av_hist_im[i + 1];
+  }
+  mov_av_hist_re[energy_window_len - 1] = hil_re;
+  mov_av_hist_im[energy_window_len - 1] = hil_im;
 
+  float mov_av_re = 0;
+  float mov_av_im = 0;
+  for ( int i = 0; i < energy_window_len; i++ )
+  {
+    mov_av_re += mov_av_hist_re[i];
+    mov_av_im += mov_av_hist_im[i];
+  }
+  mov_av_re /= energy_window_len;
+  mov_av_im /= energy_window_len;
 
+  const float hil_filt = sqrt ( mov_av_re * mov_av_re + mov_av_im * mov_av_im );
+
+  return hil_filt;
 }
