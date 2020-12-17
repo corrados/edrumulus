@@ -26,6 +26,28 @@
 
 function edrumulus(x)
 
+close all
+
+% load test data
+x = audioread("signals/pd120_pos_sense2.wav");
+x = x(1300:5000) * 1000;
+
+Setup();
+
+% loop
+hil_debug      = zeros(length(x), 1);
+hil_filt_debug = zeros(length(x), 1);
+
+for i = 1:length(x)
+  [hil_debug(i), hil_filt_debug(i)] = process_sample(x(i));
+end
+
+figure; plot(20 * log10(abs([x, hil_filt_debug])));
+% figure; plot(20 * log10(abs([x, hil_debug, hil_filt_debug])));
+
+
+
+
 
 % TEST
 pkg load instrument-control
@@ -37,57 +59,80 @@ catch
 end
 flush(a);
 
-
-% load test data
-x = audioread("signals/pd120_pos_sense2.wav");
-x = x(1300:5000);
+bReturnIsComplex  = false;
 
 % send the input data vector
 for i = 1:length(x)
+
+  % write sample
   write(a, sprintf('%f.6\n', x(i)), 'char');
-end
 
-% receive the return data vector
-for i = 1:length(x)
+  % receive the return sample
+  if bReturnIsComplex
 
-  % get number from string
-  readready = false;
-  bytearray = uint8([]);
+    for j = 1:2
 
-  while ~readready
+      % get number from string
+      readready = false;
+      bytearray = uint8([]);
 
-    val = fread(a, 1);
+      while ~readready
 
-    if val == 13
-      readready = true;
+        val = fread(a, 1);
+
+        if val == 13
+          readready = true;
+        end
+
+        bytearray = [bytearray, uint8(val)];
+
+      end
+
+      y(2 * (i - 1) + j) = str2double(char(bytearray));
+
     end
 
-    bytearray = [bytearray, uint8(val)];
+  else
+
+      % get number from string
+      readready = false;
+      bytearray = uint8([]);
+
+      while ~readready
+
+        val = fread(a, 1);
+
+        if val == 13
+          readready = true;
+        end
+
+        bytearray = [bytearray, uint8(val)];
+
+      end
+
+      y(i) = str2double(char(bytearray));
 
   end
 
-  y(i) = str2double(char(bytearray));
-  
-  if isnan(y(i))
-    disp(char(bytearray));
-  endif
+end
+
+if bReturnIsComplex
+  y = complex(y(1:2:2 * length(x)), y(2:2:2 * length(x)));
+end
+
+
+figure; plot(20 * log10(abs([x, y.'])));
+% figure; plot(abs(x.' - y));
+
 
 end
 
 
-% figure; plot(abs(x.' - y));
 
 
 
-return;
+function Setup
 
-
-
-
-
-
-
-% Setup ------------------------------------------------------------------------
 global Fs;
 global a_re;
 global a_im;
@@ -107,18 +152,6 @@ a_im = [ 0,                  0.213150535195075, -1.048981722170302, -1.797442302
 energy_window_len = round(2e-3 * Fs); % scan time (e.g. 2 ms)
 mov_av_hist_re    = zeros(energy_window_len, 1); % real part memory for moving average filter history
 mov_av_hist_im    = zeros(energy_window_len, 1); % imaginary part memory for moving average filter history
-
-
-% Loop (loop over all samples -> per sample processing as on the hardware) -----
-hil_debug      = zeros(length(x), 1);
-hil_filt_debug = zeros(length(x), 1);
-
-for i = 1:length(x)
-  [hil_debug(i), hil_filt_debug(i)] = process_sample(x(i));
-end
-
-figure;
-plot(20 * log10(abs([x, hil_debug, hil_filt_debug])));
 
 end
 
