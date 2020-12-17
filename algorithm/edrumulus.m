@@ -26,6 +26,67 @@
 
 function edrumulus(x)
 
+
+% TEST
+pkg load instrument-control
+
+% prepare serial port
+try
+  a = serialport("COM7", 115200);
+catch
+end
+flush(a);
+
+
+% load test data
+x = audioread("signals/pd120_pos_sense2.wav");
+x = x(1300:5000);
+
+% send the input data vector
+for i = 1:length(x)
+  write(a, sprintf('%f.6\n', x(i)), 'char');
+end
+
+% receive the return data vector
+for i = 1:length(x)
+
+  % get number from string
+  readready = false;
+  bytearray = uint8([]);
+
+  while ~readready
+
+    val = fread(a, 1);
+
+    if val == 13
+      readready = true;
+    end
+
+    bytearray = [bytearray, uint8(val)];
+
+  end
+
+  y(i) = str2double(char(bytearray));
+  
+  if isnan(y(i))
+    disp(char(bytearray));
+  endif
+
+end
+
+
+% figure; plot(abs(x.' - y));
+
+
+
+return;
+
+
+
+
+
+
+
 % Setup ------------------------------------------------------------------------
 global Fs;
 global a_re;
