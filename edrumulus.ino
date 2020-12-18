@@ -1,5 +1,10 @@
 
+#define USE_MIDI
 
+#ifdef USE_MIDI
+#include <MIDI.h>
+MIDI_CREATE_DEFAULT_INSTANCE();
+#endif
 
 const int      analogPin = 34;
 volatile int   iCnt = 0;
@@ -63,7 +68,12 @@ void onTimer()
  
 void setup()
 {
+#ifdef USE_MIDI
+  MIDI.begin();
+  Serial.begin ( 38400 );
+#else
   Serial.begin ( 115200 );
+#endif
 
   // calculate the decay curve
   for ( int i = 0; i < decay_len; i++ )
@@ -88,23 +98,33 @@ void loop()
 float sample = analogRead ( analogPin );
 sample -= 1850; // compensate DC offset
 sample /= 30000; // scaling
+int midi_velocity;
 float debug;
-const bool peak_found = process_sample ( sample, debug );
+const bool peak_found = process_sample ( sample, midi_velocity, debug );
 values[iCnt++] = micros();//sample;//processed_sample;//
 
 // measurement: Hilbert+moving average: about 54 kHz sampling rate possible
 delayMicroseconds ( 107 ); // to get from 56 kHz to 8 kHz sampling rate
 
+#ifdef USE_MIDI
+if ( peak_found )
+{
+    MIDI.sendNoteOn ( 38, midi_velocity, 10 ); // (note, velocity, channel)
+    MIDI.sendNoteOff ( 38, 0, 10 );
+}
+#endif
 
-
+/*
 if ( peak_found )
 {
   Serial.print ( "peak_found " );
+  Serial.print ( midi_velocity ); Serial.print ( "    " );
 //Serial.print ( debug, 7 ); Serial.print ( "    " );
 //Serial.println ( decay[iHitCnt++], 7 );
 //if ( iHitCnt == decay_len ) iHitCnt = 0;
   Serial.println ( iHitCnt++ );
 }
+*/
 
 
 /*
@@ -156,6 +176,7 @@ if ( iCnt >= iNumSamples )
 }
 
 bool process_sample ( const float fIn,
+                      int&        midi_velocity,
                       float&      debug )
 {
   // initialize return parameter
@@ -260,6 +281,12 @@ debug = 0.0f; // TEST
 // TEST
 debug = hil_filt_new;
 //debug = peak_found;
+
+
+// TEST
+// velocity/positional sensing mapping and play MIDI notes
+midi_velocity = static_cast<int> ( ( 20 * log10 ( prev_hil_filt_val ) + 63.0f ) / 40 * 127 );
+midi_velocity = max ( 1, min ( 127, midi_velocity ) );
 
 
   return peak_found;
