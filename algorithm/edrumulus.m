@@ -29,24 +29,29 @@ function edrumulus(x)
 close all
 
 % load test data
-x = audioread("signals/pd120_pos_sense2.wav");
-x = x(1300:5000) * 1000;
+% x = audioread("signals/pd120_roll.wav");
+x = audioread("signals/pd120_single_hits.wav");
+% x = audioread("signals/pd120_pos_sense2.wav");
+% x = x(1300:5000) * 1000;
 
 Setup();
 
 % loop
-hil_debug      = zeros(length(x), 1);
-hil_filt_debug = zeros(length(x), 1);
+hil_debug          = zeros(length(x), 1);
+hil_filt_debug     = zeros(length(x), 1);
+hil_filt_new_debug = zeros(length(x), 1);
+cur_decay_debug    = zeros(length(x), 1);
+peak_found         = false(length(x), 1);
 
 for i = 1:length(x)
-  [hil_debug(i), hil_filt_debug(i)] = process_sample(x(i));
+  [hil_debug(i), hil_filt_debug(i), hil_filt_new_debug(i), cur_decay_debug(i), peak_found(i)] = process_sample(x(i));
 end
 
-figure; plot(20 * log10(abs([x, hil_filt_debug])));
+figure; plot(20 * log10(abs([hil_filt_debug, hil_filt_new_debug, cur_decay_debug]))); hold on;
+plot(find(peak_found), 20 * log10(hil_filt_debug(peak_found)), 'k*');
 % figure; plot(20 * log10(abs([x, hil_debug, hil_filt_debug])));
 
-
-
+return;
 
 
 % TEST
@@ -141,6 +146,17 @@ global hil_hist;
 global energy_window_len;
 global mov_av_hist_re;
 global mov_av_hist_im;
+global mask_time;
+global mask_back_cnt;
+global threshold;
+global was_above_threshold;
+global prev_hil_filt_val;
+global prev_hil_filt_new_val;
+global decay_att;
+global decay_len;
+global decay;
+global decay_back_cnt;
+global decay_scaling;
 
 Fs           = 8000;
 hil_filt_len = 7;
@@ -149,14 +165,26 @@ a_re = [-0.037749783581601, -0.069256807147465, -1.443799477299919,  2.473967088
          0.551482327389238, -0.224119735833791, -0.011665324660691]';
 a_im = [ 0,                  0.213150535195075, -1.048981722170302, -1.797442302898130, ...
          1.697288080048948,  0,                  0.035902177664014]';
-energy_window_len = round(2e-3 * Fs); % scan time (e.g. 2 ms)
-mov_av_hist_re    = zeros(energy_window_len, 1); % real part memory for moving average filter history
-mov_av_hist_im    = zeros(energy_window_len, 1); % imaginary part memory for moving average filter history
+energy_window_len     = round(2e-3 * Fs); % scan time (e.g. 2 ms)
+mov_av_hist_re        = zeros(energy_window_len, 1); % real part memory for moving average filter history
+mov_av_hist_im        = zeros(energy_window_len, 1); % imaginary part memory for moving average filter history
+mask_time             = round(8.125e-3 * Fs); % mask time (e.g. 8.125 ms)
+mask_back_cnt         = 0;
+threshold             = power(10, -64 / 20); % -64 dB threshold
+was_above_threshold   = false;
+prev_hil_filt_val     = 0;
+prev_hil_filt_new_val = 0;
+decay_att             = power(10, -1 / 20); % decay attenuation of 1 dB
+decay_len             = round(0.2 * Fs); % decay time (e.g. 200 ms)
+decay_grad            = 200 / Fs; % decay gradient factor
+decay                 = power(10, -(0:decay_len - 1) / 20 * decay_grad);
+decay_back_cnt        = 0;
+decay_scaling         = 1;
 
 end
 
 
-function [hil_debug, hil_filt_debug] = process_sample(x)
+function [hil_debug, hil_filt_debug, hil_filt_new_debug, cur_decay_debug, peak_found] = process_sample(x)
 
 global Fs;
 global a_re;
@@ -166,6 +194,21 @@ global hil_hist;
 global energy_window_len;
 global mov_av_hist_re;
 global mov_av_hist_im;
+global mask_time;
+global mask_back_cnt;
+global threshold;
+global was_above_threshold;
+global prev_hil_filt_val;
+global prev_hil_filt_new_val;
+global decay_att;
+global decay_len;
+global decay;
+global decay_back_cnt;
+global decay_scaling;
+
+% initialize return parameter
+peak_found      = false;
+cur_decay_debug = 0; % just for debugging
 
 
 % Calculate peak detection -----------------------------------------------------
@@ -191,10 +234,66 @@ hil_filt = sqrt(mov_av_re * mov_av_re + mov_av_im * mov_av_im);
 hil_filt_debug = hil_filt; % just for debugging
 
 
+% exponential decay assumption (note that we must not use hil_filt_org since a
+% previous peak might not be faded out and the peak detection works on hil_filt)
+% subtract decay (with clipping at zero)
+if decay_back_cnt > 0
+
+  cur_decay       = decay_scaling * decay(1 + decay_len - decay_back_cnt);
+  cur_decay_debug = cur_decay; % just for debugging
+  hil_filt_new    = hil_filt - cur_decay;
+  decay_back_cnt  = decay_back_cnt - 1;
+
+  if hil_filt_new < 0
+
+    hil_filt_new = 0;
+
+  end
+
+else
+
+  hil_filt_new = hil_filt;
+
+end
 
 
+% threshold test
+if ((hil_filt_new > threshold) || was_above_threshold) && (mask_back_cnt == 0)
+
+  was_above_threshold = true;
+
+  % climb to the maximum of the current peak
+  if prev_hil_filt_new_val < hil_filt_new
+
+    prev_hil_filt_new_val = hil_filt_new;
+    prev_hil_filt_val     = hil_filt; % needed for further processing
+
+  else
+
+    % maximum found
+    prev_hil_filt_new_val = 0;
+    was_above_threshold   = false;
+    decay_back_cnt        = decay_len;
+    decay_scaling         = prev_hil_filt_val * decay_att;
+    mask_back_cnt         = mask_time;
+    peak_found            = true;
+
+  end
+
+end
+
+if mask_back_cnt > 0
+
+  mask_back_cnt = mask_back_cnt - 1;
+
+end
+
+hil_filt_new_debug = hil_filt_new; % just for debugging
 
 
+% Calculate positional sensing -------------------------------------------------
+
+% TODO
 
 end
 

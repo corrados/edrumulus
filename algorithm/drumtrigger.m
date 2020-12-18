@@ -48,7 +48,7 @@ x = audioread("signals/pd120_pos_sense2.wav");
 % org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
 
 % % TEST call reference mode for C++ implementation
-% edrumulus(x); return;
+% edrumulus(x);
 
 % % TEST use 4 kHz sampling rate
 % x = resample(x, 1, 2); Fs = Fs / 2;
@@ -147,7 +147,7 @@ while ~no_more_peak
   % exponential decay assumption (note that we must not use hil_filt_org since a
   % previous peak might not be faded out and the peak detection works on hil_filt)
   decay           = hil_filt(peak_idx) * 10 ^ (-decay_att_db / 20) * 10 .^ (-(0:decay_len - 1) / 20 * decay_grad);
-  decay_x         = peak_idx + (0:decay_len - 1);
+  decay_x         = peak_idx + (0:decay_len - 1) + 2; % NOTE "+ 2" delay needed for sample-wise processing
   valid_decay_idx = decay_x <= length(hil_filt);
   decay           = decay(valid_decay_idx);
   decay_x         = decay_x(valid_decay_idx);
