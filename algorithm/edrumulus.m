@@ -32,7 +32,7 @@ close all
 % x = audioread("signals/pd120_roll.wav");
 x = audioread("signals/pd120_single_hits.wav");
 % x = audioread("signals/pd120_pos_sense2.wav");
-% x = x(1300:5000) * 1000;
+% x = x(1300:5000); % * 1000;
 
 Setup();
 
@@ -48,7 +48,7 @@ for i = 1:length(x)
 end
 
 figure; plot(20 * log10(abs([hil_filt_debug, hil_filt_new_debug, cur_decay_debug]))); hold on;
-plot(find(peak_found), 20 * log10(hil_filt_debug(peak_found)), 'k*');
+        plot(find(peak_found), 20 * log10(hil_filt_debug(peak_found)), 'k*');
 % figure; plot(20 * log10(abs([x, hil_debug, hil_filt_debug])));
 
 return;
@@ -126,7 +126,9 @@ if bReturnIsComplex
 end
 
 
-figure; plot(20 * log10(abs([x, y.'])));
+% figure; plot([peak_found, y.'], '*');
+figure; plot(20 * log10(abs([hil_filt_debug, y.'])));
+% figure; plot(20 * log10(abs([x, y.'])));
 % figure; plot(abs(x.' - y));
 
 

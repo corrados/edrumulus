@@ -84,6 +84,7 @@ int iHitCnt = 0;
 void loop()
 {
 
+/*
 float sample = analogRead ( analogPin );
 sample -= 1850; // compensate DC offset
 sample /= 100000; // scaling
@@ -103,6 +104,18 @@ if ( peak_found )
   
   Serial.println ( iHitCnt++ );
 }
+*/
+
+
+  if ( Serial.available() > 0 )
+  {
+    // for debugging: take samples from Octave, process and return result to Octave
+    const float fIn = Serial.parseFloat();
+    float debug;
+    const bool peak_found = process_sample ( fIn, debug );
+    Serial.println ( debug, 7 );
+  }
+
 
 /*
 if ( iCnt >= iNumSamples )
@@ -116,16 +129,6 @@ if ( iCnt >= iNumSamples )
 */
 
 //Serial.println ( iHitCnt++ ); //processed_sample );
-
-/*
-  if ( Serial.available() > 0 )
-  {
-    // for debugging: take samples from Octave, process and return result to Octave
-    const float fIn = Serial.parseFloat();
-    const float fOut = process_sample ( fIn );
-    Serial.println ( fOut, 7 );
-  }
-*/
 
 /*
   if ( iCnt >= iNumSamples )
@@ -154,6 +157,8 @@ bool process_sample ( const float fIn,
 {
   // initialize return parameter
   bool peak_found = false;
+
+debug = 0.0f; // TEST
 
 
   // Calculate peak detection -----------------------------------------------------
@@ -202,6 +207,9 @@ bool process_sample ( const float fIn,
   if ( decay_back_cnt > 0 )
   {
     const float cur_decay = decay_scaling * decay[decay_len - decay_back_cnt];
+
+// debug = cur_decay; // TEST
+
     hil_filt_new          = hil_filt - cur_decay;
     decay_back_cnt--;
 
@@ -246,10 +254,9 @@ bool process_sample ( const float fIn,
 // TODO
 
 
-// TODO decay and threshold code must be verified with Octave
-
 // TEST
-debug = hil_filt;
+debug = hil_filt_new;
+//debug = peak_found;
 
 
   return peak_found;
