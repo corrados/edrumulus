@@ -7,6 +7,14 @@ Open Source E-Drum Trigger Module Software
 
 ## Project log
 
+- (12/18/2020) I have ported the Octave peak detection code to the ESP32 developer board (no positional sensing
+  yet) and connected it via my PC and Hairless MIDI to my Roland TD-20 module so that the snare sound was
+  coming out of the TD-20. The parameters were not yet optimized but still, the results were very
+  promising. Without positional sensing, the ESP32 runs at about 56 kHz sampling rate when calculating the peak
+  detection algorithm on one pad. Since I only need 8 kHz sampling rate (maybe even 4 kHz is sufficient), we
+  have a lot of headroom for the positional sensing algorithm or to add rim shot support and support multiple
+  pads.
+
 - (12/13/2020) I am very pleased about the current algorithm performance. The algorithm is not yet fine-tuned but
   already performs pretty well. I have created a short Youtube video of the algorithm (Git commit c83743e) to show
   the current performance in action: https://youtu.be/6eQjCD-DFjo
