@@ -4,7 +4,7 @@
 const int      analogPin = 34;
 volatile int   iCnt = 0;
 //volatile int   outCnt = 0;
-const int      iNumSamples = 15000;
+const int      iNumSamples = 1500;
 volatile float values[iNumSamples];
 //volatile bool  sending = false;
 //hw_timer_t*    timer = NULL;
@@ -84,29 +84,30 @@ int iHitCnt = 0;
 void loop()
 {
 
-/*
+
 float sample = analogRead ( analogPin );
 sample -= 1850; // compensate DC offset
-sample /= 100000; // scaling
+sample /= 30000; // scaling
 float debug;
 const bool peak_found = process_sample ( sample, debug );
-values[iCnt++] = sample;//processed_sample;//micros();//
+values[iCnt++] = micros();//sample;//processed_sample;//
 
 // measurement: Hilbert+moving average: about 54 kHz sampling rate possible
+delayMicroseconds ( 107 ); // to get from 56 kHz to 8 kHz sampling rate
+
+
 
 if ( peak_found )
 {
   Serial.print ( "peak_found " );
-  Serial.print ( debug, 7 ); Serial.print ( "    " );
-
+//Serial.print ( debug, 7 ); Serial.print ( "    " );
 //Serial.println ( decay[iHitCnt++], 7 );
 //if ( iHitCnt == decay_len ) iHitCnt = 0;
-  
   Serial.println ( iHitCnt++ );
 }
-*/
 
 
+/*
   if ( Serial.available() > 0 )
   {
     // for debugging: take samples from Octave, process and return result to Octave
@@ -115,11 +116,12 @@ if ( peak_found )
     const bool peak_found = process_sample ( fIn, debug );
     Serial.println ( debug, 7 );
   }
-
+*/
 
 /*
 if ( iCnt >= iNumSamples )
 {
+  // for usage with debugcontroller.m
   for ( int i = 0; i < iNumSamples; i++ )
   {
     Serial.println ( values[i] );
@@ -127,6 +129,7 @@ if ( iCnt >= iNumSamples )
   iCnt = 0;
 }
 */
+
 
 //Serial.println ( iHitCnt++ ); //processed_sample );
 
