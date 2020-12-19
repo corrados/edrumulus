@@ -189,7 +189,7 @@ hil_low = filter(alpha, [1, alpha - 1], hil);
 peak_energy     = [];
 peak_energy_low = [];
 
-% figure; plot(20 * log10(abs(hil))); hold on;
+% figure; plot(20 * log10(abs([hil, hil_low]))); hold on;
 
 for i = 1:length(all_peaks)
 
@@ -200,6 +200,10 @@ for i = 1:length(all_peaks)
   % region of the original Hilbert transformed signal, we average the powers of
   % the filtered and un-filtered signals around the detected peak position.
   win_idx            = (all_peaks(i):all_peaks(i) + energy_window_len - 1) - energy_window_len / 2;
+
+% % TEST as currently implemented in the sample-based processing
+% win_idx = (all_peaks(i):all_peaks(i) + energy_window_len / 2 - 1) - energy_window_len / 2;
+
   win_idx            = win_idx((win_idx <= length(hil_low)) & (win_idx > 0));
   peak_energy(i)     = sum(abs(hil(win_idx)) .^ 2);
   peak_energy_low(i) = sum(abs(hil_low(win_idx)) .^ 2);
