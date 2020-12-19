@@ -42,13 +42,23 @@ hil_filt_debug     = zeros(length(x), 1);
 hil_filt_new_debug = zeros(length(x), 1);
 cur_decay_debug    = zeros(length(x), 1);
 peak_found         = false(length(x), 1);
+pos_sense_metric   = zeros(length(x), 1);
 
 for i = 1:length(x)
-  [hil_debug(i), hil_filt_debug(i), hil_filt_new_debug(i), cur_decay_debug(i), peak_found(i)] = process_sample(x(i));
+
+  [hil_debug(i), ...
+   hil_filt_debug(i), ...
+   hil_filt_new_debug(i), ...
+   cur_decay_debug(i), ...
+   peak_found(i), ...
+   pos_sense_metric(i)] = process_sample(x(i));
+
 end
 
 figure; plot(20 * log10(abs([hil_filt_debug, hil_filt_new_debug, cur_decay_debug]))); hold on;
-        plot(find(peak_found), 20 * log10(hil_filt_debug(peak_found)), 'k*');
+        plot(find(peak_found), 20 * log10(hil_filt_debug(peak_found)), 'g*');
+        plot(find(peak_found), 10 * log10(pos_sense_metric(peak_found)) - 40, 'k*');
+        ylim([-100, 0]);
 % figure; plot(20 * log10(abs([x, hil_debug, hil_filt_debug])));
 
 return;
@@ -159,6 +169,13 @@ global decay_len;
 global decay;
 global decay_back_cnt;
 global decay_scaling;
+global alpha;
+global hil_low_re;
+global hil_low_im;
+global hil_hist_re;
+global hil_hist_im;
+global hil_low_hist_re;
+global hil_low_hist_im;
 
 Fs           = 8000;
 hil_filt_len = 7;
@@ -182,11 +199,22 @@ decay_grad            = 200 / Fs; % decay gradient factor
 decay                 = power(10, -(0:decay_len - 1) / 20 * decay_grad);
 decay_back_cnt        = 0;
 decay_scaling         = 1;
+alpha                 = 0.025 * 8e3 / Fs;
+hil_low_re            = 0;
+hil_low_im            = 0;
+hil_hist_re           = zeros(energy_window_len, 1);
+hil_hist_im           = zeros(energy_window_len, 1);
+hil_low_hist_re       = zeros(energy_window_len, 1);
+hil_low_hist_im       = zeros(energy_window_len, 1);
 
 end
 
 
-function [hil_debug, hil_filt_debug, hil_filt_new_debug, cur_decay_debug, peak_found] = process_sample(x)
+function [hil_debug, hil_filt_debug, ...
+          hil_filt_new_debug, ...
+          cur_decay_debug, ...
+          peak_found, ...
+          pos_sense_metric] = process_sample(x)
 
 global Fs;
 global a_re;
@@ -207,10 +235,18 @@ global decay_len;
 global decay;
 global decay_back_cnt;
 global decay_scaling;
+global alpha;
+global hil_low_re;
+global hil_low_im;
+global hil_hist_re;
+global hil_hist_im;
+global hil_low_hist_re;
+global hil_low_hist_im;
 
 % initialize return parameter
-peak_found      = false;
-cur_decay_debug = 0; % just for debugging
+peak_found       = false;
+pos_sense_metric = 0;
+cur_decay_debug  = 0; % just for debugging
 
 
 % Calculate peak detection -----------------------------------------------------
@@ -294,8 +330,30 @@ hil_filt_new_debug = hil_filt_new; % just for debugging
 
 
 % Calculate positional sensing -------------------------------------------------
+% low pass filter of the Hilbert signal
+hil_low_re = (1 - alpha) * hil_low_re + alpha * hil_re;
+hil_low_im = (1 - alpha) * hil_low_im + alpha * hil_im;
 
-% TODO
+hil_hist_re(1:energy_window_len - 1) = hil_hist_re(2:energy_window_len);
+hil_hist_re(energy_window_len)       = hil_re;
+hil_hist_im(1:energy_window_len - 1) = hil_hist_im(2:energy_window_len);
+hil_hist_im(energy_window_len)       = hil_im;
+
+hil_low_hist_re(1:energy_window_len - 1) = hil_low_hist_re(2:energy_window_len);
+hil_low_hist_re(energy_window_len)       = hil_low_re;
+hil_low_hist_im(1:energy_window_len - 1) = hil_low_hist_im(2:energy_window_len);
+hil_low_hist_im(energy_window_len)       = hil_low_im;
+
+if peak_found
+
+% note that the following code is not exactly what the reference code does: we
+% do not move the window half the window size to the right
+  peak_energy     = sum(hil_hist_re .* hil_hist_re + hil_hist_im .* hil_hist_im);
+  peak_energy_low = sum(hil_low_hist_re .* hil_low_hist_re + hil_low_hist_im .* hil_low_hist_im);
+
+  pos_sense_metric = peak_energy / peak_energy_low;
+
+end
 
 end
 

@@ -19,16 +19,16 @@ volatile float   values[iNumSamples];
 //portMUX_TYPE   timerMux = portMUX_INITIALIZER_UNLOCKED;
 
 
-const int Fs           = 8000;
-const int hil_filt_len = 7;
-float hil_hist[hil_filt_len]; // memory allocation for hilbert filter history
+const int   Fs           = 8000;
+const int   hil_filt_len = 7;
+float       hil_hist[hil_filt_len]; // memory allocation for hilbert filter history
 const float a_re[7] = { -0.037749783581601f, -0.069256807147465f, -1.443799477299919f,  2.473967088799056f,
                          0.551482327389238f, -0.224119735833791f, -0.011665324660691f };
 const float a_im[7] = {  0.0f,                0.213150535195075f, -1.048981722170302f, -1.797442302898130f,
                          1.697288080048948f,  0.0f,                0.035902177664014f };
-const int energy_window_len = static_cast<int> ( round ( 2e-3f * Fs ) ); // scan time (e.g. 2 ms)
-float mov_av_hist_re[energy_window_len]; // real part memory for moving average filter history
-float mov_av_hist_im[energy_window_len]; // imaginary part memory for moving average filter history
+const int   energy_window_len = static_cast<int> ( round ( 2e-3f * Fs ) ); // scan time (e.g. 2 ms)
+float       mov_av_hist_re[energy_window_len]; // real part memory for moving average filter history
+float       mov_av_hist_im[energy_window_len]; // imaginary part memory for moving average filter history
 const int   mask_time             = round ( 10e-3f * Fs ); // mask time (e.g. 10 ms)
 int         mask_back_cnt         = 0;
 const float threshold             = pow ( 10.0f, -64.0f / 20 ); // -64 dB threshold
@@ -41,6 +41,13 @@ const float decay_grad            = 200.0f / Fs; // decay gradient factor
 float       decay[decay_len]; // note that the decay is calculated in the setup() function
 int         decay_back_cnt        = 0;
 float       decay_scaling         = 1.0f;
+const float alpha                 = 0.025f * 8e3f / Fs;
+float       hil_low_re            = 0.0f;
+float       hil_low_im            = 0.0f;
+float       hil_hist_re[energy_window_len];
+float       hil_hist_im[energy_window_len];
+float       hil_low_hist_re[energy_window_len];
+float       hil_low_hist_im[energy_window_len];
 const int   dc_offset_est_len     = 5000; // samples
 float       dc_offset             = 0.0f;
 
@@ -118,9 +125,11 @@ void loop()
 int sample_org = analogRead ( analog_pin );
 float sample = sample_org - dc_offset; // compensate DC offset
 sample /= 30000; // scaling
-int midi_velocity;
+bool  peak_found;
+int   midi_velocity;
+int   midi_pos;
 float debug;
-const bool peak_found = process_sample ( sample, midi_velocity, debug );
+process_sample ( sample, peak_found, midi_velocity, midi_pos, debug );
 values[iCnt++] = micros();//sample;//processed_sample;//
 
 // measurement: Hilbert+moving average: about 54 kHz sampling rate possible
@@ -129,6 +138,7 @@ delayMicroseconds ( 107 ); // to get from 56 kHz to 8 kHz sampling rate
 if ( peak_found )
 {
 #ifdef USE_MIDI
+    MIDI.sendControlChange ( 16, midi_pos, 10 ); // positional sensing
     MIDI.sendNoteOn ( 38, midi_velocity, 10 ); // (note, velocity, channel)
     MIDI.sendNoteOff ( 38, 0, 10 );
 #else
@@ -214,12 +224,16 @@ if ( iCnt >= iNumSamples )
 */
 }
 
-bool process_sample ( const float fIn,
+void process_sample ( const float fIn,
+                      bool&       peak_found,
                       int&        midi_velocity,
+                      int&        midi_pos,
                       float&      debug )
 {
   // initialize return parameter
-  bool peak_found = false;
+  peak_found       = false;
+  midi_velocity    = 0;
+  midi_pos         = 0;
 
 debug = 0.0f; // TEST
 
@@ -303,6 +317,12 @@ debug = 0.0f; // TEST
       decay_scaling         = prev_hil_filt_val * decay_att;
       mask_back_cnt         = mask_time;
       peak_found            = true;
+
+// TEST
+// velocity/positional sensing mapping and play MIDI notes
+midi_velocity = static_cast<int> ( ( 20 * log10 ( prev_hil_filt_val ) / 33 + 1.9f ) * 127 );
+midi_velocity = max ( 1, min ( 127, midi_velocity ) );
+
     }
   }
 
@@ -313,20 +333,45 @@ debug = 0.0f; // TEST
 
 
   // Calculate positional sensing -------------------------------------------------
+  // low pass filter of the Hilbert signal
+  hil_low_re = ( 1.0f - alpha ) * hil_low_re + alpha * hil_re;
+  hil_low_im = ( 1.0f - alpha ) * hil_low_im + alpha * hil_im;
 
-// TODO
+  for ( int i = 0; i < energy_window_len - 1; i++ )
+  {
+    hil_hist_re[i]     = hil_hist_re[i + 1];
+    hil_hist_im[i]     = hil_hist_im[i + 1];
+    hil_low_hist_re[i] = hil_low_hist_re[i + 1];
+    hil_low_hist_im[i] = hil_low_hist_im[i + 1];
+  }
+  hil_hist_re[energy_window_len - 1]     = hil_re;
+  hil_hist_im[energy_window_len - 1]     = hil_im;
+  hil_low_hist_re[energy_window_len - 1] = hil_low_re;
+  hil_low_hist_im[energy_window_len - 1] = hil_low_im;
+
+  if ( peak_found )
+  {
+// note that the following code is not exactly what the reference code does: we
+// do not move the window half the window size to the right
+    float peak_energy     = 0;
+    float peak_energy_low = 0;
+    for ( int i = 0; i < energy_window_len; i++ )
+    {
+      peak_energy     += ( hil_hist_re[i] * hil_hist_re[i] + hil_hist_im[i] * hil_hist_im[i] );
+      peak_energy_low += ( hil_low_hist_re[i] * hil_low_hist_re[i] + hil_low_hist_im[i] * hil_low_hist_im[i] );
+    }
+
+    const float pos_sense_metric = peak_energy / peak_energy_low;
+
+// TEST
+midi_pos = ( 10 * log10 ( pos_sense_metric ) / 5 - 3.5 ) * 127;
+midi_pos = max ( 1, min ( 127, midi_pos ) );
+
+  }
 
 
 // TEST
 debug = hil_filt_new;
 //debug = peak_found;
 
-
-// TEST
-// velocity/positional sensing mapping and play MIDI notes
-midi_velocity = static_cast<int> ( ( 20 * log10 ( prev_hil_filt_val ) / 33 + 1.9f ) * 127 );
-midi_velocity = max ( 1, min ( 127, midi_velocity ) );
-
-
-  return peak_found;
 }
