@@ -101,7 +101,7 @@ hil = myhilbert(x);
 
 threshold_db      = -64;
 energy_window_len = round(2e-3 * Fs); % scan time (e.g. 2 ms)
-mask_time         = round(8.125e-3 * Fs); % mask time (e.g. 8.125 ms)
+mask_time         = round(10e-3 * Fs); % mask time (e.g. 10 ms)
 
 % the following settings are trigger pad-specific (here, a PD-120 is used)
 decay_len    = round(0.2 * Fs); % decay time (e.g. 200 ms)

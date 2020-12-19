@@ -6,11 +6,14 @@
 MIDI_CREATE_DEFAULT_INSTANCE();
 #endif
 
-const int      analogPin = 34;
-volatile int   iCnt = 0;
+const int        analog_pin      = 34;
+const int        LED_builtin_pin = 2;
+int              LED_counter     = 0;
+const int        LED_on_time     = 2000; // samples
+volatile int     iCnt = 0;
 //volatile int   outCnt = 0;
-const int      iNumSamples = 1500;
-volatile float values[iNumSamples];
+const int        iNumSamples = 1500;
+volatile float   values[iNumSamples];
 //volatile bool  sending = false;
 //hw_timer_t*    timer = NULL;
 //portMUX_TYPE   timerMux = portMUX_INITIALIZER_UNLOCKED;
@@ -26,7 +29,7 @@ const float a_im[7] = {  0.0f,                0.213150535195075f, -1.04898172217
 const int energy_window_len = static_cast<int> ( round ( 2e-3f * Fs ) ); // scan time (e.g. 2 ms)
 float mov_av_hist_re[energy_window_len]; // real part memory for moving average filter history
 float mov_av_hist_im[energy_window_len]; // imaginary part memory for moving average filter history
-const int   mask_time             = round ( 8.125e-3f * Fs ); // mask time (e.g. 8.125 ms)
+const int   mask_time             = round ( 10e-3f * Fs ); // mask time (e.g. 10 ms)
 int         mask_back_cnt         = 0;
 const float threshold             = pow ( 10.0f, -64.0f / 20 ); // -64 dB threshold
 bool        was_above_threshold   = false;
@@ -38,6 +41,8 @@ const float decay_grad            = 200.0f / Fs; // decay gradient factor
 float       decay[decay_len]; // note that the decay is calculated in the setup() function
 int         decay_back_cnt        = 0;
 float       decay_scaling         = 1.0f;
+const int   dc_offset_est_len     = 5000; // samples
+float       dc_offset             = 0.0f;
 
 /*
 void onTimer()
@@ -47,7 +52,7 @@ void onTimer()
     portENTER_CRITICAL_ISR ( &timerMux );
     if ( iCnt < iNumSamples )
     {
-      const int sample = analogRead ( analogPin );
+      const int sample = analogRead ( analog_pin );
 
       if ( ( iCnt >= 0 ) && ( iCnt < iNumSamples ) )
       {
@@ -81,6 +86,21 @@ void setup()
     decay[i] = pow ( 10.0f, -i / 20.0f * decay_grad );
   }
 
+  // estimate the DC offset
+  float dc_offset_sum = 0.0f;
+
+  for ( int i = 0; i < dc_offset_est_len; i++ )
+  {
+    dc_offset_sum += analogRead ( analog_pin );
+    delayMicroseconds ( 100 );
+  }
+
+  dc_offset = dc_offset_sum / dc_offset_est_len;
+
+  // configure built-in LED
+  pinMode ( LED_builtin_pin, OUTPUT );
+
+
 /*
   timer = timerBegin   ( 0, 80, true );
   timerAttachInterrupt ( timer, &onTimer, true );
@@ -95,8 +115,8 @@ void loop()
 {
 
 
-float sample = analogRead ( analogPin );
-sample -= 1850; // compensate DC offset
+int sample_org = analogRead ( analog_pin );
+float sample = sample_org - dc_offset; // compensate DC offset
 sample /= 30000; // scaling
 int midi_velocity;
 float debug;
@@ -106,13 +126,32 @@ values[iCnt++] = micros();//sample;//processed_sample;//
 // measurement: Hilbert+moving average: about 54 kHz sampling rate possible
 delayMicroseconds ( 107 ); // to get from 56 kHz to 8 kHz sampling rate
 
-#ifdef USE_MIDI
 if ( peak_found )
 {
+#ifdef USE_MIDI
     MIDI.sendNoteOn ( 38, midi_velocity, 10 ); // (note, velocity, channel)
     MIDI.sendNoteOff ( 38, 0, 10 );
-}
+#else
+    Serial.println ( dc_offset );
 #endif
+}
+
+// overload detection
+if ( ( sample_org >= 4095 ) || ( sample_org <= 1 ) )
+{
+  LED_counter = LED_on_time;
+  digitalWrite ( LED_builtin_pin, HIGH );
+}
+
+if ( LED_counter > 1 )
+{
+  LED_counter--;
+}
+else if ( LED_counter == 1 ) // transition to off state
+{
+  digitalWrite ( LED_builtin_pin, LOW );  
+  LED_counter = 0; // idle state
+}
 
 /*
 if ( peak_found )
@@ -285,7 +324,7 @@ debug = hil_filt_new;
 
 // TEST
 // velocity/positional sensing mapping and play MIDI notes
-midi_velocity = static_cast<int> ( ( 20 * log10 ( prev_hil_filt_val ) + 63.0f ) / 40 * 127 );
+midi_velocity = static_cast<int> ( ( 20 * log10 ( prev_hil_filt_val ) / 33 + 1.9f ) * 127 );
 midi_velocity = max ( 1, min ( 127, midi_velocity ) );
 
 
