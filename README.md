@@ -5,6 +5,20 @@
 Open Source E-Drum Trigger Module Software
 
 
+## Project TODO list
+
+- The algorithm is optimized for Roland PD-120 pad only. Other pad types should be supported, too.
+
+- The low velocity performance at the edge of the pad is not good enough. This should be improved.
+
+- We sometime have double-triggers on hard hits or when the rim is hit. The mask time is already
+  at 10 ms. So, the decay handling should be improved to suppress these double-triggers.
+
+- The normalization of the positional sensing should be improved.
+
+- Create a class for the edrumulus library.
+
+
 ## Project log
 
 - (12/18/2020) I have ported the Octave peak detection code to the ESP32 developer board (no positional sensing

@@ -29,27 +29,28 @@ const float a_im[7] = {  0.0f,                0.213150535195075f, -1.04898172217
 const int   energy_window_len = static_cast<int> ( round ( 2e-3f * Fs ) ); // scan time (e.g. 2 ms)
 float       mov_av_hist_re[energy_window_len]; // real part memory for moving average filter history
 float       mov_av_hist_im[energy_window_len]; // imaginary part memory for moving average filter history
-const int   mask_time             = round ( 10e-3f * Fs ); // mask time (e.g. 10 ms)
-int         mask_back_cnt         = 0;
-const float threshold             = pow ( 10.0f, -64.0f / 20 ); // -64 dB threshold
-bool        was_above_threshold   = false;
-float       prev_hil_filt_val     = 0.0f;
-float       prev_hil_filt_new_val = 0.0f;
-const float decay_att             = pow ( 10.0f, -1.0f / 20 ); // decay attenuation of 1 dB
-const int   decay_len             = round ( 0.2f * Fs ); // decay time (e.g. 200 ms)
-const float decay_grad            = 200.0f / Fs; // decay gradient factor
+const int   mask_time              = round ( 10e-3f * Fs ); // mask time (e.g. 10 ms)
+int         mask_back_cnt          = 0;
+const float threshold              = pow ( 10.0f, -64.0f / 20 ); // -64 dB threshold
+bool        was_above_threshold    = false;
+float       prev_hil_filt_val      = 0.0f;
+float       prev_hil_filt_new_val  = 0.0f;
+const float decay_att              = pow ( 10.0f, -1.0f / 20 ); // decay attenuation of 1 dB
+const int   decay_len              = round ( 0.2f * Fs ); // decay time (e.g. 200 ms)
+const float decay_grad             = 200.0f / Fs; // decay gradient factor
 float       decay[decay_len]; // note that the decay is calculated in the setup() function
-int         decay_back_cnt        = 0;
-float       decay_scaling         = 1.0f;
-const float alpha                 = 0.025f * 8e3f / Fs;
-float       hil_low_re            = 0.0f;
+int         decay_back_cnt         = 0;
+float       decay_scaling          = 1.0f;
+const float alpha                  = 0.025f * 8e3f / Fs;
+float       hil_low_re             = 0.0f;
 float       hil_low_im            = 0.0f;
-float       hil_hist_re[energy_window_len];
-float       hil_hist_im[energy_window_len];
-float       hil_low_hist_re[energy_window_len];
-float       hil_low_hist_im[energy_window_len];
-const int   dc_offset_est_len     = 5000; // samples
-float       dc_offset             = 0.0f;
+const int   energy_window_len_half = energy_window_len / 2;
+float       hil_hist_re[energy_window_len_half];
+float       hil_hist_im[energy_window_len_half];
+float       hil_low_hist_re[energy_window_len_half];
+float       hil_low_hist_im[energy_window_len_half];
+const int   dc_offset_est_len      = 5000; // samples
+float       dc_offset              = 0.0f;
 
 /*
 void onTimer()
@@ -337,17 +338,17 @@ midi_velocity = max ( 1, min ( 127, midi_velocity ) );
   hil_low_re = ( 1.0f - alpha ) * hil_low_re + alpha * hil_re;
   hil_low_im = ( 1.0f - alpha ) * hil_low_im + alpha * hil_im;
 
-  for ( int i = 0; i < energy_window_len - 1; i++ )
+  for ( int i = 0; i < energy_window_len_half - 1; i++ )
   {
     hil_hist_re[i]     = hil_hist_re[i + 1];
     hil_hist_im[i]     = hil_hist_im[i + 1];
     hil_low_hist_re[i] = hil_low_hist_re[i + 1];
     hil_low_hist_im[i] = hil_low_hist_im[i + 1];
   }
-  hil_hist_re[energy_window_len - 1]     = hil_re;
-  hil_hist_im[energy_window_len - 1]     = hil_im;
-  hil_low_hist_re[energy_window_len - 1] = hil_low_re;
-  hil_low_hist_im[energy_window_len - 1] = hil_low_im;
+  hil_hist_re[energy_window_len_half - 1]     = hil_re;
+  hil_hist_im[energy_window_len_half - 1]     = hil_im;
+  hil_low_hist_re[energy_window_len_half - 1] = hil_low_re;
+  hil_low_hist_im[energy_window_len_half - 1] = hil_low_im;
 
   if ( peak_found )
   {
@@ -355,7 +356,7 @@ midi_velocity = max ( 1, min ( 127, midi_velocity ) );
 // do not move the window half the window size to the right
     float peak_energy     = 0;
     float peak_energy_low = 0;
-    for ( int i = 0; i < energy_window_len; i++ )
+    for ( int i = 0; i < energy_window_len_half; i++ )
     {
       peak_energy     += ( hil_hist_re[i] * hil_hist_re[i] + hil_hist_im[i] * hil_hist_im[i] );
       peak_energy_low += ( hil_low_hist_re[i] * hil_low_hist_re[i] + hil_low_hist_im[i] * hil_low_hist_im[i] );
@@ -364,7 +365,7 @@ midi_velocity = max ( 1, min ( 127, midi_velocity ) );
     const float pos_sense_metric = peak_energy / peak_energy_low;
 
 // TEST
-midi_pos = ( 10 * log10 ( pos_sense_metric ) / 5 - 3.5 ) * 127;
+midi_pos = ( 10 * log10 ( pos_sense_metric ) / 8 - 2.1 ) * 127;
 midi_pos = max ( 1, min ( 127, midi_pos ) );
 
   }
