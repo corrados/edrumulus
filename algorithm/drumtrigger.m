@@ -188,8 +188,7 @@ hil_low = filter(alpha, [1, alpha - 1], hil);
 
 peak_energy     = [];
 peak_energy_low = [];
-
-% figure; plot(20 * log10(abs([hil, hil_low]))); hold on;
+win_idx_all     = []; % only for debugging
 
 for i = 1:length(all_peaks)
 
@@ -208,11 +207,21 @@ for i = 1:length(all_peaks)
   peak_energy(i)     = sum(abs(hil(win_idx)) .^ 2);
   peak_energy_low(i) = sum(abs(hil_low(win_idx)) .^ 2);
 
-  % plot(win_idx, 20 * log10(abs(hil(win_idx))), 'k.-');
+  win_idx_all = [win_idx_all; win_idx]; % only for debugging
 
 end
 
 pos_sense_metric = 10 * log10(peak_energy) - 10 * log10(peak_energy_low);
+
+% % figure; plot(20 * log10(abs([hil, hil_low]))); hold on;
+% % plot(win_idx_all', 20 * log10(abs(hil(win_idx_all'))), 'k.-');
+% figure; plot(20 * log10(abs(hil))); hold on;
+% for i = 1:size(win_idx_all, 1)
+%   plot(win_idx_all(i, :), 20 * log10(abs(hil(win_idx_all(i, :)))), 'k.-');
+%   plot(win_idx_all(i, :), 20 * log10(abs(hil_low(win_idx_all(i, :)))), 'b.-');
+%   plot(all_peaks, 10 * log10(peak_energy), 'k');
+%   plot(all_peaks, 10 * log10(peak_energy_low), 'b');
+% end
 
 end
 
