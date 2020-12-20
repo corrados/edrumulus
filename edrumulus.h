@@ -39,34 +39,39 @@ public:
 
 
 protected:
-	const int   Fs           = 8000;
-	const int   hil_filt_len = 7;
-	float*      hil_hist; // memory for Hilbert filter history
-	const float a_re[7]                = { -0.037749783581601f, -0.069256807147465f, -1.443799477299919f,  2.473967088799056f,
-							                            0.551482327389238f, -0.224119735833791f, -0.011665324660691f };
-	const float a_im[7]                = {  0.0f,                0.213150535195075f, -1.048981722170302f, -1.797442302898130f,
-							                            1.697288080048948f,  0.0f,                0.035902177664014f };
-	const int   energy_window_len      = static_cast<int> ( round ( 2e-3f * Fs ) ); // scan time (e.g. 2 ms)
-	float*      mov_av_hist_re;        // real part memory for moving average filter history
-	float*      mov_av_hist_im;        // imaginary part memory for moving average filter history
-	const int   mask_time              = round ( 10e-3f * Fs ); // mask time (e.g. 10 ms)
-	int         mask_back_cnt          = 0;
-	const float threshold              = pow ( 10.0f, -64.0f / 20 ); // -64 dB threshold
-	bool        was_above_threshold;
-	float       prev_hil_filt_val;
-	float       prev_hil_filt_new_val;
-	const float decay_att              = pow ( 10.0f, -1.0f / 20 ); // decay attenuation of 1 dB
-	const int   decay_len              = round ( 0.2f * Fs ); // decay time (e.g. 200 ms)
-	const float decay_grad             = 200.0f / Fs; // decay gradient factor
-  float*      decay;                 // memory for decay function
-	int         decay_back_cnt;
-	float       decay_scaling;
-	const float alpha                  = 0.025f * 8e3f / Fs;
-	float       hil_low_re;
-	float       hil_low_im;
-  const int   energy_window_len_half = energy_window_len / 2;
-	float*      hil_hist_re;           // real part of memory for moving average of Hilbert filtered signal
-	float*      hil_hist_im;           // imaginary part of memory for moving average of Hilbert filtered signal
-	float*      hil_low_hist_re;       // real part of memory for moving average of low-pass filtered Hilbert signal
-	float*      hil_low_hist_im;       // imaginary part of memory for moving average of low-pass filtered Hilbert signal
+  void initialize();
+
+  // Hilbert filter coefficients (they are constant and must not be changed)
+  const int   hil_filt_len = 7;
+  const float a_re[7]      = { -0.037749783581601f, -0.069256807147465f, -1.443799477299919f,  2.473967088799056f,
+                                0.551482327389238f, -0.224119735833791f, -0.011665324660691f };
+  const float a_im[7]      = {  0.0f,                0.213150535195075f, -1.048981722170302f, -1.797442302898130f,
+                                1.697288080048948f,  0.0f,                0.035902177664014f };
+
+// TODO these are algorithm parameter and should be moved to the initialized function -> problem with memory allocation to be solved
+const int Fs                     = 8000; // sampling rate of 8 kHz
+const int energy_window_len      = static_cast<int> ( round ( 2e-3f * Fs ) ); // scan time (e.g. 2 ms)
+const int decay_len              = round ( 0.2f * Fs ); // decay time (e.g. 200 ms)
+const int energy_window_len_half = energy_window_len / 2;
+
+  float* hil_hist;
+  float* mov_av_hist_re;
+  float* mov_av_hist_im;
+  int    mask_time;
+  int    mask_back_cnt;
+  float  threshold;
+  bool   was_above_threshold;
+  float  prev_hil_filt_val;
+  float  prev_hil_filt_new_val;
+  float  decay_att;
+  float* decay;
+  int    decay_back_cnt;
+  float  decay_scaling;
+  float  alpha;
+  float  hil_low_re;
+  float  hil_low_im;
+  float* hil_hist_re;
+  float* hil_hist_im;
+  float* hil_low_hist_re;
+  float* hil_low_hist_im;
 };
