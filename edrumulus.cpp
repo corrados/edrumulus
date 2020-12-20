@@ -27,14 +27,14 @@
 Edrumulus::Edrumulus()
 {
   // allocate memory for the vectors
-  hil_hist        = new float[hil_filt_len];           // memory for Hilbert filter history
-  mov_av_hist_re  = new float[energy_window_len];      // real part memory for moving average filter history
-  mov_av_hist_im  = new float[energy_window_len];      // imaginary part memory for moving average filter history
-  decay           = new float[decay_len];              // memory for decay function
-  hil_hist_re     = new float[energy_window_len_half]; // real part of memory for moving average of Hilbert filtered signal
-  hil_hist_im     = new float[energy_window_len_half]; // imaginary part of memory for moving average of Hilbert filtered signal
-  hil_low_hist_re = new float[energy_window_len_half]; // real part of memory for moving average of low-pass filtered Hilbert signal
-  hil_low_hist_im = new float[energy_window_len_half]; // imaginary part of memory for moving average of low-pass filtered Hilbert signal
+  hil_hist        = new float[hil_filt_len];      // memory for Hilbert filter history
+  mov_av_hist_re  = new float[energy_window_len]; // real part memory for moving average filter history
+  mov_av_hist_im  = new float[energy_window_len]; // imaginary part memory for moving average filter history
+  decay           = new float[decay_len];         // memory for decay function
+  hil_hist_re     = new float[energy_window_len]; // real part of memory for moving average of Hilbert filtered signal
+  hil_hist_im     = new float[energy_window_len]; // imaginary part of memory for moving average of Hilbert filtered signal
+  hil_low_hist_re = new float[energy_window_len]; // real part of memory for moving average of low-pass filtered Hilbert signal
+  hil_low_hist_im = new float[energy_window_len]; // imaginary part of memory for moving average of low-pass filtered Hilbert signal
 
   initialize();
 }
@@ -61,7 +61,7 @@ void Edrumulus::initialize()
     mov_av_hist_im[i] = 0.0f;
   }
 
-  for ( int i = 0; i < energy_window_len_half; i++ )
+  for ( int i = 0; i < energy_window_len; i++ )
   {
     hil_hist_re[i]     = 0.0f;
     hil_hist_im[i]     = 0.0f;
@@ -75,6 +75,7 @@ void Edrumulus::initialize()
   prev_hil_filt_new_val = 0.0f;
   decay_back_cnt        = 0;
   decay_scaling         = 1.0f;
+  pos_sense_cnt         = 0;
   hil_low_re            = 0.0f;
   hil_low_im            = 0.0f;
 
@@ -199,36 +200,54 @@ midi_velocity = max ( 1, min ( 127, midi_velocity ) );
   hil_low_re = ( 1.0f - alpha ) * hil_low_re + alpha * hil_re;
   hil_low_im = ( 1.0f - alpha ) * hil_low_im + alpha * hil_im;
 
-  for ( int i = 0; i < energy_window_len_half - 1; i++ )
+  for ( int i = 0; i < energy_window_len - 1; i++ )
   {
     hil_hist_re[i]     = hil_hist_re[i + 1];
     hil_hist_im[i]     = hil_hist_im[i + 1];
     hil_low_hist_re[i] = hil_low_hist_re[i + 1];
     hil_low_hist_im[i] = hil_low_hist_im[i + 1];
   }
-  hil_hist_re[energy_window_len_half - 1]     = hil_re;
-  hil_hist_im[energy_window_len_half - 1]     = hil_im;
-  hil_low_hist_re[energy_window_len_half - 1] = hil_low_re;
-  hil_low_hist_im[energy_window_len_half - 1] = hil_low_im;
+  hil_hist_re[energy_window_len - 1]     = hil_re;
+  hil_hist_im[energy_window_len - 1]     = hil_im;
+  hil_low_hist_re[energy_window_len - 1] = hil_low_re;
+  hil_low_hist_im[energy_window_len - 1] = hil_low_im;
 
-  if ( peak_found )
+  if ( peak_found || ( pos_sense_cnt > 0 ) )
   {
-// note that the following code is not exactly what the reference code does: we
-// do not move the window half the window size to the right
-    float peak_energy     = 0;
-    float peak_energy_low = 0;
-    for ( int i = 0; i < energy_window_len_half; i++ )
+    if ( peak_found && ( pos_sense_cnt == 0 ) )
     {
-      peak_energy     += ( hil_hist_re[i] * hil_hist_re[i] + hil_hist_im[i] * hil_hist_im[i] );
-      peak_energy_low += ( hil_low_hist_re[i] * hil_low_hist_re[i] + hil_low_hist_im[i] * hil_low_hist_im[i] );
+      // a peak was found, we now have to start the delay process to fill up the
+      // required buffer length for our metric
+      pos_sense_cnt        = energy_window_len / 2 + 1; // "+ 1" because we stop if the count is at 1
+      peak_found           = false; // will be set after delay process is done
+      stored_midi_velocity = midi_velocity;
     }
+    else if ( pos_sense_cnt == 1 )
+    {
+      // the buffers are filled, now calculate the metric
+      float peak_energy     = 0;
+      float peak_energy_low = 0;
+      for ( int i = 0; i < energy_window_len; i++ )
+      {
+        peak_energy     += ( hil_hist_re[i] * hil_hist_re[i] + hil_hist_im[i] * hil_hist_im[i] );
+        peak_energy_low += ( hil_low_hist_re[i] * hil_low_hist_re[i] + hil_low_hist_im[i] * hil_low_hist_im[i] );
+      }
 
-    const float pos_sense_metric = peak_energy / peak_energy_low;
+      const float pos_sense_metric = peak_energy / peak_energy_low;
+      pos_sense_cnt                = 0;
+      peak_found                   = true;
+      midi_velocity                = stored_midi_velocity;
 
 // TEST
-midi_pos = ( 10 * log10 ( pos_sense_metric ) / 8 - 2.1 ) * 127;
+midi_pos = static_cast<int> ( ( 10 * log10 ( pos_sense_metric ) / 8 - 2.1 ) * 127 );
 midi_pos = max ( 1, min ( 127, midi_pos ) );
 
+    }
+    else
+    {
+      // we still need to wait for the buffers to fill up
+      pos_sense_cnt--;
+    }
   }
 
 // TEST

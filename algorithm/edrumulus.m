@@ -156,7 +156,6 @@ global a_im;
 global hil_filt_len;
 global hil_hist;
 global energy_window_len;
-global energy_window_len_half;
 global mov_av_hist_re;
 global mov_av_hist_im;
 global mask_time;
@@ -177,6 +176,7 @@ global hil_hist_re;
 global hil_hist_im;
 global hil_low_hist_re;
 global hil_low_hist_im;
+global pos_sense_cnt;
 
 Fs           = 8000;
 hil_filt_len = 7;
@@ -203,11 +203,11 @@ decay_scaling          = 1;
 alpha                  = 0.025 * 8e3 / Fs;
 hil_low_re             = 0;
 hil_low_im             = 0;
-energy_window_len_half = energy_window_len / 2; % scan time (e.g. 2 ms)
-hil_hist_re            = zeros(energy_window_len_half, 1);
-hil_hist_im            = zeros(energy_window_len_half, 1);
-hil_low_hist_re        = zeros(energy_window_len_half, 1);
-hil_low_hist_im        = zeros(energy_window_len_half, 1);
+pos_sense_cnt          = 0;
+hil_hist_re            = zeros(energy_window_len, 1);
+hil_hist_im            = zeros(energy_window_len, 1);
+hil_low_hist_re        = zeros(energy_window_len, 1);
+hil_low_hist_im        = zeros(energy_window_len, 1);
 
 end
 
@@ -224,7 +224,6 @@ global a_im;
 global hil_filt_len;
 global hil_hist;
 global energy_window_len;
-global energy_window_len_half;
 global mov_av_hist_re;
 global mov_av_hist_im;
 global mask_time;
@@ -245,6 +244,7 @@ global hil_hist_re;
 global hil_hist_im;
 global hil_low_hist_re;
 global hil_low_hist_im;
+global pos_sense_cnt;
 
 % initialize return parameter
 peak_found       = false;
@@ -337,24 +337,41 @@ hil_filt_new_debug = hil_filt_new; % just for debugging
 hil_low_re = (1 - alpha) * hil_low_re + alpha * hil_re;
 hil_low_im = (1 - alpha) * hil_low_im + alpha * hil_im;
 
-hil_hist_re(1:energy_window_len_half - 1) = hil_hist_re(2:energy_window_len_half);
-hil_hist_re(energy_window_len_half)       = hil_re;
-hil_hist_im(1:energy_window_len_half - 1) = hil_hist_im(2:energy_window_len_half);
-hil_hist_im(energy_window_len_half)       = hil_im;
+hil_hist_re(1:energy_window_len - 1) = hil_hist_re(2:energy_window_len);
+hil_hist_re(energy_window_len)       = hil_re;
+hil_hist_im(1:energy_window_len - 1) = hil_hist_im(2:energy_window_len);
+hil_hist_im(energy_window_len)       = hil_im;
 
-hil_low_hist_re(1:energy_window_len_half - 1) = hil_low_hist_re(2:energy_window_len_half);
-hil_low_hist_re(energy_window_len_half)       = hil_low_re;
-hil_low_hist_im(1:energy_window_len_half - 1) = hil_low_hist_im(2:energy_window_len_half);
-hil_low_hist_im(energy_window_len_half)       = hil_low_im;
+hil_low_hist_re(1:energy_window_len - 1) = hil_low_hist_re(2:energy_window_len);
+hil_low_hist_re(energy_window_len)       = hil_low_re;
+hil_low_hist_im(1:energy_window_len - 1) = hil_low_hist_im(2:energy_window_len);
+hil_low_hist_im(energy_window_len)       = hil_low_im;
 
-if peak_found
+if peak_found || (pos_sense_cnt > 0)
 
-% note that the following code is not exactly what the reference code does: we
-% do not move the window half the window size to the right
-  peak_energy     = sum(hil_hist_re .* hil_hist_re + hil_hist_im .* hil_hist_im);
-  peak_energy_low = sum(hil_low_hist_re .* hil_low_hist_re + hil_low_hist_im .* hil_low_hist_im);
+  if peak_found && (pos_sense_cnt == 0)
 
-  pos_sense_metric = peak_energy / peak_energy_low;
+    % a peak was found, we now have to start the delay process to fill up the
+    % required buffer length for our metric
+    pos_sense_cnt = energy_window_len / 2 + 1; % "+ 1" because we stop if the count is at 1
+    peak_found    = false; % will be set after delay process is done
+
+  elseif pos_sense_cnt == 1
+
+    % the buffers are filled, now calculate the metric
+    peak_energy     = sum(hil_hist_re .* hil_hist_re + hil_hist_im .* hil_hist_im);
+    peak_energy_low = sum(hil_low_hist_re .* hil_low_hist_re + hil_low_hist_im .* hil_low_hist_im);
+
+    pos_sense_metric = peak_energy / peak_energy_low;
+    pos_sense_cnt    = 0;
+    peak_found       = true;
+
+  else
+
+    % we still need to wait for the buffers to fill up
+    pos_sense_cnt = pos_sense_cnt - 1;
+
+  end
 
 end
 

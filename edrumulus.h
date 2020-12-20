@@ -49,10 +49,9 @@ protected:
                                 1.697288080048948f,  0.0f,                0.035902177664014f };
 
 // TODO these are algorithm parameter and should be moved to the initialized function -> problem with memory allocation to be solved
-const int Fs                     = 8000; // sampling rate of 8 kHz
-const int energy_window_len      = static_cast<int> ( round ( 2e-3f * Fs ) ); // scan time (e.g. 2 ms)
-const int decay_len              = round ( 0.2f * Fs ); // decay time (e.g. 200 ms)
-const int energy_window_len_half = energy_window_len / 2;
+const int Fs                = 8000; // sampling rate of 8 kHz
+const int energy_window_len = static_cast<int> ( round ( 2e-3f * Fs ) ); // scan time (e.g. 2 ms)
+const int decay_len         = round ( 0.2f * Fs ); // decay time (e.g. 200 ms)
 
   float* hil_hist;
   float* mov_av_hist_re;
@@ -68,6 +67,8 @@ const int energy_window_len_half = energy_window_len / 2;
   int    decay_back_cnt;
   float  decay_scaling;
   float  alpha;
+  int    pos_sense_cnt;
+  int    stored_midi_velocity;
   float  hil_low_re;
   float  hil_low_im;
   float* hil_hist_re;
