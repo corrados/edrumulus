@@ -26,6 +26,8 @@
 
 function edrumulus(x)
 
+global energy_window_len;
+
 close all
 
 % load test data
@@ -55,9 +57,14 @@ for i = 1:length(x)
 
 end
 
+% note that caused by the positional sensing algorithm the peak detection is delayed
+peak_found_idx                       = find(peak_found) - energy_window_len / 2;
+peak_found_corrected                 = false(size(peak_found));
+peak_found_corrected(peak_found_idx) = true;
+
 figure; plot(20 * log10(abs([hil_filt_debug, hil_filt_new_debug, cur_decay_debug]))); hold on;
-        plot(find(peak_found), 20 * log10(hil_filt_debug(peak_found)), 'g*');
-        plot(find(peak_found), 10 * log10(pos_sense_metric(peak_found)) - 40, 'k*');
+        plot(find(peak_found_corrected), 20 * log10(hil_filt_debug(peak_found_corrected)), 'g*');
+        plot(find(peak_found_corrected), 10 * log10(pos_sense_metric(peak_found)) - 40, 'k*');
         ylim([-100, 0]);
 % figure; plot(20 * log10(abs([x, hil_debug, hil_filt_debug])));
 
@@ -353,7 +360,7 @@ if peak_found || (pos_sense_cnt > 0)
 
     % a peak was found, we now have to start the delay process to fill up the
     % required buffer length for our metric
-    pos_sense_cnt = energy_window_len / 2 + 1; % "+ 1" because we stop if the count is at 1
+    pos_sense_cnt = energy_window_len / 2 - 2;
     peak_found    = false; % will be set after delay process is done
 
   elseif pos_sense_cnt == 1

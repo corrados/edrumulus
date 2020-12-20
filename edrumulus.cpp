@@ -218,7 +218,7 @@ midi_velocity = max ( 1, min ( 127, midi_velocity ) );
     {
       // a peak was found, we now have to start the delay process to fill up the
       // required buffer length for our metric
-      pos_sense_cnt        = energy_window_len / 2 + 1; // "+ 1" because we stop if the count is at 1
+      pos_sense_cnt        = energy_window_len / 2 - 2;
       peak_found           = false; // will be set after delay process is done
       stored_midi_velocity = midi_velocity;
     }
@@ -239,7 +239,7 @@ midi_velocity = max ( 1, min ( 127, midi_velocity ) );
       midi_velocity                = stored_midi_velocity;
 
 // TEST
-midi_pos = static_cast<int> ( ( 10 * log10 ( pos_sense_metric ) / 8 - 2.1 ) * 127 );
+midi_pos = static_cast<int> ( ( 10 * log10 ( pos_sense_metric ) / 4 ) * 127 - 510 );
 midi_pos = max ( 1, min ( 127, midi_pos ) );
 
     }

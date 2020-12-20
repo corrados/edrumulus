@@ -251,10 +251,10 @@ drawnow;
 % velocity/positional sensing mapping and play MIDI notes
 velocity            = (20 * log10(hil_filt(all_peaks)) / 33 + 1.9) * 127;
 velocity_clipped    = max(1, min(127, velocity));
-pos_sensing         = (pos_sense_metric / 8 - 2.1) * 127;
+pos_sensing         = (pos_sense_metric / 4) * 127 - 510;
 pos_sensing_clipped = max(1, min(127, pos_sensing));
 % play_midi(all_peaks, velocity_clipped, pos_sensing_clipped);
-% figure; subplot(2, 1, 1), plot(velocity); title('velocity'); subplot(2, 1, 2), plot(pos_sensing); title('pos');
+figure; subplot(2, 1, 1), plot(velocity); title('velocity'); subplot(2, 1, 2), plot(pos_sensing); title('pos');
 
 end
 
