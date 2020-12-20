@@ -1,15 +1,45 @@
+/******************************************************************************\
+ * Copyright (c) 2020-2020
+ *
+ * Author(s):
+ *  Volker Fischer
+ *
+ ******************************************************************************
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ *
+\******************************************************************************/
 
 #define USE_MIDI
+
+#include "edrumulus.h"
 
 #ifdef USE_MIDI
 #include <MIDI.h>
 MIDI_CREATE_DEFAULT_INSTANCE();
 #endif
 
-const int        analog_pin      = 34;
-const int        LED_builtin_pin = 2;
-int              LED_counter     = 0;
-const int        LED_on_time     = 2000; // samples
+const int        analog_pin        = 34; // TODO this must be configurable
+const int        LED_builtin_pin   = 2;  // TODO this must be configurable
+int              LED_counter       = 0;
+const int        LED_on_time       = 2000; // samples
+const int        dc_offset_est_len = 5000; // samples
+float            dc_offset         = 0.0f;
+Edrumulus        edrumulus;
+
+// for debugging and testing
 volatile int     iCnt = 0;
 //volatile int   outCnt = 0;
 const int        iNumSamples = 1500;
@@ -17,40 +47,6 @@ volatile float   values[iNumSamples];
 //volatile bool  sending = false;
 //hw_timer_t*    timer = NULL;
 //portMUX_TYPE   timerMux = portMUX_INITIALIZER_UNLOCKED;
-
-
-const int   Fs           = 8000;
-const int   hil_filt_len = 7;
-float       hil_hist[hil_filt_len]; // memory allocation for hilbert filter history
-const float a_re[7] = { -0.037749783581601f, -0.069256807147465f, -1.443799477299919f,  2.473967088799056f,
-                         0.551482327389238f, -0.224119735833791f, -0.011665324660691f };
-const float a_im[7] = {  0.0f,                0.213150535195075f, -1.048981722170302f, -1.797442302898130f,
-                         1.697288080048948f,  0.0f,                0.035902177664014f };
-const int   energy_window_len = static_cast<int> ( round ( 2e-3f * Fs ) ); // scan time (e.g. 2 ms)
-float       mov_av_hist_re[energy_window_len]; // real part memory for moving average filter history
-float       mov_av_hist_im[energy_window_len]; // imaginary part memory for moving average filter history
-const int   mask_time              = round ( 10e-3f * Fs ); // mask time (e.g. 10 ms)
-int         mask_back_cnt          = 0;
-const float threshold              = pow ( 10.0f, -64.0f / 20 ); // -64 dB threshold
-bool        was_above_threshold    = false;
-float       prev_hil_filt_val      = 0.0f;
-float       prev_hil_filt_new_val  = 0.0f;
-const float decay_att              = pow ( 10.0f, -1.0f / 20 ); // decay attenuation of 1 dB
-const int   decay_len              = round ( 0.2f * Fs ); // decay time (e.g. 200 ms)
-const float decay_grad             = 200.0f / Fs; // decay gradient factor
-float       decay[decay_len]; // note that the decay is calculated in the setup() function
-int         decay_back_cnt         = 0;
-float       decay_scaling          = 1.0f;
-const float alpha                  = 0.025f * 8e3f / Fs;
-float       hil_low_re             = 0.0f;
-float       hil_low_im            = 0.0f;
-const int   energy_window_len_half = energy_window_len / 2;
-float       hil_hist_re[energy_window_len_half];
-float       hil_hist_im[energy_window_len_half];
-float       hil_low_hist_re[energy_window_len_half];
-float       hil_low_hist_im[energy_window_len_half];
-const int   dc_offset_est_len      = 5000; // samples
-float       dc_offset              = 0.0f;
 
 /*
 void onTimer()
@@ -88,12 +84,6 @@ void setup()
   Serial.begin ( 115200 );
 #endif
 
-  // calculate the decay curve
-  for ( int i = 0; i < decay_len; i++ )
-  {
-    decay[i] = pow ( 10.0f, -i / 20.0f * decay_grad );
-  }
-
   // estimate the DC offset
   float dc_offset_sum = 0.0f;
 
@@ -108,7 +98,6 @@ void setup()
   // configure built-in LED
   pinMode ( LED_builtin_pin, OUTPUT );
 
-
 /*
   timer = timerBegin   ( 0, 80, true );
   timerAttachInterrupt ( timer, &onTimer, true );
@@ -121,48 +110,55 @@ int iHitCnt = 0;
 
 void loop()
 {
+  bool  peak_found;
+  int   midi_velocity, midi_pos;
+  float debug;
+
+  // get sample from ADC
+  int sample_org = analogRead ( analog_pin );
+
+  // prepare sample for processing
+  float sample = sample_org - dc_offset; // compensate DC offset
+  sample      /= 30000;                  // scaling
+
+  // process sample and create MIDI message if a hit was detected
+  edrumulus.process_sample ( sample, peak_found, midi_velocity, midi_pos, debug );
+
+  if ( peak_found )
+  {
+#ifdef USE_MIDI
+    MIDI.sendControlChange ( 16, midi_pos,      10 ); // positional sensing
+    MIDI.sendNoteOn        ( 38, midi_velocity, 10 ); // (note, velocity, channel)
+    MIDI.sendNoteOff       ( 38, 0,             10 );
+#else
+    Serial.println ( debug, 7 );
+#endif
+  }
+
+  // overload detection
+  if ( ( sample_org >= 4095 ) || ( sample_org <= 1 ) )
+  {
+    LED_counter = LED_on_time;
+    digitalWrite ( LED_builtin_pin, HIGH );
+  }
+
+  if ( LED_counter > 1 )
+  {
+    LED_counter--;
+  }
+  else if ( LED_counter == 1 ) // transition to off state
+  {
+    digitalWrite ( LED_builtin_pin, LOW );  
+    LED_counter = 0; // idle state
+  }
 
 
-int sample_org = analogRead ( analog_pin );
-float sample = sample_org - dc_offset; // compensate DC offset
-sample /= 30000; // scaling
-bool  peak_found;
-int   midi_velocity;
-int   midi_pos;
-float debug;
-process_sample ( sample, peak_found, midi_velocity, midi_pos, debug );
+
+// TEST
 values[iCnt++] = micros();//sample;//processed_sample;//
 
 // measurement: Hilbert+moving average: about 54 kHz sampling rate possible
 delayMicroseconds ( 107 ); // to get from 56 kHz to 8 kHz sampling rate
-
-if ( peak_found )
-{
-#ifdef USE_MIDI
-    MIDI.sendControlChange ( 16, midi_pos, 10 ); // positional sensing
-    MIDI.sendNoteOn ( 38, midi_velocity, 10 ); // (note, velocity, channel)
-    MIDI.sendNoteOff ( 38, 0, 10 );
-#else
-    Serial.println ( dc_offset );
-#endif
-}
-
-// overload detection
-if ( ( sample_org >= 4095 ) || ( sample_org <= 1 ) )
-{
-  LED_counter = LED_on_time;
-  digitalWrite ( LED_builtin_pin, HIGH );
-}
-
-if ( LED_counter > 1 )
-{
-  LED_counter--;
-}
-else if ( LED_counter == 1 ) // transition to off state
-{
-  digitalWrite ( LED_builtin_pin, LOW );  
-  LED_counter = 0; // idle state
-}
 
 /*
 if ( peak_found )
@@ -175,8 +171,6 @@ if ( peak_found )
   Serial.println ( iHitCnt++ );
 }
 */
-
-
 /*
   if ( Serial.available() > 0 )
   {
@@ -187,7 +181,6 @@ if ( peak_found )
     Serial.println ( debug, 7 );
   }
 */
-
 /*
 if ( iCnt >= iNumSamples )
 {
@@ -199,10 +192,7 @@ if ( iCnt >= iNumSamples )
   iCnt = 0;
 }
 */
-
-
 //Serial.println ( iHitCnt++ ); //processed_sample );
-
 /*
   if ( iCnt >= iNumSamples )
   {
@@ -223,156 +213,4 @@ if ( iCnt >= iNumSamples )
     portEXIT_CRITICAL(&timerMux);
   }
 */
-}
-
-void process_sample ( const float fIn,
-                      bool&       peak_found,
-                      int&        midi_velocity,
-                      int&        midi_pos,
-                      float&      debug )
-{
-  // initialize return parameter
-  peak_found       = false;
-  midi_velocity    = 0;
-  midi_pos         = 0;
-
-debug = 0.0f; // TEST
-
-
-  // Calculate peak detection -----------------------------------------------------
-  // hilbert filter
-  for ( int i = 0; i < hil_filt_len - 1; i++ )
-  {
-    hil_hist[i] = hil_hist[i + 1];
-  }
-  hil_hist[hil_filt_len - 1] = fIn;
-
-  float hil_re = 0;
-  float hil_im = 0;
-  for ( int i = 0; i < hil_filt_len; i++ )
-  {
-    hil_re += hil_hist[i] * a_re[i];
-    hil_im += hil_hist[i] * a_im[i];
-  }
-
-  // moving average filter
-  for ( int i = 0; i < energy_window_len - 1; i++ )
-  {
-    mov_av_hist_re[i] = mov_av_hist_re[i + 1];
-    mov_av_hist_im[i] = mov_av_hist_im[i + 1];
-  }
-  mov_av_hist_re[energy_window_len - 1] = hil_re;
-  mov_av_hist_im[energy_window_len - 1] = hil_im;
-
-  float mov_av_re = 0;
-  float mov_av_im = 0;
-  for ( int i = 0; i < energy_window_len; i++ )
-  {
-    mov_av_re += mov_av_hist_re[i];
-    mov_av_im += mov_av_hist_im[i];
-  }
-  mov_av_re /= energy_window_len;
-  mov_av_im /= energy_window_len;
-
-  const float hil_filt = sqrt ( mov_av_re * mov_av_re + mov_av_im * mov_av_im );
-
-
-  // exponential decay assumption (note that we must not use hil_filt_org since a
-  // previous peak might not be faded out and the peak detection works on hil_filt)
-  // subtract decay (with clipping at zero)
-  float hil_filt_new = hil_filt;
-
-  if ( decay_back_cnt > 0 )
-  {
-    const float cur_decay = decay_scaling * decay[decay_len - decay_back_cnt];
-
-// debug = cur_decay; // TEST
-
-    hil_filt_new          = hil_filt - cur_decay;
-    decay_back_cnt--;
-
-    if ( hil_filt_new < 0.0f )
-    {
-      hil_filt_new = 0.0f;
-    }
-  }
-
-
-  // threshold test
-  if ( ( ( hil_filt_new > threshold ) || was_above_threshold ) && ( mask_back_cnt == 0 ) )
-  {
-    was_above_threshold = true;
-
-    // climb to the maximum of the current peak
-    if ( prev_hil_filt_new_val < hil_filt_new )
-    {
-      prev_hil_filt_new_val = hil_filt_new;
-      prev_hil_filt_val     = hil_filt; // needed for further processing
-    }
-    else
-    {
-      // maximum found
-      prev_hil_filt_new_val = 0.0f;
-      was_above_threshold   = false;
-      decay_back_cnt        = decay_len;
-      decay_scaling         = prev_hil_filt_val * decay_att;
-      mask_back_cnt         = mask_time;
-      peak_found            = true;
-
-// TEST
-// velocity/positional sensing mapping and play MIDI notes
-midi_velocity = static_cast<int> ( ( 20 * log10 ( prev_hil_filt_val ) / 33 + 1.9f ) * 127 );
-midi_velocity = max ( 1, min ( 127, midi_velocity ) );
-
-    }
-  }
-
-  if ( mask_back_cnt > 0 )
-  {
-    mask_back_cnt--;
-  }
-
-
-  // Calculate positional sensing -------------------------------------------------
-  // low pass filter of the Hilbert signal
-  hil_low_re = ( 1.0f - alpha ) * hil_low_re + alpha * hil_re;
-  hil_low_im = ( 1.0f - alpha ) * hil_low_im + alpha * hil_im;
-
-  for ( int i = 0; i < energy_window_len_half - 1; i++ )
-  {
-    hil_hist_re[i]     = hil_hist_re[i + 1];
-    hil_hist_im[i]     = hil_hist_im[i + 1];
-    hil_low_hist_re[i] = hil_low_hist_re[i + 1];
-    hil_low_hist_im[i] = hil_low_hist_im[i + 1];
-  }
-  hil_hist_re[energy_window_len_half - 1]     = hil_re;
-  hil_hist_im[energy_window_len_half - 1]     = hil_im;
-  hil_low_hist_re[energy_window_len_half - 1] = hil_low_re;
-  hil_low_hist_im[energy_window_len_half - 1] = hil_low_im;
-
-  if ( peak_found )
-  {
-// note that the following code is not exactly what the reference code does: we
-// do not move the window half the window size to the right
-    float peak_energy     = 0;
-    float peak_energy_low = 0;
-    for ( int i = 0; i < energy_window_len_half; i++ )
-    {
-      peak_energy     += ( hil_hist_re[i] * hil_hist_re[i] + hil_hist_im[i] * hil_hist_im[i] );
-      peak_energy_low += ( hil_low_hist_re[i] * hil_low_hist_re[i] + hil_low_hist_im[i] * hil_low_hist_im[i] );
-    }
-
-    const float pos_sense_metric = peak_energy / peak_energy_low;
-
-// TEST
-midi_pos = ( 10 * log10 ( pos_sense_metric ) / 8 - 2.1 ) * 127;
-midi_pos = max ( 1, min ( 127, midi_pos ) );
-
-  }
-
-
-// TEST
-debug = hil_filt_new;
-//debug = peak_found;
-
 }
