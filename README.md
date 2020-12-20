@@ -17,10 +17,13 @@ Open Source E-Drum Trigger Module Software
 - One goal would be to use a ESP32 microprocessor, similar to the [open e-drums](https://open-e-drums.com) project.
   It has shown that the ESP32 is powerful enough to fulfill the task of a drum trigger module.
 
-  As an alternative a Raspberry Pi Zero could be used as a trigger module. It gets a sampled
-  audio signal from the GIOP (some external hardware needed) and processes it using a C++
-  software. It outputs a MIDI signal. Since the Raspberry Pi Zero has only a slow processor,
-  it will not be possible to include the complete drum module.
+  Many open drum trigger implementations only use one half of the signal (i.e., only the positive
+  wave) or use a bridge rectifier to capture the analog signal. Since we want to implement more
+  sophisticated algorithms, we want to capture the entire signal without non-linear analog
+  preprocessing. Since microcontrollers usually only convert analog signals in the range of 0 to 3.3 V,
+  we have to move the point of operation in the middle of the voltage range by using two equal resistors
+  in series connection (one connected to the ground and one to the 3.3 V) and a capacitor to feed
+  the piezo signal into the ADC of the microcontroller.
 
 
 ## Project log
