@@ -28,6 +28,9 @@ Open Source E-Drum Trigger Module Software
 
 ## Project log
 
+- (12/20/2020) The positional sensing algorithm is now also ported to the ESP32 micro controller. I have made a
+  new Youtube video using the current implementation (Git commit c796369): https://youtu.be/naP-ODXl9Y0
+
 - (12/18/2020) I have ported the Octave peak detection code to the ESP32 developer board (no positional sensing
   yet) and connected it via my PC and Hairless MIDI to my Roland TD-20 module so that the snare sound was
   coming out of the TD-20. This time I could test the performance in real-time. The parameters were not yet
