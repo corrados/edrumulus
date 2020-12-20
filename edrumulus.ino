@@ -153,12 +153,21 @@ void loop()
   }
 
 
-
-// TEST
-values[iCnt++] = micros();//sample;//processed_sample;//
-
 // measurement: Hilbert+moving average: about 54 kHz sampling rate possible
-delayMicroseconds ( 107 ); // to get from 56 kHz to 8 kHz sampling rate
+delayMicroseconds ( 103 ); // to get from 56 kHz to 8 kHz sampling rate
+
+/*
+// For debugging: measure the sampling rate and optionally output it to the serial interface
+static int           prev_micros_cnt = 0;
+static unsigned long prev_micros     = micros();
+if ( prev_micros_cnt >= 10000 )
+{
+  Serial.println ( 1.0f / ( micros() - prev_micros ) * 1e6f, 7 );
+  prev_micros_cnt = 0;
+  prev_micros     = micros();
+}
+prev_micros_cnt++;
+*/
 
 /*
 if ( peak_found )
