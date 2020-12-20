@@ -1,40 +1,46 @@
-# Drum triggering algorithms
+# Drum triggering algorithm
 
-## Brainstorming
+The taks to convert a hit on the drum pad with the stick to a MIDI signal consists of mulitple stages.
+The first stage is the detection of the position in time of the stick hit. This we call the
+__peak detection__. Then we __estimate the velocity of the hit__ using the detected peak. The next
+step is to estimate the position of the stick hit on the pad (i.e. if the hit was in the center or
+at the edge of the pad). This is called __positional sensing__. Another step is to use the information
+of a second piezo sensor to detect if we have a rim shot which leads to a __rim shot detection__. In
+this step we can also detect if we have a cross stick situation.
 
-### Peak detection
+## Peak detection
 
-  - If you calculate the power of the recorded real-valued audio signal, the resulting power curve has
-    significant power drops caused by the nature of a sinusoidal signal. A filtering can smooth the
-    curve. As a test I have used an Hilbert transform to convert the real-valued signal in a complex
-    signal. As a result, the magnitude of that complex signal is much smoother already without having
-    modified the actual spectrum of the signal (real-valued signals have mirror symmetric spectrum).
+- If you calculate the power of the recorded real-valued audio signal, the resulting power curve has
+  significant power drops caused by the nature of a sinusoidal signal. A filtering can smooth the
+  curve. As a test I have used an Hilbert transform to convert the real-valued signal in a complex
+  signal. As a result, the magnitude of that complex signal is much smoother already without having
+  modified the actual spectrum of the signal (real-valued signals have mirror symmetric spectrum).
 
-  - To improve the peak detection, we can make use of the known decay curve of the trigger pad in use.
-    So, after successfully detecting a peak, we know that this peak causes a slowly decaying power
-    curve which has a known shape and we can subtract that known curve from the signal to improve the
-    detection of the next pad hit.
-
-
-### Positional sensing
-
-  - It has shown that if you hit the pad close to the edge, the resulting sound has less low frequencies
-    and sounds more crisp. So, the idea is to low-pass filter the signal and at the detected peak position we
-	calculate the power ratio of the low-pass filtered signal with the unfiltered signal. This is then
-	the metric for the positional sensing.
+- To improve the peak detection, we can make use of the known decay curve of the trigger pad in use.
+  So, after successfully detecting a peak, we know that this peak causes a slowly decaying power
+  curve which has a known shape and we can subtract that known curve from the signal to improve the
+  detection of the next pad hit.
 
 
-### First results
+## Positional sensing
 
-  - The following plot shows how the current status of the algorithms performs. At the beginning there are
-    some single hits. Then there follows a region with a snare drum roll. After that, there are single hits
-    which start from the middle, move to the edge and go back to the middle of the pad where the hits are
-    equally strong. As shown by the black markers, the positional sensing seems to work pretty well. Also,
-    the peak detection and velocity estimation seems to be pretty good as well.
-    ![First results plot](images/first_results.jpg)
+- It has shown that if you hit the pad close to the edge, the resulting sound has less low frequencies
+  and sounds more crisp. So, the idea is to low-pass filter the signal and at the detected peak position we
+  calculate the power ratio of the low-pass filtered signal with the unfiltered signal. This is then
+  the metric for the positional sensing.
 
 
-## Latency between pad hit and audio output of the synthesized drum sound
+# First results
+
+- The following plot shows how the current status of the algorithms performs. At the beginning there are
+  some single hits. Then there follows a region with a snare drum roll. After that, there are single hits
+  which start from the middle, move to the edge and go back to the middle of the pad where the hits are
+  equally strong. As shown by the black markers, the positional sensing seems to work pretty well. Also,
+  the peak detection and velocity estimation seems to be pretty good as well.
+  ![First results plot](images/first_results.jpg)
+
+
+# Latency between pad hit and audio output of the synthesized drum sound
 
 As given in our project specifications, the overall latency should be as small as possible.
 The goal is to get a latency < 10 ms. This overall latency consists of:
@@ -65,7 +71,7 @@ The synthesis and digital-to-analog conversion of the drum audio signal shall no
  roject (at least not right now). So, we can ignore this part for now.
 
 
-### Comparison of e-drum module latencies
+## Comparison of e-drum module latencies
 
 According to https://www.vdrums.com/forum/general/the-lounge/1182869-fastest-lowest-latency-drum-module-available and http://onyx3.com/EDLM, the drum modules have the following measured latencies:
 
