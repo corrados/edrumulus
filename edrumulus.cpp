@@ -37,14 +37,33 @@ Edrumulus::Edrumulus()
   hil_low_hist_im = new float[energy_window_len_half];
 
   // initialization values
-  mask_back_cnt          = 0;
-  was_above_threshold    = false;
-  prev_hil_filt_val      = 0.0f;
-  prev_hil_filt_new_val  = 0.0f;  
-  decay_back_cnt         = 0;
-  decay_scaling          = 1.0f;  
-  hil_low_re             = 0.0f;
-  hil_low_im             = 0.0f;
+  for ( int i = 0; i < hil_filt_len; i++ )
+  {
+    hil_hist[i] = 0.0f;
+  }
+
+  for ( int i = 0; i < energy_window_len; i++ )
+  {
+    mov_av_hist_re[i] = 0.0f;
+    mov_av_hist_im[i] = 0.0f;
+  }
+
+  for ( int i = 0; i < energy_window_len_half; i++ )
+  {
+    hil_hist_re[i]     = 0.0f;
+    hil_hist_im[i]     = 0.0f;
+    hil_low_hist_re[i] = 0.0f;
+    hil_low_hist_im[i] = 0.0f;
+  }
+
+  mask_back_cnt         = 0;
+  was_above_threshold   = false;
+  prev_hil_filt_val     = 0.0f;
+  prev_hil_filt_new_val = 0.0f;
+  decay_back_cnt        = 0;
+  decay_scaling         = 1.0f;
+  hil_low_re            = 0.0f;
+  hil_low_im            = 0.0f;
 
   // calculate the decay curve
   for ( int i = 0; i < decay_len; i++ )
@@ -61,9 +80,9 @@ void Edrumulus::process_sample ( const float fIn,
                                  float&      debug )
 {
   // initialize return parameter
-  peak_found       = false;
-  midi_velocity    = 0;
-  midi_pos         = 0;
+  peak_found    = false;
+  midi_velocity = 0;
+  midi_pos      = 0;
 
 debug = 0.0f; // TEST
 
