@@ -67,8 +67,8 @@ The transmission delay of the MIDI signal depends on the channel. If we use the 
 over USB to transmit the MIDI signal, the delay should be negligible. But if we, e.g., use the bluetooth
 of an ESP32 to transmit the MIDI signal, significant delay (about 10 ms) is introduced by this.
 
-The synthesis and digital-to-analog conversion of the drum audio signal shall not be covert by this
- roject (at least not right now). So, we can ignore this part for now.
+The synthesis and digital-to-analog conversion of the drum audio signal shall not be covered by this
+project (at least not right now). So, we can ignore this part for now.
 
 
 ## Comparison of e-drum module latencies
