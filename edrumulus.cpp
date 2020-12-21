@@ -146,9 +146,6 @@ debug = 0.0f; // TEST
   if ( decay_back_cnt > 0 )
   {
     const float cur_decay = decay_scaling * decay[decay_len - decay_back_cnt];
-
-// debug = cur_decay; // TEST
-
     hil_filt_new          = hil_filt - cur_decay;
     decay_back_cnt--;
 
