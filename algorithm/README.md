@@ -1,6 +1,6 @@
 # Drum triggering algorithm
 
-The taks to convert a hit on the drum pad with the stick to a MIDI signal consists of mulitple stages.
+The task to convert a hit on the drum pad with the stick to a MIDI signal consists of mulitple stages.
 The first stage is the detection of the position in time of the stick hit. This we call the
 __peak detection__. Then we __estimate the velocity of the hit__ using the detected peak. The next
 step is to estimate the position of the stick hit on the pad (i.e. if the hit was in the center or
