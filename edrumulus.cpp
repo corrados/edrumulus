@@ -91,14 +91,14 @@ void Edrumulus::initialize()
   overload_LED_on_time   = round ( 0.25f * Fs );         // minimum overload LED on time (e.g., 250 ms)
 
   // allocate memory for vectors
-  if ( hil_hist        == nullptr ) delete[] hil_hist;
-  if ( mov_av_hist_re  == nullptr ) delete[] mov_av_hist_re;
-  if ( mov_av_hist_im  == nullptr ) delete[] mov_av_hist_im;
-  if ( decay           == nullptr ) delete[] decay;
-  if ( hil_hist_re     == nullptr ) delete[] hil_hist_re;
-  if ( hil_hist_im     == nullptr ) delete[] hil_hist_im;
-  if ( hil_low_hist_re == nullptr ) delete[] hil_low_hist_re;
-  if ( hil_low_hist_im == nullptr ) delete[] hil_low_hist_im;
+  if ( hil_hist        != nullptr ) delete[] hil_hist;
+  if ( mov_av_hist_re  != nullptr ) delete[] mov_av_hist_re;
+  if ( mov_av_hist_im  != nullptr ) delete[] mov_av_hist_im;
+  if ( decay           != nullptr ) delete[] decay;
+  if ( hil_hist_re     != nullptr ) delete[] hil_hist_re;
+  if ( hil_hist_im     != nullptr ) delete[] hil_hist_im;
+  if ( hil_low_hist_re != nullptr ) delete[] hil_low_hist_re;
+  if ( hil_low_hist_im != nullptr ) delete[] hil_low_hist_im;
 
   hil_hist        = new float[hil_filt_len];      // memory for Hilbert filter history
   mov_av_hist_re  = new float[energy_window_len]; // real part memory for moving average filter history
