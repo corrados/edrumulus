@@ -23,9 +23,28 @@
 
 #include "edrumulus.h"
 
-Edrumulus::Edrumulus()
+void Edrumulus::initialize()
 {
-  // allocate memory for the vectors
+  // set algorithm parameters
+  Fs                     = 8000;                       // sampling rate of 8 kHz
+  energy_window_len      = round ( 2e-3f * Fs );       // scan time (e.g. 2 ms)
+  decay_len              = round ( 0.2f * Fs );        // decay time (e.g. 200 ms)
+  mask_time              = round ( 10e-3f * Fs );      // mask time (e.g. 10 ms)
+  threshold              = pow ( 10.0f, -64.0f / 20 ); // -64 dB threshold
+  decay_att              = pow ( 10.0f, -1.0f / 20 );  // decay attenuation of 1 dB
+  const float decay_grad = 200.0f / Fs;                // decay gradient factor
+  alpha                  = 0.025f * 8e3f / Fs;         // IIR low pass filter coefficient
+
+  // allocate memory for vectors
+  if ( hil_hist        == nullptr ) delete[] hil_hist;
+  if ( mov_av_hist_re  == nullptr ) delete[] mov_av_hist_re;
+  if ( mov_av_hist_im  == nullptr ) delete[] mov_av_hist_im;
+  if ( decay           == nullptr ) delete[] decay;
+  if ( hil_hist_re     == nullptr ) delete[] hil_hist_re;
+  if ( hil_hist_im     == nullptr ) delete[] hil_hist_im;
+  if ( hil_low_hist_re == nullptr ) delete[] hil_low_hist_re;
+  if ( hil_low_hist_im == nullptr ) delete[] hil_low_hist_im;
+
   hil_hist        = new float[hil_filt_len];      // memory for Hilbert filter history
   mov_av_hist_re  = new float[energy_window_len]; // real part memory for moving average filter history
   mov_av_hist_im  = new float[energy_window_len]; // imaginary part memory for moving average filter history
@@ -34,19 +53,6 @@ Edrumulus::Edrumulus()
   hil_hist_im     = new float[energy_window_len]; // imaginary part of memory for moving average of Hilbert filtered signal
   hil_low_hist_re = new float[energy_window_len]; // real part of memory for moving average of low-pass filtered Hilbert signal
   hil_low_hist_im = new float[energy_window_len]; // imaginary part of memory for moving average of low-pass filtered Hilbert signal
-
-  initialize();
-}
-
-
-void Edrumulus::initialize()
-{
-  // set algorithm parameters
-  mask_time              = round ( 10e-3f * Fs );      // mask time (e.g. 10 ms)
-  threshold              = pow ( 10.0f, -64.0f / 20 ); // -64 dB threshold
-  decay_att              = pow ( 10.0f, -1.0f / 20 );  // decay attenuation of 1 dB
-  const float decay_grad = 200.0f / Fs;                // decay gradient factor
-  alpha                  = 0.025f * 8e3f / Fs;         // IIR low pass filter coefficient
 
   // initialization values
   for ( int i = 0; i < hil_filt_len; i++ )

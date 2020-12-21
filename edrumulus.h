@@ -28,7 +28,7 @@
 class Edrumulus
 {
 public:
-  Edrumulus();
+  Edrumulus() { initialize(); }
 
   void process_sample ( const float fIn,
                         bool&       peak_found,
@@ -47,14 +47,18 @@ protected:
   const float a_im[7]      = {  0.0f,                0.213150535195075f, -1.048981722170302f, -1.797442302898130f,
                                 1.697288080048948f,  0.0f,                0.035902177664014f };
 
-// TODO these are algorithm parameter and should be moved to the initialized function -> problem with memory allocation to be solved
-const int Fs                = 8000; // sampling rate of 8 kHz
-const int energy_window_len = static_cast<int> ( round ( 2e-3f * Fs ) ); // scan time (e.g. 2 ms)
-const int decay_len         = round ( 0.2f * Fs ); // decay time (e.g. 200 ms)
+  float* hil_hist        = nullptr;
+  float* mov_av_hist_re  = nullptr;
+  float* mov_av_hist_im  = nullptr;
+  float* decay           = nullptr;
+  float* hil_hist_re     = nullptr;
+  float* hil_hist_im     = nullptr;
+  float* hil_low_hist_re = nullptr;
+  float* hil_low_hist_im = nullptr;
 
-  float* hil_hist;
-  float* mov_av_hist_re;
-  float* mov_av_hist_im;
+  int    Fs;
+  int    energy_window_len;
+  int    decay_len;
   int    mask_time;
   int    mask_back_cnt;
   float  threshold;
@@ -62,7 +66,6 @@ const int decay_len         = round ( 0.2f * Fs ); // decay time (e.g. 200 ms)
   float  prev_hil_filt_val;
   float  prev_hil_filt_new_val;
   float  decay_att;
-  float* decay;
   int    decay_back_cnt;
   float  decay_scaling;
   float  alpha;
@@ -70,8 +73,4 @@ const int decay_len         = round ( 0.2f * Fs ); // decay time (e.g. 200 ms)
   int    stored_midi_velocity;
   float  hil_low_re;
   float  hil_low_im;
-  float* hil_hist_re;
-  float* hil_hist_im;
-  float* hil_low_hist_re;
-  float* hil_low_hist_im;
 };
