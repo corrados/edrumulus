@@ -180,7 +180,7 @@ debug = 0.0f; // TEST
       peak_found            = true;
 
 // TEST
-// velocity/positional sensing mapping and play MIDI notes
+// velocity sensing MIDI mapping
 midi_velocity = static_cast<int> ( ( 20 * log10 ( prev_hil_filt_val ) / 33 + 1.9f ) * 127 );
 midi_velocity = max ( 1, min ( 127, midi_velocity ) );
 
@@ -216,7 +216,7 @@ midi_velocity = max ( 1, min ( 127, midi_velocity ) );
     {
       // a peak was found, we now have to start the delay process to fill up the
       // required buffer length for our metric
-      pos_sense_cnt        = energy_window_len / 2 - 2;
+      pos_sense_cnt        = energy_window_len / 2 - 2; // the "- 2" is to match the reference model (which is block-based)
       peak_found           = false; // will be set after delay process is done
       stored_midi_velocity = midi_velocity;
     }
@@ -236,7 +236,7 @@ midi_velocity = max ( 1, min ( 127, midi_velocity ) );
       peak_found                   = true;
       midi_velocity                = stored_midi_velocity;
 
-// TEST
+// TEST positional sensing MIDI mapping
 midi_pos = static_cast<int> ( ( 10 * log10 ( pos_sense_metric ) / 4 ) * 127 - 510 );
 midi_pos = max ( 1, min ( 127, midi_pos ) );
 
@@ -250,6 +250,5 @@ midi_pos = max ( 1, min ( 127, midi_pos ) );
 
 // TEST
 debug = hil_low_re;
-//debug = peak_found;
 
 }
