@@ -64,10 +64,6 @@ void Edrumulus::initialize()
   {
     mov_av_hist_re[i] = 0.0f;
     mov_av_hist_im[i] = 0.0f;
-  }
-
-  for ( int i = 0; i < energy_window_len; i++ )
-  {
     hil_hist_re[i]     = 0.0f;
     hil_hist_im[i]     = 0.0f;
     hil_low_hist_re[i] = 0.0f;
