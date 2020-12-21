@@ -227,7 +227,7 @@ midi_velocity = max ( 1, min ( 127, midi_velocity ) );
       float peak_energy_low = 0;
       for ( int i = 0; i < energy_window_len; i++ )
       {
-        peak_energy     += ( hil_hist_re[i] * hil_hist_re[i] + hil_hist_im[i] * hil_hist_im[i] );
+        peak_energy     += ( hil_hist_re[i]     * hil_hist_re[i]     + hil_hist_im[i]     * hil_hist_im[i] );
         peak_energy_low += ( hil_low_hist_re[i] * hil_low_hist_re[i] + hil_low_hist_im[i] * hil_low_hist_im[i] );
       }
 
