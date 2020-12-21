@@ -23,17 +23,72 @@
 
 #include "edrumulus.h"
 
+Edrumulus* edrumulus_pointer = nullptr;
+
+
+Edrumulus::Edrumulus()
+{
+  // global pointer to this class needed for static callback function
+  edrumulus_pointer = this;
+
+  // prepare timer at a rate of 8 kHz
+  timer_semaphore = xSemaphoreCreateBinary();
+  timer           = timerBegin ( 0, 80, true );
+  timerAttachInterrupt ( timer, &on_timer, true );
+  timerAlarmWrite      ( timer, 125, true ); // here we define the sampling rate
+  timerAlarmEnable     ( timer );
+}
+
+
+void IRAM_ATTR Edrumulus::on_timer()
+{
+  // tell the main loop that a sample can be read by setting the semaphore
+  xSemaphoreGiveFromISR ( edrumulus_pointer->timer_semaphore, NULL );
+}
+
+
+void Edrumulus::setup ( const int conf_analog_pin,
+                        const int conf_overload_LED_pin )
+{
+  // set the GIOP pin numbers
+  analog_pin       = conf_analog_pin;
+  overload_LED_pin = conf_overload_LED_pin;
+
+  // if an overload LED shall be used, initialize GPIO port
+  if ( overload_LED_pin >= 0 )
+  {
+    pinMode ( overload_LED_pin, OUTPUT );
+  }
+
+  // estimate the DC offset
+  const int dc_offset_est_len = 5000; // samples
+  float     dc_offset_sum     = 0.0f;
+
+  for ( int i = 0; i < dc_offset_est_len; i++ )
+  {
+    dc_offset_sum += analogRead ( analog_pin );
+    delayMicroseconds ( 100 );
+  }
+
+  dc_offset = dc_offset_sum / dc_offset_est_len;
+
+  // initialize the algorithm
+  initialize();
+}
+
+
 void Edrumulus::initialize()
 {
   // set algorithm parameters
-  Fs                     = 8000;                       // sampling rate of 8 kHz
-  energy_window_len      = round ( 2e-3f * Fs );       // scan time (e.g. 2 ms)
-  decay_len              = round ( 0.2f * Fs );        // decay time (e.g. 200 ms)
-  mask_time              = round ( 10e-3f * Fs );      // mask time (e.g. 10 ms)
-  threshold              = pow ( 10.0f, -64.0f / 20 ); // -64 dB threshold
-  decay_att              = pow ( 10.0f, -1.0f / 20 );  // decay attenuation of 1 dB
-  const float decay_grad = 200.0f / Fs;                // decay gradient factor
-  alpha                  = 0.025f * 8e3f / Fs;         // IIR low pass filter coefficient
+  Fs                     = 8000;                         // sampling rate of 8 kHz
+  energy_window_len      = round ( 2e-3f * Fs );         // scan time (e.g. 2 ms)
+  decay_len              = round ( 0.2f * Fs );          // decay time (e.g. 200 ms)
+  mask_time              = round ( 10e-3f * Fs );        // mask time (e.g. 10 ms)
+  threshold              = pow   ( 10.0f, -64.0f / 20 ); // -64 dB threshold
+  decay_att              = pow   ( 10.0f, -1.0f / 20 );  // decay attenuation of 1 dB
+  const float decay_grad = 200.0f / Fs;                  // decay gradient factor
+  alpha                  = 0.025f * 8e3f / Fs;           // IIR low pass filter coefficient
+  overload_LED_on_time   = round ( 0.25f * Fs );         // minimum overload LED on time (e.g., 250 ms)
 
   // allocate memory for vectors
   if ( hil_hist        == nullptr ) delete[] hil_hist;
@@ -62,8 +117,8 @@ void Edrumulus::initialize()
 
   for ( int i = 0; i < energy_window_len; i++ )
   {
-    mov_av_hist_re[i] = 0.0f;
-    mov_av_hist_im[i] = 0.0f;
+    mov_av_hist_re[i]  = 0.0f;
+    mov_av_hist_im[i]  = 0.0f;
     hil_hist_re[i]     = 0.0f;
     hil_hist_im[i]     = 0.0f;
     hil_low_hist_re[i] = 0.0f;
@@ -79,12 +134,57 @@ void Edrumulus::initialize()
   pos_sense_cnt         = 0;
   hil_low_re            = 0.0f;
   hil_low_im            = 0.0f;
+  overload_LED_cnt      = 0;
 
   // calculate the decay curve
   for ( int i = 0; i < decay_len; i++ )
   {
     decay[i] = pow ( 10.0f, -i / 20.0f * decay_grad );
   }
+}
+
+
+bool Edrumulus::process ( int&   midi_velocity,
+                          int&   midi_pos,
+                          float& debug )
+{
+  bool peak_found = false;
+
+  // wait for the timer to get the correct sampling rate when reading the analog value
+  if ( xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
+  {
+    // get sample from ADC
+    const int sample_org = analogRead ( analog_pin );
+
+    // prepare sample for processing
+    float sample = sample_org - dc_offset; // compensate DC offset
+    sample      /= 30000;                  // scaling -> TODO we need a better solution for the scaling
+
+    // process sample
+    process_sample ( sample, peak_found, midi_velocity, midi_pos, debug );
+
+    // optional overload detection
+    if ( overload_LED_pin >= 0 )
+    {
+      if ( ( sample_org >= 4094 ) || ( sample_org <= 1 ) )
+      {
+        overload_LED_cnt = overload_LED_on_time;
+        digitalWrite ( overload_LED_pin, HIGH );
+      }
+  
+      if ( overload_LED_cnt > 1 )
+      {
+        overload_LED_cnt--;
+      }
+      else if ( overload_LED_cnt == 1 ) // transition to off state
+      {
+        digitalWrite ( overload_LED_pin, LOW );
+        overload_LED_cnt = 0; // idle state
+      }
+    }
+  }
+
+  return peak_found;
 }
 
 

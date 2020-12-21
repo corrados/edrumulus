@@ -28,17 +28,28 @@
 class Edrumulus
 {
 public:
-  Edrumulus() { initialize(); }
+  Edrumulus();
+
+  // call this function during the Setup function of the main program
+  void setup ( const int conf_analog_pin,
+               const int conf_overload_LED_pin = -1 ); // per default no overload LED is used
+
+  // call the process function during the main loop
+  // if a MIDI note is ready, the function returns true
+  bool process ( int&   midi_velocity,
+                 int&   midi_pos,
+                 float& debug );
+
+
+protected:
+  void                  initialize();
+  static void IRAM_ATTR on_timer();
 
   void process_sample ( const float fIn,
                         bool&       peak_found,
                         int&        midi_velocity,
                         int&        midi_pos,
                         float&      debug );
-
-
-protected:
-  void initialize();
 
   // Hilbert filter coefficients (they are constant and must not be changed)
   const int   hil_filt_len = 7;
@@ -73,4 +84,12 @@ protected:
   int    stored_midi_velocity;
   float  hil_low_re;
   float  hil_low_im;
+  int    analog_pin;
+  float  dc_offset;
+  int    overload_LED_pin;
+  int    overload_LED_cnt;
+  int    overload_LED_on_time;
+
+  volatile SemaphoreHandle_t timer_semaphore;
+  hw_timer_t*                timer = nullptr;
 };
