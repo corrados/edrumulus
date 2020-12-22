@@ -49,17 +49,14 @@ void setup()
 
 void loop()
 {
-  int   midi_velocity, midi_pos;
-  float debug;
+  int midi_velocity, midi_pos;
 
-  if ( edrumulus.process ( midi_velocity, midi_pos, debug ) )
+  if ( edrumulus.process ( midi_velocity, midi_pos ) )
   {
 #ifdef USE_MIDI
     MIDI.sendControlChange ( 16, midi_pos,      10 ); // positional sensing
     MIDI.sendNoteOn        ( 38, midi_velocity, 10 ); // (note, velocity, channel)
     MIDI.sendNoteOff       ( 38, 0,             10 );
-#else
-    Serial.println ( debug, 7 );
 #endif
   }
 
@@ -74,16 +71,5 @@ if ( prev_micros_cnt >= 10000 )
   prev_micros     = micros();
 }
 prev_micros_cnt++;
-*/
-
-/*
-if ( Serial.available() > 0 )
-{
-  // for debugging: take samples from Octave, process and return result to Octave
-  const float fIn = Serial.parseFloat();
-  float debug;
-  const bool peak_found = process_sample ( fIn, debug );
-  Serial.println ( debug, 7 );
-}
 */
 }

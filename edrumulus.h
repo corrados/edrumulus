@@ -36,9 +36,8 @@ public:
 
   // call the process function during the main loop
   // if a MIDI note is ready, the function returns true
-  bool process ( int&   midi_velocity,
-                 int&   midi_pos,
-                 float& debug );
+  bool process ( int& midi_velocity,
+                 int& midi_pos );
 
 
 protected:

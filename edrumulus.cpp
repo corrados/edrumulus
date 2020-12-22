@@ -145,10 +145,21 @@ void Edrumulus::initialize()
 
 
 bool Edrumulus::process ( int&   midi_velocity,
-                          int&   midi_pos,
-                          float& debug )
+                          int&   midi_pos )
 {
-  bool peak_found = false;
+  bool  peak_found = false;
+  float debug;
+
+/*
+// for debugging: take samples from Octave, process and return result to Octave
+if ( Serial.available() > 0 )
+{
+  const float fIn = Serial.parseFloat();
+  process_sample ( fIn, peak_found, midi_velocity, midi_pos, debug );
+  Serial.println ( debug, 7 );
+}
+return false;
+*/
 
   // wait for the timer to get the correct sampling rate when reading the analog value
   if ( xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )

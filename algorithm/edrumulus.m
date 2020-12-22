@@ -80,7 +80,7 @@ catch
 end
 flush(a);
 
-bReturnIsComplex  = false;
+bReturnIsComplex = false;
 
 % send the input data vector
 for i = 1:length(x)
