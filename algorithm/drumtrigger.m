@@ -42,6 +42,7 @@ x = audioread("signals/pd120_pos_sense2.wav");
 % x = audioread("signals/pd120_roll.wav");
 % x = audioread("signals/pd120_middle_velocity.wav");
 % x = audioread("signals/pd120_hot_spot.wav");
+% x = audioread("signals/pd120_rimshot.wav");
 % x = audioread("signals/pd6.wav");
 % org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
 % org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
@@ -94,28 +95,35 @@ hil = filter(a, 1, x);
 end
 
 
-function [all_peaks, hil_filt_org, hil] = calc_peak_detection(x, Fs)
+function [hil, hil_filt] = filter_input_signal(x, Fs)
 
+energy_window_len = round(2e-3 * Fs); % scan time (e.g. 2 ms)
+
+% Hilbert filter
 hil = myhilbert(x);
 
-threshold_db      = -64;
-energy_window_len = round(2e-3 * Fs); % scan time (e.g. 2 ms)
-mask_time         = round(10e-3 * Fs); % mask time (e.g. 10 ms)
+% moving average filter
+hil_filt = abs(filter(ones(energy_window_len, 1) / energy_window_len, 1, hil)); % moving average
+
+end
+
+
+function all_peaks = calc_peak_detection(hil_filt, Fs)
+
+threshold_db = -64;
+mask_time    = round(10e-3 * Fs); % mask time (e.g. 10 ms)
 
 % the following settings are trigger pad-specific (here, a PD-120 is used)
 decay_len    = round(0.2 * Fs); % decay time (e.g. 200 ms)
 decay_att_db = 1; % decay attenuation in dB
 decay_grad   = 200 / Fs; % decay gradient factor
 
-% moving average filter
-hil_filt     = abs(filter(ones(energy_window_len, 1) / energy_window_len, 1, hil)); % moving average
-hil_filt_org = hil_filt;
-
 last_peak_idx = 0;
 all_peaks     = [];
 i             = 1;
 no_more_peak  = false;
-decay_all     = nan(size(x)); % only for debugging
+decay_all     = nan(size(hil_filt)); % only for debugging
+hil_filt_org  = hil_filt;            % only for debugging
 
 while ~no_more_peak
 
@@ -198,10 +206,6 @@ for i = 1:length(all_peaks)
   % region of the original Hilbert transformed signal, we average the powers of
   % the filtered and un-filtered signals around the detected peak position.
   win_idx            = (all_peaks(i):all_peaks(i) + energy_window_len - 1) - energy_window_len / 2;
-
-% % TEST as currently implemented in the sample-based processing
-% win_idx = (all_peaks(i):all_peaks(i) + energy_window_len / 2 - 1) - energy_window_len / 2;
-
   win_idx            = win_idx((win_idx <= length(hil_low)) & (win_idx > 0));
   peak_energy(i)     = sum(abs(hil(win_idx)) .^ 2);
   peak_energy_low(i) = sum(abs(hil_low(win_idx)) .^ 2);
@@ -227,9 +231,20 @@ end
 
 function processing(x, Fs, do_realtime)
 
+
+% TEST rim shot support
+rim_hil = [];
+if size(x, 2) > 1
+  rim_x = x(:, 2);
+  x     = x(:, 1);
+  [rim_hil, rim_hil_filt] = filter_input_signal(rim_x, Fs);
+end
+
+
 % calculate peak detection and positional sensing
-[all_peaks, hil_filt, hil] = calc_peak_detection(x, Fs);
-pos_sense_metric           = calc_pos_sense_metric(hil, Fs, all_peaks);
+[hil, hil_filt]  = filter_input_signal(x, Fs);
+all_peaks        = calc_peak_detection(hil_filt, Fs);
+pos_sense_metric = calc_pos_sense_metric(hil, Fs, all_peaks);
 
 if ~do_realtime
   figure % open figure to keep previous plots (not desired for real-time)
@@ -240,6 +255,11 @@ cla
 plot(20 * log10(abs([x, hil_filt]))); grid on; hold on;
 plot(all_peaks, 20 * log10(hil_filt(all_peaks)), 'g*');
 plot(all_peaks, pos_sense_metric - 40, 'k*');
+if ~isempty(rim_hil)
+  plot(20 * log10(abs(rim_hil_filt))); hold on
+  plot(all_peaks, 20 * log10(rim_hil_filt(all_peaks) ./ hil_filt(all_peaks)), 'b*')
+  plot(all_peaks, 20 * log10(rim_hil_filt(all_peaks)), 'y*')
+end
 title('Green marker: level; Black marker: position');
 xlabel('samples'); ylabel('dB');
 ylim([-100, 0]);
@@ -253,7 +273,7 @@ velocity_clipped    = max(1, min(127, velocity));
 pos_sensing         = (pos_sense_metric / 4) * 127 - 510;
 pos_sensing_clipped = max(1, min(127, pos_sensing));
 % play_midi(all_peaks, velocity_clipped, pos_sensing_clipped);
-figure; subplot(2, 1, 1), plot(velocity); title('velocity'); subplot(2, 1, 2), plot(pos_sensing); title('pos');
+% figure; subplot(2, 1, 1), plot(velocity); title('velocity'); subplot(2, 1, 2), plot(pos_sensing); title('pos');
 
 end
 
