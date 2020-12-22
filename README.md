@@ -24,7 +24,7 @@ Open Source E-Drum Trigger Module Software
   we have to move the point of operation in the middle of the voltage range by using two equal resistors
   in series connection (one connected to the ground and one to the 3.3 V) and a capacitor to feed
   the piezo signal into the ADC of the microcontroller.
-  <img src="algorithm/images/edrumulus_testing.png" width="400">
+  <br/><img src="algorithm/images/edrumulus_testing.png" width="400">
 
 
 ## Project log
