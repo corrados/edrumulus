@@ -35,9 +35,9 @@ Edrumulus::Edrumulus()
 
   // prepare timer at a rate of 8 kHz
   timer_semaphore = xSemaphoreCreateBinary();
-  timer           = timerBegin ( 0, 80, true );
+  timer           = timerBegin ( 0, 80, true ); // prescaler of 80 (i.e. below we have 1 MHz instead of 80 MHz)
   timerAttachInterrupt ( timer, &on_timer, true );
-  timerAlarmWrite      ( timer, 125, true ); // here we define the sampling rate
+  timerAlarmWrite      ( timer, 1000000 / Fs, true ); // here we define the sampling rate (1 MHz / Fs)
   timerAlarmEnable     ( timer );
 }
 
