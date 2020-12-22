@@ -28,8 +28,10 @@ Edrumulus* edrumulus_pointer = nullptr;
 
 Edrumulus::Edrumulus()
 {
-  // global pointer to this class needed for static callback function
-  edrumulus_pointer = this;
+  // initializations
+  edrumulus_pointer    = this;                 // global pointer to this class needed for static callback function
+  Fs                   = 8000;                 // this is the most fundamental system parameter: system sampling rate
+  overload_LED_on_time = round ( 0.25f * Fs ); // minimum overload LED on time (e.g., 250 ms)
 
   // prepare timer at a rate of 8 kHz
   timer_semaphore = xSemaphoreCreateBinary();
@@ -80,15 +82,13 @@ void Edrumulus::setup ( const int conf_analog_pin,
 void Edrumulus::initialize()
 {
   // set algorithm parameters
-  Fs                     = 8000;                         // sampling rate of 8 kHz
-  energy_window_len      = round ( 2e-3f * Fs );         // scan time (e.g. 2 ms)
-  decay_len              = round ( 0.2f * Fs );          // decay time (e.g. 200 ms)
-  mask_time              = round ( 10e-3f * Fs );        // mask time (e.g. 10 ms)
   threshold              = pow   ( 10.0f, -64.0f / 20 ); // -64 dB threshold
+  energy_window_len      = round ( 2e-3f * Fs );         // scan time (e.g. 2 ms)
+  mask_time              = round ( 10e-3f * Fs );        // mask time (e.g. 10 ms)
+  decay_len              = round ( 0.2f * Fs );          // decay time (e.g. 200 ms)
   decay_att              = pow   ( 10.0f, -1.0f / 20 );  // decay attenuation of 1 dB
   const float decay_grad = 200.0f / Fs;                  // decay gradient factor
-  alpha                  = 0.025f * 8e3f / Fs;           // IIR low pass filter coefficient
-  overload_LED_on_time   = round ( 0.25f * Fs );         // minimum overload LED on time (e.g., 250 ms)
+  alpha                  = 200.0f / Fs;                  // IIR low pass filter coefficient
 
   // allocate memory for vectors
   if ( hil_hist        != nullptr ) delete[] hil_hist;
