@@ -11,7 +11,7 @@ end
 
 flush(a);
 
-for i = 1:20000
+for i = 1:1500%15000%20000
 
   % get number from string
   readready = false;
@@ -40,16 +40,19 @@ end
 % the very first value is garbage
 x = x(2:end);
 
-% compensate DC offset
-x = x - mean(x(~isnan(x)));
+% % compensate DC offset
+% x = x - mean(x(~isnan(x)));
 
-% normalize
-x = x / max(abs(x));
+% % normalize
+% x = x / max(abs(x));
 
-figure; plot(x);
+figure; plot(x, '.-');
+% figure; plot(20 * log10(abs(x)));
 
-audiowrite("out.wav", x, 8000, "BitsPerSample", 16);
+% audiowrite("out.wav", x, 8000, "BitsPerSample", 16);
 % wavwrite(x, 8000, 16, "out.wav");
+
+% 1/((x(14000)-x(4000))/1e6/(14000-4000))
 
 return;
 
