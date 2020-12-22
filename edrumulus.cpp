@@ -199,7 +199,20 @@ return false;
 }
 
 
-void Edrumulus::process_sample ( const float fIn,
+void Edrumulus::update_fifo ( const float input,
+                              const int   fifo_length,
+                              float*      fifo_memory )
+{
+  // move all values in the history one step back and put new value on the top
+  for ( int i = 0; i < fifo_length - 1; i++ )
+  {
+    fifo_memory[i] = fifo_memory[i + 1];
+  }
+  fifo_memory[fifo_length - 1] = input;
+}
+
+
+void Edrumulus::process_sample ( const float input,
                                  bool&       peak_found,
                                  int&        midi_velocity,
                                  int&        midi_pos,
@@ -215,11 +228,7 @@ debug = 0.0f; // TEST
 
   // Calculate peak detection -----------------------------------------------------
   // hilbert filter
-  for ( int i = 0; i < hil_filt_len - 1; i++ )
-  {
-    hil_hist[i] = hil_hist[i + 1];
-  }
-  hil_hist[hil_filt_len - 1] = fIn;
+  update_fifo ( input, hil_filt_len, hil_hist );
 
   float hil_re = 0;
   float hil_im = 0;
@@ -230,13 +239,8 @@ debug = 0.0f; // TEST
   }
 
   // moving average filter
-  for ( int i = 0; i < energy_window_len - 1; i++ )
-  {
-    mov_av_hist_re[i] = mov_av_hist_re[i + 1];
-    mov_av_hist_im[i] = mov_av_hist_im[i + 1];
-  }
-  mov_av_hist_re[energy_window_len - 1] = hil_re;
-  mov_av_hist_im[energy_window_len - 1] = hil_im;
+  update_fifo ( hil_re, energy_window_len, mov_av_hist_re );
+  update_fifo ( hil_im, energy_window_len, mov_av_hist_im );
 
   float mov_av_re = 0;
   float mov_av_im = 0;
@@ -309,17 +313,10 @@ midi_velocity = max ( 1, min ( 127, midi_velocity ) );
   hil_low_re = ( 1.0f - alpha ) * hil_low_re + alpha * hil_re;
   hil_low_im = ( 1.0f - alpha ) * hil_low_im + alpha * hil_im;
 
-  for ( int i = 0; i < energy_window_len - 1; i++ )
-  {
-    hil_hist_re[i]     = hil_hist_re[i + 1];
-    hil_hist_im[i]     = hil_hist_im[i + 1];
-    hil_low_hist_re[i] = hil_low_hist_re[i + 1];
-    hil_low_hist_im[i] = hil_low_hist_im[i + 1];
-  }
-  hil_hist_re[energy_window_len - 1]     = hil_re;
-  hil_hist_im[energy_window_len - 1]     = hil_im;
-  hil_low_hist_re[energy_window_len - 1] = hil_low_re;
-  hil_low_hist_im[energy_window_len - 1] = hil_low_im;
+  update_fifo ( hil_re,     energy_window_len, hil_hist_re );
+  update_fifo ( hil_im,     energy_window_len, hil_hist_im );
+  update_fifo ( hil_low_re, energy_window_len, hil_low_hist_re );
+  update_fifo ( hil_low_im, energy_window_len, hil_low_hist_im );
 
   if ( peak_found || ( pos_sense_cnt > 0 ) )
   {

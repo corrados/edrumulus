@@ -218,6 +218,17 @@ hil_low_hist_im        = zeros(energy_window_len, 1);
 end
 
 
+function fifo_memory = update_fifo ( input, ...
+                                     fifo_length, ...
+                                     fifo_memory )
+
+  % move all values in the history one step back and put new value on the top
+  fifo_memory(1:fifo_length - 1) = fifo_memory(2:fifo_length);
+  fifo_memory(fifo_length)       = input;
+
+end
+
+
 function [hil_debug, hil_filt_debug, ...
           hil_filt_new_debug, ...
           cur_decay_debug, ...
@@ -260,21 +271,18 @@ cur_decay_debug  = 0; % just for debugging
 
 % Calculate peak detection -----------------------------------------------------
 % hilbert filter
-hil_hist(1:hil_filt_len - 1) = hil_hist(2:hil_filt_len);
-hil_hist(hil_filt_len)       = x;
-hil_re                       = sum(hil_hist .* a_re);
-hil_im                       = sum(hil_hist .* a_im);
+hil_hist = update_fifo ( x, hil_filt_len, hil_hist );
+hil_re   = sum(hil_hist .* a_re);
+hil_im   = sum(hil_hist .* a_im);
 
 hil_debug = complex(hil_re, hil_im); % just for debugging
 
 
 % moving average filter
-mov_av_hist_re(1:energy_window_len - 1) = mov_av_hist_re(2:energy_window_len);
-mov_av_hist_im(1:energy_window_len - 1) = mov_av_hist_im(2:energy_window_len);
-mov_av_hist_re(energy_window_len)       = hil_re;
-mov_av_hist_im(energy_window_len)       = hil_im;
-mov_av_re                               = sum(mov_av_hist_re) / energy_window_len;
-mov_av_im                               = sum(mov_av_hist_im) / energy_window_len;
+mov_av_hist_re = update_fifo ( hil_re, energy_window_len, mov_av_hist_re );
+mov_av_hist_im = update_fifo ( hil_im, energy_window_len, mov_av_hist_im );
+mov_av_re      = sum(mov_av_hist_re) / energy_window_len;
+mov_av_im      = sum(mov_av_hist_im) / energy_window_len;
 
 hil_filt = sqrt(mov_av_re * mov_av_re + mov_av_im * mov_av_im);
 
@@ -343,15 +351,10 @@ hil_filt_new_debug = hil_filt_new; % just for debugging
 hil_low_re = (1 - alpha) * hil_low_re + alpha * hil_re;
 hil_low_im = (1 - alpha) * hil_low_im + alpha * hil_im;
 
-hil_hist_re(1:energy_window_len - 1) = hil_hist_re(2:energy_window_len);
-hil_hist_re(energy_window_len)       = hil_re;
-hil_hist_im(1:energy_window_len - 1) = hil_hist_im(2:energy_window_len);
-hil_hist_im(energy_window_len)       = hil_im;
-
-hil_low_hist_re(1:energy_window_len - 1) = hil_low_hist_re(2:energy_window_len);
-hil_low_hist_re(energy_window_len)       = hil_low_re;
-hil_low_hist_im(1:energy_window_len - 1) = hil_low_hist_im(2:energy_window_len);
-hil_low_hist_im(energy_window_len)       = hil_low_im;
+hil_hist_re     = update_fifo ( hil_re, energy_window_len, hil_hist_re );
+hil_hist_im     = update_fifo ( hil_im, energy_window_len, hil_hist_im );
+hil_low_hist_re = update_fifo ( hil_low_re, energy_window_len, hil_low_hist_re );
+hil_low_hist_im = update_fifo ( hil_low_im, energy_window_len, hil_low_hist_im );
 
 if peak_found || (pos_sense_cnt > 0)
 

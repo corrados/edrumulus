@@ -44,7 +44,12 @@ protected:
   void                  initialize();
   static void IRAM_ATTR on_timer();
 
-  void process_sample ( const float fIn,
+
+  void update_fifo ( const float input,
+                     const int   fifo_length,
+                     float*      fifo_memory );
+
+  void process_sample ( const float input,
                         bool&       peak_found,
                         int&        midi_velocity,
                         int&        midi_pos,
