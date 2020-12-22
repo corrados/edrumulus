@@ -32,6 +32,7 @@ Edrumulus::Edrumulus()
   edrumulus_pointer    = this;                 // global pointer to this class needed for static callback function
   Fs                   = 8000;                 // this is the most fundamental system parameter: system sampling rate
   overload_LED_on_time = round ( 0.25f * Fs ); // minimum overload LED on time (e.g., 250 ms)
+  overload_LED_cnt     = 0;
 
   // prepare timer at a rate of 8 kHz
   timer_semaphore = xSemaphoreCreateBinary();
@@ -74,14 +75,71 @@ void Edrumulus::setup ( const int conf_analog_pin,
 
   dc_offset = dc_offset_sum / dc_offset_est_len;
 
-  // initialize the algorithm
-  initialize();
+  // initialize the pad
+  pad.initialize ( Fs );
 }
 
 
-void Edrumulus::initialize()
+bool Edrumulus::process ( int& midi_velocity,
+                          int& midi_pos )
+{
+  bool  peak_found = false;
+  float debug;
+
+/*
+// for debugging: take samples from Octave, process and return result to Octave
+if ( Serial.available() > 0 )
+{
+  const float fIn = Serial.parseFloat();
+  process_sample ( fIn, peak_found, midi_velocity, midi_pos, debug );
+  Serial.println ( debug, 7 );
+}
+return false;
+*/
+
+  // wait for the timer to get the correct sampling rate when reading the analog value
+  if ( xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
+  {
+    // get sample from ADC
+    const int sample_org = analogRead ( analog_pin );
+
+    // prepare sample for processing
+    float sample = sample_org - dc_offset; // compensate DC offset
+
+sample /= 30000; // scaling -> TODO we need a better solution for the scaling
+
+    // process sample
+    pad.process_sample ( sample, peak_found, midi_velocity, midi_pos, debug );
+
+    // optional overload detection
+    if ( overload_LED_pin >= 0 )
+    {
+      if ( ( sample_org >= 4094 ) || ( sample_org <= 1 ) )
+      {
+        overload_LED_cnt = overload_LED_on_time;
+        digitalWrite ( overload_LED_pin, HIGH );
+      }
+  
+      if ( overload_LED_cnt > 1 )
+      {
+        overload_LED_cnt--;
+      }
+      else if ( overload_LED_cnt == 1 ) // transition to off state
+      {
+        digitalWrite ( overload_LED_pin, LOW );
+        overload_LED_cnt = 0; // idle state
+      }
+    }
+  }
+
+  return peak_found;
+}
+
+
+void Edrumulus::Pad::initialize ( const int conf_Fs )
 {
   // set algorithm parameters
+  Fs                     = conf_Fs;                      // copy/store the sampling rate
   threshold              = pow   ( 10.0f, -64.0f / 20 ); // -64 dB threshold
   energy_window_len      = round ( 2e-3f * Fs );         // scan time (e.g. 2 ms)
   mask_time              = round ( 10e-3f * Fs );        // mask time (e.g. 10 ms)
@@ -134,7 +192,6 @@ void Edrumulus::initialize()
   pos_sense_cnt         = 0;
   hil_low_re            = 0.0f;
   hil_low_im            = 0.0f;
-  overload_LED_cnt      = 0;
 
   // calculate the decay curve
   for ( int i = 0; i < decay_len; i++ )
@@ -144,64 +201,9 @@ void Edrumulus::initialize()
 }
 
 
-bool Edrumulus::process ( int&   midi_velocity,
-                          int&   midi_pos )
-{
-  bool  peak_found = false;
-  float debug;
-
-/*
-// for debugging: take samples from Octave, process and return result to Octave
-if ( Serial.available() > 0 )
-{
-  const float fIn = Serial.parseFloat();
-  process_sample ( fIn, peak_found, midi_velocity, midi_pos, debug );
-  Serial.println ( debug, 7 );
-}
-return false;
-*/
-
-  // wait for the timer to get the correct sampling rate when reading the analog value
-  if ( xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
-  {
-    // get sample from ADC
-    const int sample_org = analogRead ( analog_pin );
-
-    // prepare sample for processing
-    float sample = sample_org - dc_offset; // compensate DC offset
-    sample      /= 30000;                  // scaling -> TODO we need a better solution for the scaling
-
-    // process sample
-    process_sample ( sample, peak_found, midi_velocity, midi_pos, debug );
-
-    // optional overload detection
-    if ( overload_LED_pin >= 0 )
-    {
-      if ( ( sample_org >= 4094 ) || ( sample_org <= 1 ) )
-      {
-        overload_LED_cnt = overload_LED_on_time;
-        digitalWrite ( overload_LED_pin, HIGH );
-      }
-  
-      if ( overload_LED_cnt > 1 )
-      {
-        overload_LED_cnt--;
-      }
-      else if ( overload_LED_cnt == 1 ) // transition to off state
-      {
-        digitalWrite ( overload_LED_pin, LOW );
-        overload_LED_cnt = 0; // idle state
-      }
-    }
-  }
-
-  return peak_found;
-}
-
-
-void Edrumulus::update_fifo ( const float input,
-                              const int   fifo_length,
-                              float*      fifo_memory )
+void Edrumulus::Pad::update_fifo ( const float input,
+                                   const int   fifo_length,
+                                   float*      fifo_memory )
 {
   // move all values in the history one step back and put new value on the top
   for ( int i = 0; i < fifo_length - 1; i++ )
@@ -212,11 +214,11 @@ void Edrumulus::update_fifo ( const float input,
 }
 
 
-void Edrumulus::process_sample ( const float input,
-                                 bool&       peak_found,
-                                 int&        midi_velocity,
-                                 int&        midi_pos,
-                                 float&      debug )
+void Edrumulus::Pad::process_sample ( const float input,
+                                      bool&       peak_found,
+                                      int&        midi_velocity,
+                                      int&        midi_pos,
+                                      float&      debug )
 {
   // initialize return parameter
   peak_found    = false;
