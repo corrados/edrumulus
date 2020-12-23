@@ -138,7 +138,7 @@ void Edrumulus::Pad::initialize ( const int conf_Fs )
 {
   // set algorithm parameters
   Fs                     = conf_Fs;                     // copy/store the sampling rate
-  threshold              = pow   ( 10.0f, 23.0f / 10 ); // 23 dB threshold
+  threshold              = pow   ( 10.0f, 25.0f / 10 ); // 25 dB threshold
   energy_window_len      = round ( 2e-3f * Fs );        // scan time (e.g. 2 ms)
   mask_time              = round ( 10e-3f * Fs );       // mask time (e.g. 10 ms)
   decay_len              = round ( 0.2f * Fs );         // decay time (e.g. 200 ms)

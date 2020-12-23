@@ -28,9 +28,9 @@
 #ifdef USE_MIDI
 #include <MIDI.h>                   // Hairless USB MIDI
 MIDI_CREATE_DEFAULT_INSTANCE();     // Hairless USB MIDI
-//#include <BLEMIDI_Transport.h>      // BLE MIDI
-//#include <hardware/BLEMIDI_ESP32.h> // BLE MIDI
-//BLEMIDI_CREATE_DEFAULT_INSTANCE();  // BLE MIDI
+//#include <BLEMIDI_Transport.h>                 // BLE MIDI
+//#include <hardware/BLEMIDI_ESP32.h>            // BLE MIDI
+//BLEMIDI_CREATE_INSTANCE ( "Edrumulus", MIDI ); // BLE MIDI
 #endif
 
 Edrumulus edrumulus;
