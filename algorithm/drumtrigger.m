@@ -103,7 +103,7 @@ energy_window_len = round(2e-3 * Fs); % scan time (e.g. 2 ms)
 hil = myhilbert(x);
 
 % moving average filter
-hil_filt = abs(filter(ones(energy_window_len, 1) / energy_window_len, 1, hil)); % moving average
+hil_filt = abs(filter(ones(energy_window_len, 1) / energy_window_len, 1, hil)) .^ 2; % moving average
 
 end
 
@@ -115,7 +115,7 @@ mask_time    = round(10e-3 * Fs); % mask time (e.g. 10 ms)
 
 % the following settings are trigger pad-specific (here, a PD-120 is used)
 decay_len    = round(0.2 * Fs); % decay time (e.g. 200 ms)
-decay_att_db = 1; % decay attenuation in dB
+decay_att_db = -1; % decay attenuation in dB
 decay_grad   = 200 / Fs; % decay gradient factor
 
 last_peak_idx = 0;
@@ -128,7 +128,7 @@ hil_filt_org  = hil_filt;            % only for debugging
 while ~no_more_peak
 
   % find values above threshold, masking regions which are already done
-  above_thresh = (hil_filt > 10 ^ (threshold_db / 20)) & [zeros(last_peak_idx, 1); ones(length(hil_filt) - last_peak_idx, 1)];
+  above_thresh = (hil_filt > 10 ^ (threshold_db / 10)) & [zeros(last_peak_idx, 1); ones(length(hil_filt) - last_peak_idx, 1)];
   peak_start   = find(diff(above_thresh) > 0);
 
   % exit condition
@@ -153,7 +153,7 @@ while ~no_more_peak
 
   % exponential decay assumption (note that we must not use hil_filt_org since a
   % previous peak might not be faded out and the peak detection works on hil_filt)
-  decay           = hil_filt(peak_idx) * 10 ^ (-decay_att_db / 20) * 10 .^ (-(0:decay_len - 1) / 20 * decay_grad);
+  decay           = hil_filt(peak_idx) * 10 ^ (-decay_att_db / 10) * 10 .^ (-(0:decay_len - 1) / 10 * decay_grad);
   decay_x         = peak_idx + (0:decay_len - 1) + 2; % NOTE "+ 2" delay needed for sample-wise processing
   valid_decay_idx = decay_x <= length(hil_filt);
   decay           = decay(valid_decay_idx);
@@ -171,8 +171,8 @@ while ~no_more_peak
 
 end
 
-% figure; plot(20 * log10([hil_filt_org, hil_filt, decay_all])); hold on;
-% plot(all_peaks, 20 * log10(hil_filt_org(all_peaks)), 'k*');
+% figure; plot(10 * log10([hil_filt_org, hil_filt, decay_all])); hold on;
+% plot(all_peaks, 10 * log10(hil_filt_org(all_peaks)), 'k*');
 
 end
 
@@ -252,13 +252,13 @@ end
 
 % plot results
 cla
-plot(20 * log10(abs([x, hil_filt]))); grid on; hold on;
-plot(all_peaks, 20 * log10(hil_filt(all_peaks)), 'g*');
+plot(10 * log10([abs(x) .^ 2, hil_filt])); grid on; hold on;
+plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'g*');
 plot(all_peaks, pos_sense_metric + 40, 'k*');
 if ~isempty(rim_hil)
-  plot(20 * log10(abs(rim_hil_filt))); hold on
-  plot(all_peaks, 20 * log10(rim_hil_filt(all_peaks) ./ hil_filt(all_peaks)), 'b*')
-  plot(all_peaks, 20 * log10(rim_hil_filt(all_peaks)), 'y*')
+  plot(10 * log10(abs(rim_hil_filt))); hold on
+  plot(all_peaks, 10 * log10(rim_hil_filt(all_peaks) ./ hil_filt(all_peaks)), 'b*')
+  plot(all_peaks, 10 * log10(rim_hil_filt(all_peaks)), 'y*')
 end
 title('Green marker: level; Black marker: position');
 xlabel('samples'); ylabel('dB');
@@ -268,12 +268,12 @@ drawnow;
 
 % TEST
 % velocity/positional sensing mapping and play MIDI notes
-velocity            = (20 * log10(hil_filt(all_peaks)) / 39) * 127 - 73;
+velocity            = (10 * log10(hil_filt(all_peaks)) / 39) * 127 - 73;
 velocity_clipped    = max(1, min(127, velocity));
 pos_sensing         = (pos_sense_metric / 4) * 127 - 510;
 pos_sensing_clipped = max(1, min(127, pos_sensing));
 % play_midi(all_peaks, velocity_clipped, pos_sensing_clipped);
-% figure; subplot(2, 1, 1), plot(velocity); title('velocity'); subplot(2, 1, 2), plot(pos_sensing); title('pos');
+figure; subplot(2, 1, 1), plot(velocity); title('velocity'); subplot(2, 1, 2), plot(pos_sensing); title('pos');
 
 end
 

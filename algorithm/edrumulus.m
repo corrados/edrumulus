@@ -64,8 +64,8 @@ peak_found_idx                       = find(peak_found) - energy_window_len / 2;
 peak_found_corrected                 = false(size(peak_found));
 peak_found_corrected(peak_found_idx) = true;
 
-figure; plot(20 * log10(abs([hil_filt_debug, hil_filt_new_debug, cur_decay_debug]))); hold on;
-        plot(find(peak_found_corrected), 20 * log10(hil_filt_debug(peak_found_corrected)), 'g*');
+figure; plot(10 * log10(abs([hil_filt_debug, hil_filt_new_debug, cur_decay_debug]))); hold on;
+        plot(find(peak_found_corrected), 10 * log10(hil_filt_debug(peak_found_corrected)), 'g*');
         plot(find(peak_found_corrected), 10 * log10(pos_sense_metric(peak_found)) + 40, 'k*');
         ylim([-10, 90]);
 % figure; plot(20 * log10(abs([x, hil_debug, hil_filt_debug])));
@@ -199,14 +199,14 @@ mov_av_hist_re         = zeros(energy_window_len, 1); % real part memory for mov
 mov_av_hist_im         = zeros(energy_window_len, 1); % imaginary part memory for moving average filter history
 mask_time              = round(10e-3 * Fs); % mask time (e.g. 10 ms)
 mask_back_cnt          = 0;
-threshold              = power(10, 23 / 20); % 23 dB threshold
+threshold              = power(10, 23 / 10); % 23 dB threshold
 was_above_threshold    = false;
 prev_hil_filt_val      = 0;
 prev_hil_filt_new_val  = 0;
-decay_att              = power(10, -1 / 20); % decay attenuation of 1 dB
+decay_att              = power(10, -(-1) / 10); % decay attenuation of -1 dB
 decay_len              = round(0.2 * Fs); % decay time (e.g. 200 ms)
 decay_grad             = 200 / Fs; % decay gradient factor
-decay                  = power(10, -(0:decay_len - 1) / 20 * decay_grad);
+decay                  = power(10, -(0:decay_len - 1) / 10 * decay_grad);
 decay_back_cnt         = 0;
 decay_scaling          = 1;
 alpha                  = 200 / Fs;
@@ -287,7 +287,7 @@ mov_av_hist_im = update_fifo ( hil_im, energy_window_len, mov_av_hist_im );
 mov_av_re      = sum(mov_av_hist_re) / energy_window_len;
 mov_av_im      = sum(mov_av_hist_im) / energy_window_len;
 
-hil_filt = sqrt(mov_av_re * mov_av_re + mov_av_im * mov_av_im);
+hil_filt = mov_av_re * mov_av_re + mov_av_im * mov_av_im;
 
 hil_filt_debug = hil_filt; % just for debugging
 

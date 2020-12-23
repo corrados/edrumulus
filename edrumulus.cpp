@@ -137,14 +137,14 @@ return false;
 void Edrumulus::Pad::initialize ( const int conf_Fs )
 {
   // set algorithm parameters
-  Fs                     = conf_Fs;                      // copy/store the sampling rate
-  threshold              = pow   ( 10.0f, 23.0f / 20 ); // -64 dB threshold
-  energy_window_len      = round ( 2e-3f * Fs );         // scan time (e.g. 2 ms)
-  mask_time              = round ( 10e-3f * Fs );        // mask time (e.g. 10 ms)
-  decay_len              = round ( 0.2f * Fs );          // decay time (e.g. 200 ms)
-  decay_att              = pow   ( 10.0f, -1.0f / 20 );  // decay attenuation of 1 dB
-  const float decay_grad = 200.0f / Fs;                  // decay gradient factor
-  alpha                  = 200.0f / Fs;                  // IIR low pass filter coefficient
+  Fs                     = conf_Fs;                          // copy/store the sampling rate
+  threshold              = pow   ( 10.0f, 23.0f / 10 );      // 23 dB threshold
+  energy_window_len      = round ( 2e-3f * Fs );             // scan time (e.g. 2 ms)
+  mask_time              = round ( 10e-3f * Fs );            // mask time (e.g. 10 ms)
+  decay_len              = round ( 0.2f * Fs );              // decay time (e.g. 200 ms)
+  decay_att              = pow   ( 10.0f, -( -1.0f ) / 10 ); // decay attenuation of -1 dB
+  const float decay_grad = 200.0f / Fs;                      // decay gradient factor
+  alpha                  = 200.0f / Fs;                      // IIR low pass filter coefficient
 
   // allocate memory for vectors
   if ( hil_hist        != nullptr ) delete[] hil_hist;
@@ -194,7 +194,7 @@ void Edrumulus::Pad::initialize ( const int conf_Fs )
   // calculate the decay curve
   for ( int i = 0; i < decay_len; i++ )
   {
-    decay[i] = pow ( 10.0f, -i / 20.0f * decay_grad );
+    decay[i] = pow ( 10.0f, -i / 10.0f * decay_grad );
   }
 }
 
@@ -252,7 +252,7 @@ debug = 0.0f; // TEST
   mov_av_re /= energy_window_len;
   mov_av_im /= energy_window_len;
 
-  const float hil_filt = sqrt ( mov_av_re * mov_av_re + mov_av_im * mov_av_im );
+  const float hil_filt = mov_av_re * mov_av_re + mov_av_im * mov_av_im;
 
 
   // exponential decay assumption (note that we must not use hil_filt_org since a
@@ -296,7 +296,7 @@ debug = 0.0f; // TEST
 
 // TEST
 // velocity sensing MIDI mapping
-midi_velocity = static_cast<int> ( ( 20 * log10 ( prev_hil_filt_val ) / 39 ) * 127 - 73 );
+midi_velocity = static_cast<int> ( ( 10 * log10 ( prev_hil_filt_val ) / 39 ) * 127 - 73 );
 midi_velocity = max ( 1, min ( 127, midi_velocity ) );
 
     }
