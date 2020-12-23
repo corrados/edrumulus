@@ -173,7 +173,7 @@ global threshold;
 global was_above_threshold;
 global prev_hil_filt_val;
 global prev_hil_filt_new_val;
-global decay_att;
+global decay_fact;
 global decay_len;
 global decay;
 global decay_back_cnt;
@@ -194,29 +194,29 @@ a_re = [-0.037749783581601, -0.069256807147465, -1.443799477299919,  2.473967088
          0.551482327389238, -0.224119735833791, -0.011665324660691]';
 a_im = [ 0,                  0.213150535195075, -1.048981722170302, -1.797442302898130, ...
          1.697288080048948,  0,                  0.035902177664014]';
-energy_window_len      = round(2e-3 * Fs); % scan time (e.g. 2 ms)
-mov_av_hist_re         = zeros(energy_window_len, 1); % real part memory for moving average filter history
-mov_av_hist_im         = zeros(energy_window_len, 1); % imaginary part memory for moving average filter history
-mask_time              = round(10e-3 * Fs); % mask time (e.g. 10 ms)
-mask_back_cnt          = 0;
-threshold              = power(10, 23 / 10); % 23 dB threshold
-was_above_threshold    = false;
-prev_hil_filt_val      = 0;
-prev_hil_filt_new_val  = 0;
-decay_att              = power(10, -(-1) / 10); % decay attenuation of -1 dB
-decay_len              = round(0.2 * Fs); % decay time (e.g. 200 ms)
-decay_grad             = 200 / Fs; % decay gradient factor
-decay                  = power(10, -(0:decay_len - 1) / 10 * decay_grad);
-decay_back_cnt         = 0;
-decay_scaling          = 1;
-alpha                  = 200 / Fs;
-hil_low_re             = 0;
-hil_low_im             = 0;
-pos_sense_cnt          = 0;
-hil_hist_re            = zeros(energy_window_len, 1);
-hil_hist_im            = zeros(energy_window_len, 1);
-hil_low_hist_re        = zeros(energy_window_len, 1);
-hil_low_hist_im        = zeros(energy_window_len, 1);
+energy_window_len     = round(2e-3 * Fs); % scan time (e.g. 2 ms)
+mov_av_hist_re        = zeros(energy_window_len, 1); % real part memory for moving average filter history
+mov_av_hist_im        = zeros(energy_window_len, 1); % imaginary part memory for moving average filter history
+mask_time             = round(10e-3 * Fs); % mask time (e.g. 10 ms)
+mask_back_cnt         = 0;
+threshold             = power(10, 23 / 10); % 23 dB threshold
+was_above_threshold   = false;
+prev_hil_filt_val     = 0;
+prev_hil_filt_new_val = 0;
+decay_fact            = power(10, 1 / 10); % decay factor of 1 dB
+decay_len             = round(0.2 * Fs); % decay time (e.g. 200 ms)
+decay_grad            = 200 / Fs; % decay gradient factor
+decay                 = power(10, -(0:decay_len - 1) / 10 * decay_grad);
+decay_back_cnt        = 0;
+decay_scaling         = 1;
+alpha                 = 200 / Fs;
+hil_low_re            = 0;
+hil_low_im            = 0;
+pos_sense_cnt         = 0;
+hil_hist_re           = zeros(energy_window_len, 1);
+hil_hist_im           = zeros(energy_window_len, 1);
+hil_low_hist_re       = zeros(energy_window_len, 1);
+hil_low_hist_im       = zeros(energy_window_len, 1);
 
 end
 
@@ -252,7 +252,7 @@ global threshold;
 global was_above_threshold;
 global prev_hil_filt_val;
 global prev_hil_filt_new_val;
-global decay_att;
+global decay_fact;
 global decay_len;
 global decay;
 global decay_back_cnt;
@@ -332,7 +332,7 @@ if ((hil_filt_new > threshold) || was_above_threshold) && (mask_back_cnt == 0)
     prev_hil_filt_new_val = 0;
     was_above_threshold   = false;
     decay_back_cnt        = decay_len;
-    decay_scaling         = prev_hil_filt_val * decay_att;
+    decay_scaling         = prev_hil_filt_val * decay_fact;
     mask_back_cnt         = mask_time;
     peak_found            = true;
 

@@ -114,9 +114,9 @@ threshold_db = 23; % TEST: figure;plot(10.^((15:(30/31):45)/20),'.-')
 mask_time    = round(10e-3 * Fs); % mask time (e.g. 10 ms)
 
 % the following settings are trigger pad-specific (here, a PD-120 is used)
-decay_len    = round(0.2 * Fs); % decay time (e.g. 200 ms)
-decay_att_db = -1; % decay attenuation in dB
-decay_grad   = 200 / Fs; % decay gradient factor
+decay_len     = round(0.2 * Fs); % decay time (e.g. 200 ms)
+decay_fact_db = 1; % decay factor in dB
+decay_grad    = 200 / Fs; % decay gradient factor
 
 last_peak_idx = 0;
 all_peaks     = [];
@@ -153,7 +153,7 @@ while ~no_more_peak
 
   % exponential decay assumption (note that we must not use hil_filt_org since a
   % previous peak might not be faded out and the peak detection works on hil_filt)
-  decay           = hil_filt(peak_idx) * 10 ^ (-decay_att_db / 10) * 10 .^ (-(0:decay_len - 1) / 10 * decay_grad);
+  decay           = hil_filt(peak_idx) * 10 ^ (decay_fact_db / 10) * 10 .^ (-(0:decay_len - 1) / 10 * decay_grad);
   decay_x         = peak_idx + (0:decay_len - 1) + 2; % NOTE "+ 2" delay needed for sample-wise processing
   valid_decay_idx = decay_x <= length(hil_filt);
   decay           = decay(valid_decay_idx);
@@ -273,7 +273,7 @@ velocity_clipped    = max(1, min(127, velocity));
 pos_sensing         = (pos_sense_metric / 4) * 127 - 510;
 pos_sensing_clipped = max(1, min(127, pos_sensing));
 % play_midi(all_peaks, velocity_clipped, pos_sensing_clipped);
-figure; subplot(2, 1, 1), plot(velocity); title('velocity'); subplot(2, 1, 2), plot(pos_sensing); title('pos');
+% figure; subplot(2, 1, 1), plot(velocity); title('velocity'); subplot(2, 1, 2), plot(pos_sensing); title('pos');
 
 end
 

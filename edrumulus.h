@@ -83,7 +83,7 @@ protected:
       bool   was_above_threshold;
       float  prev_hil_filt_val;
       float  prev_hil_filt_new_val;
-      float  decay_att;
+      float  decay_fact;
       int    decay_back_cnt;
       float  decay_scaling;
       float  alpha;
