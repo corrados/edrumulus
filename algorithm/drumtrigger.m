@@ -37,15 +37,17 @@ Fs = 8000; % Hz
 % TEST process recordings
 % x = audioread("signals/esp32_pd120.wav");
 % x = audioread("signals/pd120_pos_sense.wav");
-x = audioread("signals/pd120_pos_sense2.wav");
+% x = audioread("signals/pd120_pos_sense2.wav");
 % x = audioread("signals/pd120_single_hits.wav");
 % x = audioread("signals/pd120_roll.wav");
 % x = audioread("signals/pd120_middle_velocity.wav");
 % x = audioread("signals/pd120_hot_spot.wav");
-% x = audioread("signals/pd120_rimshot.wav");
+x = audioread("signals/pd120_rimshot.wav");
 % x = audioread("signals/pd6.wav");
 % org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
 % org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
+
+%x = x(1:30000, :);
 
 % % TEST call reference mode for C++ implementation
 % edrumulus(x);
@@ -233,11 +235,15 @@ function processing(x, Fs, do_realtime)
 
 
 % TEST rim shot support
-rim_hil = [];
+rim_hil_filt = [];
 if size(x, 2) > 1
   rim_x = x(:, 2);
   x     = x(:, 1);
-  [rim_hil, rim_hil_filt] = filter_input_signal(rim_x, Fs);
+  [~, rim_hil_filt] = filter_input_signal(rim_x, Fs);
+
+% TEST
+rim_hil_filt = abs(rim_x) .^ 2;
+
 end
 
 
@@ -252,12 +258,15 @@ end
 
 % plot results
 cla
-plot(10 * log10([abs(x) .^ 2, hil_filt])); grid on; hold on;
-plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'g*');
-plot(all_peaks, pos_sense_metric + 40, 'k*');
-if ~isempty(rim_hil)
+%plot(10 * log10([abs(x) .^ 2, hil_filt])); grid on; hold on;
+
+plot(10 * log10(abs(x) .^ 2)); grid on; hold on;
+
+%plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'g*');
+%plot(all_peaks, pos_sense_metric + 40, 'k*');
+if ~isempty(rim_hil_filt)
   plot(10 * log10(abs(rim_hil_filt))); hold on
-  plot(all_peaks, 10 * log10(rim_hil_filt(all_peaks) ./ hil_filt(all_peaks)), 'b*')
+%  plot(all_peaks, 10 * log10(rim_hil_filt(all_peaks) ./ hil_filt(all_peaks)) + 60, 'b*-')
   plot(all_peaks, 10 * log10(rim_hil_filt(all_peaks)), 'y*')
 end
 title('Green marker: level; Black marker: position');
