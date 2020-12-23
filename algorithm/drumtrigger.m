@@ -239,11 +239,7 @@ rim_hil_filt = [];
 if size(x, 2) > 1
   rim_x = x(:, 2);
   x     = x(:, 1);
-  [~, rim_hil_filt] = filter_input_signal(rim_x, Fs);
-
-% TEST
-rim_hil_filt = abs(rim_x) .^ 2;
-
+  [rim_hil, rim_hil_filt] = filter_input_signal(rim_x, Fs);
 end
 
 
@@ -256,23 +252,46 @@ if ~do_realtime
   figure % open figure to keep previous plots (not desired for real-time)
 end
 
-% plot results
-cla
+%% plot results
+%cla
 %plot(10 * log10([abs(x) .^ 2, hil_filt])); grid on; hold on;
-
-plot(10 * log10(abs(x) .^ 2)); grid on; hold on;
-
 %plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'g*');
 %plot(all_peaks, pos_sense_metric + 40, 'k*');
-if ~isempty(rim_hil_filt)
-  plot(10 * log10(abs(rim_hil_filt))); hold on
+%if ~isempty(rim_hil_filt)
+%  plot(10 * log10(abs(rim_hil_filt))); hold on
 %  plot(all_peaks, 10 * log10(rim_hil_filt(all_peaks) ./ hil_filt(all_peaks)) + 60, 'b*-')
-  plot(all_peaks, 10 * log10(rim_hil_filt(all_peaks)), 'y*')
-end
-title('Green marker: level; Black marker: position');
-xlabel('samples'); ylabel('dB');
-ylim([-10, 90]);
-drawnow;
+%  plot(all_peaks, 10 * log10(rim_hil_filt(all_peaks)), 'y*')
+%end
+%title('Green marker: level; Black marker: position');
+%xlabel('samples'); ylabel('dB');
+%ylim([-10, 90]);
+%drawnow;
+
+
+% TEST
+figure; plot(20 * log10(abs([x, rim_x])));
+figure; plot(20 * log10(abs([hil_filt, rim_hil_filt])));
+
+%% TEST
+%% [b,a]=ellip(2, 3, 20, 100/4e3+[-.001 .001]);figure;freqz(b,a,1024,8e3);
+%% [b,a]=ellip(2, 3, 20, 25/4e3+[-.001 .001]);figure;freqz(b,a,1024,8e3)
+%
+%[b,a]=ellip(2, 3, 20, 100/4e3+[-.001 .001]);
+%rim_x_100 = filter(b, a, rim_x);
+%
+%[b,a]=ellip(2, 3, 20, 25/4e3+[-.001 .001]);
+%rim_x_25 = filter(b, a, rim_x);
+%
+%alpha     = 0.025 * 8e3 / Fs;
+%rim_x_low = filter(alpha, [1, alpha - 1], rim_x);
+%
+%figure;
+%plot(20 * log10(abs([rim_x_low, rim_x])));
+%
+%figure;
+%N = 500;
+%rim_x_mov = filter(ones(N, 1) / N, 1, rim_x); % moving average
+%plot(20 * log10(abs(rim_x_mov)));
 
 
 % TEST
