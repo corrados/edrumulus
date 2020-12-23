@@ -106,8 +106,6 @@ return false;
     // prepare sample for processing
     float sample = sample_org - dc_offset; // compensate DC offset
 
-sample /= 30000; // scaling -> TODO we need a better solution for the scaling
-
     // process sample
     pad.process_sample ( sample, peak_found, midi_velocity, midi_pos, debug );
 
@@ -140,7 +138,7 @@ void Edrumulus::Pad::initialize ( const int conf_Fs )
 {
   // set algorithm parameters
   Fs                     = conf_Fs;                      // copy/store the sampling rate
-  threshold              = pow   ( 10.0f, -64.0f / 20 ); // -64 dB threshold
+  threshold              = pow   ( 10.0f, 23.0f / 20 ); // -64 dB threshold
   energy_window_len      = round ( 2e-3f * Fs );         // scan time (e.g. 2 ms)
   mask_time              = round ( 10e-3f * Fs );        // mask time (e.g. 10 ms)
   decay_len              = round ( 0.2f * Fs );          // decay time (e.g. 200 ms)
@@ -298,7 +296,7 @@ debug = 0.0f; // TEST
 
 // TEST
 // velocity sensing MIDI mapping
-midi_velocity = static_cast<int> ( ( 20 * log10 ( prev_hil_filt_val ) / 33 + 1.9f ) * 127 );
+midi_velocity = static_cast<int> ( ( 20 * log10 ( prev_hil_filt_val ) / 39 ) * 127 - 73 );
 midi_velocity = max ( 1, min ( 127, midi_velocity ) );
 
     }

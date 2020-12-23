@@ -73,7 +73,7 @@ x = audioread("signals/pd120_pos_sense2.wav");
 % figure; plot(20 * log10(abs([x, hilbert(x)])));
 % figure; plot(20 * log10(abs([x, myhilbert(x)]))); title('myhilbert');
 
-processing(x, Fs, false);
+processing(x * 25000, Fs, false); % scale to the ESP32 input range
 
 end
 
@@ -110,7 +110,7 @@ end
 
 function all_peaks = calc_peak_detection(hil_filt, Fs)
 
-threshold_db = -64;
+threshold_db = 23; % TEST: figure;plot(10.^((15:(30/31):45)/20),'.-')
 mask_time    = round(10e-3 * Fs); % mask time (e.g. 10 ms)
 
 % the following settings are trigger pad-specific (here, a PD-120 is used)
@@ -254,7 +254,7 @@ end
 cla
 plot(20 * log10(abs([x, hil_filt]))); grid on; hold on;
 plot(all_peaks, 20 * log10(hil_filt(all_peaks)), 'g*');
-plot(all_peaks, pos_sense_metric - 40, 'k*');
+plot(all_peaks, pos_sense_metric + 40, 'k*');
 if ~isempty(rim_hil)
   plot(20 * log10(abs(rim_hil_filt))); hold on
   plot(all_peaks, 20 * log10(rim_hil_filt(all_peaks) ./ hil_filt(all_peaks)), 'b*')
@@ -262,13 +262,13 @@ if ~isempty(rim_hil)
 end
 title('Green marker: level; Black marker: position');
 xlabel('samples'); ylabel('dB');
-ylim([-100, 0]);
+ylim([-10, 90]);
 drawnow;
 
 
 % TEST
 % velocity/positional sensing mapping and play MIDI notes
-velocity            = (20 * log10(hil_filt(all_peaks)) / 33 + 1.9) * 127;
+velocity            = (20 * log10(hil_filt(all_peaks)) / 39) * 127 - 73;
 velocity_clipped    = max(1, min(127, velocity));
 pos_sensing         = (pos_sense_metric / 4) * 127 - 510;
 pos_sensing_clipped = max(1, min(127, pos_sensing));

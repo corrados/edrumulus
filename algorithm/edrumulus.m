@@ -35,6 +35,9 @@ x = audioread("signals/pd120_single_hits.wav");
 % x = audioread("signals/pd120_pos_sense2.wav");
 % x = x(1300:5000); % * 1000;
 
+% match the signal level of the ESP32
+x = x * 25000;
+
 Setup();
 
 % loop
@@ -63,8 +66,8 @@ peak_found_corrected(peak_found_idx) = true;
 
 figure; plot(20 * log10(abs([hil_filt_debug, hil_filt_new_debug, cur_decay_debug]))); hold on;
         plot(find(peak_found_corrected), 20 * log10(hil_filt_debug(peak_found_corrected)), 'g*');
-        plot(find(peak_found_corrected), 10 * log10(pos_sense_metric(peak_found)) - 40, 'k*');
-        ylim([-100, 0]);
+        plot(find(peak_found_corrected), 10 * log10(pos_sense_metric(peak_found)) + 40, 'k*');
+        ylim([-10, 90]);
 % figure; plot(20 * log10(abs([x, hil_debug, hil_filt_debug])));
 
 return;
@@ -196,7 +199,7 @@ mov_av_hist_re         = zeros(energy_window_len, 1); % real part memory for mov
 mov_av_hist_im         = zeros(energy_window_len, 1); % imaginary part memory for moving average filter history
 mask_time              = round(10e-3 * Fs); % mask time (e.g. 10 ms)
 mask_back_cnt          = 0;
-threshold              = power(10, -64 / 20); % -64 dB threshold
+threshold              = power(10, 23 / 20); % 23 dB threshold
 was_above_threshold    = false;
 prev_hil_filt_val      = 0;
 prev_hil_filt_new_val  = 0;
