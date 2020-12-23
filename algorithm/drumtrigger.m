@@ -114,7 +114,7 @@ threshold_db = 23; % TEST: figure;plot(10.^((15:(30/31):45)/20),'.-')
 mask_time    = round(10e-3 * Fs); % mask time (e.g. 10 ms)
 
 % the following settings are trigger pad-specific (here, a PD-120 is used)
-decay_len     = round(0.2 * Fs); % decay time (e.g. 200 ms)
+decay_len     = round(0.25 * Fs); % decay time (e.g. 250 ms)
 decay_fact_db = 1; % decay factor in dB
 decay_grad    = 200 / Fs; % decay gradient factor
 

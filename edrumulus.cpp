@@ -141,7 +141,7 @@ void Edrumulus::Pad::initialize ( const int conf_Fs )
   threshold              = pow   ( 10.0f, 25.0f / 10 ); // 25 dB threshold
   energy_window_len      = round ( 2e-3f * Fs );        // scan time (e.g. 2 ms)
   mask_time              = round ( 10e-3f * Fs );       // mask time (e.g. 10 ms)
-  decay_len              = round ( 0.2f * Fs );         // decay time (e.g. 200 ms)
+  decay_len              = round ( 0.25f * Fs );        // decay time (e.g. 250 ms)
   decay_fact             = pow   ( 10.0f, 1.0f / 10 );  // decay factor of 1 dB
   const float decay_grad = 200.0f / Fs;                 // decay gradient factor
   alpha                  = 200.0f / Fs;                 // IIR low pass filter coefficient
