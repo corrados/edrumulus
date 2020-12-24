@@ -47,7 +47,10 @@ The algorithms are described in [this document](algorithm/README.md).
 
 ## Project log
 
-- (12/22/2020) Just tested BLE MIDI (i.e. MIDI over bluetooth) and it worked perfectly. Also, I started
+- (12/22/2020) Just tested BLE MIDI (i.e. MIDI over bluetooth). I could successfully connect to GarageBand
+  on an iPhone. Unfortunately, the bluetooth connection caused some interference in the audio input signal
+  so that the threshold had to be increased and also we got a lot of false detections on low velocity hits
+  at the edge of the pad. So for future hardware designs some shielding should be considered. Also, I started
   looking at the second piezo signal to support rim shot detection.
 
 - (12/20/2020) The positional sensing algorithm is now also ported to the ESP32 micro controller. I have made a
