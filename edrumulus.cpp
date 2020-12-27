@@ -137,14 +137,15 @@ return false;
 void Edrumulus::Pad::initialize ( const int conf_Fs )
 {
   // set algorithm parameters
-  Fs                     = conf_Fs;                     // copy/store the sampling rate
-  threshold              = pow   ( 10.0f, 25.0f / 10 ); // 25 dB threshold
-  energy_window_len      = round ( 2e-3f * Fs );        // scan time (e.g. 2 ms)
-  mask_time              = round ( 10e-3f * Fs );       // mask time (e.g. 10 ms)
-  decay_len              = round ( 0.25f * Fs );        // decay time (e.g. 250 ms)
-  decay_fact             = pow   ( 10.0f, 1.0f / 10 );  // decay factor of 1 dB
-  const float decay_grad = 200.0f / Fs;                 // decay gradient factor
-  alpha                  = 200.0f / Fs;                 // IIR low pass filter coefficient
+  Fs                     = conf_Fs;                            // copy/store the sampling rate
+  threshold_db           = 25.0f;                              // 25 dB threshold
+  threshold              = pow   ( 10.0f, threshold_db / 10 ); // linear power threshold
+  energy_window_len      = round ( 2e-3f * Fs );               // scan time (e.g. 2 ms)
+  mask_time              = round ( 10e-3f * Fs );              // mask time (e.g. 10 ms)
+  decay_len              = round ( 0.25f * Fs );               // decay time (e.g. 250 ms)
+  decay_fact             = pow   ( 10.0f, 1.0f / 10 );         // decay factor of 1 dB
+  const float decay_grad = 200.0f / Fs;                        // decay gradient factor
+  alpha                  = 200.0f / Fs;                        // IIR low pass filter coefficient
 
   // allocate memory for vectors
   if ( hil_hist        != nullptr ) delete[] hil_hist;
@@ -293,6 +294,17 @@ debug = 0.0f; // TEST
       decay_scaling         = prev_hil_filt_val * decay_fact;
       mask_back_cnt         = mask_time;
       peak_found            = true;
+
+// TEST using threshold and sensitivity
+// The ESP32 ADC has 12 bits resulting in a range of 20*log10(2048)=66.2 dB minus the threshold value.
+// The sensitivity parameter shall be in the range of 0..31. This range should then be mapped to the
+// maximum possible dynamic where sensitivity of 31 means that we have no dynamic at all and 0 means
+// that we use the full possible ADC range.
+// const int   set_sensitivity       = 0; // TODO this is a user setting
+// const float max_velocity_range_db = 20 * log10 ( 2048 ) - treshold_db;
+// const float velocity_range_db     = max_velocity_range_db * ( 32 - set_sensitivity ) / 32;
+// const int   midi_velocity_TEST    = static_cast<int> ( ( 10 * log10 ( prev_hil_filt_val / threshold ) / velocity_range_db ) * 127 );
+// midi_velocity = max ( 1, min ( 127, midi_velocity_TEST ) );
 
 // TEST
 // velocity sensing MIDI mapping

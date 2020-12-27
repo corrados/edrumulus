@@ -79,6 +79,7 @@ protected:
       int    decay_len;
       int    mask_time;
       int    mask_back_cnt;
+      float  threshold_db;
       float  threshold;
       bool   was_above_threshold;
       float  prev_hil_filt_val;
