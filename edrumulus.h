@@ -25,6 +25,7 @@
 
 #include "Arduino.h"
 
+
 class Edrumulus
 {
 public:
@@ -44,7 +45,16 @@ protected:
   class Pad
   {
     public:
-      void initialize ( const int conf_Fs );
+      enum Epadtype
+      {
+        PD120
+      };
+
+      Pad ( const int new_Fs );
+
+      void initialize();
+
+      void set_velocity_sensitivity ( const byte new_velocity ) { pad_settings.velocity_sensitivity = new_velocity; initialize(); }
 
       void process_sample ( const float input,
                             bool&       peak_found,
@@ -54,6 +64,13 @@ protected:
 
 
     protected:
+      struct Epadsettings
+      {
+        Epadtype pad_type;
+        byte     velocity_threshold;   // 0-31
+        byte     velocity_sensitivity; // 0-31, high value gives higher sensitivity
+      };
+
       void update_fifo ( const float input,
                          const int   fifo_length,
                          float*      fifo_memory );
@@ -73,33 +90,35 @@ protected:
       float* hil_hist_im     = nullptr;
       float* hil_low_hist_re = nullptr;
       float* hil_low_hist_im = nullptr;
-    
-      int    Fs;
-      int    energy_window_len;
-      int    decay_len;
-      int    mask_time;
-      int    mask_back_cnt;
-      float  threshold;
-      bool   was_above_threshold;
-      float  prev_hil_filt_val;
-      float  prev_hil_filt_new_val;
-      float  decay_fact;
-      int    decay_back_cnt;
-      float  decay_scaling;
-      float  alpha;
-      int    pos_sense_cnt;
-      int    stored_midi_velocity;
-      float  hil_low_re;
-      float  hil_low_im;
+
+      int          Fs;
+      int          energy_window_len;
+      int          decay_len;
+      int          mask_time;
+      int          mask_back_cnt;
+      float        threshold;
+      float        velocity_range_db;
+      bool         was_above_threshold;
+      float        prev_hil_filt_val;
+      float        prev_hil_filt_new_val;
+      float        decay_fact;
+      int          decay_back_cnt;
+      float        decay_scaling;
+      float        alpha;
+      int          pos_sense_cnt;
+      int          stored_midi_velocity;
+      float        hil_low_re;
+      float        hil_low_im;
+      Epadsettings pad_settings;
   };
 
-  Pad   pad;
   int   Fs;
   int   analog_pin;
   float dc_offset;
   int   overload_LED_pin;
   int   overload_LED_cnt;
   int   overload_LED_on_time;
+  Pad   pad; // note: must be located after Fs variable
 
   volatile SemaphoreHandle_t timer_semaphore;
   hw_timer_t*                timer = nullptr;
