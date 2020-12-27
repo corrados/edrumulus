@@ -26,11 +26,12 @@
 Edrumulus* edrumulus_pointer = nullptr;
 
 
-Edrumulus::Edrumulus()
+Edrumulus::Edrumulus() :
+  Fs  ( 8000 ), // this is the most fundamental system parameter: system sampling rate
+  pad ( Fs )
 {
   // initializations
   edrumulus_pointer    = this;                 // global pointer to this class needed for static callback function
-  Fs                   = 8000;                 // this is the most fundamental system parameter: system sampling rate
   overload_LED_on_time = round ( 0.25f * Fs ); // minimum overload LED on time (e.g., 250 ms)
   overload_LED_cnt     = 0;
 
@@ -76,7 +77,7 @@ void Edrumulus::setup ( const int conf_analog_pin,
   dc_offset = dc_offset_sum / dc_offset_est_len;
 
   // initialize the pad
-  pad.initialize ( Fs );
+  pad.initialize();
 }
 
 
@@ -134,14 +135,21 @@ return false;
 }
 
 
-void Edrumulus::Pad::initialize ( const int conf_Fs )
+Edrumulus::Pad::Pad ( const int new_Fs ) :
+  Fs ( new_Fs )
 {
+  
+// TEST default pad settings
+pad_settings.pad_type             = PD120; // TODO -> NOT USED RIGHT NOW
+pad_settings.velocity_threshold   = 0;     // TODO -> NOT USED RIGHT NOW
+pad_settings.velocity_sensitivity = 4;
 
-// TEST
-const int set_sensitivity = 7; // TODO this is a user setting
+}
 
+
+void Edrumulus::Pad::initialize()
+{
   // set algorithm parameters
-  Fs                       = conf_Fs;                            // copy/store the sampling rate
   const float threshold_db = 25.0f;                              // 25 dB threshold
   threshold                = pow   ( 10.0f, threshold_db / 10 ); // linear power threshold
   energy_window_len        = round ( 2e-3f * Fs );               // scan time (e.g. 2 ms)
@@ -156,7 +164,7 @@ const int set_sensitivity = 7; // TODO this is a user setting
   // maximum possible dynamic where sensitivity of 31 means that we have no dynamic at all and 0 means
   // that we use the full possible ADC range.
   const float max_velocity_range_db = 20 * log10 ( 2048 ) - threshold_db;
-  velocity_range_db                 = max_velocity_range_db * ( 32 - set_sensitivity ) / 32;
+  velocity_range_db                 = max_velocity_range_db * ( 32 - pad_settings.velocity_sensitivity ) / 32;
 
   // allocate memory for vectors
   if ( hil_hist        != nullptr ) delete[] hil_hist;
