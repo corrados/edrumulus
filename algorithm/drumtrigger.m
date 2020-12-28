@@ -42,7 +42,7 @@ Fs = 8000; % Hz
 % x = audioread("signals/pd120_roll.wav");
 % x = audioread("signals/pd120_middle_velocity.wav");
 % x = audioread("signals/pd120_hot_spot.wav");
-x = audioread("signals/pd120_rimshot.wav"); x = x(1:100000, :);
+x = audioread("signals/pd120_rimshot.wav");% x = x(1:100000, :);
 % x = audioread("signals/pd6.wav");
 % org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
 % org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
@@ -230,29 +230,33 @@ pos_sense_metric = 10 * log10(peak_energy) - 10 * log10(peak_energy_low);
 end
 
 
-function rim_x_low = detect_rim_shot(x, all_peaks, Fs)
+function is_rim_shot = detect_rim_shot(x, all_peaks, Fs)
+
+is_rim_shot           = false(size(all_peaks));
+rim_shot_window_len   = round(6e-3 * Fs); % scan time (e.g. 6 ms)
+rim_shot_threshold_dB = 87.5;
+rim_shot_threshold    = 10 ^ (rim_shot_threshold_dB / 10);
 
 if size(x, 2) > 1
 
-  rim_x_low = filter_input_signal(x(:, 2), Fs); % rim piezo signal is in second dimension
+  x_rim_hil = filter_input_signal(x(:, 2), Fs); % rim piezo signal is in second dimension
 
-  if ~isempty(rim_x_low)
+  for i = 1:length(all_peaks)
 
-    % TEST copy from above!!!!!
-    energy_window_len  = round(6e-3 * Fs); % scan time (e.g. 2 ms)
-    for i = 1:length(all_peaks)
-      win_idx        = (all_peaks(i):all_peaks(i) + energy_window_len - 1) - energy_window_len / 2;
-      win_idx        = win_idx((win_idx <= length(rim_x_low)) & (win_idx > 0));
-      rim_max_pow(i) = max(abs(rim_x_low(win_idx)) .^ 2);
-    end
-
-figure;
-plot(20 * log10(abs(rim_x_low))); hold on; grid on;
-plot(all_peaks, 10 * log10(rim_max_pow), '*-');
-plot(all_peaks, ones(length(all_peaks), 1) * 87.5, 'r--'); % possible threshold
-axis([-9.8041e+02   9.9146e+04   7.5604e+01   9.6315e+01]);
+    win_idx        = (all_peaks(i):all_peaks(i) + rim_shot_window_len - 1) - rim_shot_window_len / 2;
+    win_idx        = win_idx((win_idx <= length(x_rim_hil)) & (win_idx > 0));
+    rim_max_pow(i) = max(abs(x_rim_hil(win_idx)) .^ 2);
 
   end
+
+  is_rim_shot = rim_max_pow > rim_shot_threshold;
+
+figure;
+plot(20 * log10(abs(x_rim_hil))); hold on; grid on;
+plot(all_peaks(is_rim_shot), 10 * log10(rim_max_pow(is_rim_shot)), '*');
+plot(all_peaks(~is_rim_shot), 10 * log10(rim_max_pow(~is_rim_shot)), '*');
+plot(all_peaks, ones(length(all_peaks), 1) * rim_shot_threshold_dB, 'r--'); % possible threshold
+%axis([-9.8041e+02   9.9146e+04   7.5604e+01   9.6315e+01]);
 
 end
 
@@ -264,7 +268,7 @@ function processing(x, Fs, do_realtime)
 % calculate peak detection and positional sensing
 [hil, hil_filt]  = filter_input_signal(x(:, 1), Fs);
 all_peaks        = calc_peak_detection(hil_filt, Fs);
-rim_x_low        = detect_rim_shot(x, all_peaks, Fs);
+is_rim_shot      = detect_rim_shot(x, all_peaks, Fs);
 pos_sense_metric = calc_pos_sense_metric(hil, Fs, all_peaks);
 
 if ~do_realtime
