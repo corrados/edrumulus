@@ -16,7 +16,16 @@ this step we can also detect if we have a cross stick situation.
   complex signal. As a result, the magnitude of that complex signal is much smoother already without
   having modified the actual spectrum of the signal (real-valued signals have mirror symmetric spectrum).
   This effect is shown in the following picture:
-  ![First results plot](images/hilbert.jpg)
+  ![Hilbert filter](images/hilbert.jpg)
+  As can be seen in the graph, the default Hilbert filter in Octave uses a long impulse response which
+  would introduce a large delay. To get to a more practical implementation, we use our own Hilbert filter
+  design which as a very short impulse response. Using that simplified Hilbert filter leads to less
+  power drop cancellation. To improve the situation, we apply a moving average filter after the simplified
+  Hilbert filter. This is not only to reduce the power drops but to improve the velocity estimation. The
+  idea of the velocity estimation is the estimated the energy of the drum stick hit on the mesh head. To
+  estimated the energy of a signal, it makes sense to integrate the measured powers over a period of time,
+  which is basically a moving average filter. The resulting trace can be seen on the next picture:
+  ![Simplified Hilbert filter with moving average](images/simplehilbertwithmovav.jpg)
 
 - To improve the peak detection, we can make use of the known decay curve of the trigger pad in use.
   So, after successfully detecting a peak, we know that this peak causes a slowly decaying power
