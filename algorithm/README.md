@@ -10,34 +10,67 @@ this step we can also detect if we have a cross stick situation.
 
 ## Peak detection
 
-- If you calculate the power of the recorded real-valued audio signal, the resulting power curve has
-  significant power drops caused by the nature of a sinusoidal signal. A filtering can smooth the
-  curve. As a test I have used an Hilbert transform to convert the real-valued signal in a complex
-  signal. As a result, the magnitude of that complex signal is much smoother already without having
-  modified the actual spectrum of the signal (real-valued signals have mirror symmetric spectrum).
+### Signal filtering
 
-- To improve the peak detection, we can make use of the known decay curve of the trigger pad in use.
-  So, after successfully detecting a peak, we know that this peak causes a slowly decaying power
-  curve which has a known shape and we can subtract that known curve from the signal to improve the
-  detection of the next pad hit.
+If you calculate the power of the recorded real-valued audio signal, the resulting power curve has
+significant power drops caused by the nature of a sinusoidal signal. A filtering can smooth the
+curve. As a possible filter we can use a Hilbert transform to convert the real-valued signal in a
+complex signal. As a result, the magnitude of that complex signal is much smoother already without
+having modified the actual spectrum of the signal (real-valued signals have mirror symmetric spectrum).
+This effect is shown in the following picture:<br/>
+![Hilbert filter](images/hilbert.jpg)
+As can be seen in the graph, the default Hilbert filter in Octave uses a long impulse response which
+would introduce a large delay. To get to a more practical implementation, we use our own Hilbert filter
+design which as a very short impulse response. Using that simplified Hilbert filter leads to less
+power drop cancellation. To improve the situation, we apply a moving average filter after the simplified
+Hilbert filter. This is not only to reduce the power drops but to improve the velocity estimation. The
+idea of the velocity estimation is to estimate the energy of the drum stick hit on the mesh head. To
+estimate the energy of a signal, it makes sense to integrate the measured powers over a period of time,
+which is basically a moving average filter. The resulting trace can be seen on the next picture:<br/>
+![Simplified Hilbert filter with moving average](images/simplehilbertwithmovav.jpg)
+
+### Retrigger cancellation
+
+To improve the peak detection, we can make use of the known decay curve of the trigger pad in use.
+So, after successfully detecting a peak, we know that this peak causes a slowly decaying power
+curve which has a known shape and we can subtract that known curve from the signal to improve the
+detection of the next pad hit.
 
 
 ## Positional sensing
 
-- It has shown that if you hit the pad close to the edge, the resulting sound has less low frequencies
-  and sounds more crisp. So, the idea is to low-pass filter the signal and at the detected peak position we
-  calculate the power ratio of the low-pass filtered signal with the unfiltered signal. This is then
-  the metric for the positional sensing.
+It has shown that if you hit the pad close to the edge, the resulting sound has less low frequencies
+and sounds more crisp. So, the idea is to low-pass filter the signal and at the detected peak position we
+calculate the power ratio of the low-pass filtered signal with the unfiltered signal. This is then
+the metric for the positional sensing.
+
+
+## Rim shot detection
+
+To detect a rim shot, a second piezo sensor is typically mounted at the casing of the pad. So, to
+support rim shot detection, we need a second input signal. At this point I want to reference this
+[excellent description of piezo sensing](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/docs/sensing.md)
+by [RyoKosaka](https://github.com/RyoKosaka).
+
+Unfortunately, when I tried out different algorithms for rim shot detection I found out that a simple
+algorithm as proposed by RyoKosaka did not give me the expected
+results. After I found out that the rim shot detection is not that straightforward, I did some testing
+with my Roland TDW-20 and I figured out that even this professional module has its problems with
+rim shot detection. The detection results were not perfect either.
+
+The current algorithm design uses a low pass filtered rim piezo signal and applies an absolute
+threshold (i.e. not a metric which is normalized with the piezo signal of the mesh pad). Then it
+showed that the scan time must be enlarged to 6 ms which causes additional trigger delay.
 
 
 # First results
 
-- The following plot shows how the current status of the algorithms performs. At the beginning there are
-  some single hits. Then there follows a region with a snare drum roll. After that, there are single hits
-  which start from the middle, move to the edge and go back to the middle of the pad where the hits are
-  equally strong. As shown by the black markers, the positional sensing seems to work pretty well. Also,
-  the peak detection and velocity estimation seems to be pretty good as well.
-  ![First results plot](images/first_results.jpg)
+The following plot shows how the current status of the algorithms performs. At the beginning there are
+some single hits. Then there follows a region with a snare drum roll. After that, there are single hits
+which start from the middle, move to the edge and go back to the middle of the pad where the hits are
+equally strong. As shown by the black markers, the positional sensing seems to work pretty well. Also,
+the peak detection and velocity estimation seems to be pretty good as well.
+![First results plot](images/first_results.jpg)
 
 
 # Latency between pad hit and audio output of the synthesized drum sound
