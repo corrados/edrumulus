@@ -42,12 +42,11 @@ Fs = 8000; % Hz
 % x = audioread("signals/pd120_roll.wav");
 % x = audioread("signals/pd120_middle_velocity.wav");
 % x = audioread("signals/pd120_hot_spot.wav");
-x = audioread("signals/pd120_rimshot.wav");
+x = audioread("signals/pd120_rimshot.wav"); x = x(1:100000, :);
 % x = audioread("signals/pd6.wav");
 % org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
 % org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
 
-x = x(1:100000, :);
 
 % % TEST call reference mode for C++ implementation
 % edrumulus(x);
@@ -231,37 +230,29 @@ pos_sense_metric = 10 * log10(peak_energy) - 10 * log10(peak_energy_low);
 end
 
 
-function rim_x_low = detect_rim_shot(rim_x, hil, all_peaks, Fs)
+function rim_x_low = detect_rim_shot(x, all_peaks, Fs)
 
-[rim_x_low, rim_hil_filt] = filter_input_signal(rim_x, Fs);
+if size(x, 2) > 1
 
-%[b, a]    = butter(3, 0.05, 'high');%figure;freqz(b,a,1024,8e3);
-%rim_x_low = filter(b, a, rim_x);
+  rim_x_low = filter_input_signal(x(:, 2), Fs); % rim piezo signal is in second dimension
 
-%alpha     = 200 / Fs;
-%rim_x_low = filter(alpha, [1, alpha - 1], rim_x);
+  if ~isempty(rim_x_low)
 
-%[b,a]=ellip(2, 3, 20, 100/4e3+[-.001 .001]);
-%rim_x_low = filter(b, a, rim_x);
-
-if ~isempty(rim_x_low)
-
-  % TEST copy from above!!!!!
-  energy_window_len  = round(6e-3 * Fs); % scan time (e.g. 2 ms)
-  for i = 1:length(all_peaks)
-    win_idx        = (all_peaks(i):all_peaks(i) + energy_window_len - 1) - energy_window_len / 2;
-    win_idx        = win_idx((win_idx <= length(rim_x_low)) & (win_idx > 0));
-    rim_max_pow(i) = max(abs(rim_x_low(win_idx)) .^ 2);
-    hil_max_pow(i) = max(abs(hil(win_idx)) .^ 2);
-  end
+    % TEST copy from above!!!!!
+    energy_window_len  = round(6e-3 * Fs); % scan time (e.g. 2 ms)
+    for i = 1:length(all_peaks)
+      win_idx        = (all_peaks(i):all_peaks(i) + energy_window_len - 1) - energy_window_len / 2;
+      win_idx        = win_idx((win_idx <= length(rim_x_low)) & (win_idx > 0));
+      rim_max_pow(i) = max(abs(rim_x_low(win_idx)) .^ 2);
+    end
 
 figure;
 plot(20 * log10(abs(rim_x_low))); hold on; grid on;
 plot(all_peaks, 10 * log10(rim_max_pow), '*-');
 plot(all_peaks, ones(length(all_peaks), 1) * 87.5, 'r--'); % possible threshold
-%plot(all_peaks, 10 * log10(hil_max_pow), '*-');
-%plot(all_peaks, 10 * log10(rim_max_pow ./ hil_max_pow) + 60, '*-');
 axis([-9.8041e+02   9.9146e+04   7.5604e+01   9.6315e+01]);
+
+  end
 
 end
 
@@ -270,68 +261,25 @@ end
 
 function processing(x, Fs, do_realtime)
 
-
-% TEST rim shot support
-rim_hil_filt = [];
-rim_x        = [];
-if size(x, 2) > 1
-  rim_x = x(:, 2);
-  x     = x(:, 1);
-  [rim_hil, rim_hil_filt] = filter_input_signal(rim_x, Fs);
-end
-
-
 % calculate peak detection and positional sensing
-[hil, hil_filt]  = filter_input_signal(x, Fs);
+[hil, hil_filt]  = filter_input_signal(x(:, 1), Fs);
 all_peaks        = calc_peak_detection(hil_filt, Fs);
-rim_x_low        = detect_rim_shot(rim_x, hil, all_peaks, Fs);
+rim_x_low        = detect_rim_shot(x, all_peaks, Fs);
 pos_sense_metric = calc_pos_sense_metric(hil, Fs, all_peaks);
 
-%if ~do_realtime
-%  figure % open figure to keep previous plots (not desired for real-time)
-%end
-%
-%% plot results
-%cla
-%plot(10 * log10([abs(x) .^ 2, hil_filt])); grid on; hold on;
-%plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'g*');
-%plot(all_peaks, pos_sense_metric + 40, 'k*');
-%%if ~isempty(rim_hil_filt)
-%%  plot(10 * log10(abs(rim_hil_filt))); hold on
-%%  plot(all_peaks, 10 * log10(rim_hil_filt(all_peaks) ./ hil_filt(all_peaks)) + 60, 'b*-')
-%%  plot(all_peaks, 10 * log10(rim_hil_filt(all_peaks)), 'y*')
-%%end
-%title('Green marker: level; Black marker: position');
-%xlabel('samples'); ylabel('dB');
-%ylim([-10, 90]);
-%drawnow;
+if ~do_realtime
+  figure % open figure to keep previous plots (not desired for real-time)
+end
 
-
-%% TEST
-%figure; plot(20 * log10(abs([x, rim_x]))); title('unfiltered'); hold on;
-%        plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'g*');
-%figure; plot(20 * log10(abs([hil_filt, rim_hil_filt]))); title('filtered');
-
-%% TEST
-%% [b,a]=ellip(2, 3, 20, 100/4e3+[-.001 .001]);figure;freqz(b,a,1024,8e3);
-%% [b,a]=ellip(2, 3, 20, 25/4e3+[-.001 .001]);figure;freqz(b,a,1024,8e3)
-%
-%[b,a]=ellip(2, 3, 20, 100/4e3+[-.001 .001]);
-%rim_x_100 = filter(b, a, rim_x);
-%
-%[b,a]=ellip(2, 3, 20, 25/4e3+[-.001 .001]);
-%rim_x_25 = filter(b, a, rim_x);
-%
-%alpha     = 0.025 * 8e3 / Fs;
-%rim_x_low = filter(alpha, [1, alpha - 1], rim_x);
-%
-%figure;
-%plot(20 * log10(abs([rim_x_low, rim_x])));
-%
-%figure;
-%N = 500;
-%rim_x_mov = filter(ones(N, 1) / N, 1, rim_x); % moving average
-%plot(20 * log10(abs(rim_x_mov)));
+% plot results
+cla
+plot(10 * log10([abs(x(:, 1)) .^ 2, hil_filt])); grid on; hold on;
+plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'g*');
+plot(all_peaks, pos_sense_metric + 40, 'k*');
+title('Green marker: level; Black marker: position');
+xlabel('samples'); ylabel('dB');
+ylim([-10, 90]);
+drawnow;
 
 
 % TEST
