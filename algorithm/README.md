@@ -12,9 +12,11 @@ this step we can also detect if we have a cross stick situation.
 
 - If you calculate the power of the recorded real-valued audio signal, the resulting power curve has
   significant power drops caused by the nature of a sinusoidal signal. A filtering can smooth the
-  curve. As a test I have used an Hilbert transform to convert the real-valued signal in a complex
-  signal. As a result, the magnitude of that complex signal is much smoother already without having
-  modified the actual spectrum of the signal (real-valued signals have mirror symmetric spectrum).
+  curve. As a possible filter we can use a Hilbert transform to convert the real-valued signal in a
+  complex signal. As a result, the magnitude of that complex signal is much smoother already without
+  having modified the actual spectrum of the signal (real-valued signals have mirror symmetric spectrum).
+  This effect is shown in the following picture:
+  ![First results plot](images/hilbert.jpg)
 
 - To improve the peak detection, we can make use of the known decay curve of the trigger pad in use.
   So, after successfully detecting a peak, we know that this peak causes a slowly decaying power
