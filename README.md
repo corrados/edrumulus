@@ -7,17 +7,19 @@ The aim of the Edrumulus project is to create a high quality Open Source e-drum 
 
 ## Project specifications
 
+- The trigger performance shall be similar or better than the Roland TDW-20.
+
 - Overall latency should be as small as possible. The goal is to get a latency < 10 ms.
 
 - Positional sensing shall be supported.
 
-- One goal would be to use a ESP32 microprocessor, similar to the [open e-drums](https://open-e-drums.com)
+- An ESP32 micro processor shall be used similar to the [open e-drums](https://open-e-drums.com)
   project. It has shown that the ESP32 is powerful enough to fulfill the task of a drum trigger module.
 
   Many open drum trigger implementations only use one half of the signal (i.e., only the positive
   wave) or use a bridge rectifier to capture the analog signal. Since we want to implement more
   sophisticated algorithms, we want to capture the entire signal without non-linear analog
-  preprocessing. Since microcontrollers usually only convert analog signals in the range of 0 to 3.3 V,
+  preprocessing. Since micro controllers usually only convert analog signals in the range of 0 to 3.3 V,
   we have to move the point of operation in the middle of the voltage range.
 
   A circuit diagram of my test setup is given in the following picture:
@@ -71,11 +73,9 @@ The algorithms are described in [this document](algorithm/README.md).
 
 ## TODO list
 
-- The algorithm is optimized for Roland PD-120 pad only. Other pad types should be supported, too.
-
-- The low velocity performance at the edge of the pad is not good enough. This should be improved.
-
 - We sometime have double-triggers on hard hits or when the rim is hit. The mask time is already
   at 10 ms. So, the decay handling should be improved to suppress these double-triggers.
+
+- The algorithm is optimized for Roland PD-120 pad only. Other pad types should be supported, too.
 
 - The normalization of the positional sensing should be improved.
