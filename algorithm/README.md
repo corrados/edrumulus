@@ -49,10 +49,11 @@ the metric for the positional sensing.
 
 To detect a rim shot, a second piezo sensor is typically mounted at the casing of the pad. So, to
 support rim shot detection, we need a second input signal. At this point I want to reference this
-[excellent description of piezo sensing by RyoKosaka](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/docs/sensing.md).
+[excellent description of piezo sensing](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/docs/sensing.md)
+by [RyoKosaka](https://github.com/RyoKosaka).
 
 Unfortunately, when I tried out different algorithms for rim shot detection I found out that a simple
-algorithm as proposed by [RyoKosaka](https://github.com/RyoKosaka) did not give me the expected
+algorithm as proposed by RyoKosaka did not give me the expected
 results. After I found out that the rim shot detection is not that straightforward, I did some testing
 with my Roland TDW-20 and I figured out that even this professional module has its problems with
 rim shot detection. The detection results were not perfect either.
