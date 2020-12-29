@@ -45,20 +45,22 @@ void setup()
   Serial.begin ( 115200 );
 #endif
 
-  // analog pin is 34, we also want to use the on-board LED as an overload indicator
-  edrumulus.setup ( 34, 2 );
+  // analog pins are 34 and 35, we also want to use the on-board LED as an overload indicator
+  //edrumulus.setup ( 34, 35, 2 );
+  edrumulus.setup ( 34, -1, 2 ); // no rim shot
 }
 
 
 void loop()
 {
-  int midi_velocity, midi_pos;
+  int  midi_velocity, midi_pos;
+  bool is_rim_shot;
 
-  if ( edrumulus.process ( midi_velocity, midi_pos ) )
+  if ( edrumulus.process ( midi_velocity, midi_pos, is_rim_shot ) )
   {
 #ifdef USE_MIDI
-    MIDI.sendControlChange ( 16, midi_pos,      10 ); // positional sensing
-    MIDI.sendNoteOn        ( 38, midi_velocity, 10 ); // (note, velocity, channel)
+    MIDI.sendControlChange ( 16, midi_pos,      10 );                    // positional sensing
+    MIDI.sendNoteOn        ( is_rim_shot ? 40 : 38, midi_velocity, 10 ); // (note, velocity, channel)
     MIDI.sendNoteOff       ( 38, 0,             10 );
 #endif
   }

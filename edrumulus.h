@@ -25,6 +25,7 @@
 
 #include "Arduino.h"
 
+#define MAX_NUM_PAD_INPUTS   2 // a maximum of 2 sensors per pad supported
 
 class Edrumulus
 {
@@ -33,12 +34,14 @@ public:
 
   // call this function during the Setup function of the main program
   void setup ( const int conf_analog_pin,
+               const int conf_analog_pin_rim_shot = -1,
                const int conf_overload_LED_pin = -1 ); // per default no overload LED is used
 
   // call the process function during the main loop
   // if a MIDI note is ready, the function returns true
-  bool process ( int& midi_velocity,
-                 int& midi_pos );
+  bool process ( int&  midi_velocity,
+                 int&  midi_pos,
+                 bool& is_rim_shot );
 
 
 protected:
@@ -50,17 +53,17 @@ protected:
         PD120
       };
 
-      Pad ( const int new_Fs );
+      void setup ( const int conf_Fs,
+                   const int conf_number_inputs = 1 );
 
-      void initialize();
+      void process_sample ( const float* input,
+                            bool&        peak_found,
+                            int&         midi_velocity,
+                            int&         midi_pos,
+                            bool&        is_rim_shot,
+                            float&       debug );
 
       void set_velocity_sensitivity ( const byte new_velocity ) { pad_settings.velocity_sensitivity = new_velocity; initialize(); }
-
-      void process_sample ( const float input,
-                            bool&       peak_found,
-                            int&        midi_velocity,
-                            int&        midi_pos,
-                            float&      debug );
 
 
     protected:
@@ -71,6 +74,7 @@ protected:
         byte     velocity_sensitivity; // 0-31, high value gives higher sensitivity
       };
 
+      void initialize();
       void update_fifo ( const float input,
                          const int   fifo_length,
                          float*      fifo_memory );
@@ -83,6 +87,7 @@ protected:
                                     1.697288080048948f,  0.0f,                0.035902177664014f };
     
       float* hil_hist        = nullptr;
+      float* rim_hil_hist    = nullptr;
       float* mov_av_hist_re  = nullptr;
       float* mov_av_hist_im  = nullptr;
       float* decay           = nullptr;
@@ -90,8 +95,11 @@ protected:
       float* hil_hist_im     = nullptr;
       float* hil_low_hist_re = nullptr;
       float* hil_low_hist_im = nullptr;
+      float* rim_hil_hist_re = nullptr;
+      float* rim_hil_hist_im = nullptr;
 
       int          Fs;
+      int          number_inputs;
       int          energy_window_len;
       int          decay_len;
       int          mask_time;
@@ -105,16 +113,21 @@ protected:
       int          decay_back_cnt;
       float        decay_scaling;
       float        alpha;
+      int          rim_shot_window_len;
+      float        rim_shot_threshold;
       int          pos_sense_cnt;
+      int          rim_shot_cnt;
       int          stored_midi_velocity;
+      int          stored_midi_pos;
       float        hil_low_re;
       float        hil_low_im;
       Epadsettings pad_settings;
   };
 
   int   Fs;
-  int   analog_pin;
-  float dc_offset;
+  int   number_inputs;
+  int   analog_pin[MAX_NUM_PAD_INPUTS];
+  float dc_offset[MAX_NUM_PAD_INPUTS];
   int   overload_LED_pin;
   int   overload_LED_cnt;
   int   overload_LED_on_time;

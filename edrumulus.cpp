@@ -27,8 +27,7 @@ Edrumulus* edrumulus_pointer = nullptr;
 
 
 Edrumulus::Edrumulus() :
-  Fs  ( 8000 ), // this is the most fundamental system parameter: system sampling rate
-  pad ( Fs )
+  Fs ( 8000 ) // this is the most fundamental system parameter: system sampling rate
 {
   // initializations
   edrumulus_pointer    = this;                 // global pointer to this class needed for static callback function
@@ -52,11 +51,14 @@ void IRAM_ATTR Edrumulus::on_timer()
 
 
 void Edrumulus::setup ( const int conf_analog_pin,
+                        const int conf_analog_pin_rim_shot,
                         const int conf_overload_LED_pin )
 {
   // set the GIOP pin numbers
-  analog_pin       = conf_analog_pin;
+  analog_pin[0]    = conf_analog_pin;
+  analog_pin[1]    = conf_analog_pin_rim_shot;
   overload_LED_pin = conf_overload_LED_pin;
+  number_inputs    = conf_analog_pin_rim_shot >= 0 ? 2 : 1;
 
   // if an overload LED shall be used, initialize GPIO port
   if ( overload_LED_pin >= 0 )
@@ -64,25 +66,29 @@ void Edrumulus::setup ( const int conf_analog_pin,
     pinMode ( overload_LED_pin, OUTPUT );
   }
 
-  // estimate the DC offset
-  const int dc_offset_est_len = 5000; // samples
-  float     dc_offset_sum     = 0.0f;
-
-  for ( int i = 0; i < dc_offset_est_len; i++ )
+  // estimate the DC offset for all inputs
+  for ( int j = 0; j < number_inputs; j++ )
   {
-    dc_offset_sum += analogRead ( analog_pin );
-    delayMicroseconds ( 100 );
+    const int dc_offset_est_len = 5000; // samples
+    float     dc_offset_sum     = 0.0f;
+
+    for ( int i = 0; i < dc_offset_est_len; i++ )
+    {
+      dc_offset_sum += analogRead ( analog_pin[j] );
+      delayMicroseconds ( 100 );
+    }
+
+    dc_offset[j] = dc_offset_sum / dc_offset_est_len;
   }
 
-  dc_offset = dc_offset_sum / dc_offset_est_len;
-
-  // initialize the pad
-  pad.initialize();
+  // setup the pad
+  pad.setup ( Fs, number_inputs );
 }
 
 
-bool Edrumulus::process ( int& midi_velocity,
-                          int& midi_pos )
+bool Edrumulus::process ( int&  midi_velocity,
+                          int&  midi_pos,
+                          bool& is_rim_shot )
 {
   bool  peak_found = false;
   float debug;
@@ -92,7 +98,7 @@ bool Edrumulus::process ( int& midi_velocity,
 if ( Serial.available() > 0 )
 {
   const float fIn = Serial.parseFloat();
-  process_sample ( fIn, peak_found, midi_velocity, midi_pos, debug );
+  process_sample ( fIn, peak_found, midi_velocity, midi_pos, is_rim_shot, debug );
   Serial.println ( debug, 7 );
 }
 return false;
@@ -101,19 +107,30 @@ return false;
   // wait for the timer to get the correct sampling rate when reading the analog value
   if ( xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
   {
-    // get sample from ADC
-    const int sample_org = analogRead ( analog_pin );
+    int   sample_org[MAX_NUM_PAD_INPUTS];
+    float sample[MAX_NUM_PAD_INPUTS];
 
-    // prepare sample for processing
-    float sample = sample_org - dc_offset; // compensate DC offset
+    // get sample(s) from ADC and prepare sample(s) for processing
+    for ( int j = 0; j < number_inputs; j++ )
+    {
+      sample_org[j] = analogRead ( analog_pin[j] );
+      sample[j]     = sample_org[j] - dc_offset[j]; // compensate DC offset
+    }
 
     // process sample
-    pad.process_sample ( sample, peak_found, midi_velocity, midi_pos, debug );
+    pad.process_sample ( sample, peak_found, midi_velocity, midi_pos, is_rim_shot, debug );
 
     // optional overload detection
     if ( overload_LED_pin >= 0 )
     {
-      if ( ( sample_org >= 4094 ) || ( sample_org <= 1 ) )
+      bool is_overload = false;
+      
+      for ( int j = 0; j < number_inputs; j++ )
+      {
+        is_overload |= ( sample_org[j] >= 4094 ) || ( sample_org[j] <= 1 );
+      }
+
+      if ( is_overload )
       {
         overload_LED_cnt = overload_LED_on_time;
         digitalWrite ( overload_LED_pin, HIGH );
@@ -135,15 +152,19 @@ return false;
 }
 
 
-Edrumulus::Pad::Pad ( const int new_Fs ) :
-  Fs ( new_Fs )
+void Edrumulus::Pad::setup ( const int conf_Fs,
+                             const int conf_number_inputs )
 {
-  
+  // set essential parameters
+  Fs            = conf_Fs;
+  number_inputs = conf_number_inputs;
+
 // TEST default pad settings
 pad_settings.pad_type             = PD120; // TODO -> NOT USED RIGHT NOW
 pad_settings.velocity_threshold   = 0;     // TODO -> NOT USED RIGHT NOW
 pad_settings.velocity_sensitivity = 4;
 
+  initialize();
 }
 
 
@@ -158,6 +179,8 @@ void Edrumulus::Pad::initialize()
   decay_fact               = pow   ( 10.0f, 1.0f / 10 );         // decay factor of 1 dB
   const float decay_grad   = 200.0f / Fs;                        // decay gradient factor
   alpha                    = 200.0f / Fs;                        // IIR low pass filter coefficient
+  rim_shot_window_len      = round ( 6e-3f * Fs );               // window length (e.g. 6 ms)
+  rim_shot_threshold       = pow   ( 10.0f, 47.0f / 10 );        // rim shot threshold
 
   // The ESP32 ADC has 12 bits resulting in a range of 20*log10(2048)=66.2 dB minus the threshold value.
   // The sensitivity parameter shall be in the range of 0..31. This range should then be mapped to the
@@ -168,6 +191,7 @@ void Edrumulus::Pad::initialize()
 
   // allocate memory for vectors
   if ( hil_hist        != nullptr ) delete[] hil_hist;
+  if ( rim_hil_hist    != nullptr ) delete[] rim_hil_hist;
   if ( mov_av_hist_re  != nullptr ) delete[] mov_av_hist_re;
   if ( mov_av_hist_im  != nullptr ) delete[] mov_av_hist_im;
   if ( decay           != nullptr ) delete[] decay;
@@ -175,8 +199,11 @@ void Edrumulus::Pad::initialize()
   if ( hil_hist_im     != nullptr ) delete[] hil_hist_im;
   if ( hil_low_hist_re != nullptr ) delete[] hil_low_hist_re;
   if ( hil_low_hist_im != nullptr ) delete[] hil_low_hist_im;
+  if ( rim_hil_hist_re != nullptr ) delete[] rim_hil_hist_re;
+  if ( rim_hil_hist_im != nullptr ) delete[] rim_hil_hist_im;
 
   hil_hist        = new float[hil_filt_len];      // memory for Hilbert filter history
+  rim_hil_hist    = new float[hil_filt_len];      // memory for rim shot detection Hilbert filter history
   mov_av_hist_re  = new float[energy_window_len]; // real part memory for moving average filter history
   mov_av_hist_im  = new float[energy_window_len]; // imaginary part memory for moving average filter history
   decay           = new float[decay_len];         // memory for decay function
@@ -184,11 +211,14 @@ void Edrumulus::Pad::initialize()
   hil_hist_im     = new float[energy_window_len]; // imaginary part of memory for moving average of Hilbert filtered signal
   hil_low_hist_re = new float[energy_window_len]; // real part of memory for moving average of low-pass filtered Hilbert signal
   hil_low_hist_im = new float[energy_window_len]; // imaginary part of memory for moving average of low-pass filtered Hilbert signal
+  rim_hil_hist_re = new float[rim_shot_window_len]; // real part of memory for rim shot detection
+  rim_hil_hist_im = new float[rim_shot_window_len]; // imaginary part of memory for rim shot detection
 
   // initialization values
   for ( int i = 0; i < hil_filt_len; i++ )
   {
-    hil_hist[i] = 0.0f;
+    hil_hist[i]     = 0.0f;
+    rim_hil_hist[i] = 0.0f;
   }
 
   for ( int i = 0; i < energy_window_len; i++ )
@@ -201,6 +231,12 @@ void Edrumulus::Pad::initialize()
     hil_low_hist_im[i] = 0.0f;
   }
 
+  for ( int i = 0; i < rim_shot_window_len; i++ )
+  {
+    rim_hil_hist_re[i] = 0.0f;
+    rim_hil_hist_im[i] = 0.0f;
+  }
+
   mask_back_cnt         = 0;
   was_above_threshold   = false;
   prev_hil_filt_val     = 0.0f;
@@ -210,6 +246,7 @@ void Edrumulus::Pad::initialize()
   pos_sense_cnt         = 0;
   hil_low_re            = 0.0f;
   hil_low_im            = 0.0f;
+  rim_shot_cnt          = 0;
 
   // calculate the decay curve
   for ( int i = 0; i < decay_len; i++ )
@@ -232,23 +269,25 @@ void Edrumulus::Pad::update_fifo ( const float input,
 }
 
 
-void Edrumulus::Pad::process_sample ( const float input,
-                                      bool&       peak_found,
-                                      int&        midi_velocity,
-                                      int&        midi_pos,
-                                      float&      debug )
+void Edrumulus::Pad::process_sample ( const float* input,
+                                      bool&        peak_found,
+                                      int&         midi_velocity,
+                                      int&         midi_pos,
+                                      bool&        is_rim_shot,
+                                      float&       debug )
 {
   // initialize return parameter
   peak_found    = false;
   midi_velocity = 0;
   midi_pos      = 0;
+  is_rim_shot   = false;
 
 debug = 0.0f; // TEST
 
 
   // Calculate peak detection -----------------------------------------------------
-  // hilbert filter
-  update_fifo ( input, hil_filt_len, hil_hist );
+  // Hilbert filter
+  update_fifo ( input[0], hil_filt_len, hil_hist );
 
   float hil_re = 0;
   float hil_im = 0;
@@ -373,6 +412,72 @@ midi_pos = max ( 1, min ( 127, midi_pos ) );
       pos_sense_cnt--;
     }
   }
+
+
+  // Calculate rim shot detection -------------------------------------------------
+  // rim piezo signal is in second dimension
+  if ( number_inputs > 1 )
+  {
+    // Hilbert filter
+    update_fifo ( input[1], hil_filt_len, rim_hil_hist );
+  
+    float rim_hil_re = 0;
+    float rim_hil_im = 0;
+    for ( int i = 0; i < hil_filt_len; i++ )
+    {
+      rim_hil_re += rim_hil_hist[i] * a_re[i];
+      rim_hil_im += rim_hil_hist[i] * a_im[i];
+    }
+
+    update_fifo ( rim_hil_re, rim_shot_window_len, rim_hil_hist_re );
+    update_fifo ( rim_hil_im, rim_shot_window_len, rim_hil_hist_im );
+
+    // note that rim_shot_window_len must be larger than energy_window_len for this to work
+    if ( peak_found || ( rim_shot_cnt > 0 ) )
+    {
+      if ( peak_found && ( rim_shot_cnt == 0 ) )
+      {
+        // a peak was found, we now have to start the delay process to fill up the
+        // required buffer length for our metric
+        rim_shot_cnt         = rim_shot_window_len / 2 - energy_window_len / 2;
+        peak_found           = false; // will be set after delay process is done
+        stored_midi_velocity = midi_velocity;
+        stored_midi_pos      = midi_pos;
+      }
+      else if ( rim_shot_cnt == 1 )
+      {
+        // the buffers are filled, now calculate the metric
+        float rim_max_pow = 0;
+        for ( int i = 0; i < energy_window_len; i++ )
+        {
+          rim_max_pow = max ( rim_max_pow, rim_hil_hist_re[i] * rim_hil_hist_re[i] + rim_hil_hist_im[i] * rim_hil_hist_im[i] );
+        }
+
+        is_rim_shot   = rim_max_pow > rim_shot_threshold;
+        rim_shot_cnt  = 0;
+        peak_found    = true;
+        midi_velocity = stored_midi_velocity;
+        midi_pos      = stored_midi_pos;
+
+// TODO:
+// - positional sensing must be adjusted if a rim shot is detected (note that this must be done BEFORE the MIDI clipping!)
+// - only use one counter instead of rim_shot_cnt and pos_sense_cnt
+// - as long as counter is not finished, do check "hil_filt_new > threshold" again to see if we have a higher peak in that
+//   time window -> if yes, restart everything using the new detected peak
+if ( is_rim_shot )
+{
+  midi_pos = 0; // as a quick hack disable positional sensing if a rim shot is detected
+}
+
+      }
+      else
+      {
+        // we still need to wait for the buffers to fill up
+        rim_shot_cnt--;
+      }
+    }
+  }
+
 
 // TEST
 debug = hil_low_re;
