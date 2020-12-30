@@ -151,22 +151,7 @@ while ~no_more_peak
   [~, max_idx] = max(hil_filt(1 + peak_idx:min(1 + peak_idx + scan_time - 1, length(hil_filt))));
   peak_idx     = peak_idx + max_idx - 1;
 
-%  % search in a pre-defined scan time for a further higher peak
-%  scan_time        = round(1e-3 * Fs); % scan time from first detected peak
-%  next_higher_peak = find(hil_filt(1 + peak_idx:min(1 + peak_idx + scan_time - 1, length(hil_filt))) > hil_filt(peak_idx));
-%
-%  if ~isempty(next_higher_peak)
-%
-%    % take the maximum peak found in the scan time
-%    peak_idx = peak_idx + next_higher_peak(1);
-%    max_idx  = find(hil_filt(1 + peak_idx:end) - hil_filt(peak_idx:end - 1) < 0);
-%
-%    if ~isempty(max_idx)
-%      peak_idx = peak_idx + max_idx(1) - 1;
-%    end
-%
-%  end
-
+  % store the new detected peak
   all_peaks     = [all_peaks; peak_idx];
   last_peak_idx = min(peak_idx + mask_time, length(hil_filt));
 
