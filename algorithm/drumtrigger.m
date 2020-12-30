@@ -40,9 +40,9 @@ Fs = 8000; % Hz
 % x = audioread("signals/pd120_pos_sense2.wav");
 % x = audioread("signals/pd120_single_hits.wav");
 % x = audioread("signals/pd120_roll.wav");
-% x = audioread("signals/pd120_middle_velocity.wav");
+x = audioread("signals/pd120_middle_velocity.wav");
 % x = audioread("signals/pd120_hot_spot.wav");
-x = audioread("signals/pd120_rimshot.wav");%x = x(1:34000, :);%x = x(1:100000, :);
+% x = audioread("signals/pd120_rimshot.wav");x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 % x = audioread("signals/pd6.wav");
 % org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
 % org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
@@ -138,17 +138,35 @@ while ~no_more_peak
     continue;
   end
 
-  % climb to the maximum of the current peak
+  % climb to the maximum of the first peak
   peak_idx = peak_start(1);
   max_idx  = find(hil_filt(1 + peak_idx:end) - hil_filt(peak_idx:end - 1) < 0);
 
-  % second exit condition
-  if isempty(max_idx)
-    no_more_peak = true;
-    continue;
+  if ~isempty(max_idx)
+    peak_idx = peak_idx + max_idx(1) - 1;
   end
 
-  peak_idx      = peak_idx + max_idx(1) - 1;
+  % search in a pre-defined scan time for the highest peak
+  scan_time    = round(1e-3 * Fs); % scan time from first detected peak
+  [~, max_idx] = max(hil_filt(1 + peak_idx:min(1 + peak_idx + scan_time - 1, length(hil_filt))));
+  peak_idx     = peak_idx + max_idx - 1;
+
+%  % search in a pre-defined scan time for a further higher peak
+%  scan_time        = round(1e-3 * Fs); % scan time from first detected peak
+%  next_higher_peak = find(hil_filt(1 + peak_idx:min(1 + peak_idx + scan_time - 1, length(hil_filt))) > hil_filt(peak_idx));
+%
+%  if ~isempty(next_higher_peak)
+%
+%    % take the maximum peak found in the scan time
+%    peak_idx = peak_idx + next_higher_peak(1);
+%    max_idx  = find(hil_filt(1 + peak_idx:end) - hil_filt(peak_idx:end - 1) < 0);
+%
+%    if ~isempty(max_idx)
+%      peak_idx = peak_idx + max_idx(1) - 1;
+%    end
+%
+%  end
+
   all_peaks     = [all_peaks; peak_idx];
   last_peak_idx = min(peak_idx + mask_time, length(hil_filt));
 
@@ -251,12 +269,12 @@ if size(x, 2) > 1
 
   is_rim_shot = rim_max_pow > rim_shot_threshold;
 
-figure;
-plot(20 * log10(abs(x_rim_hil))); hold on; grid on;
-plot(all_peaks(is_rim_shot), 10 * log10(rim_max_pow(is_rim_shot)), '*');
-plot(all_peaks(~is_rim_shot), 10 * log10(rim_max_pow(~is_rim_shot)), '*');
-plot(all_peaks, ones(length(all_peaks), 1) * rim_shot_threshold_dB, 'r--'); % possible threshold
-%axis([-9.8041e+02   9.9146e+04   7.5604e+01   9.6315e+01]);
+%figure;
+%plot(20 * log10(abs(x_rim_hil))); hold on; grid on;
+%plot(all_peaks(is_rim_shot), 10 * log10(rim_max_pow(is_rim_shot)), '*');
+%plot(all_peaks(~is_rim_shot), 10 * log10(rim_max_pow(~is_rim_shot)), '*');
+%plot(all_peaks, ones(length(all_peaks), 1) * rim_shot_threshold_dB, 'r--'); % possible threshold
+%%axis([-9.8041e+02   9.9146e+04   7.5604e+01   9.6315e+01]);
 
 end
 
