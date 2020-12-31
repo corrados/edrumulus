@@ -36,13 +36,13 @@ Fs = 8000; % Hz
 
 % TEST process recordings
 % x = audioread("signals/esp32_pd120.wav");
-% x = audioread("signals/pd120_pos_sense.wav");
+% x = audioread("signals/pd120_pos_sense.wav");%x = x(1:5000, :);%x = x(55400:58000, :);%
 % x = audioread("signals/pd120_pos_sense2.wav");
 % x = audioread("signals/pd120_single_hits.wav");
 % x = audioread("signals/pd120_roll.wav");
-x = audioread("signals/pd120_middle_velocity.wav");
+% x = audioread("signals/pd120_middle_velocity.wav");
 % x = audioread("signals/pd120_hot_spot.wav");
-% x = audioread("signals/pd120_rimshot.wav");x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
+x = audioread("signals/pd120_rimshot.wav");x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 % x = audioread("signals/pd6.wav");
 % org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
 % org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
@@ -148,7 +148,7 @@ while ~no_more_peak
 
   % search in a pre-defined scan time for the highest peak
   scan_time    = round(1e-3 * Fs); % scan time from first detected peak
-  [~, max_idx] = max(hil_filt(1 + peak_idx:min(1 + peak_idx + scan_time - 1, length(hil_filt))));
+  [~, max_idx] = max(hil_filt(peak_idx:min(1 + peak_idx + scan_time - 1, length(hil_filt))));
   peak_idx     = peak_idx + max_idx - 1;
 
   % store the new detected peak
