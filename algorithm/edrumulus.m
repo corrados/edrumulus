@@ -32,10 +32,10 @@ close all
 
 % load test data
 % x = audioread("signals/pd120_roll.wav");
-% x = audioread("signals/pd120_single_hits.wav");
+x = audioread("signals/pd120_single_hits.wav");
 % x = audioread("signals/pd120_pos_sense.wav");%x = x(1:5000, :);%x = x(55400:58000, :);%
 % x = audioread("signals/pd120_pos_sense2.wav");
-x = audioread("signals/pd120_rimshot.wav");x = x(168000:171000, :);%x = x(1:8000, :);%x = x(1:34000, :);%x = x(1:100000, :);
+% x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:8000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 % x = x(1300:5000); % * 1000;
 
 % match the signal level of the ESP32
@@ -72,11 +72,11 @@ end
 peak_found_idx                         = find(peak_found) - peak_found_offset(peak_found);
 peak_found_corrected                   = false(size(peak_found));
 peak_found_corrected(peak_found_idx)   = true;
-is_rim_shot_idx                        = find(is_rim_shot);% - peak_found_offset(peak_found);
+is_rim_shot_idx                        = find(is_rim_shot) - peak_found_offset(is_rim_shot);
 is_rim_shot_corrected                  = false(size(is_rim_shot));
 is_rim_shot_corrected(is_rim_shot_idx) = true;
 
-figure; plot(10 * log10(abs([hil_filt_debug, hil_filt_decay_debug, cur_decay_debug]))); hold on;
+figure; plot(10 * log10(abs([hil_filt_debug, hil_filt_decay_debug, cur_decay_debug]))); hold on; grid on;
         plot(10 * log10(rim_max_pow_debug), 'y*');
         plot(find(peak_found_corrected), 10 * log10(hil_filt_debug(peak_found_corrected)), 'g*');
         plot(find(is_rim_shot_corrected), 10 * log10(hil_filt_debug(is_rim_shot_corrected)), 'b*');
@@ -486,48 +486,55 @@ if peak_found || (pos_sense_cnt > 0)
 end
 
 
-%% Calculate rim shot detection -------------------------------------------------
-%if length(x) > 1 % rim piezo signal is in second dimension
-%
-%  % hilbert filter
-%  x_rim_hil_hist = update_fifo(x(2), hil_filt_len, x_rim_hil_hist);
-%  x_rim_hil_re   = sum(x_rim_hil_hist .* a_re);
-%  x_rim_hil_im   = sum(x_rim_hil_hist .* a_im);
-%
-%  x_rim_hil_hist_re = update_fifo(x_rim_hil_re, rim_shot_window_len, x_rim_hil_hist_re);
-%  x_rim_hil_hist_im = update_fifo(x_rim_hil_im, rim_shot_window_len, x_rim_hil_hist_im);
-%
-%  % note that rim_shot_window_len must be larger than energy_window_len for this to work
-%  if peak_found || (rim_shot_cnt > 0)
-%
-%    if peak_found && (rim_shot_cnt == 0)
-%
-%      % a peak was found, we now have to start the delay process to fill up the
-%      % required buffer length for our metric
-%      rim_shot_cnt            = rim_shot_window_len / 2 - energy_window_len / 2;
-%      peak_found              = false; % will be set after delay process is done
-%      stored_pos_sense_metric = pos_sense_metric;
-%
-%    elseif rim_shot_cnt == 1
-%
-%      % the buffers are filled, now calculate the metric
-%      rim_max_pow       = max(x_rim_hil_hist_re .* x_rim_hil_hist_re + x_rim_hil_hist_im .* x_rim_hil_hist_im);
-%      rim_max_pow_debug = rim_max_pow; % just for debugging
-%      is_rim_shot       = rim_max_pow > rim_shot_threshold;
-%      rim_shot_cnt      = 0;
-%      peak_found        = true;
-%      pos_sense_metric  = stored_pos_sense_metric;
-%
-%    else
-%
-%      % we still need to wait for the buffers to fill up
-%      rim_shot_cnt = rim_shot_cnt - 1;
-%
-%    end
-%
-%  end
-%
-%end
+% Calculate rim shot detection -------------------------------------------------
+if length(x) > 1 % rim piezo signal is in second dimension
+
+  % hilbert filter
+  x_rim_hil_hist = update_fifo(x(2), hil_filt_len, x_rim_hil_hist);
+  x_rim_hil_re   = sum(x_rim_hil_hist .* a_re);
+  x_rim_hil_im   = sum(x_rim_hil_hist .* a_im);
+
+  x_rim_hil_hist_re = update_fifo(x_rim_hil_re, rim_shot_window_len, x_rim_hil_hist_re);
+  x_rim_hil_hist_im = update_fifo(x_rim_hil_im, rim_shot_window_len, x_rim_hil_hist_im);
+
+  % note that rim_shot_window_len must be larger than energy_window_len and scan_time for this to work
+  if peak_found || (rim_shot_cnt > 0)
+
+    % start condition of delay process to fill up the required buffers
+    if rim_shot_cnt == 0
+
+      % a peak was found, we now have to start the delay process to fill up the
+      % required buffer length for our metric
+      rim_shot_cnt            = rim_shot_window_len / 2 - max(scan_time, energy_window_len / 2);
+      peak_found              = false; % will be set after delay process is done
+      stored_pos_sense_metric = pos_sense_metric;
+
+    end
+
+    rim_shot_cnt = rim_shot_cnt - 1;
+
+    % end condition
+    if rim_shot_cnt == 0
+
+      % the buffers are filled, now calculate the metric
+      rim_max_pow       = max(x_rim_hil_hist_re .* x_rim_hil_hist_re + x_rim_hil_hist_im .* x_rim_hil_hist_im);
+      rim_max_pow_debug = rim_max_pow; % just for debugging
+      is_rim_shot       = rim_max_pow > rim_shot_threshold;
+      rim_shot_cnt      = 0;
+      peak_found        = true;
+      pos_sense_metric  = stored_pos_sense_metric;
+
+    else
+
+      % we need a further delay for the positional sensing estimation, consider
+      % this additional delay for the overall peak found offset
+      peak_found_offset = peak_found_offset + 1;
+
+    end
+
+  end
+
+end
 
 end
 
