@@ -248,7 +248,7 @@ hil_hist_re             = zeros(energy_window_len, 1);
 hil_hist_im             = zeros(energy_window_len, 1);
 hil_low_hist_re         = zeros(energy_window_len, 1);
 hil_low_hist_im         = zeros(energy_window_len, 1);
-peak_energy_hist_len    = scan_time + energy_window_len / 2 + 1;
+peak_energy_hist_len    = scan_time - energy_window_len / 2 + 2;
 peak_energy_hist        = zeros(peak_energy_hist_len, 1);
 peak_energy_low_hist    = zeros(peak_energy_hist_len, 1);
 rim_shot_window_len     = round(6e-3 * Fs); % window length (e.g. 6 ms)
@@ -460,11 +460,8 @@ if peak_found || (pos_sense_cnt > 0)
 
     % a peak was found, we now have to start the delay process to fill up the
     % required buffer length for our metric
-
-% TODO IS THIS CORRECT?????
-pos_sense_cnt = max(1, energy_window_len / 2 + 1 - peak_found_offset);
-
-    peak_found = false; % will be set after delay process is done
+    pos_sense_cnt = max(1, energy_window_len / 2 + 1 - peak_found_offset);
+    peak_found    = false; % will be set after delay process is done
 
   end
 
@@ -474,7 +471,7 @@ pos_sense_cnt = max(1, energy_window_len / 2 + 1 - peak_found_offset);
   if pos_sense_cnt == 0
 
     % the buffers are filled, now calculate the metric
-    peak_energy_hist_idx = peak_energy_hist_len - peak_found_offset + energy_window_len / 2 - 1;
+    peak_energy_hist_idx = peak_energy_hist_len - 2 + energy_window_len / 2 + 1 - peak_found_offset;
     pos_sense_metric     = peak_energy_hist(peak_energy_hist_idx) / peak_energy_low_hist(peak_energy_hist_idx);
     peak_found           = true;
 
