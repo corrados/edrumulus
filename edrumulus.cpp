@@ -174,6 +174,7 @@ void Edrumulus::Pad::initialize()
   const float threshold_db = 25.0f;                              // 25 dB threshold
   threshold                = pow   ( 10.0f, threshold_db / 10 ); // linear power threshold
   energy_window_len        = round ( 2e-3f * Fs );               // scan time (e.g. 2 ms)
+  scan_time                = round ( 1e-3f * Fs );               // scan time from first detected peak
   mask_time                = round ( 10e-3f * Fs );              // mask time (e.g. 10 ms)
   decay_len                = round ( 0.25f * Fs );               // decay time (e.g. 250 ms)
   decay_fact               = pow   ( 10.0f, 1.0f / 10 );         // decay factor of 1 dB
@@ -181,6 +182,7 @@ void Edrumulus::Pad::initialize()
   alpha                    = 200.0f / Fs;                        // IIR low pass filter coefficient
   rim_shot_window_len      = round ( 6e-3f * Fs );               // window length (e.g. 6 ms)
   rim_shot_threshold       = pow   ( 10.0f, 47.0f / 10 );        // rim shot threshold
+  peak_energy_hist_len     = scan_time - energy_window_len / 2 + 2;
 
   // The ESP32 ADC has 12 bits resulting in a range of 20*log10(2048)=66.2 dB minus the threshold value.
   // The sensitivity parameter shall be in the range of 0..31. This range should then be mapped to the
@@ -190,29 +192,33 @@ void Edrumulus::Pad::initialize()
   velocity_range_db                 = max_velocity_range_db * ( 32 - pad_settings.velocity_sensitivity ) / 32;
 
   // allocate memory for vectors
-  if ( hil_hist        != nullptr ) delete[] hil_hist;
-  if ( rim_hil_hist    != nullptr ) delete[] rim_hil_hist;
-  if ( mov_av_hist_re  != nullptr ) delete[] mov_av_hist_re;
-  if ( mov_av_hist_im  != nullptr ) delete[] mov_av_hist_im;
-  if ( decay           != nullptr ) delete[] decay;
-  if ( hil_hist_re     != nullptr ) delete[] hil_hist_re;
-  if ( hil_hist_im     != nullptr ) delete[] hil_hist_im;
-  if ( hil_low_hist_re != nullptr ) delete[] hil_low_hist_re;
-  if ( hil_low_hist_im != nullptr ) delete[] hil_low_hist_im;
-  if ( rim_hil_hist_re != nullptr ) delete[] rim_hil_hist_re;
-  if ( rim_hil_hist_im != nullptr ) delete[] rim_hil_hist_im;
+  if ( hil_hist             != nullptr ) delete[] hil_hist;
+  if ( rim_hil_hist         != nullptr ) delete[] rim_hil_hist;
+  if ( mov_av_hist_re       != nullptr ) delete[] mov_av_hist_re;
+  if ( mov_av_hist_im       != nullptr ) delete[] mov_av_hist_im;
+  if ( decay                != nullptr ) delete[] decay;
+  if ( hil_hist_re          != nullptr ) delete[] hil_hist_re;
+  if ( hil_hist_im          != nullptr ) delete[] hil_hist_im;
+  if ( hil_low_hist_re      != nullptr ) delete[] hil_low_hist_re;
+  if ( hil_low_hist_im      != nullptr ) delete[] hil_low_hist_im;
+  if ( peak_energy_hist     != nullptr ) delete[] peak_energy_hist;
+  if ( peak_energy_low_hist != nullptr ) delete[] peak_energy_low_hist;
+  if ( rim_hil_hist_re      != nullptr ) delete[] rim_hil_hist_re;
+  if ( rim_hil_hist_im      != nullptr ) delete[] rim_hil_hist_im;
 
-  hil_hist        = new float[hil_filt_len];      // memory for Hilbert filter history
-  rim_hil_hist    = new float[hil_filt_len];      // memory for rim shot detection Hilbert filter history
-  mov_av_hist_re  = new float[energy_window_len]; // real part memory for moving average filter history
-  mov_av_hist_im  = new float[energy_window_len]; // imaginary part memory for moving average filter history
-  decay           = new float[decay_len];         // memory for decay function
-  hil_hist_re     = new float[energy_window_len]; // real part of memory for moving average of Hilbert filtered signal
-  hil_hist_im     = new float[energy_window_len]; // imaginary part of memory for moving average of Hilbert filtered signal
-  hil_low_hist_re = new float[energy_window_len]; // real part of memory for moving average of low-pass filtered Hilbert signal
-  hil_low_hist_im = new float[energy_window_len]; // imaginary part of memory for moving average of low-pass filtered Hilbert signal
-  rim_hil_hist_re = new float[rim_shot_window_len]; // real part of memory for rim shot detection
-  rim_hil_hist_im = new float[rim_shot_window_len]; // imaginary part of memory for rim shot detection
+  hil_hist             = new float[hil_filt_len];         // memory for Hilbert filter history
+  rim_hil_hist         = new float[hil_filt_len];         // memory for rim shot detection Hilbert filter history
+  mov_av_hist_re       = new float[energy_window_len];    // real part memory for moving average filter history
+  mov_av_hist_im       = new float[energy_window_len];    // imaginary part memory for moving average filter history
+  decay                = new float[decay_len];            // memory for decay function
+  hil_hist_re          = new float[energy_window_len];    // real part of memory for moving average of Hilbert filtered signal
+  hil_hist_im          = new float[energy_window_len];    // imaginary part of memory for moving average of Hilbert filtered signal
+  hil_low_hist_re      = new float[energy_window_len];    // real part of memory for moving average of low-pass filtered Hilbert signal
+  hil_low_hist_im      = new float[energy_window_len];    // imaginary part of memory for moving average of low-pass filtered Hilbert signal
+  peak_energy_hist     = new float[peak_energy_hist_len]; // memory for peak energy
+  peak_energy_low_hist = new float[peak_energy_hist_len]; // memory for low-pass filtered peak energy
+  rim_hil_hist_re      = new float[rim_shot_window_len];  // real part of memory for rim shot detection
+  rim_hil_hist_im      = new float[rim_shot_window_len];  // imaginary part of memory for rim shot detection
 
   // initialization values
   for ( int i = 0; i < hil_filt_len; i++ )
@@ -231,22 +237,32 @@ void Edrumulus::Pad::initialize()
     hil_low_hist_im[i] = 0.0f;
   }
 
+  for ( int i = 0; i < peak_energy_hist_len; i++ )
+  {
+    peak_energy_hist[i]     = 0.0f;
+    peak_energy_low_hist[i] = 0.0f;
+  }
+
   for ( int i = 0; i < rim_shot_window_len; i++ )
   {
     rim_hil_hist_re[i] = 0.0f;
     rim_hil_hist_im[i] = 0.0f;
   }
 
-  mask_back_cnt         = 0;
-  was_above_threshold   = false;
-  prev_hil_filt_val     = 0.0f;
-  prev_hil_filt_new_val = 0.0f;
-  decay_back_cnt        = 0;
-  decay_scaling         = 1.0f;
-  pos_sense_cnt         = 0;
-  hil_low_re            = 0.0f;
-  hil_low_im            = 0.0f;
-  rim_shot_cnt          = 0;
+  mask_back_cnt           = 0;
+  was_above_threshold     = false;
+  prev_hil_filt_val       = 0.0f;
+  prev_hil_filt_decay_val = 0.0f;
+  decay_back_cnt          = 0;
+  decay_scaling           = 1.0f;
+  scan_time_cnt           = 0;
+  pos_sense_cnt           = 0;
+  hil_low_re              = 0.0f;
+  hil_low_im              = 0.0f;
+  rim_shot_cnt            = 0;
+  max_hil_filt_val        = 0.0f;
+  max_hil_filt_decay_val  = 0.0f;
+  peak_found_offset       = 0;
 
   // calculate the decay curve
   for ( int i = 0; i < decay_len; i++ )
@@ -317,45 +333,68 @@ debug = 0.0f; // TEST
   // exponential decay assumption (note that we must not use hil_filt_org since a
   // previous peak might not be faded out and the peak detection works on hil_filt)
   // subtract decay (with clipping at zero)
-  float hil_filt_new = hil_filt;
+  float hil_filt_decay = hil_filt;
 
   if ( decay_back_cnt > 0 )
   {
     const float cur_decay = decay_scaling * decay[decay_len - decay_back_cnt];
-    hil_filt_new          = hil_filt - cur_decay;
+    hil_filt_decay        = hil_filt - cur_decay;
     decay_back_cnt--;
 
-    if ( hil_filt_new < 0.0f )
+    if ( hil_filt_decay < 0.0f )
     {
-      hil_filt_new = 0.0f;
+      hil_filt_decay = 0.0f;
     }
   }
 
-
   // threshold test
-  if ( ( ( hil_filt_new > threshold ) || was_above_threshold ) && ( mask_back_cnt == 0 ) )
+  if ( ( ( hil_filt_decay > threshold ) || was_above_threshold ) && ( mask_back_cnt == 0 ) )
   {
     was_above_threshold = true;
 
-    // climb to the maximum of the current peak
-    if ( prev_hil_filt_new_val < hil_filt_new )
+    // climb to the maximum of the first peak
+    if ( ( prev_hil_filt_decay_val < hil_filt_decay ) && ( scan_time_cnt == 0 ) )
     {
-      prev_hil_filt_new_val = hil_filt_new;
-      prev_hil_filt_val     = hil_filt; // needed for further processing
+      prev_hil_filt_decay_val = hil_filt_decay;
+      prev_hil_filt_val       = hil_filt; // needed for further processing
     }
     else
     {
-      // maximum found
-      prev_hil_filt_new_val = 0.0f;
-      was_above_threshold   = false;
-      decay_back_cnt        = decay_len;
-      decay_scaling         = prev_hil_filt_val * decay_fact;
-      mask_back_cnt         = mask_time;
-      peak_found            = true;
+      // start condition of scan time
+      if ( scan_time_cnt == 0 )
+      {
+        // search in a pre-defined scan time for the highest peak
+        scan_time_cnt          = scan_time;               // initialize scan time counter
+        max_hil_filt_decay_val = prev_hil_filt_decay_val; // initialize maximum value with first peak
+        max_hil_filt_val       = prev_hil_filt_val;       // initialize maximum value with first peak
+        peak_found_offset      = scan_time;               // position of first peak after scan time expired
+      }
 
-      // calculate the MIDI velocity value with clipping to allowed MIDI value range
-      midi_velocity = static_cast<int> ( ( 10 * log10 ( prev_hil_filt_val / threshold ) / velocity_range_db ) * 127 );
-      midi_velocity = max ( 1, min ( 127, midi_velocity ) );
+      // search for a maximum in the scan time interval
+      if ( hil_filt_decay > max_hil_filt_decay_val )
+      {
+        max_hil_filt_decay_val = hil_filt_decay;
+        max_hil_filt_val       = hil_filt;          // we need to store the origianl Hilbert filtered signal for the decay
+        peak_found_offset      = scan_time_cnt - 1; // update position of detected peak
+      }
+
+      scan_time_cnt--;
+
+      // end condition of scan time
+      if ( scan_time_cnt == 0 )
+      {
+        // scan time expired
+        prev_hil_filt_decay_val = 0.0f;
+        was_above_threshold     = false;
+        decay_scaling           = max_hil_filt_val * decay_fact;
+        decay_back_cnt          = decay_len - peak_found_offset;
+        mask_back_cnt           = mask_time - peak_found_offset;
+        peak_found              = true;
+
+        // calculate the MIDI velocity value with clipping to allowed MIDI value range
+        midi_velocity = static_cast<int> ( ( 10 * log10 ( prev_hil_filt_val / threshold ) / velocity_range_db ) * 127 );
+        midi_velocity = max ( 1, min ( 127, midi_velocity ) );
+      }
     }
   }
 
@@ -375,31 +414,40 @@ debug = 0.0f; // TEST
   update_fifo ( hil_low_re, energy_window_len, hil_low_hist_re );
   update_fifo ( hil_low_im, energy_window_len, hil_low_hist_im );
 
+  float peak_energy     = 0;
+  float peak_energy_low = 0;
+  for ( int i = 0; i < energy_window_len; i++ )
+  {
+    peak_energy     += ( hil_hist_re[i]     * hil_hist_re[i]     + hil_hist_im[i]     * hil_hist_im[i] );
+    peak_energy_low += ( hil_low_hist_re[i] * hil_low_hist_re[i] + hil_low_hist_im[i] * hil_low_hist_im[i] );
+  }
+
+  // store the peak energies
+  update_fifo ( peak_energy,     peak_energy_hist_len, peak_energy_hist );
+  update_fifo ( peak_energy_low, peak_energy_hist_len, peak_energy_low_hist );
+
   if ( peak_found || ( pos_sense_cnt > 0 ) )
   {
-    if ( peak_found && ( pos_sense_cnt == 0 ) )
+    // start condition of delay process to fill up the required buffers
+    if ( pos_sense_cnt == 0 )
     {
       // a peak was found, we now have to start the delay process to fill up the
       // required buffer length for our metric
-      pos_sense_cnt        = energy_window_len / 2 - 2; // the "- 2" is to match the reference model (which is block-based)
+      pos_sense_cnt        = max ( 1, energy_window_len / 2 + 1 - peak_found_offset );
       peak_found           = false; // will be set after delay process is done
       stored_midi_velocity = midi_velocity;
     }
-    else if ( pos_sense_cnt == 1 )
+
+    pos_sense_cnt--;
+
+    // end condition
+    if ( pos_sense_cnt == 0 )
     {
       // the buffers are filled, now calculate the metric
-      float peak_energy     = 0;
-      float peak_energy_low = 0;
-      for ( int i = 0; i < energy_window_len; i++ )
-      {
-        peak_energy     += ( hil_hist_re[i]     * hil_hist_re[i]     + hil_hist_im[i]     * hil_hist_im[i] );
-        peak_energy_low += ( hil_low_hist_re[i] * hil_low_hist_re[i] + hil_low_hist_im[i] * hil_low_hist_im[i] );
-      }
-
-      const float pos_sense_metric = peak_energy / peak_energy_low;
-      pos_sense_cnt                = 0;
-      peak_found                   = true;
-      midi_velocity                = stored_midi_velocity;
+      const int   peak_energy_hist_idx = peak_energy_hist_len - 2 + energy_window_len / 2 + 1 - peak_found_offset - 1;
+      const float pos_sense_metric     = peak_energy_hist[peak_energy_hist_idx] / peak_energy_low_hist[peak_energy_hist_idx];
+      peak_found                       = true;
+      midi_velocity                    = stored_midi_velocity;
 
 // TEST positional sensing MIDI mapping
 midi_pos = static_cast<int> ( ( 10 * log10 ( pos_sense_metric ) / 4 ) * 127 - 510 );
@@ -408,8 +456,9 @@ midi_pos = max ( 1, min ( 127, midi_pos ) );
     }
     else
     {
-      // we still need to wait for the buffers to fill up
-      pos_sense_cnt--;
+      // we need a further delay for the positional sensing estimation, consider
+      // this additional delay for the overall peak found offset
+      peak_found_offset++;
     }
   }
 
@@ -432,19 +481,24 @@ midi_pos = max ( 1, min ( 127, midi_pos ) );
     update_fifo ( rim_hil_re, rim_shot_window_len, rim_hil_hist_re );
     update_fifo ( rim_hil_im, rim_shot_window_len, rim_hil_hist_im );
 
-    // note that rim_shot_window_len must be larger than energy_window_len for this to work
+    // note that rim_shot_window_len must be larger than energy_window_len and scan_time for this to work
     if ( peak_found || ( rim_shot_cnt > 0 ) )
     {
-      if ( peak_found && ( rim_shot_cnt == 0 ) )
+      // start condition of delay process to fill up the required buffers
+      if ( rim_shot_cnt == 0 )
       {
         // a peak was found, we now have to start the delay process to fill up the
         // required buffer length for our metric
-        rim_shot_cnt         = rim_shot_window_len / 2 - energy_window_len / 2;
+        rim_shot_cnt         = rim_shot_window_len / 2 - max ( scan_time, energy_window_len / 2 );
         peak_found           = false; // will be set after delay process is done
         stored_midi_velocity = midi_velocity;
         stored_midi_pos      = midi_pos;
       }
-      else if ( rim_shot_cnt == 1 )
+
+      rim_shot_cnt--;
+
+      // end condition
+      if ( rim_shot_cnt == 0 )
       {
         // the buffers are filled, now calculate the metric
         float rim_max_pow = 0;
@@ -472,8 +526,9 @@ if ( is_rim_shot )
       }
       else
       {
-        // we still need to wait for the buffers to fill up
-        rim_shot_cnt--;
+        // we need a further delay for the positional sensing estimation, consider
+        // this additional delay for the overall peak found offset
+        peak_found_offset++;
       }
     }
   }
