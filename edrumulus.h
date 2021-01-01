@@ -63,16 +63,26 @@ protected:
                             bool&        is_rim_shot,
                             float&       debug );
 
+      void set_pad_type ( const Epadtype new_pad_type );
+
       void set_velocity_threshold   ( const byte new_threshold ) { pad_settings.velocity_threshold   = new_threshold; initialize(); }
       void set_velocity_sensitivity ( const byte new_velocity )  { pad_settings.velocity_sensitivity = new_velocity;  initialize(); }
+      void set_mask_time            ( const byte new_time )      { pad_settings.mask_time            = new_time;      initialize(); }
 
 
     protected:
       struct Epadsettings
       {
         Epadtype pad_type;
-        byte     velocity_threshold;   // 0-31
-        byte     velocity_sensitivity; // 0-31, high value gives higher sensitivity
+        byte     velocity_threshold;   // 0..31
+        byte     velocity_sensitivity; // 0..31, high value gives higher sensitivity
+        byte     mask_time;            // 0..31 (ms)
+        float    energy_win_len_ms;
+        float    scan_time_ms;
+        float    decay_len_ms;
+        float    decay_fact_db;
+        float    decay_grad_fact;
+        float    pos_iir_alpha;
       };
 
       void initialize();
