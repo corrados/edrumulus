@@ -36,6 +36,12 @@ So, after successfully detecting a peak, we know that this peak causes a slowly 
 curve which has a known shape and we can subtract that known curve from the signal to improve the
 detection of the next pad hit.
 
+The problem is that the main peak power compared to the mesh head vibration power greatly depends
+on the position of the hit on the pad. I.e. the main peak stands way out of the _noise_ when hitting
+the pad in the middle. So, if we use the detection hit velocity for the start point of the decay
+cancellation, we subtract too much power in case the hit is in the middle of the pad and we may
+subtract too little if the hit is at the edge of the pad.
+
 
 ## Positional sensing
 
@@ -43,6 +49,9 @@ It has shown that if you hit the pad close to the edge, the resulting sound has 
 and sounds more crisp. So, the idea is to low-pass filter the signal and at the detected peak position we
 calculate the power ratio of the low-pass filtered signal with the unfiltered signal. This is then
 the metric for the positional sensing.
+
+It has shown that the positional sensing metric must be adjusted if a rim shot is used. So, the
+rim shot detection information has to be used for the positional sensing, too.
 
 
 ## Rim shot detection
@@ -117,9 +126,11 @@ According to https://www.vdrums.com/forum/general/the-lounge/1182869-fastest-low
 - Roland TD-17:    **3.6 ms**  (measured by onyx3.com)
 - MIMIC:           **4 ms**    (measured by Chris K)
 
-I measured my Roland TDW-20 module by using a stereo splitter cable and connected the trigger output
-of my PD-120 pad directly to one channel of my sound card input and also to the trigger input of the
-TDW-20 module. Then I connected the analog audio output of the TDW-20 to the other stereo channel of
+I measured the latency of my Roland TDW-20 module by using a stereo splitter cable and connected the
+trigger output of my PD-120 pad directly to one channel of my sound card input and also to the trigger
+input of the TDW-20 module (note that I used the snare input which supports rim shot detection and
+positional sensing which may have an influence on the overall TD-20 latency).
+Then I connected the analog audio output of the TDW-20 to the other stereo channel of
 my sound card and recorded the signal with Audacity. I now measured the latency between the main
 peak of the pad trigger to the first peak of the synthesized signal from the TDW-20. As seen in the
 screen shot, there is a latency of about **7 ms**:
