@@ -42,7 +42,8 @@ Fs = 8000; % Hz
 % x = audioread("signals/pd120_roll.wav");
 % x = audioread("signals/pd120_middle_velocity.wav");
 % x = audioread("signals/pd120_hot_spot.wav");
-x = audioread("signals/pd120_rimshot.wav");x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
+% x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
+x = audioread("signals/pd120_rimshot_hardsoft.wav");
 % x = audioread("signals/pd6.wav");
 % org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
 % org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
@@ -254,11 +255,11 @@ if size(x, 2) > 1
 
   is_rim_shot = rim_max_pow > rim_shot_threshold;
 
-%figure;
-%plot(20 * log10(abs(x_rim_hil))); hold on; grid on;
-%plot(all_peaks(is_rim_shot), 10 * log10(rim_max_pow(is_rim_shot)), '*');
-%plot(all_peaks(~is_rim_shot), 10 * log10(rim_max_pow(~is_rim_shot)), '*');
-%plot(all_peaks, ones(length(all_peaks), 1) * rim_shot_threshold_dB, 'r--'); % possible threshold
+figure;
+plot(20 * log10(abs(x_rim_hil))); hold on; grid on;
+plot(all_peaks(is_rim_shot), 10 * log10(rim_max_pow(is_rim_shot)), '*');
+plot(all_peaks(~is_rim_shot), 10 * log10(rim_max_pow(~is_rim_shot)), '*');
+plot(all_peaks, ones(length(all_peaks), 1) * rim_shot_threshold_dB, 'r--'); % possible threshold
 %%axis([-9.8041e+02   9.9146e+04   7.5604e+01   9.6315e+01]);
 
 end
