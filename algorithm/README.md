@@ -17,8 +17,8 @@ significant power drops caused by the nature of a sinusoidal signal. A filtering
 curve. As a possible filter we can use a Hilbert transform to convert the real-valued signal in a
 complex signal. As a result, the magnitude of that complex signal is much smoother already without
 having modified the actual spectrum of the signal (real-valued signals have mirror symmetric spectrum).
-This effect is shown in the following picture:<br/>
-![Hilbert filter](images/hilbert.jpg)
+This effect is shown in the following picture:
+<br/>![Hilbert filter](images/hilbert.jpg)
 As can be seen in the graph, the default Hilbert filter in Octave uses a long impulse response which
 would introduce a large delay. To get to a more practical implementation, we use our own Hilbert filter
 design which as a very short impulse response. Using that simplified Hilbert filter leads to less
@@ -26,8 +26,8 @@ power drop cancellation. To improve the situation, we apply a moving average fil
 Hilbert filter. This is not only to reduce the power drops but to improve the velocity estimation. The
 idea of the velocity estimation is to estimate the energy of the drum stick hit on the mesh head. To
 estimate the energy of a signal, it makes sense to integrate the measured powers over a period of time,
-which is basically a moving average filter. The resulting trace can be seen on the next picture:<br/>
-![Simplified Hilbert filter with moving average](images/simplehilbertwithmovav.jpg)
+which is basically a moving average filter. The resulting trace can be seen on the next picture:
+<br/>![Simplified Hilbert filter with moving average](images/simplehilbertwithmovav.jpg)
 
 ### Retrigger cancellation
 
@@ -79,7 +79,7 @@ some single hits. Then there follows a region with a snare drum roll. After that
 which start from the middle, move to the edge and go back to the middle of the pad where the hits are
 equally strong. As shown by the black markers, the positional sensing seems to work pretty well. Also,
 the peak detection and velocity estimation seems to be pretty good as well.
-![First results plot](images/first_results.jpg)
+<br/>![First results plot](images/first_results.jpg)
 
 
 # Latency between pad hit and audio output of the synthesized drum sound
@@ -134,6 +134,6 @@ Then I connected the analog audio output of the TDW-20 to the other stereo chann
 my sound card and recorded the signal with Audacity. I now measured the latency between the main
 peak of the pad trigger to the first peak of the synthesized signal from the TDW-20. As seen in the
 screen shot, there is a latency of about **7 ms**:
-![Roland TDW-20 drum module measured latency](images/roland_td20_latency.jpg)
+<br/>![Roland TDW-20 drum module measured latency](images/roland_td20_latency.jpg)
 
 
