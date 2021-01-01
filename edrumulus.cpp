@@ -161,8 +161,8 @@ void Edrumulus::Pad::setup ( const int conf_Fs,
 
 // TEST default pad settings
 pad_settings.pad_type             = PD120; // TODO -> NOT USED RIGHT NOW
-pad_settings.velocity_threshold   = 0;     // TODO -> NOT USED RIGHT NOW
-pad_settings.velocity_sensitivity = 4;
+pad_settings.velocity_threshold   = 8; // 0..31
+pad_settings.velocity_sensitivity = 4; // 0..31
 
   initialize();
 }
@@ -171,17 +171,17 @@ pad_settings.velocity_sensitivity = 4;
 void Edrumulus::Pad::initialize()
 {
   // set algorithm parameters
-  const float threshold_db = 25.0f;                              // 25 dB threshold
-  threshold                = pow   ( 10.0f, threshold_db / 10 ); // linear power threshold
-  energy_window_len        = round ( 2e-3f * Fs );               // scan time (e.g. 2 ms)
-  scan_time                = round ( 1e-3f * Fs );               // scan time from first detected peak
-  mask_time                = round ( 10e-3f * Fs );              // mask time (e.g. 10 ms)
-  decay_len                = round ( 0.25f * Fs );               // decay time (e.g. 250 ms)
-  decay_fact               = pow   ( 10.0f, 1.0f / 10 );         // decay factor of 1 dB
-  const float decay_grad   = 200.0f / Fs;                        // decay gradient factor
-  alpha                    = 200.0f / Fs;                        // IIR low pass filter coefficient
-  rim_shot_window_len      = round ( 6e-3f * Fs );               // window length (e.g. 6 ms)
-  rim_shot_threshold       = pow   ( 10.0f, 47.0f / 10 );        // rim shot threshold
+  const float threshold_db = 15.0f + pad_settings.velocity_threshold; // gives us a threshold range of 15..46 dB
+  threshold                = pow   ( 10.0f, threshold_db / 10 );      // linear power threshold
+  energy_window_len        = round ( 2e-3f * Fs );                    // hit energy estimation time window length (e.g. 2 ms)
+  scan_time                = round ( 1e-3f * Fs );                    // scan time from first detected peak
+  mask_time                = round ( 10e-3f * Fs );                   // mask time (e.g. 10 ms)
+  decay_len                = round ( 0.25f * Fs );                    // decay time (e.g. 250 ms)
+  decay_fact               = pow   ( 10.0f, 1.0f / 10 );              // decay factor of 1 dB
+  const float decay_grad   = 200.0f / Fs;                             // decay gradient factor
+  alpha                    = 200.0f / Fs;                             // IIR low pass filter coefficient
+  rim_shot_window_len      = round ( 6e-3f * Fs );                    // window length (e.g. 6 ms)
+  rim_shot_threshold       = pow   ( 10.0f, 47.0f / 10 );             // rim shot threshold
   peak_energy_hist_len     = scan_time - energy_window_len / 2 + 2;
 
   // The ESP32 ADC has 12 bits resulting in a range of 20*log10(2048)=66.2 dB minus the threshold value.

@@ -63,7 +63,8 @@ protected:
                             bool&        is_rim_shot,
                             float&       debug );
 
-      void set_velocity_sensitivity ( const byte new_velocity ) { pad_settings.velocity_sensitivity = new_velocity; initialize(); }
+      void set_velocity_threshold   ( const byte new_threshold ) { pad_settings.velocity_threshold   = new_threshold; initialize(); }
+      void set_velocity_sensitivity ( const byte new_velocity )  { pad_settings.velocity_sensitivity = new_velocity;  initialize(); }
 
 
     protected:

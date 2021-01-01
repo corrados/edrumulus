@@ -99,7 +99,9 @@ end
 
 function [hil, hil_filt] = filter_input_signal(x, Fs)
 
-energy_window_len = round(2e-3 * Fs); % scan time (e.g. 2 ms)
+global energy_window_len;
+
+energy_window_len = round(2e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
 
 % Hilbert filter
 hil = myhilbert(x);
@@ -184,7 +186,7 @@ end
 
 function pos_sense_metric = calc_pos_sense_metric(hil, Fs, all_peaks)
 
-energy_window_len = round(2e-3 * Fs); % scan time (e.g. 2 ms)
+global energy_window_len;
 
 % low pass filter of the Hilbert signal
 % lp_ir_len = 80; % low-pass filter length
