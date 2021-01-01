@@ -42,7 +42,7 @@ three steps:
 
 3. Port the sample-based processing code to C++ and test it in real-time on the hardware. To make
    sure the port was successful, we send test data to the micro controller, query the processed
-   signal and compare it in Octave to the reverence code.
+   signal and compare it in Octave to the reference code.
 
 The algorithms are described in [this document](algorithm/README.md).
 
@@ -75,6 +75,9 @@ The algorithms are described in [this document](algorithm/README.md).
 
 - We sometime have double-triggers on hard hits or when the rim is hit. The mask time is already
   at 10 ms. So, the decay handling should be improved to suppress these double-triggers.
+
+- If a rim shot is used, the positional sensing parameters must be adjusted to correctly estimate
+  the position.
 
 - The algorithm is optimized for Roland PD-120 pad only. Other pad types should be supported, too.
 
