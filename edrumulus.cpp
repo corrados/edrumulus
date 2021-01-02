@@ -50,15 +50,24 @@ void IRAM_ATTR Edrumulus::on_timer()
 }
 
 
-void Edrumulus::setup ( const int conf_analog_pin,
-                        const int conf_analog_pin_rim_shot,
-                        const int conf_overload_LED_pin )
+void Edrumulus::setup ( const int  conf_num_pads,
+                        const int* conf_analog_pins,
+                        const int* conf_analog_pins_rim_shot,
+                        const int  conf_overload_LED_pin )
 {
-  // set the GIOP pin numbers
-  analog_pin[0]    = conf_analog_pin;
-  analog_pin[1]    = conf_analog_pin_rim_shot;
+  number_pads      = min ( conf_num_pads, MAX_NUM_PADS );
   overload_LED_pin = conf_overload_LED_pin;
-  number_inputs    = conf_analog_pin_rim_shot >= 0 ? 2 : 1;
+
+  for ( int i = 0; i < number_pads; i++ )
+  {
+    // set the pad GIOP pin numbers
+    analog_pin[i][0] = conf_analog_pins[i];
+    analog_pin[i][1] = conf_analog_pins_rim_shot[i];
+    number_inputs[i] = conf_analog_pins_rim_shot[i] >= 0 ? 2 : 1;
+
+    // setup the pad
+    pad[i].setup ( Fs, number_inputs[i] );
+  }
 
   // if an overload LED shall be used, initialize GPIO port
   if ( overload_LED_pin >= 0 )
@@ -67,30 +76,42 @@ void Edrumulus::setup ( const int conf_analog_pin,
   }
 
   // estimate the DC offset for all inputs
-  for ( int j = 0; j < number_inputs; j++ )
+  const int dc_offset_est_len = 5000; // samples
+  float     dc_offset_sum[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+
+  for ( int i = 0; i < number_pads; i++ )
   {
-    const int dc_offset_est_len = 5000; // samples
-    float     dc_offset_sum     = 0.0f;
-
-    for ( int i = 0; i < dc_offset_est_len; i++ )
+    for ( int j = 0; j < number_inputs[i]; j++ )
     {
-      dc_offset_sum += analogRead ( analog_pin[j] );
-      delayMicroseconds ( 100 );
+      dc_offset_sum[i][j] = 0.0f;
     }
-
-    dc_offset[j] = dc_offset_sum / dc_offset_est_len;
   }
 
-  // setup the pad
-  pad.setup ( Fs, number_inputs );
+  for ( int k = 0; k < dc_offset_est_len; k++ )
+  {
+    for ( int i = 0; i < number_pads; i++ )
+    {
+      for ( int j = 0; j < number_inputs[i]; j++ )
+      {
+        dc_offset_sum[i][j] += analogRead ( analog_pin[i][j] );
+      }
+    }
+    delayMicroseconds ( 100 );
+  }
+
+  for ( int i = 0; i < number_pads; i++ )
+  {
+    for ( int j = 0; j < number_inputs[i]; j++ )
+    {
+      dc_offset[i][j] = dc_offset_sum[i][j] / dc_offset_est_len;
+    }
+  }
 }
 
 
-bool Edrumulus::process ( int&  midi_velocity,
-                          int&  midi_pos,
-                          bool& is_rim_shot )
+void Edrumulus::process()
 {
-  bool  peak_found = false;
+  bool  is_overload = false;
   float debug;
 
 /*
@@ -107,35 +128,40 @@ return false;
   // wait for the timer to get the correct sampling rate when reading the analog value
   if ( xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
   {
-    int   sample_org[MAX_NUM_PAD_INPUTS];
-    float sample[MAX_NUM_PAD_INPUTS];
+    for ( int i = 0; i < number_pads; i++ )
+    {    
+      int   sample_org[MAX_NUM_PAD_INPUTS];
+      float sample[MAX_NUM_PAD_INPUTS];
+  
+      // get sample(s) from ADC and prepare sample(s) for processing
+      for ( int j = 0; j < number_inputs[i]; j++ )
+      {
+        sample_org[j] = analogRead ( analog_pin[i][j] );
+        sample[j]     = sample_org[j] - dc_offset[i][j]; // compensate DC offset
+      }
+  
+      // process sample
+      pad[i].process_sample ( sample, peak_found[i], midi_velocity[i], midi_pos[i], is_rim_shot[i], debug );
 
-    // get sample(s) from ADC and prepare sample(s) for processing
-    for ( int j = 0; j < number_inputs; j++ )
-    {
-      sample_org[j] = analogRead ( analog_pin[j] );
-      sample[j]     = sample_org[j] - dc_offset[j]; // compensate DC offset
+      // optional overload detection
+      if ( overload_LED_pin >= 0 )
+      {
+        for ( int j = 0; j < number_inputs[i]; j++ )
+        {
+          is_overload |= ( sample_org[j] >= 4094 ) || ( sample_org[j] <= 1 );
+        }
+      }
     }
-
-    // process sample
-    pad.process_sample ( sample, peak_found, midi_velocity, midi_pos, is_rim_shot, debug );
 
     // optional overload detection
     if ( overload_LED_pin >= 0 )
     {
-      bool is_overload = false;
-      
-      for ( int j = 0; j < number_inputs; j++ )
-      {
-        is_overload |= ( sample_org[j] >= 4094 ) || ( sample_org[j] <= 1 );
-      }
-
       if ( is_overload )
       {
         overload_LED_cnt = overload_LED_on_time;
         digitalWrite ( overload_LED_pin, HIGH );
       }
-  
+
       if ( overload_LED_cnt > 1 )
       {
         overload_LED_cnt--;
@@ -147,11 +173,12 @@ return false;
       }
     }
   }
-
-  return peak_found;
 }
 
 
+// -----------------------------------------------------------------------------
+// Pad -------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void Edrumulus::Pad::setup ( const int conf_Fs,
                              const int conf_number_inputs )
 {

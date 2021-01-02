@@ -34,6 +34,7 @@ MIDI_CREATE_DEFAULT_INSTANCE();     // Hairless USB MIDI
 #endif
 
 Edrumulus edrumulus;
+const int number_pads = 1;//5; // <- tested: with current code the ESP32 can only handle up to 5 pads
 
 
 void setup()
@@ -46,24 +47,29 @@ void setup()
 #endif
 
   // analog pins are 34 and 35, we also want to use the on-board LED as an overload indicator
-  //edrumulus.setup ( 34, 35, 2 );
-  edrumulus.setup ( 34, -1, 2 ); // no rim shot
+  const int analog_pins[]         = { 34 };
+  const int analog_pins_rimshot[] = { -1 }; // no rim shot
+  edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot, 2 );
 }
 
 
 void loop()
 {
-  int  midi_velocity, midi_pos;
-  bool is_rim_shot;
+  // this function is blocking at the system sampling rate
+  edrumulus.process();
 
-  if ( edrumulus.process ( midi_velocity, midi_pos, is_rim_shot ) )
-  {
 #ifdef USE_MIDI
-    MIDI.sendControlChange ( 16, midi_pos,      10 );                    // positional sensing
-    MIDI.sendNoteOn        ( is_rim_shot ? 40 : 38, midi_velocity, 10 ); // (note, velocity, channel)
-    MIDI.sendNoteOff       ( 38, 0,             10 );
-#endif
+  // first pad
+  if ( number_pads > 0 )
+  {
+    if ( edrumulus.get_peak_found ( 0 ) )
+    {
+      MIDI.sendControlChange ( 16,                                        edrumulus.get_midi_pos ( 0 ),      10 ); // positional sensing
+      MIDI.sendNoteOn        ( edrumulus.get_is_rim_shot ( 0 ) ? 40 : 38, edrumulus.get_midi_velocity ( 0 ), 10 ); // (note, velocity, channel)
+      MIDI.sendNoteOff       ( 38,                                        0,                                 10 ); // we need a note off
+    }
   }
+#endif
 
 /*
 // For debugging: measure the sampling rate and optionally output it to the serial interface
@@ -71,7 +77,7 @@ static int           prev_micros_cnt = 0;
 static unsigned long prev_micros     = micros();
 if ( prev_micros_cnt >= 10000 )
 {
-  Serial.println ( 1.0f / ( micros() - prev_micros ) * 1e6f, 7 );
+  Serial.println ( 1.0f / ( micros() - prev_micros ) * 10000 * 1e6f, 7 );
   prev_micros_cnt = 0;
   prev_micros     = micros();
 }

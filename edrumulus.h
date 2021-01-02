@@ -25,7 +25,8 @@
 
 #include "Arduino.h"
 
-#define MAX_NUM_PAD_INPUTS   2 // a maximum of 2 sensors per pad supported
+#define MAX_NUM_PADS         10 // a maximum of 10 pads are supported
+#define MAX_NUM_PAD_INPUTS   2  // a maximum of 2 sensors per pad supported
 
 class Edrumulus
 {
@@ -33,15 +34,19 @@ public:
   Edrumulus();
 
   // call this function during the Setup function of the main program
-  void setup ( const int conf_analog_pin,
-               const int conf_analog_pin_rim_shot = -1,
-               const int conf_overload_LED_pin = -1 ); // per default no overload LED is used
+  void setup ( const int  conf_num_pads,
+               const int* conf_analog_pins,
+               const int* conf_analog_pins_rim_shot,
+               const int  conf_overload_LED_pin = -1 ); // per default no overload LED is used
 
   // call the process function during the main loop
-  // if a MIDI note is ready, the function returns true
-  bool process ( int&  midi_velocity,
-                 int&  midi_pos,
-                 bool& is_rim_shot );
+  void process();
+
+  // after calling the process function, query the results for each configured pad
+  bool get_peak_found    ( const int pad_idx ) { return peak_found[pad_idx]; }
+  int  get_midi_velocity ( const int pad_idx ) { return midi_velocity[pad_idx]; }
+  int  get_midi_pos      ( const int pad_idx ) { return midi_pos[pad_idx]; }
+  bool get_is_rim_shot   ( const int pad_idx ) { return is_rim_shot[pad_idx]; }
 
 
 protected:
@@ -65,18 +70,18 @@ protected:
 
       void set_pad_type ( const Epadtype new_pad_type );
 
-      void set_velocity_threshold   ( const byte new_threshold ) { pad_settings.velocity_threshold   = new_threshold; initialize(); }
-      void set_velocity_sensitivity ( const byte new_velocity )  { pad_settings.velocity_sensitivity = new_velocity;  initialize(); }
-      void set_mask_time            ( const byte new_time )      { pad_settings.mask_time            = new_time;      initialize(); }
+      void set_velocity_threshold   ( const int new_threshold ) { pad_settings.velocity_threshold   = new_threshold; initialize(); }
+      void set_velocity_sensitivity ( const int new_velocity )  { pad_settings.velocity_sensitivity = new_velocity;  initialize(); }
+      void set_mask_time            ( const int new_time )      { pad_settings.mask_time            = new_time;      initialize(); }
 
 
     protected:
       struct Epadsettings
       {
         Epadtype pad_type;
-        byte     velocity_threshold;   // 0..31
-        byte     velocity_sensitivity; // 0..31, high value gives higher sensitivity
-        byte     mask_time;            // 0..31 (ms)
+        int      velocity_threshold;   // 0..31
+        int      velocity_sensitivity; // 0..31, high value gives higher sensitivity
+        int      mask_time;            // 0..31 (ms)
         float    energy_win_len_ms;
         float    scan_time_ms;
         float    decay_len_ms;
@@ -144,13 +149,18 @@ protected:
   };
 
   int   Fs;
-  int   number_inputs;
-  int   analog_pin[MAX_NUM_PAD_INPUTS];
-  float dc_offset[MAX_NUM_PAD_INPUTS];
+  int   number_pads;
+  int   number_inputs[MAX_NUM_PADS];
+  int   analog_pin[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  float dc_offset[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   int   overload_LED_pin;
   int   overload_LED_cnt;
   int   overload_LED_on_time;
-  Pad   pad; // note: must be located after Fs variable
+  Pad   pad[MAX_NUM_PADS];
+  bool  peak_found[MAX_NUM_PADS];
+  int   midi_velocity[MAX_NUM_PADS];
+  int   midi_pos[MAX_NUM_PADS];
+  bool  is_rim_shot[MAX_NUM_PADS];
 
   volatile SemaphoreHandle_t timer_semaphore;
   hw_timer_t*                timer = nullptr;
