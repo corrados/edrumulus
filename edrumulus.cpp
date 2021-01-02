@@ -79,32 +79,31 @@ void Edrumulus::setup ( const int  conf_num_pads,
   const int dc_offset_est_len = 5000; // samples
   float     dc_offset_sum[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
 
-  for ( int i = 0; i < number_pads; i++ )
-  {
-    for ( int j = 0; j < number_inputs[i]; j++ )
-    {
-      dc_offset_sum[i][j] = 0.0f;
-    }
-  }
-
   for ( int k = 0; k < dc_offset_est_len; k++ )
   {
     for ( int i = 0; i < number_pads; i++ )
     {
       for ( int j = 0; j < number_inputs[i]; j++ )
       {
-        dc_offset_sum[i][j] += analogRead ( analog_pin[i][j] );
+        if ( k == 0 )
+        {
+          // initial value
+          dc_offset_sum[i][j] = analogRead ( analog_pin[i][j] );
+        }
+        else
+        {
+          // intermediate value, add to the existing value
+          dc_offset_sum[i][j] += analogRead ( analog_pin[i][j] );
+        }
+
+        if ( k == dc_offset_est_len - 1 )
+        {
+          // we are done, calculate the DC offset now
+          dc_offset[i][j] = dc_offset_sum[i][j] / dc_offset_est_len;
+        }
       }
     }
     delayMicroseconds ( 100 );
-  }
-
-  for ( int i = 0; i < number_pads; i++ )
-  {
-    for ( int j = 0; j < number_inputs[i]; j++ )
-    {
-      dc_offset[i][j] = dc_offset_sum[i][j] / dc_offset_est_len;
-    }
   }
 }
 
@@ -209,6 +208,20 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       pad_settings.decay_fact_db     = 1.0f;   // pad specific parameter: vertical shift of the decay function in dB
       pad_settings.decay_grad_fact   = 200.0f; // pad specific parameter: decay function gradient factor
       pad_settings.pos_iir_alpha     = 200.0f; // pad specific parameter: IIR low-pass alpha value for positional sensing
+      break;
+
+    case PD80R:
+// TODO these are just a copy of the PD120 but we need to adjust these values to the PD80R pad properties:
+pad_settings.velocity_threshold   = 8;  // 0..31
+pad_settings.velocity_sensitivity = 4;  // 0..31
+pad_settings.mask_time            = 10; // 0..31 (ms)
+
+pad_settings.energy_win_len_ms = 2e-3f;  // pad specific parameter: hit energy estimation time window length
+pad_settings.scan_time_ms      = 1e-3f;  // pad specific parameter: scan time after first detected peak
+pad_settings.decay_len_ms      = 250.0f; // pad specific parameter: length of the decay
+pad_settings.decay_fact_db     = 1.0f;   // pad specific parameter: vertical shift of the decay function in dB
+pad_settings.decay_grad_fact   = 200.0f; // pad specific parameter: decay function gradient factor
+pad_settings.pos_iir_alpha     = 200.0f; // pad specific parameter: IIR low-pass alpha value for positional sensing
       break;
   }
 
