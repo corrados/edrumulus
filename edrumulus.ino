@@ -47,8 +47,8 @@ void setup()
 #endif
 
   // analog pins are 34 and 35, we also want to use the on-board LED as an overload indicator
-  const int analog_pins[]         = { 34 };
-  const int analog_pins_rimshot[] = { -1 }; // no rim shot
+  const int analog_pins[]         = { 34, 35 };
+  const int analog_pins_rimshot[] = { -1, -1 }; // no rim shot
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot, 2 );
 }
 
@@ -66,6 +66,17 @@ void loop()
     {
       MIDI.sendControlChange ( 16,                                        edrumulus.get_midi_pos ( 0 ),      10 ); // positional sensing
       MIDI.sendNoteOn        ( edrumulus.get_is_rim_shot ( 0 ) ? 40 : 38, edrumulus.get_midi_velocity ( 0 ), 10 ); // (note, velocity, channel)
+      MIDI.sendNoteOff       ( 38,                                        0,                                 10 ); // we need a note off
+    }
+  }
+
+  // second pad
+  if ( number_pads > 1 )
+  {
+    if ( edrumulus.get_peak_found ( 1 ) )
+    {
+      MIDI.sendControlChange ( 16,                                        edrumulus.get_midi_pos ( 1 ),      10 ); // positional sensing
+      MIDI.sendNoteOn        ( edrumulus.get_is_rim_shot ( 1 ) ? 48 : 48, edrumulus.get_midi_velocity ( 1 ), 10 ); // (note, velocity, channel)
       MIDI.sendNoteOff       ( 38,                                        0,                                 10 ); // we need a note off
     }
   }
