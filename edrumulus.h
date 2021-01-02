@@ -48,6 +48,11 @@ public:
   int  get_midi_pos      ( const int pad_idx ) { return midi_pos[pad_idx]; }
   bool get_is_rim_shot   ( const int pad_idx ) { return is_rim_shot[pad_idx]; }
 
+  // configure the pads
+  void set_velocity_threshold   ( const int pad_idx, const int new_threshold ) { pad[pad_idx].set_velocity_threshold ( new_threshold ); }
+  void set_velocity_sensitivity ( const int pad_idx, const int new_velocity )  { pad[pad_idx].set_velocity_sensitivity ( new_velocity ); }
+  void set_mask_time            ( const int pad_idx, const int new_time )      { pad[pad_idx].set_mask_time ( new_time ); }
+
 
 protected:
   class Pad

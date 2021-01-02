@@ -83,6 +83,41 @@ void loop()
 #endif
 
 /*
+// TEST receiving MIDI messages to change the pad settings: Virtual MIDI Piano Keyboard -> loopMIDI -> Hairless MIDI
+if ( MIDI.read ( 1 ) ) // read only on channel 1
+{
+  if ( MIDI.getType() == midi::ControlChange )
+  {
+    bool           is_used    = false;
+    midi::DataByte controller = MIDI.getData1();
+    midi::DataByte value      = MIDI.getData2();
+
+    // controller 1: threshold
+    if ( controller == 1 )
+    {
+      edrumulus.set_velocity_threshold ( 0, static_cast<int> ( static_cast<float> ( value ) / 127 * 31 ) );
+      is_used = true;
+    }
+
+    // controller 2: sensitivity
+    if ( controller == 2 )
+    {
+      edrumulus.set_velocity_sensitivity ( 0, static_cast<int> ( static_cast<float> ( value ) / 127 * 31 ) );
+      is_used = true;
+    }
+
+// TEST some audio feedback that the settings was correctly received
+if ( is_used )
+{
+  MIDI.sendNoteOn  ( 48, value, 10 );
+  MIDI.sendNoteOff ( 48, 0,     10 );
+}
+
+  }
+}
+*/
+
+/*
 // For debugging: measure the sampling rate and optionally output it to the serial interface
 static int           prev_micros_cnt = 0;
 static unsigned long prev_micros     = micros();
