@@ -95,22 +95,22 @@ if ( MIDI.read ( 1 ) ) // read only on channel 1
     // controller 1: threshold
     if ( controller == 1 )
     {
-      edrumulus.set_velocity_threshold ( 0, static_cast<int> ( static_cast<float> ( value ) / 127 * 31 ) );
+      edrumulus.set_velocity_threshold ( 0, value );
       is_used = true;
     }
 
     // controller 2: sensitivity
     if ( controller == 2 )
     {
-      edrumulus.set_velocity_sensitivity ( 0, static_cast<int> ( static_cast<float> ( value ) / 127 * 31 ) );
+      edrumulus.set_velocity_sensitivity ( 0, value );
       is_used = true;
     }
 
 // TEST some audio feedback that the settings was correctly received
 if ( is_used )
 {
-  MIDI.sendNoteOn  ( 48, value, 10 );
-  MIDI.sendNoteOff ( 48, 0,     10 );
+  MIDI.sendNoteOn  ( 33, value, 10 );
+  MIDI.sendNoteOff ( 33, 0,     10 );
 }
 
   }

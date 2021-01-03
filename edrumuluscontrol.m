@@ -26,14 +26,30 @@ function edrumuluscontrol
 global GUI;
 
 close all;
+pkg load audio
+
 figure_handle = figure;
 slider_width  = 0.15;
 slider_hight  = 0.7;
 value_hight   = 0.2;
 
-GUI.set_panel = uipanel( ...
+% MIDI device selection combo box
+GUI.midi_dev_list = uicontrol(figure_handle, ...
+  'style',    'listbox', ...
+  'units',    'normalized', ...
+  'position', [0, 0.8, 0.4, 0.2], ...
+  'callback', @midi_sel_callback);
+
+midi_devices = mididevinfo;
+for i = 1:length(midi_devices.output)
+  set(GUI.midi_dev_list, 'string', midi_devices.output{i}.Name);
+end
+GUI.midi_dev = [];
+
+
+GUI.set_panel = uipanel(figure_handle, ...
   'Title',    'Edrumulus settings', ...
-  'Position', [0 0 1 .6]);
+  'Position', [0 0 1 0.6]);
 
 % first slider control with text
 uicontrol(GUI.set_panel, ...
@@ -82,6 +98,14 @@ GUI.slider2 = uicontrol(GUI.set_panel, ...
 end
 
 
+function midi_sel_callback(hObject)
+
+global GUI;
+GUI.midi_dev = mididevice("output", get(hObject, 'string'));
+
+end
+
+
 function slider_callback(hObject)
 
 global GUI;
@@ -90,11 +114,12 @@ value = round(get(hObject, 'value'));
 
 switch hObject
    case GUI.slider1
-     set(GUI.val1, 'String', num2str(value));
+     set(GUI.val1, 'string', num2str(value));
+     midisend(GUI.midi_dev, midimsg("controlchange", 1, 1, value));
 
    case GUI.slider2
-     set(GUI.val2, 'String', num2str(value));
+     set(GUI.val2, 'string', num2str(value));
+     midisend(GUI.midi_dev, midimsg("controlchange", 1, 2, value));
 end
-
 
 end
