@@ -27,6 +27,14 @@
 - We sometime have double-triggers on hard hits or when the rim is hit. The mask time is already
   at 10 ms. So, the decay handling should be improved to suppress these double-triggers.
 
+  There is also a problem if a press roll with low velocity is played at the edge of the mesh had.
+  In this case we sometimes get incorrect detected hits. I just did a test with my TD-20 module by
+  setting the velocity of the notes to a fixed value and played a low velocity press roll in the
+  middle and at the edge of the mesh had. It seems in the middle of the mesh head it triggers very
+  precise. But at the edge of the mesh head you can hear that some hits are not detected. So, it
+  seems Roland has optimized their retrigger cancellation algorithm for reducing the detection
+  probability of incorrect hits in favor of detecting very low level hits.
+
 - If a rim shot is used, the positional sensing parameters must be adjusted to correctly estimate
   the position.
 
