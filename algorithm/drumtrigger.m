@@ -31,9 +31,6 @@ pkg load audio
 
 Fs = 8000; % Hz
 
-% TEST for continuous audio data capturing and processing
-% continuous_recording(1, Fs, @(x, Fs, do_realtime) processing(x, Fs, do_realtime));
-
 % TEST process recordings
 % x = audioread("signals/esp32_pd120.wav");
 % x = audioread("signals/pd120_pos_sense.wav");%x = x(1:5000, :);%x = x(55400:58000, :);%
@@ -64,16 +61,6 @@ x = audioread("signals/pd120_rimshot_hardsoft.wav");
 % quant    = max_val / (2 ^ (iNumBits - 1) - 1);
 % x        = round(x / quant);
 % x        = x / max(abs(x)) * max_val;
-
-%x_edge   = x(26200:28000);
-%x_middle = x(3000:4200);
-%figure; subplot(2, 1, 1), pwelch(x_middle,[],[],[],[],'twosided','db'); title('middle');
-%subplot(2, 1, 2), pwelch(x_edge,[],[],[],[],'twosided','db'); title('edge');
-%figure; freqz(fir1(80, 0.02));
-
-% hil = myhilbert(x);
-% figure; plot(20 * log10(abs([x, hilbert(x)])));
-% figure; plot(20 * log10(abs([x, myhilbert(x)]))); title('myhilbert');
 
 processing(x * 25000, Fs, false); % scale to the ESP32 input range
 
@@ -300,35 +287,6 @@ pos_sensing         = (pos_sense_metric / 4) * 127 - 510;
 pos_sensing_clipped = max(1, min(127, pos_sensing));
 % play_midi(all_peaks, velocity_clipped, pos_sensing_clipped);
 % figure; subplot(2, 1, 1), plot(velocity); title('velocity'); subplot(2, 1, 2), plot(pos_sensing); title('pos');
-
-end
-
-
-function continuous_recording(blocklen, Fs, callbackfkt)
-
-% continuous recording of audio data and processing in a callback function
-recorder   = audiorecorder(Fs, 16, 1);
-bDataReady = false;
-
-while true
-
-  while isrecording(recorder)
-    pause(blocklen / 1000);
-  end
-
-  if bDataReady
-    x = getaudiodata(recorder);
-  end
-
-  record(recorder, blocklen);
-
-  if bDataReady
-    callbackfkt(x, Fs, true);
-  end
-
-  bDataReady = true;
-
-end
 
 end
 
