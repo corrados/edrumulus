@@ -93,6 +93,7 @@ protected:
         float    decay_len_ms;
         float    decay_fact_db;
         float    decay_grad_fact;
+        float    pos_energy_win_len_ms;
         float    pos_iir_alpha;
       };
 
@@ -142,6 +143,7 @@ protected:
       int          peak_energy_hist_len;
       int          rim_shot_window_len;
       float        rim_shot_threshold;
+      int          pos_energy_window_len;
       int          pos_sense_cnt;
       int          rim_shot_cnt;
       int          stored_midi_velocity;

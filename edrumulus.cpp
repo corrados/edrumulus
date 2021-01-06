@@ -202,12 +202,13 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       pad_settings.velocity_sensitivity = 4;  // 0..31
       pad_settings.mask_time            = 10; // 0..31 (ms)
 
-      pad_settings.energy_win_len_ms = 2e-3f;  // pad specific parameter: hit energy estimation time window length
-      pad_settings.scan_time_ms      = 1e-3f;  // pad specific parameter: scan time after first detected peak
-      pad_settings.decay_len_ms      = 250.0f; // pad specific parameter: length of the decay
-      pad_settings.decay_fact_db     = 1.0f;   // pad specific parameter: vertical shift of the decay function in dB
-      pad_settings.decay_grad_fact   = 200.0f; // pad specific parameter: decay function gradient factor
-      pad_settings.pos_iir_alpha     = 200.0f; // pad specific parameter: IIR low-pass alpha value for positional sensing
+      pad_settings.energy_win_len_ms     = 2e-3f;  // pad specific parameter: hit energy estimation time window length
+      pad_settings.scan_time_ms          = 1e-3f;  // pad specific parameter: scan time after first detected peak
+      pad_settings.decay_len_ms          = 250.0f; // pad specific parameter: length of the decay
+      pad_settings.decay_fact_db         = 1.0f;   // pad specific parameter: vertical shift of the decay function in dB
+      pad_settings.decay_grad_fact       = 200.0f; // pad specific parameter: decay function gradient factor
+      pad_settings.pos_energy_win_len_ms = 2e-3f;  // pad specific parameter: pos sense energy estimation time window length
+      pad_settings.pos_iir_alpha         = 200.0f; // pad specific parameter: IIR low-pass alpha value for positional sensing
       break;
 
     case PD80R:
@@ -216,12 +217,13 @@ pad_settings.velocity_threshold   = 8;  // 0..31
 pad_settings.velocity_sensitivity = 4;  // 0..31
 pad_settings.mask_time            = 10; // 0..31 (ms)
 
-pad_settings.energy_win_len_ms = 2e-3f;  // pad specific parameter: hit energy estimation time window length
-pad_settings.scan_time_ms      = 1e-3f;  // pad specific parameter: scan time after first detected peak
-pad_settings.decay_len_ms      = 250.0f; // pad specific parameter: length of the decay
-pad_settings.decay_fact_db     = 1.0f;   // pad specific parameter: vertical shift of the decay function in dB
-pad_settings.decay_grad_fact   = 200.0f; // pad specific parameter: decay function gradient factor
-pad_settings.pos_iir_alpha     = 200.0f; // pad specific parameter: IIR low-pass alpha value for positional sensing
+pad_settings.energy_win_len_ms     = 2e-3f;  // pad specific parameter: hit energy estimation time window length
+pad_settings.scan_time_ms          = 1e-3f;  // pad specific parameter: scan time after first detected peak
+pad_settings.decay_len_ms          = 250.0f; // pad specific parameter: length of the decay
+pad_settings.decay_fact_db         = 1.0f;   // pad specific parameter: vertical shift of the decay function in dB
+pad_settings.decay_grad_fact       = 200.0f; // pad specific parameter: decay function gradient factor
+pad_settings.pos_energy_win_len_ms = 2e-3f;  // pad specific parameter: pos sense energy estimation time window length
+pad_settings.pos_iir_alpha         = 200.0f; // pad specific parameter: IIR low-pass alpha value for positional sensing
       break;
   }
 
@@ -232,18 +234,19 @@ pad_settings.pos_iir_alpha     = 200.0f; // pad specific parameter: IIR low-pass
 void Edrumulus::Pad::initialize()
 {
   // set algorithm parameters
-  const float threshold_db = 15.0f + pad_settings.velocity_threshold;          // gives us a threshold range of 15..46 dB
-  threshold                = pow   ( 10.0f, threshold_db / 10 );               // linear power threshold
-  energy_window_len        = round ( pad_settings.energy_win_len_ms * Fs );    // hit energy estimation time window length (e.g. 2 ms)
-  scan_time                = round ( pad_settings.scan_time_ms * Fs );         // scan time from first detected peak
-  mask_time                = round ( pad_settings.mask_time * 1e-3f * Fs );    // mask time (e.g. 10 ms)
-  decay_len                = round ( pad_settings.decay_len_ms * 1e-3f * Fs ); // decay time (e.g. 250 ms)
-  decay_fact               = pow   ( 10.0f, pad_settings.decay_fact_db / 10 ); // decay factor of 1 dB
-  const float decay_grad   = pad_settings.decay_grad_fact / Fs;                // decay gradient factor
-  alpha                    = pad_settings.pos_iir_alpha / Fs;                  // IIR low pass filter coefficient
-  rim_shot_window_len      = round ( 6e-3f * Fs );                             // window length (e.g. 6 ms)
-  rim_shot_threshold       = pow   ( 10.0f, 47.0f / 10 );                      // rim shot threshold
-  peak_energy_hist_len     = scan_time - energy_window_len / 2 + 2;
+  const float threshold_db = 15.0f + pad_settings.velocity_threshold;           // gives us a threshold range of 15..46 dB
+  threshold                = pow   ( 10.0f, threshold_db / 10 );                // linear power threshold
+  energy_window_len        = round ( pad_settings.energy_win_len_ms * Fs );     // hit energy estimation time window length (e.g. 2 ms)
+  scan_time                = round ( pad_settings.scan_time_ms * Fs );          // scan time from first detected peak
+  mask_time                = round ( pad_settings.mask_time * 1e-3f * Fs );     // mask time (e.g. 10 ms)
+  decay_len                = round ( pad_settings.decay_len_ms * 1e-3f * Fs );  // decay time (e.g. 250 ms)
+  decay_fact               = pow   ( 10.0f, pad_settings.decay_fact_db / 10 );  // decay factor of 1 dB
+  const float decay_grad   = pad_settings.decay_grad_fact / Fs;                 // decay gradient factor
+  pos_energy_window_len    = round ( pad_settings.pos_energy_win_len_ms * Fs ); // positional sensing energy estimation time window length (e.g. 2 ms)
+  alpha                    = pad_settings.pos_iir_alpha / Fs;                   // IIR low pass filter coefficient
+  rim_shot_window_len      = round ( 6e-3f * Fs );                              // window length (e.g. 6 ms)
+  rim_shot_threshold       = pow   ( 10.0f, 47.0f / 10 );                       // rim shot threshold
+  peak_energy_hist_len     = scan_time - pos_energy_window_len / 2 + 2;
 
   // The ESP32 ADC has 12 bits resulting in a range of 20*log10(2048)=66.2 dB minus the threshold value.
   // The sensitivity parameter shall be in the range of 0..31. This range should then be mapped to the
@@ -267,19 +270,19 @@ void Edrumulus::Pad::initialize()
   if ( rim_hil_hist_re      != nullptr ) delete[] rim_hil_hist_re;
   if ( rim_hil_hist_im      != nullptr ) delete[] rim_hil_hist_im;
 
-  hil_hist             = new float[hil_filt_len];         // memory for Hilbert filter history
-  rim_hil_hist         = new float[hil_filt_len];         // memory for rim shot detection Hilbert filter history
-  mov_av_hist_re       = new float[energy_window_len];    // real part memory for moving average filter history
-  mov_av_hist_im       = new float[energy_window_len];    // imaginary part memory for moving average filter history
-  decay                = new float[decay_len];            // memory for decay function
-  hil_hist_re          = new float[energy_window_len];    // real part of memory for moving average of Hilbert filtered signal
-  hil_hist_im          = new float[energy_window_len];    // imaginary part of memory for moving average of Hilbert filtered signal
-  hil_low_hist_re      = new float[energy_window_len];    // real part of memory for moving average of low-pass filtered Hilbert signal
-  hil_low_hist_im      = new float[energy_window_len];    // imaginary part of memory for moving average of low-pass filtered Hilbert signal
-  peak_energy_hist     = new float[peak_energy_hist_len]; // memory for peak energy
-  peak_energy_low_hist = new float[peak_energy_hist_len]; // memory for low-pass filtered peak energy
-  rim_hil_hist_re      = new float[rim_shot_window_len];  // real part of memory for rim shot detection
-  rim_hil_hist_im      = new float[rim_shot_window_len];  // imaginary part of memory for rim shot detection
+  hil_hist             = new float[hil_filt_len];          // memory for Hilbert filter history
+  rim_hil_hist         = new float[hil_filt_len];          // memory for rim shot detection Hilbert filter history
+  mov_av_hist_re       = new float[energy_window_len];     // real part memory for moving average filter history
+  mov_av_hist_im       = new float[energy_window_len];     // imaginary part memory for moving average filter history
+  decay                = new float[decay_len];             // memory for decay function
+  hil_hist_re          = new float[pos_energy_window_len]; // real part of memory for moving average of Hilbert filtered signal
+  hil_hist_im          = new float[pos_energy_window_len]; // imaginary part of memory for moving average of Hilbert filtered signal
+  hil_low_hist_re      = new float[pos_energy_window_len]; // real part of memory for moving average of low-pass filtered Hilbert signal
+  hil_low_hist_im      = new float[pos_energy_window_len]; // imaginary part of memory for moving average of low-pass filtered Hilbert signal
+  peak_energy_hist     = new float[peak_energy_hist_len];  // memory for peak energy
+  peak_energy_low_hist = new float[peak_energy_hist_len];  // memory for low-pass filtered peak energy
+  rim_hil_hist_re      = new float[rim_shot_window_len];   // real part of memory for rim shot detection
+  rim_hil_hist_im      = new float[rim_shot_window_len];   // imaginary part of memory for rim shot detection
 
   // initialization values
   for ( int i = 0; i < hil_filt_len; i++ )
@@ -292,6 +295,10 @@ void Edrumulus::Pad::initialize()
   {
     mov_av_hist_re[i]  = 0.0f;
     mov_av_hist_im[i]  = 0.0f;
+  }
+
+  for ( int i = 0; i < pos_energy_window_len; i++ )
+  {
     hil_hist_re[i]     = 0.0f;
     hil_hist_im[i]     = 0.0f;
     hil_low_hist_re[i] = 0.0f;
@@ -470,14 +477,14 @@ debug = 0.0f; // TEST
   hil_low_re = ( 1.0f - alpha ) * hil_low_re + alpha * hil_re;
   hil_low_im = ( 1.0f - alpha ) * hil_low_im + alpha * hil_im;
 
-  update_fifo ( hil_re,     energy_window_len, hil_hist_re );
-  update_fifo ( hil_im,     energy_window_len, hil_hist_im );
-  update_fifo ( hil_low_re, energy_window_len, hil_low_hist_re );
-  update_fifo ( hil_low_im, energy_window_len, hil_low_hist_im );
+  update_fifo ( hil_re,     pos_energy_window_len, hil_hist_re );
+  update_fifo ( hil_im,     pos_energy_window_len, hil_hist_im );
+  update_fifo ( hil_low_re, pos_energy_window_len, hil_low_hist_re );
+  update_fifo ( hil_low_im, pos_energy_window_len, hil_low_hist_im );
 
   float peak_energy     = 0;
   float peak_energy_low = 0;
-  for ( int i = 0; i < energy_window_len; i++ )
+  for ( int i = 0; i < pos_energy_window_len; i++ )
   {
     peak_energy     += ( hil_hist_re[i]     * hil_hist_re[i]     + hil_hist_im[i]     * hil_hist_im[i] );
     peak_energy_low += ( hil_low_hist_re[i] * hil_low_hist_re[i] + hil_low_hist_im[i] * hil_low_hist_im[i] );
@@ -494,7 +501,7 @@ debug = 0.0f; // TEST
     {
       // a peak was found, we now have to start the delay process to fill up the
       // required buffer length for our metric
-      pos_sense_cnt        = max ( 1, energy_window_len / 2 + 1 - peak_found_offset );
+      pos_sense_cnt        = max ( 1, pos_energy_window_len / 2 + 1 - peak_found_offset );
       peak_found           = false; // will be set after delay process is done
       stored_midi_velocity = midi_velocity;
     }
@@ -505,7 +512,7 @@ debug = 0.0f; // TEST
     if ( pos_sense_cnt == 0 )
     {
       // the buffers are filled, now calculate the metric
-      const int   peak_energy_hist_idx = peak_energy_hist_len - 2 + energy_window_len / 2 + 1 - peak_found_offset - 1;
+      const int   peak_energy_hist_idx = peak_energy_hist_len - 2 + pos_energy_window_len / 2 + 1 - peak_found_offset - 1;
       const float pos_sense_metric     = peak_energy_hist[peak_energy_hist_idx] / peak_energy_low_hist[peak_energy_hist_idx];
       peak_found                       = true;
       midi_velocity                    = stored_midi_velocity;
@@ -542,7 +549,8 @@ midi_pos = max ( 1, min ( 127, midi_pos ) );
     update_fifo ( rim_hil_re, rim_shot_window_len, rim_hil_hist_re );
     update_fifo ( rim_hil_im, rim_shot_window_len, rim_hil_hist_im );
 
-    // note that rim_shot_window_len must be larger than energy_window_len and scan_time for this to work
+    // note that rim_shot_window_len must be larger than energy_window_len,
+    // pos_energy_window_len and scan_time for this to work
     if ( peak_found || ( rim_shot_cnt > 0 ) )
     {
       // start condition of delay process to fill up the required buffers
@@ -550,7 +558,7 @@ midi_pos = max ( 1, min ( 127, midi_pos ) );
       {
         // a peak was found, we now have to start the delay process to fill up the
         // required buffer length for our metric
-        rim_shot_cnt         = rim_shot_window_len / 2 - max ( scan_time, energy_window_len / 2 );
+        rim_shot_cnt         = rim_shot_window_len / 2 - max ( scan_time, max ( energy_window_len / 2, pos_energy_window_len / 2 ) );
         peak_found           = false; // will be set after delay process is done
         stored_midi_velocity = midi_velocity;
         stored_midi_pos      = midi_pos;
@@ -563,7 +571,7 @@ midi_pos = max ( 1, min ( 127, midi_pos ) );
       {
         // the buffers are filled, now calculate the metric
         float rim_max_pow = 0;
-        for ( int i = 0; i < energy_window_len; i++ )
+        for ( int i = 0; i < rim_shot_window_len; i++ )
         {
           rim_max_pow = max ( rim_max_pow, rim_hil_hist_re[i] * rim_hil_hist_re[i] + rim_hil_hist_im[i] * rim_hil_hist_im[i] );
         }

@@ -33,14 +33,14 @@ Fs = 8000; % Hz
 
 % TEST process recordings
 % x = audioread("signals/esp32_pd120.wav");
-% x = audioread("signals/pd120_pos_sense.wav");%x = x(1:5000, :);%x = x(55400:58000, :);%
+x = audioread("signals/pd120_pos_sense.wav");%x = x(1:5000, :);%x = x(55400:58000, :);%
 % x = audioread("signals/pd120_pos_sense2.wav");
 % x = audioread("signals/pd120_single_hits.wav");
-% x = audioread("signals/pd120_roll.wav");
+% x = audioread("signals/pd120_roll.wav");%x = x(311500:317600);
 % x = audioread("signals/pd120_middle_velocity.wav");
 % x = audioread("signals/pd120_hot_spot.wav");
 % x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
-x = audioread("signals/pd120_rimshot_hardsoft.wav");
+% x = audioread("signals/pd120_rimshot_hardsoft.wav");
 % x = audioread("signals/pd6.wav");
 % org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
 % org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
@@ -85,8 +85,6 @@ end
 
 
 function [hil, hil_filt] = filter_input_signal(x, Fs)
-
-global energy_window_len;
 
 energy_window_len = round(2e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
 
@@ -173,7 +171,7 @@ end
 
 function pos_sense_metric = calc_pos_sense_metric(hil, Fs, all_peaks)
 
-global energy_window_len;
+pos_energy_window_len = round(2e-3 * Fs); % positional sensing energy estimation time window length (e.g. 2 ms)
 
 % low pass filter of the Hilbert signal
 % lp_ir_len = 80; % low-pass filter length
@@ -199,7 +197,7 @@ for i = 1:length(all_peaks)
   % peak position in the moving averaged filtered signal might be in an attenuated
   % region of the original Hilbert transformed signal, we average the powers of
   % the filtered and un-filtered signals around the detected peak position.
-  win_idx            = (all_peaks(i):all_peaks(i) + energy_window_len - 1) - energy_window_len / 2;
+  win_idx            = (all_peaks(i):all_peaks(i) + pos_energy_window_len - 1) - pos_energy_window_len / 2;
   win_idx            = win_idx((win_idx <= length(hil_low)) & (win_idx > 0));
   peak_energy(i)     = sum(abs(hil(win_idx)) .^ 2);
   peak_energy_low(i) = sum(abs(hil_low(win_idx)) .^ 2);
@@ -210,15 +208,15 @@ end
 
 pos_sense_metric = 10 * log10(peak_energy) - 10 * log10(peak_energy_low);
 
-% % figure; plot(20 * log10(abs([hil, hil_low]))); hold on;
-% % plot(win_idx_all', 20 * log10(abs(hil(win_idx_all'))), 'k.-');
-% figure; plot(20 * log10(abs(hil))); hold on;
-% for i = 1:size(win_idx_all, 1)
-%   plot(win_idx_all(i, :), 20 * log10(abs(hil(win_idx_all(i, :)))), 'k.-');
-%   plot(win_idx_all(i, :), 20 * log10(abs(hil_low(win_idx_all(i, :)))), 'b.-');
-%   plot(all_peaks, 10 * log10(peak_energy), 'k');
-%   plot(all_peaks, 10 * log10(peak_energy_low), 'b');
-% end
+%figure; plot(20 * log10(abs([hil, hil_low]))); hold on;
+%plot(win_idx_all', 20 * log10(abs(hil(win_idx_all'))), 'k.-');
+%figure; plot(20 * log10(abs(hil))); hold on;
+%for i = 1:size(win_idx_all, 1)
+%  plot(win_idx_all(i, :), 20 * log10(abs(hil(win_idx_all(i, :)))), 'k.-');
+%  plot(win_idx_all(i, :), 20 * log10(abs(hil_low(win_idx_all(i, :)))), 'b.-');
+%  plot(all_peaks, 10 * log10(peak_energy), 'k');
+%  plot(all_peaks, 10 * log10(peak_energy_low), 'b');
+%end
 
 end
 

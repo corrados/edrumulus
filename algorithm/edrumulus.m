@@ -32,8 +32,8 @@ close all
 
 % load test data
 % x = audioread("signals/pd120_roll.wav");
-x = audioread("signals/pd120_single_hits.wav");
-% x = audioread("signals/pd120_pos_sense.wav");%x = x(1:5000, :);%x = x(55400:58000, :);%
+% x = audioread("signals/pd120_single_hits.wav");
+x = audioread("signals/pd120_pos_sense.wav");%x = x(1:5000, :);%x = x(55400:58000, :);%
 % x = audioread("signals/pd120_pos_sense2.wav");
 % x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:8000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 % x = x(1300:5000); % * 1000;
@@ -158,16 +158,12 @@ if bReturnIsComplex
   y = complex(y(1:2:2 * length(x)), y(2:2:2 * length(x)));
 end
 
-
 % figure; plot([peak_found, y.'], '*');
 figure; plot(20 * log10(abs([hil_filt_debug, y.'])));
 % figure; plot(20 * log10(abs([x, y.'])));
 % figure; plot(abs(x.' - y));
 
-
 end
-
-
 
 
 
@@ -179,6 +175,7 @@ global a_im;
 global hil_filt_len;
 global hil_hist;
 global energy_window_len;
+global pos_energy_window_len;
 global scan_time;
 global scan_time_cnt;
 global mov_av_hist_re;
@@ -243,12 +240,13 @@ decay_scaling           = 1;
 alpha                   = 200 / Fs;
 hil_low_re              = 0;
 hil_low_im              = 0;
+pos_energy_window_len   = round(2e-3 * Fs); % positional sensing energy estimation time window length (e.g. 2 ms)
 pos_sense_cnt           = 0;
-hil_hist_re             = zeros(energy_window_len, 1);
-hil_hist_im             = zeros(energy_window_len, 1);
-hil_low_hist_re         = zeros(energy_window_len, 1);
-hil_low_hist_im         = zeros(energy_window_len, 1);
-peak_energy_hist_len    = scan_time - energy_window_len / 2 + 2;
+hil_hist_re             = zeros(pos_energy_window_len, 1);
+hil_hist_im             = zeros(pos_energy_window_len, 1);
+hil_low_hist_re         = zeros(pos_energy_window_len, 1);
+hil_low_hist_im         = zeros(pos_energy_window_len, 1);
+peak_energy_hist_len    = scan_time - pos_energy_window_len / 2 + 2;
 peak_energy_hist        = zeros(peak_energy_hist_len, 1);
 peak_energy_low_hist    = zeros(peak_energy_hist_len, 1);
 rim_shot_window_len     = round(6e-3 * Fs); % window length (e.g. 6 ms)
@@ -292,6 +290,7 @@ global a_im;
 global hil_filt_len;
 global hil_hist;
 global energy_window_len;
+global pos_energy_window_len;
 global scan_time;
 global scan_time_cnt;
 global mov_av_hist_re;
@@ -441,10 +440,10 @@ hil_filt_decay_debug = hil_filt_decay; % just for debugging
 hil_low_re = (1 - alpha) * hil_low_re + alpha * hil_re;
 hil_low_im = (1 - alpha) * hil_low_im + alpha * hil_im;
 
-hil_hist_re     = update_fifo(hil_re,     energy_window_len, hil_hist_re);
-hil_hist_im     = update_fifo(hil_im,     energy_window_len, hil_hist_im);
-hil_low_hist_re = update_fifo(hil_low_re, energy_window_len, hil_low_hist_re);
-hil_low_hist_im = update_fifo(hil_low_im, energy_window_len, hil_low_hist_im);
+hil_hist_re     = update_fifo(hil_re,     pos_energy_window_len, hil_hist_re);
+hil_hist_im     = update_fifo(hil_im,     pos_energy_window_len, hil_hist_im);
+hil_low_hist_re = update_fifo(hil_low_re, pos_energy_window_len, hil_low_hist_re);
+hil_low_hist_im = update_fifo(hil_low_im, pos_energy_window_len, hil_low_hist_im);
 
 peak_energy     = sum(hil_hist_re     .* hil_hist_re     + hil_hist_im     .* hil_hist_im);
 peak_energy_low = sum(hil_low_hist_re .* hil_low_hist_re + hil_low_hist_im .* hil_low_hist_im);
@@ -460,7 +459,7 @@ if peak_found || (pos_sense_cnt > 0)
 
     % a peak was found, we now have to start the delay process to fill up the
     % required buffer length for our metric
-    pos_sense_cnt = max(1, energy_window_len / 2 + 1 - peak_found_offset);
+    pos_sense_cnt = max(1, pos_energy_window_len / 2 + 1 - peak_found_offset);
     peak_found    = false; % will be set after delay process is done
 
   end
@@ -471,7 +470,7 @@ if peak_found || (pos_sense_cnt > 0)
   if pos_sense_cnt == 0
 
     % the buffers are filled, now calculate the metric
-    peak_energy_hist_idx = peak_energy_hist_len - 2 + energy_window_len / 2 + 1 - peak_found_offset;
+    peak_energy_hist_idx = peak_energy_hist_len - 2 + pos_energy_window_len / 2 + 1 - peak_found_offset;
     pos_sense_metric     = peak_energy_hist(peak_energy_hist_idx) / peak_energy_low_hist(peak_energy_hist_idx);
     peak_found           = true;
 
@@ -497,7 +496,8 @@ if length(x) > 1 % rim piezo signal is in second dimension
   x_rim_hil_hist_re = update_fifo(x_rim_hil_re, rim_shot_window_len, x_rim_hil_hist_re);
   x_rim_hil_hist_im = update_fifo(x_rim_hil_im, rim_shot_window_len, x_rim_hil_hist_im);
 
-  % note that rim_shot_window_len must be larger than energy_window_len and scan_time for this to work
+  % note that rim_shot_window_len must be larger than energy_window_len,
+  % pos_energy_window_len and scan_time for this to work
   if peak_found || (rim_shot_cnt > 0)
 
     % start condition of delay process to fill up the required buffers
@@ -505,7 +505,7 @@ if length(x) > 1 % rim piezo signal is in second dimension
 
       % a peak was found, we now have to start the delay process to fill up the
       % required buffer length for our metric
-      rim_shot_cnt            = rim_shot_window_len / 2 - max(scan_time, energy_window_len / 2);
+      rim_shot_cnt            = rim_shot_window_len / 2 - max(scan_time, max(energy_window_len / 2, pos_energy_window_len / 2));
       peak_found              = false; % will be set after delay process is done
       stored_pos_sense_metric = pos_sense_metric;
 
