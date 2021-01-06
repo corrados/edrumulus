@@ -45,10 +45,14 @@ subtract too little if the hit is at the edge of the pad.
 
 ## Positional sensing
 
-It has shown that if you hit the pad close to the edge, the resulting sound has less low frequencies
+If you hit the pad close to the edge, the resulting sound has less low frequencies
 and sounds more crisp. So, the idea is to low-pass filter the signal and at the detected peak position we
 calculate the power ratio of the low-pass filtered signal with the unfiltered signal. This is then
 the metric for the positional sensing.
+
+Further testing showed that it is important to use the very first peak in time for positional sensing. If
+a later peak is used, the positional sensing based on the low-pass filtered signal does not yield
+good results.
 
 It has shown that the positional sensing metric must be adjusted if a rim shot is used. So, the
 rim shot detection information has to be used for the positional sensing, too.
