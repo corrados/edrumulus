@@ -32,8 +32,8 @@ close all
 
 % load test data
 % x = audioread("signals/pd120_roll.wav");
-% x = audioread("signals/pd120_single_hits.wav");
-x = audioread("signals/pd120_pos_sense.wav");%x = x(1:5000, :);%x = x(55400:58000, :);%
+x = audioread("signals/pd120_single_hits.wav");
+% x = audioread("signals/pd120_pos_sense.wav");x = x(2900:10000, :);%x = x(55400:58000, :);%
 % x = audioread("signals/pd120_pos_sense2.wav");
 % x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:8000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 % x = x(1300:5000); % * 1000;
@@ -78,9 +78,9 @@ is_rim_shot_corrected(is_rim_shot_idx) = true;
 
 figure; plot(10 * log10(abs([hil_filt_debug, hil_filt_decay_debug, cur_decay_debug]))); hold on; grid on;
         plot(10 * log10(rim_max_pow_debug), 'y*');
-        plot(find(peak_found_corrected), 10 * log10(hil_filt_debug(peak_found_corrected)), 'g*');
+        plot(find(peak_found_corrected),  10 * log10(hil_filt_debug(peak_found_corrected)), 'g*');
         plot(find(is_rim_shot_corrected), 10 * log10(hil_filt_debug(is_rim_shot_corrected)), 'b*');
-        plot(find(peak_found_corrected), 10 * log10(pos_sense_metric(peak_found)) + 40, 'k*');
+        plot(find(peak_found_corrected),  10 * log10(pos_sense_metric(peak_found)) + 40, 'k*');
         ylim([-10, 90]);
 % figure; plot(20 * log10(abs([x, hil_debug, hil_filt_debug])));
 
@@ -198,9 +198,6 @@ global hil_hist_re;
 global hil_hist_im;
 global hil_low_hist_re;
 global hil_low_hist_im;
-global peak_energy_hist_len;
-global peak_energy_hist;
-global peak_energy_low_hist;
 global pos_sense_cnt;
 global rim_shot_window_len;
 global rim_shot_threshold;
@@ -209,9 +206,13 @@ global x_rim_hil_hist_re;
 global x_rim_hil_hist_im;
 global rim_shot_cnt;
 global stored_pos_sense_metric;
+global stored_is_rimshot;
 global max_hil_filt_val;
 global max_hil_filt_decay_val;
 global peak_found_offset;
+global was_peak_found;
+global was_pos_sense_ready;
+global was_rim_shot_ready;
 
 Fs           = 8000;
 hil_filt_len = 7;
@@ -221,7 +222,7 @@ a_re = [-0.037749783581601, -0.069256807147465, -1.443799477299919,  2.473967088
 a_im = [ 0,                  0.213150535195075, -1.048981722170302, -1.797442302898130, ...
          1.697288080048948,  0,                  0.035902177664014]';
 energy_window_len       = round(2e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
-scan_time               = round(1e-3 * Fs); % scan time from first detected peak
+scan_time               = round(2e-3 * Fs); % scan time from first detected peak
 scan_time_cnt           = 0;
 mov_av_hist_re          = zeros(energy_window_len, 1); % real part memory for moving average filter history
 mov_av_hist_im          = zeros(energy_window_len, 1); % imaginary part memory for moving average filter history
@@ -246,9 +247,6 @@ hil_hist_re             = zeros(pos_energy_window_len, 1);
 hil_hist_im             = zeros(pos_energy_window_len, 1);
 hil_low_hist_re         = zeros(pos_energy_window_len, 1);
 hil_low_hist_im         = zeros(pos_energy_window_len, 1);
-peak_energy_hist_len    = scan_time - pos_energy_window_len / 2 + 2;
-peak_energy_hist        = zeros(peak_energy_hist_len, 1);
-peak_energy_low_hist    = zeros(peak_energy_hist_len, 1);
 rim_shot_window_len     = round(6e-3 * Fs); % window length (e.g. 6 ms)
 rim_shot_threshold      = 10 ^ (87.5 / 10);
 x_rim_hil_hist          = zeros(hil_filt_len, 1);
@@ -256,9 +254,13 @@ x_rim_hil_hist_re       = zeros(rim_shot_window_len, 1);
 x_rim_hil_hist_im       = zeros(rim_shot_window_len, 1);
 rim_shot_cnt            = 0;
 stored_pos_sense_metric = 0;
+stored_is_rimshot       = false;
 max_hil_filt_val        = 0;
 max_hil_filt_decay_val  = 0;
 peak_found_offset       = 0;
+was_peak_found          = false;
+was_pos_sense_ready     = false;
+was_rim_shot_ready      = false;
 
 end
 
@@ -313,9 +315,6 @@ global hil_hist_re;
 global hil_hist_im;
 global hil_low_hist_re;
 global hil_low_hist_im;
-global peak_energy_hist_len;
-global peak_energy_hist;
-global peak_energy_low_hist;
 global pos_sense_cnt;
 global rim_shot_window_len;
 global rim_shot_threshold;
@@ -324,15 +323,20 @@ global x_rim_hil_hist_re;
 global x_rim_hil_hist_im;
 global rim_shot_cnt;
 global stored_pos_sense_metric;
+global stored_is_rimshot;
 global max_hil_filt_val;
 global max_hil_filt_decay_val;
 global peak_found_offset;
-
+global was_peak_found;
+global was_pos_sense_ready;
+global was_rim_shot_ready;
 
 % initialize return parameter
 peak_found        = false;
 pos_sense_metric  = 0;
 is_rim_shot       = false;
+first_peak_found  = false; % only used internally
+rim_shot_is_used  = false; % only used internally
 cur_decay_debug   = 0; % just for debugging
 rim_max_pow_debug = 0; % just for debugging
 
@@ -397,6 +401,7 @@ if ((hil_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
       max_hil_filt_decay_val = prev_hil_filt_decay_val; % initialize maximum value with first peak
       max_hil_filt_val       = prev_hil_filt_val;       % initialize maximum value with first peak
       peak_found_offset      = scan_time;               % position of first peak after scan time expired
+      first_peak_found       = true;
 
     end
 
@@ -412,7 +417,7 @@ if ((hil_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
     scan_time_cnt = scan_time_cnt - 1;
 
     % end condition of scan time
-    if scan_time_cnt == 0
+    if scan_time_cnt <= 0
 
       % scan time expired
       prev_hil_filt_decay_val = 0;
@@ -420,7 +425,7 @@ if ((hil_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
       decay_scaling           = max_hil_filt_val * decay_fact;
       decay_back_cnt          = decay_len - peak_found_offset;
       mask_back_cnt           = mask_time - peak_found_offset;
-      peak_found              = true;
+      was_peak_found          = true;
 
     end
 
@@ -436,6 +441,9 @@ hil_filt_decay_debug = hil_filt_decay; % just for debugging
 
 
 % Calculate positional sensing -------------------------------------------------
+
+% TODO introduce flag: bDoPosSense
+
 % low pass filter of the Hilbert signal
 hil_low_re = (1 - alpha) * hil_low_re + alpha * hil_re;
 hil_low_im = (1 - alpha) * hil_low_im + alpha * hil_im;
@@ -448,37 +456,33 @@ hil_low_hist_im = update_fifo(hil_low_im, pos_energy_window_len, hil_low_hist_im
 peak_energy     = sum(hil_hist_re     .* hil_hist_re     + hil_hist_im     .* hil_hist_im);
 peak_energy_low = sum(hil_low_hist_re .* hil_low_hist_re + hil_low_hist_im .* hil_low_hist_im);
 
-% store the peak energies
-peak_energy_hist     = update_fifo(peak_energy,     peak_energy_hist_len, peak_energy_hist);
-peak_energy_low_hist = update_fifo(peak_energy_low, peak_energy_hist_len, peak_energy_low_hist);
+% start condition of delay process to fill up the required buffers
+if first_peak_found && (~was_pos_sense_ready) && (pos_sense_cnt == 0)
 
-if peak_found || (pos_sense_cnt > 0)
+  % a peak was found, we now have to start the delay process to fill up the
+  % required buffer length for our metric
+  pos_sense_cnt = energy_window_len / 2 - 1;
 
-  % start condition of delay process to fill up the required buffers
-  if pos_sense_cnt == 0
+end
 
-    % a peak was found, we now have to start the delay process to fill up the
-    % required buffer length for our metric
-    pos_sense_cnt = max(1, pos_energy_window_len / 2 + 1 - peak_found_offset);
-    peak_found    = false; % will be set after delay process is done
-
-  end
+if pos_sense_cnt > 0
 
   pos_sense_cnt = pos_sense_cnt - 1;
 
   % end condition
-  if pos_sense_cnt == 0
+  if pos_sense_cnt <= 0
 
     % the buffers are filled, now calculate the metric
-    peak_energy_hist_idx = peak_energy_hist_len - 2 + pos_energy_window_len / 2 + 1 - peak_found_offset;
-    pos_sense_metric     = peak_energy_hist(peak_energy_hist_idx) / peak_energy_low_hist(peak_energy_hist_idx);
-    peak_found           = true;
+    stored_pos_sense_metric = peak_energy / peak_energy_low;
+    was_pos_sense_ready     = true;
 
   else
 
     % we need a further delay for the positional sensing estimation, consider
     % this additional delay for the overall peak found offset
-    peak_found_offset = peak_found_offset + 1;
+    if was_peak_found
+      peak_found_offset = peak_found_offset + 1;
+    end
 
   end
 
@@ -488,6 +492,8 @@ end
 % Calculate rim shot detection -------------------------------------------------
 if length(x) > 1 % rim piezo signal is in second dimension
 
+  rim_shot_is_used = true;
+
   % hilbert filter
   x_rim_hil_hist = update_fifo(x(2), hil_filt_len, x_rim_hil_hist);
   x_rim_hil_re   = sum(x_rim_hil_hist .* a_re);
@@ -496,43 +502,56 @@ if length(x) > 1 % rim piezo signal is in second dimension
   x_rim_hil_hist_re = update_fifo(x_rim_hil_re, rim_shot_window_len, x_rim_hil_hist_re);
   x_rim_hil_hist_im = update_fifo(x_rim_hil_im, rim_shot_window_len, x_rim_hil_hist_im);
 
+  % start condition of delay process to fill up the required buffers
   % note that rim_shot_window_len must be larger than energy_window_len,
   % pos_energy_window_len and scan_time for this to work
-  if peak_found || (rim_shot_cnt > 0)
+  if was_peak_found && (~was_rim_shot_ready) && (rim_shot_cnt == 0)
 
-    % start condition of delay process to fill up the required buffers
-    if rim_shot_cnt == 0
+    % a peak was found, we now have to start the delay process to fill up the
+    % required buffer length for our metric
+    rim_shot_cnt = rim_shot_window_len / 2 - max(scan_time, max(energy_window_len / 2, pos_energy_window_len / 2));
 
-      % a peak was found, we now have to start the delay process to fill up the
-      % required buffer length for our metric
-      rim_shot_cnt            = rim_shot_window_len / 2 - max(scan_time, max(energy_window_len / 2, pos_energy_window_len / 2));
-      peak_found              = false; % will be set after delay process is done
-      stored_pos_sense_metric = pos_sense_metric;
+  end
 
-    end
+  if rim_shot_cnt > 0
 
     rim_shot_cnt = rim_shot_cnt - 1;
 
     % end condition
-    if rim_shot_cnt == 0
+    if rim_shot_cnt <= 0
 
       % the buffers are filled, now calculate the metric
-      rim_max_pow       = max(x_rim_hil_hist_re .* x_rim_hil_hist_re + x_rim_hil_hist_im .* x_rim_hil_hist_im);
-      rim_max_pow_debug = rim_max_pow; % just for debugging
-      is_rim_shot       = rim_max_pow > rim_shot_threshold;
-      rim_shot_cnt      = 0;
-      peak_found        = true;
-      pos_sense_metric  = stored_pos_sense_metric;
+      rim_max_pow        = max(x_rim_hil_hist_re .* x_rim_hil_hist_re + x_rim_hil_hist_im .* x_rim_hil_hist_im);
+      rim_max_pow_debug  = rim_max_pow; % just for debugging
+      stored_is_rimshot  = rim_max_pow > rim_shot_threshold;
+      rim_shot_cnt       = 0;
+      was_rim_shot_ready = true;
 
     else
 
       % we need a further delay for the positional sensing estimation, consider
       % this additional delay for the overall peak found offset
-      peak_found_offset = peak_found_offset + 1;
+      if was_peak_found && was_pos_sense_ready
+        peak_found_offset = peak_found_offset + 1;
+      end
 
     end
 
   end
+
+end
+
+% check for all estimations are ready and we can set the peak found flag and
+% return all results
+if was_peak_found && was_pos_sense_ready && (~rim_shot_is_used || was_rim_shot_ready)
+
+  pos_sense_metric = stored_pos_sense_metric;
+  peak_found       = true;
+  is_rim_shot      = stored_is_rimshot;
+
+  was_peak_found      = false;
+  was_pos_sense_ready = false;
+  was_rim_shot_ready  = false;
 
 end
 

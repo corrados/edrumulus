@@ -33,13 +33,13 @@ Fs = 8000; % Hz
 
 % TEST process recordings
 % x = audioread("signals/esp32_pd120.wav");
-x = audioread("signals/pd120_pos_sense.wav");%x = x(1:5000, :);%x = x(55400:58000, :);%
+% x = audioread("signals/pd120_pos_sense.wav");x = x(2900:10000, :);%x = x(55400:58000, :);%
 % x = audioread("signals/pd120_pos_sense2.wav");
 % x = audioread("signals/pd120_single_hits.wav");
 % x = audioread("signals/pd120_roll.wav");%x = x(311500:317600);
 % x = audioread("signals/pd120_middle_velocity.wav");
 % x = audioread("signals/pd120_hot_spot.wav");
-% x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
+x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 % x = audioread("signals/pd120_rimshot_hardsoft.wav");
 % x = audioread("signals/pd6.wav");
 % org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
@@ -97,7 +97,7 @@ hil_filt = abs(filter(ones(energy_window_len, 1) / energy_window_len, 1, hil)) .
 end
 
 
-function all_peaks = calc_peak_detection(hil_filt, Fs)
+function [all_peaks, all_first_peaks] = calc_peak_detection(hil_filt, Fs)
 
 threshold_db = 23; % TEST: figure;plot(10.^((15:(30/31):45)/20),'.-')
 mask_time    = round(10e-3 * Fs); % mask time (e.g. 10 ms)
@@ -107,12 +107,13 @@ decay_len     = round(0.25 * Fs); % decay time (e.g. 250 ms)
 decay_fact_db = 1; % decay factor in dB
 decay_grad    = 200 / Fs; % decay gradient factor
 
-last_peak_idx = 0;
-all_peaks     = [];
-i             = 1;
-no_more_peak  = false;
-decay_all     = nan(size(hil_filt)); % only for debugging
-hil_filt_org  = hil_filt;            % only for debugging
+last_peak_idx   = 0;
+all_peaks       = [];
+all_first_peaks = [];
+i               = 1;
+no_more_peak    = false;
+decay_all       = nan(size(hil_filt)); % only for debugging
+hil_filt_org    = hil_filt;            % only for debugging
 
 while ~no_more_peak
 
@@ -133,9 +134,10 @@ while ~no_more_peak
   if ~isempty(max_idx)
     peak_idx = peak_idx + max_idx(1) - 1;
   end
+  all_first_peaks = [all_first_peaks; peak_idx];
 
   % search in a pre-defined scan time for the highest peak
-  scan_time    = round(1e-3 * Fs); % scan time from first detected peak
+  scan_time    = round(2e-3 * Fs); % scan time from first detected peak
   [~, max_idx] = max(hil_filt(peak_idx:min(1 + peak_idx + scan_time - 1, length(hil_filt))));
   peak_idx     = peak_idx + max_idx - 1;
 
@@ -169,7 +171,7 @@ end
 end
 
 
-function pos_sense_metric = calc_pos_sense_metric(hil, Fs, all_peaks)
+function pos_sense_metric = calc_pos_sense_metric(hil, hil_filt, Fs, all_peaks)
 
 pos_energy_window_len = round(2e-3 * Fs); % positional sensing energy estimation time window length (e.g. 2 ms)
 
@@ -208,8 +210,14 @@ end
 
 pos_sense_metric = 10 * log10(peak_energy) - 10 * log10(peak_energy_low);
 
-%figure; plot(20 * log10(abs([hil, hil_low]))); hold on;
+%figure; plot(20 * log10(abs([hil, hil_low, hil_filt]))); hold on;
 %plot(win_idx_all', 20 * log10(abs(hil(win_idx_all'))), 'k.-');
+%grid on; axis([2978.533   3072.863    -20.398    131.296]);
+%
+%figure; plot(20 * log10(abs([hil, hil_low, hil_filt]))); hold on;
+%plot(win_idx_all', 20 * log10(abs(hil(win_idx_all'))), 'k.-');
+%grid on; axis([2.3806e+04   2.3900e+04  -1.4506e+01   1.1036e+02]);
+
 %figure; plot(20 * log10(abs(hil))); hold on;
 %for i = 1:size(win_idx_all, 1)
 %  plot(win_idx_all(i, :), 20 * log10(abs(hil(win_idx_all(i, :)))), 'k.-');
@@ -257,10 +265,10 @@ end
 function processing(x, Fs, do_realtime)
 
 % calculate peak detection and positional sensing
-[hil, hil_filt]  = filter_input_signal(x(:, 1), Fs);
-all_peaks        = calc_peak_detection(hil_filt, Fs);
-is_rim_shot      = detect_rim_shot(x, all_peaks, Fs);
-pos_sense_metric = calc_pos_sense_metric(hil, Fs, all_peaks);
+[hil, hil_filt]              = filter_input_signal(x(:, 1), Fs);
+[all_peaks, all_first_peaks] = calc_peak_detection(hil_filt, Fs);
+is_rim_shot                  = detect_rim_shot(x, all_peaks, Fs);
+pos_sense_metric             = calc_pos_sense_metric(hil, hil_filt, Fs, all_first_peaks);
 
 if ~do_realtime
   figure % open figure to keep previous plots (not desired for real-time)

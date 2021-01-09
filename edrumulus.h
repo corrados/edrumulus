@@ -118,8 +118,6 @@ protected:
       float* hil_hist_im          = nullptr;
       float* hil_low_hist_re      = nullptr;
       float* hil_low_hist_im      = nullptr;
-      float* peak_energy_hist     = nullptr;
-      float* peak_energy_low_hist = nullptr;
       float* rim_hil_hist_re      = nullptr;
       float* rim_hil_hist_im      = nullptr;
 
@@ -140,7 +138,6 @@ protected:
       int          decay_back_cnt;
       float        decay_scaling;
       float        alpha;
-      int          peak_energy_hist_len;
       int          rim_shot_window_len;
       float        rim_shot_threshold;
       int          pos_energy_window_len;
@@ -148,9 +145,13 @@ protected:
       int          rim_shot_cnt;
       int          stored_midi_velocity;
       int          stored_midi_pos;
+      bool         stored_is_rimshot;
       float        max_hil_filt_val;
       float        max_hil_filt_decay_val;
       int          peak_found_offset;
+      bool         was_peak_found;
+      bool         was_pos_sense_ready;
+      bool         was_rim_shot_ready;
       float        hil_low_re;
       float        hil_low_im;
       Epadsettings pad_settings;
