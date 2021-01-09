@@ -9,11 +9,11 @@
 - (12/20/2020) The positional sensing algorithm is now also ported to the ESP32 micro controller. I have made a
   new Youtube video using the current implementation (Git commit c796369): https://youtu.be/naP-ODXl9Y0
 
-- (12/18/2020) I have ported the Octave peak detection code to the ESP32 developer board (no positional sensing
-  yet) and connected it via my PC and Hairless MIDI to my Roland TD-20 module so that the snare sound was
-  coming out of the TD-20. This time I could test the performance in real-time. The parameters were not yet
-  optimized but still, the results were very promising. Without positional sensing, the ESP32 runs at about
-  56 kHz sampling rate when calculating the peak detection algorithm on one pad. Since I only need 8 kHz
+- (12/18/2020) I have ported the Octave peak detection code to the ESP32 developer board (a DOIT ESP32 DEVKIT V1,
+  no positional sensing yet) and connected it via my PC and Hairless MIDI to my Roland TD-20 module so that
+  the snare sound was coming out of the TD-20. This time I could test the performance in real-time. The parameters
+  were not yet optimized but still, the results were very promising. Without positional sensing, the ESP32 runs at
+  about 56 kHz sampling rate when calculating the peak detection algorithm on one pad. Since I only need 8 kHz
   sampling rate (maybe even 4 kHz is sufficient), we have a lot of headroom for the positional sensing algorithm
   or to add rim shot support and support multiple pads.
 
