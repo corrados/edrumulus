@@ -33,6 +33,7 @@ Edrumulus::Edrumulus() :
   edrumulus_pointer    = this;                 // global pointer to this class needed for static callback function
   overload_LED_on_time = round ( 0.25f * Fs ); // minimum overload LED on time (e.g., 250 ms)
   overload_LED_cnt     = 0;
+  overload_status      = OVERLOAD_IDLE;
 
   // prepare timer at a rate of 8 kHz
   timer_semaphore = xSemaphoreCreateBinary();
@@ -52,11 +53,9 @@ void IRAM_ATTR Edrumulus::on_timer()
 
 void Edrumulus::setup ( const int  conf_num_pads,
                         const int* conf_analog_pins,
-                        const int* conf_analog_pins_rim_shot,
-                        const int  conf_overload_LED_pin )
+                        const int* conf_analog_pins_rim_shot )
 {
-  number_pads      = min ( conf_num_pads, MAX_NUM_PADS );
-  overload_LED_pin = conf_overload_LED_pin;
+  number_pads = min ( conf_num_pads, MAX_NUM_PADS );
 
   for ( int i = 0; i < number_pads; i++ )
   {
@@ -67,12 +66,6 @@ void Edrumulus::setup ( const int  conf_num_pads,
 
     // setup the pad
     pad[i].setup ( Fs, number_inputs[i] );
-  }
-
-  // if an overload LED shall be used, initialize GPIO port
-  if ( overload_LED_pin >= 0 )
-  {
-    pinMode ( overload_LED_pin, OUTPUT );
   }
 
   // estimate the DC offset for all inputs
@@ -142,34 +135,30 @@ return false;
       // process sample
       pad[i].process_sample ( sample, peak_found[i], midi_velocity[i], midi_pos[i], is_rim_shot[i], debug );
 
-      // optional overload detection
-      if ( overload_LED_pin >= 0 )
+      // overload detection
+      for ( int j = 0; j < number_inputs[i]; j++ )
       {
-        for ( int j = 0; j < number_inputs[i]; j++ )
-        {
-          is_overload |= ( sample_org[j] >= 4094 ) || ( sample_org[j] <= 1 );
-        }
+        is_overload |= ( sample_org[j] >= 4094 ) || ( sample_org[j] <= 1 );
       }
     }
 
-    // optional overload detection
-    if ( overload_LED_pin >= 0 )
-    {
-      if ( is_overload )
-      {
-        overload_LED_cnt = overload_LED_on_time;
-        digitalWrite ( overload_LED_pin, HIGH );
-      }
+    // overload detection
+    overload_status = OVERLOAD_IDLE;
 
-      if ( overload_LED_cnt > 1 )
-      {
-        overload_LED_cnt--;
-      }
-      else if ( overload_LED_cnt == 1 ) // transition to off state
-      {
-        digitalWrite ( overload_LED_pin, LOW );
-        overload_LED_cnt = 0; // idle state
-      }
+    if ( is_overload )
+    {
+      overload_LED_cnt = overload_LED_on_time;
+      overload_status  = SET_OVERLOAD_ON;
+    }
+
+    if ( overload_LED_cnt > 1 )
+    {
+      overload_LED_cnt--;
+    }
+    else if ( overload_LED_cnt == 1 ) // transition to off state
+    {
+      overload_LED_cnt = 0; // idle state
+      overload_status  = SET_OVERLOAD_OFF;
     }
   }
 }
@@ -199,7 +188,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   {
     case PD120:
       pad_settings.velocity_threshold   = 8;  // 0..31
-      pad_settings.velocity_sensitivity = 4;  // 0..31
+      pad_settings.velocity_sensitivity = 3;  // 0..31
       pad_settings.mask_time            = 10; // 0..31 (ms)
 
       pad_settings.energy_win_len_ms     = 2e-3f;  // pad specific parameter: hit energy estimation time window length

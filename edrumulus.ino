@@ -34,7 +34,8 @@ MIDI_CREATE_DEFAULT_INSTANCE();     // Hairless USB MIDI
 #endif
 
 Edrumulus edrumulus;
-const int number_pads = 1;//5; // <- tested: with current code the ESP32 can only handle up to 5 pads
+const int number_pads      = 1;//5; // <- tested: with current code the ESP32 can only handle up to 5 pads
+const int overload_LED_pin = 2; // internal LED used for overload indicator
 
 
 void setup()
@@ -46,10 +47,16 @@ void setup()
   Serial.begin ( 115200 );
 #endif
 
-  // analog pins are 34 and 35, we also want to use the on-board LED as an overload indicator
+  // analog pins are 34 and 35
   const int analog_pins[]         = { 34, 35 };
   const int analog_pins_rimshot[] = { -1, -1 }; // no rim shot
-  edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot, 2 );
+  edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
+
+  // if an overload LED shall be used, initialize GPIO port
+  if ( overload_LED_pin >= 0 )
+  {
+    pinMode ( overload_LED_pin, OUTPUT );
+  }
 }
 
 
@@ -57,6 +64,16 @@ void loop()
 {
   // this function is blocking at the system sampling rate
   edrumulus.process();
+
+  // overload handling
+  if ( overload_LED_pin >= 0 )
+  {
+    switch ( edrumulus.get_overload() )
+    {
+      case Edrumulus::SET_OVERLOAD_ON:  digitalWrite ( overload_LED_pin, HIGH ); break;
+      case Edrumulus::SET_OVERLOAD_OFF: digitalWrite ( overload_LED_pin, LOW );  break;
+    }
+  }
 
 #ifdef USE_MIDI
   // first pad
