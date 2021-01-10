@@ -76,6 +76,33 @@ threshold (i.e. not a metric which is normalized with the piezo signal of the me
 showed that the scan time must be enlarged to 6 ms which causes additional trigger delay.
 
 
+# Test signals
+
+To support a new pad type, test data should be recorded. If a second trigger is supported, a
+stereo signal sampled at 8 kHz shall be used, otherwise use a monophonic recording. Make sure
+that the signal is never clipped, even for the highest velocity hits.
+
+The following hit sequence shall be recorded:
+
+- 5 single hits at medium velocity near the center of the pad
+  - intended for estimating the decay curve gradient
+- 10 to 20 single hits near the center of the pad varying the hit velocity from lowest velocity
+  to highest possible velocity
+  - intended for threshold/sensitivity adjustment
+- about 10 hits with low velocity starting from left edge of the pad going to the middle and
+  back to the edge of the pad
+- about 10 hits with high velocity starting from left edge of the pad going to the middle and
+  back to the edge of the pad
+  - both test signals are intended for positional sensing
+- press roll at low velocity near the middle of the pad
+- press roll at high velocity near the middle of the pad
+- press roll at low velocity near the edge of the pad
+- press roll at high velocity near the edge of the pad
+- press roll varying velocity from high to low and back to high near the middle of the pad
+- press roll varying velocity from high to low and back to high near the edge of the pad
+  - the press rolls are for optimizing the parameters for the retrigger cancellation
+
+
 # First results
 
 The following plot shows how the current status of the algorithms performs. At the beginning there are
