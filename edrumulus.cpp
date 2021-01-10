@@ -38,7 +38,7 @@ Edrumulus::Edrumulus() :
   samplerate_prev_micros     = micros();
   status_is_error            = false;
 
-  // prepare timer at a rate of 8 kHz
+  // prepare timer at a rate of given sampling rate
   timer_semaphore = xSemaphoreCreateBinary();
   timer           = timerBegin ( 0, 80, true ); // prescaler of 80 (i.e. below we have 1 MHz instead of 80 MHz)
   timerAttachInterrupt ( timer, &on_timer, true );
@@ -72,8 +72,7 @@ void Edrumulus::setup ( const int  conf_num_pads,
   }
 
   // estimate the DC offset for all inputs
-  const int dc_offset_est_len = 5000; // samples
-  float     dc_offset_sum[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  float dc_offset_sum[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
 
   for ( int k = 0; k < dc_offset_est_len; k++ )
   {
@@ -163,9 +162,6 @@ return false;
     }
 
     // sampling rate check (i.e. if CPU is overloaded, the sample rate will drop which is bad)
-    const int samplerate_max_cnt      = 10000;
-    const int samplerate_max_error_Hz = 100; // tolerate a sample rate deviation of 100 Hz
-
     if ( samplerate_prev_micros_cnt >= samplerate_max_cnt )
     {
       // set error flag if sample rate deviation is too large
