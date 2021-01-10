@@ -35,7 +35,8 @@ MIDI_CREATE_DEFAULT_INSTANCE();     // Hairless USB MIDI
 
 Edrumulus edrumulus;
 const int number_pads      = 1;//5; // <- tested: with current code the ESP32 can only handle up to 5 pads
-const int overload_LED_pin = 2; // internal LED used for overload indicator
+const int status_LED_pin   = 2; // internal LED used for overload indicator
+bool      is_status_LED_on = false;
 
 
 void setup()
@@ -52,11 +53,8 @@ void setup()
   const int analog_pins_rimshot[] = { -1, -1 }; // no rim shot
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
 
-  // if an overload LED shall be used, initialize GPIO port
-  if ( overload_LED_pin >= 0 )
-  {
-    pinMode ( overload_LED_pin, OUTPUT );
-  }
+  // initialize GPIO port for status LED
+  pinMode ( status_LED_pin, OUTPUT );
 }
 
 
@@ -65,13 +63,21 @@ void loop()
   // this function is blocking at the system sampling rate
   edrumulus.process();
 
-  // overload handling
-  if ( overload_LED_pin >= 0 )
+  // status LED handling
+  if ( edrumulus.get_status_is_overload() || edrumulus.get_status_is_error() )
   {
-    switch ( edrumulus.get_overload() )
+    if ( !is_status_LED_on )
     {
-      case Edrumulus::SET_OVERLOAD_ON:  digitalWrite ( overload_LED_pin, HIGH ); break;
-      case Edrumulus::SET_OVERLOAD_OFF: digitalWrite ( overload_LED_pin, LOW );  break;
+      digitalWrite ( status_LED_pin, HIGH );
+      is_status_LED_on = true;
+    }
+  }
+  else
+  {
+    if ( is_status_LED_on )
+    {
+      digitalWrite ( status_LED_pin, LOW );
+      is_status_LED_on = false;
     }
   }
 
@@ -132,18 +138,5 @@ if ( is_used )
 
   }
 }
-*/
-
-/*
-// For debugging: measure the sampling rate and optionally output it to the serial interface
-static int           prev_micros_cnt = 0;
-static unsigned long prev_micros     = micros();
-if ( prev_micros_cnt >= 10000 )
-{
-  Serial.println ( 1.0f / ( micros() - prev_micros ) * 10000 * 1e6f, 7 );
-  prev_micros_cnt = 0;
-  prev_micros     = micros();
-}
-prev_micros_cnt++;
 */
 }

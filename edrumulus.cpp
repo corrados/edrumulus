@@ -30,10 +30,13 @@ Edrumulus::Edrumulus() :
   Fs ( 8000 ) // this is the most fundamental system parameter: system sampling rate
 {
   // initializations
-  edrumulus_pointer    = this;                 // global pointer to this class needed for static callback function
-  overload_LED_on_time = round ( 0.25f * Fs ); // minimum overload LED on time (e.g., 250 ms)
-  overload_LED_cnt     = 0;
-  overload_status      = OVERLOAD_IDLE;
+  edrumulus_pointer          = this;                 // global pointer to this class needed for static callback function
+  overload_LED_on_time       = round ( 0.25f * Fs ); // minimum overload LED on time (e.g., 250 ms)
+  overload_LED_cnt           = 0;
+  status_is_overload         = false;
+  samplerate_prev_micros_cnt = 0;
+  samplerate_prev_micros     = micros();
+  status_is_error            = false;
 
   // prepare timer at a rate of 8 kHz
   timer_semaphore = xSemaphoreCreateBinary();
@@ -143,12 +146,10 @@ return false;
     }
 
     // overload detection
-    overload_status = OVERLOAD_IDLE;
-
     if ( is_overload )
     {
-      overload_LED_cnt = overload_LED_on_time;
-      overload_status  = SET_OVERLOAD_ON;
+      overload_LED_cnt   = overload_LED_on_time;
+      status_is_overload = true;
     }
 
     if ( overload_LED_cnt > 1 )
@@ -157,9 +158,22 @@ return false;
     }
     else if ( overload_LED_cnt == 1 ) // transition to off state
     {
-      overload_LED_cnt = 0; // idle state
-      overload_status  = SET_OVERLOAD_OFF;
+      overload_LED_cnt   = 0; // idle state
+      status_is_overload = false;
     }
+
+    // sampling rate check (i.e. if CPU is overloaded, the sample rate will drop which is bad)
+    const int samplerate_max_cnt      = 10000;
+    const int samplerate_max_error_Hz = 100; // tolerate a sample rate deviation of 100 Hz
+
+    if ( samplerate_prev_micros_cnt >= samplerate_max_cnt )
+    {
+      // set error flag if sample rate deviation is too large
+      status_is_error            = ( abs ( 1.0f / ( micros() - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f - Fs ) > samplerate_max_error_Hz );
+      samplerate_prev_micros_cnt = 0;
+      samplerate_prev_micros     = micros();
+    }
+    samplerate_prev_micros_cnt++;
   }
 }
 

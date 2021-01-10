@@ -31,13 +31,6 @@
 class Edrumulus
 {
 public:
-  enum Eoverload
-  {
-    OVERLOAD_IDLE,
-    SET_OVERLOAD_ON,
-    SET_OVERLOAD_OFF
-  };
-
   Edrumulus();
 
   // call this function during the Setup function of the main program
@@ -59,8 +52,9 @@ public:
   void set_velocity_sensitivity ( const int pad_idx, const int new_velocity )  { pad[pad_idx].set_velocity_sensitivity ( new_velocity ); }
   void set_mask_time            ( const int pad_idx, const int new_time )      { pad[pad_idx].set_mask_time ( new_time ); }
 
-  // overload handling
-  Eoverload get_overload() { return overload_status; }
+  // overload and error handling
+  bool get_status_is_overload() { return status_is_overload; }
+  bool get_status_is_error()    { return status_is_error; }
 
 
 protected:
@@ -166,19 +160,22 @@ protected:
       Epadsettings pad_settings;
   };
 
-  int       Fs;
-  int       number_pads;
-  int       number_inputs[MAX_NUM_PADS];
-  int       analog_pin[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  float     dc_offset[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  int       overload_LED_cnt;
-  int       overload_LED_on_time;
-  Eoverload overload_status;
-  Pad       pad[MAX_NUM_PADS];
-  bool      peak_found[MAX_NUM_PADS];
-  int       midi_velocity[MAX_NUM_PADS];
-  int       midi_pos[MAX_NUM_PADS];
-  bool      is_rim_shot[MAX_NUM_PADS];
+  int           Fs;
+  int           number_pads;
+  int           number_inputs[MAX_NUM_PADS];
+  int           analog_pin[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  float         dc_offset[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  int           overload_LED_cnt;
+  int           overload_LED_on_time;
+  bool          status_is_overload;
+  bool          status_is_error;
+  int           samplerate_prev_micros_cnt;
+  unsigned long samplerate_prev_micros;
+  Pad           pad[MAX_NUM_PADS];
+  bool          peak_found[MAX_NUM_PADS];
+  int           midi_velocity[MAX_NUM_PADS];
+  int           midi_pos[MAX_NUM_PADS];
+  bool          is_rim_shot[MAX_NUM_PADS];
 
   volatile SemaphoreHandle_t timer_semaphore;
   hw_timer_t*                timer = nullptr;
