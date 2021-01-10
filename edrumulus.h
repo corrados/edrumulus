@@ -81,7 +81,7 @@ protected:
 
       void set_velocity_threshold   ( const int new_threshold ) { pad_settings.velocity_threshold   = new_threshold; initialize(); }
       void set_velocity_sensitivity ( const int new_velocity )  { pad_settings.velocity_sensitivity = new_velocity;  initialize(); }
-      void set_mask_time            ( const int new_time )      { pad_settings.mask_time            = new_time;      initialize(); }
+      void set_mask_time            ( const int new_time_ms )   { pad_settings.mask_time_ms         = new_time_ms;   initialize(); }
 
 
     protected:
@@ -90,7 +90,7 @@ protected:
         Epadtype pad_type;
         int      velocity_threshold;   // 0..31
         int      velocity_sensitivity; // 0..31, high value gives higher sensitivity
-        int      mask_time;            // 0..31 (ms)
+        int      mask_time_ms;         // 0..31 (ms)
         bool     pos_sense_is_used;    // switch positional sensing on/off
         float    energy_win_len_ms;
         float    scan_time_ms;

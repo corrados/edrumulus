@@ -199,7 +199,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
     case PD120:
       pad_settings.velocity_threshold   = 8;  // 0..31
       pad_settings.velocity_sensitivity = 3;  // 0..31
-      pad_settings.mask_time            = 10; // 0..31 (ms)
+      pad_settings.mask_time_ms         = 10; // 0..31 (ms)
       pad_settings.pos_sense_is_used    = true;
 
       pad_settings.energy_win_len_ms     = 2e-3f;  // pad specific parameter: hit energy estimation time window length
@@ -215,7 +215,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
 // TODO these are just a copy of the PD120 but we need to adjust these values to the PD80R pad properties:
 pad_settings.velocity_threshold   = 8;  // 0..31
 pad_settings.velocity_sensitivity = 4;  // 0..31
-pad_settings.mask_time            = 10; // 0..31 (ms)
+pad_settings.mask_time_ms         = 10; // 0..31 (ms)
 pad_settings.pos_sense_is_used    = true;
 
 pad_settings.energy_win_len_ms     = 2e-3f;  // pad specific parameter: hit energy estimation time window length
@@ -239,7 +239,7 @@ void Edrumulus::Pad::initialize()
   threshold                = pow   ( 10.0f, threshold_db / 10 );                // linear power threshold
   energy_window_len        = round ( pad_settings.energy_win_len_ms * Fs );     // hit energy estimation time window length (e.g. 2 ms)
   scan_time                = round ( pad_settings.scan_time_ms * Fs );          // scan time from first detected peak
-  mask_time                = round ( pad_settings.mask_time * 1e-3f * Fs );     // mask time (e.g. 10 ms)
+  mask_time                = round ( pad_settings.mask_time_ms * 1e-3f * Fs );  // mask time (e.g. 10 ms)
   decay_len                = round ( pad_settings.decay_len_ms * 1e-3f * Fs );  // decay time (e.g. 250 ms)
   decay_fact               = pow   ( 10.0f, pad_settings.decay_fact_db / 10 );  // decay factor of 1 dB
   const float decay_grad   = pad_settings.decay_grad_fact / Fs;                 // decay gradient factor
