@@ -200,6 +200,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       pad_settings.velocity_threshold   = 8;  // 0..31
       pad_settings.velocity_sensitivity = 3;  // 0..31
       pad_settings.mask_time            = 10; // 0..31 (ms)
+      pad_settings.pos_sense_is_used    = true;
 
       pad_settings.energy_win_len_ms     = 2e-3f;  // pad specific parameter: hit energy estimation time window length
       pad_settings.scan_time_ms          = 2e-3f;  // pad specific parameter: scan time after first detected peak
@@ -215,6 +216,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
 pad_settings.velocity_threshold   = 8;  // 0..31
 pad_settings.velocity_sensitivity = 4;  // 0..31
 pad_settings.mask_time            = 10; // 0..31 (ms)
+pad_settings.pos_sense_is_used    = true;
 
 pad_settings.energy_win_len_ms     = 2e-3f;  // pad specific parameter: hit energy estimation time window length
 pad_settings.scan_time_ms          = 2e-3f;  // pad specific parameter: scan time after first detected peak
@@ -353,17 +355,13 @@ void Edrumulus::Pad::process_sample ( const float* input,
                                       float&       debug )
 {
   // initialize return parameter
-  peak_found            = false;
-  midi_velocity         = 0;
-  midi_pos              = 0;
-  is_rim_shot           = false;
-  bool first_peak_found = false; // only used internally
-  bool rim_shot_is_used = false; // only used internally
-
-
-// TEST
-const bool pos_sense_is_used = true;
-
+  peak_found                   = false;
+  midi_velocity                = 0;
+  midi_pos                     = 0;
+  is_rim_shot                  = false;
+  bool       first_peak_found  = false; // only used internally
+  bool       rim_shot_is_used  = false; // only used internally
+  const bool pos_sense_is_used = pad_settings.pos_sense_is_used; // can be applied directly without calling initialize()
 
 debug = 0.0f; // TEST
 

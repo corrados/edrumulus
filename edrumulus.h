@@ -91,6 +91,7 @@ protected:
         int      velocity_threshold;   // 0..31
         int      velocity_sensitivity; // 0..31, high value gives higher sensitivity
         int      mask_time;            // 0..31 (ms)
+        bool     pos_sense_is_used;    // switch positional sensing on/off
         float    energy_win_len_ms;
         float    scan_time_ms;
         float    decay_len_ms;
