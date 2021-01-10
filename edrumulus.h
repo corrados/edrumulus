@@ -113,17 +113,17 @@ protected:
       const float a_im[7]      = {  0.0f,                0.213150535195075f, -1.048981722170302f, -1.797442302898130f,
                                     1.697288080048948f,  0.0f,                0.035902177664014f };
     
-      float* hil_hist             = nullptr;
-      float* rim_hil_hist         = nullptr;
-      float* mov_av_hist_re       = nullptr;
-      float* mov_av_hist_im       = nullptr;
-      float* decay                = nullptr;
-      float* hil_hist_re          = nullptr;
-      float* hil_hist_im          = nullptr;
-      float* hil_low_hist_re      = nullptr;
-      float* hil_low_hist_im      = nullptr;
-      float* rim_hil_hist_re      = nullptr;
-      float* rim_hil_hist_im      = nullptr;
+      float* hil_hist        = nullptr;
+      float* rim_hil_hist    = nullptr;
+      float* mov_av_hist_re  = nullptr;
+      float* mov_av_hist_im  = nullptr;
+      float* decay           = nullptr;
+      float* hil_hist_re     = nullptr;
+      float* hil_hist_im     = nullptr;
+      float* hil_low_hist_re = nullptr;
+      float* hil_low_hist_im = nullptr;
+      float* rim_hil_hist_re = nullptr;
+      float* rim_hil_hist_im = nullptr;
 
       int          Fs;
       int          number_inputs;
