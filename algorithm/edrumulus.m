@@ -336,6 +336,7 @@ peak_found        = false;
 pos_sense_metric  = 0;
 is_rim_shot       = false;
 first_peak_found  = false; % only used internally
+pos_sense_is_used = true;  % only used internally to enable/disable positional sensing
 rim_shot_is_used  = false; % only used internally
 cur_decay_debug   = 0; % just for debugging
 rim_max_pow_debug = 0; % just for debugging
@@ -441,47 +442,48 @@ hil_filt_decay_debug = hil_filt_decay; % just for debugging
 
 
 % Calculate positional sensing -------------------------------------------------
+if pos_sense_is_used
 
-% TODO introduce flag: bDoPosSense
+  % low pass filter of the Hilbert signal
+  hil_low_re = (1 - alpha) * hil_low_re + alpha * hil_re;
+  hil_low_im = (1 - alpha) * hil_low_im + alpha * hil_im;
 
-% low pass filter of the Hilbert signal
-hil_low_re = (1 - alpha) * hil_low_re + alpha * hil_re;
-hil_low_im = (1 - alpha) * hil_low_im + alpha * hil_im;
+  hil_hist_re     = update_fifo(hil_re,     pos_energy_window_len, hil_hist_re);
+  hil_hist_im     = update_fifo(hil_im,     pos_energy_window_len, hil_hist_im);
+  hil_low_hist_re = update_fifo(hil_low_re, pos_energy_window_len, hil_low_hist_re);
+  hil_low_hist_im = update_fifo(hil_low_im, pos_energy_window_len, hil_low_hist_im);
 
-hil_hist_re     = update_fifo(hil_re,     pos_energy_window_len, hil_hist_re);
-hil_hist_im     = update_fifo(hil_im,     pos_energy_window_len, hil_hist_im);
-hil_low_hist_re = update_fifo(hil_low_re, pos_energy_window_len, hil_low_hist_re);
-hil_low_hist_im = update_fifo(hil_low_im, pos_energy_window_len, hil_low_hist_im);
+  peak_energy     = sum(hil_hist_re     .* hil_hist_re     + hil_hist_im     .* hil_hist_im);
+  peak_energy_low = sum(hil_low_hist_re .* hil_low_hist_re + hil_low_hist_im .* hil_low_hist_im);
 
-peak_energy     = sum(hil_hist_re     .* hil_hist_re     + hil_hist_im     .* hil_hist_im);
-peak_energy_low = sum(hil_low_hist_re .* hil_low_hist_re + hil_low_hist_im .* hil_low_hist_im);
+  % start condition of delay process to fill up the required buffers
+  if first_peak_found && (~was_pos_sense_ready) && (pos_sense_cnt == 0)
 
-% start condition of delay process to fill up the required buffers
-if first_peak_found && (~was_pos_sense_ready) && (pos_sense_cnt == 0)
+    % a peak was found, we now have to start the delay process to fill up the
+    % required buffer length for our metric
+    pos_sense_cnt = energy_window_len / 2 - 1;
 
-  % a peak was found, we now have to start the delay process to fill up the
-  % required buffer length for our metric
-  pos_sense_cnt = energy_window_len / 2 - 1;
+  end
 
-end
+  if pos_sense_cnt > 0
 
-if pos_sense_cnt > 0
+    pos_sense_cnt = pos_sense_cnt - 1;
 
-  pos_sense_cnt = pos_sense_cnt - 1;
+    % end condition
+    if pos_sense_cnt <= 0
 
-  % end condition
-  if pos_sense_cnt <= 0
+      % the buffers are filled, now calculate the metric
+      stored_pos_sense_metric = peak_energy / peak_energy_low;
+      was_pos_sense_ready     = true;
 
-    % the buffers are filled, now calculate the metric
-    stored_pos_sense_metric = peak_energy / peak_energy_low;
-    was_pos_sense_ready     = true;
+    else
 
-  else
+      % we need a further delay for the positional sensing estimation, consider
+      % this additional delay for the overall peak found offset
+      if was_peak_found
+        peak_found_offset = peak_found_offset + 1;
+      end
 
-    % we need a further delay for the positional sensing estimation, consider
-    % this additional delay for the overall peak found offset
-    if was_peak_found
-      peak_found_offset = peak_found_offset + 1;
     end
 
   end
@@ -531,7 +533,7 @@ if length(x) > 1 % rim piezo signal is in second dimension
 
       % we need a further delay for the positional sensing estimation, consider
       % this additional delay for the overall peak found offset
-      if was_peak_found && was_pos_sense_ready
+      if was_peak_found && (~pos_sense_is_used || was_pos_sense_ready)
         peak_found_offset = peak_found_offset + 1;
       end
 
@@ -543,7 +545,7 @@ end
 
 % check for all estimations are ready and we can set the peak found flag and
 % return all results
-if was_peak_found && was_pos_sense_ready && (~rim_shot_is_used || was_rim_shot_ready)
+if was_peak_found && (~pos_sense_is_used || was_pos_sense_ready) && (~rim_shot_is_used || was_rim_shot_ready)
 
   pos_sense_metric = stored_pos_sense_metric;
   peak_found       = true;

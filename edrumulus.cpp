@@ -360,6 +360,11 @@ void Edrumulus::Pad::process_sample ( const float* input,
   bool first_peak_found = false; // only used internally
   bool rim_shot_is_used = false; // only used internally
 
+
+// TEST
+const bool pos_sense_is_used = true;
+
+
 debug = 0.0f; // TEST
 
 
@@ -468,57 +473,57 @@ debug = 0.0f; // TEST
 
 
   // Calculate positional sensing -------------------------------------------------
-
-// TODO introduce flag: bDoPosSense
-
-  // low pass filter of the Hilbert signal
-  hil_low_re = ( 1.0f - alpha ) * hil_low_re + alpha * hil_re;
-  hil_low_im = ( 1.0f - alpha ) * hil_low_im + alpha * hil_im;
-
-  update_fifo ( hil_re,     pos_energy_window_len, hil_hist_re );
-  update_fifo ( hil_im,     pos_energy_window_len, hil_hist_im );
-  update_fifo ( hil_low_re, pos_energy_window_len, hil_low_hist_re );
-  update_fifo ( hil_low_im, pos_energy_window_len, hil_low_hist_im );
-
-  float peak_energy     = 0;
-  float peak_energy_low = 0;
-  for ( int i = 0; i < pos_energy_window_len; i++ )
+  if ( pos_sense_is_used )
   {
-    peak_energy     += ( hil_hist_re[i]     * hil_hist_re[i]     + hil_hist_im[i]     * hil_hist_im[i] );
-    peak_energy_low += ( hil_low_hist_re[i] * hil_low_hist_re[i] + hil_low_hist_im[i] * hil_low_hist_im[i] );
-  }
-
-  // start condition of delay process to fill up the required buffers
-  if ( first_peak_found && ( !was_pos_sense_ready ) && ( pos_sense_cnt == 0 ) )
-  {
-    // a peak was found, we now have to start the delay process to fill up the
-    // required buffer length for our metric
-    pos_sense_cnt = energy_window_len / 2 - 1;
-  }
-
-  if ( pos_sense_cnt > 0 )
-  {
-    pos_sense_cnt--;
-
-    // end condition
-    if ( pos_sense_cnt <= 0 )
+    // low pass filter of the Hilbert signal
+    hil_low_re = ( 1.0f - alpha ) * hil_low_re + alpha * hil_re;
+    hil_low_im = ( 1.0f - alpha ) * hil_low_im + alpha * hil_im;
+  
+    update_fifo ( hil_re,     pos_energy_window_len, hil_hist_re );
+    update_fifo ( hil_im,     pos_energy_window_len, hil_hist_im );
+    update_fifo ( hil_low_re, pos_energy_window_len, hil_low_hist_re );
+    update_fifo ( hil_low_im, pos_energy_window_len, hil_low_hist_im );
+  
+    float peak_energy     = 0;
+    float peak_energy_low = 0;
+    for ( int i = 0; i < pos_energy_window_len; i++ )
     {
-      // the buffers are filled, now calculate the metric
-      const float pos_sense_metric = peak_energy / peak_energy_low;
-      was_pos_sense_ready          = true;
-
+      peak_energy     += ( hil_hist_re[i]     * hil_hist_re[i]     + hil_hist_im[i]     * hil_hist_im[i] );
+      peak_energy_low += ( hil_low_hist_re[i] * hil_low_hist_re[i] + hil_low_hist_im[i] * hil_low_hist_im[i] );
+    }
+  
+    // start condition of delay process to fill up the required buffers
+    if ( first_peak_found && ( !was_pos_sense_ready ) && ( pos_sense_cnt == 0 ) )
+    {
+      // a peak was found, we now have to start the delay process to fill up the
+      // required buffer length for our metric
+      pos_sense_cnt = energy_window_len / 2 - 1;
+    }
+  
+    if ( pos_sense_cnt > 0 )
+    {
+      pos_sense_cnt--;
+  
+      // end condition
+      if ( pos_sense_cnt <= 0 )
+      {
+        // the buffers are filled, now calculate the metric
+        const float pos_sense_metric = peak_energy / peak_energy_low;
+        was_pos_sense_ready          = true;
+  
 // TEST positional sensing MIDI mapping
 stored_midi_pos = static_cast<int> ( ( 10 * log10 ( pos_sense_metric ) / 4 ) * 127 - 510 );
 stored_midi_pos = max ( 1, min ( 127, stored_midi_pos ) );
-
-    }
-    else
-    {
-      // we need a further delay for the positional sensing estimation, consider
-      // this additional delay for the overall peak found offset
-      if ( was_peak_found )
+  
+      }
+      else
       {
-        peak_found_offset++;
+        // we need a further delay for the positional sensing estimation, consider
+        // this additional delay for the overall peak found offset
+        if ( was_peak_found )
+        {
+          peak_found_offset++;
+        }
       }
     }
   }
@@ -587,7 +592,7 @@ if ( stored_is_rimshot )
       {
         // we need a further delay for the positional sensing estimation, consider
         // this additional delay for the overall peak found offset
-        if ( was_peak_found && was_pos_sense_ready )
+        if ( was_peak_found && ( !pos_sense_is_used || was_pos_sense_ready ) )
         {
           peak_found_offset++;
         }
@@ -597,7 +602,7 @@ if ( stored_is_rimshot )
 
   // check for all estimations are ready and we can set the peak found flag and
   // return all results
-  if ( was_peak_found && was_pos_sense_ready && ( !rim_shot_is_used || was_rim_shot_ready ) )
+  if ( was_peak_found && ( !pos_sense_is_used || was_pos_sense_ready ) && ( !rim_shot_is_used || was_rim_shot_ready ) )
   {
     midi_velocity = stored_midi_velocity;
     midi_pos      = stored_midi_pos;
