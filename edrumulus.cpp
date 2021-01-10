@@ -200,6 +200,8 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       pad_settings.velocity_threshold   = 8;  // 0..31
       pad_settings.velocity_sensitivity = 3;  // 0..31
       pad_settings.mask_time_ms         = 10; // 0..31 (ms)
+      pad_settings.pos_threshold        = 16; // 0..31
+      pad_settings.pos_sensitivity      = 20; // 0..31
       pad_settings.pos_sense_is_used    = true;
 
       pad_settings.energy_win_len_ms     = 2e-3f;  // pad specific parameter: hit energy estimation time window length
@@ -216,6 +218,8 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
 pad_settings.velocity_threshold   = 8;  // 0..31
 pad_settings.velocity_sensitivity = 4;  // 0..31
 pad_settings.mask_time_ms         = 10; // 0..31 (ms)
+pad_settings.pos_threshold        = 16; // 0..31
+pad_settings.pos_sensitivity      = 20; // 0..31
 pad_settings.pos_sense_is_used    = true;
 
 pad_settings.energy_win_len_ms     = 2e-3f;  // pad specific parameter: hit energy estimation time window length
@@ -254,6 +258,14 @@ void Edrumulus::Pad::initialize()
   // that we use the full possible ADC range.
   const float max_velocity_range_db = 20 * log10 ( 2048 ) - threshold_db;
   velocity_range_db                 = max_velocity_range_db * ( 32 - pad_settings.velocity_sensitivity ) / 32;
+
+  // The positional sensing MIDI assignment parameters are dependent on, e.g., the filter design
+  // parameters and cannot easily be derived from the ADC properties as is done for the velocity.
+  // Based on the measurement results with the PD120 pad, we tryed to derive some meaningful parameter ranges.
+  const float pos_threshold_db = pad_settings.pos_threshold;           // gives us a threshold range of 0..31 dB
+  pos_threshold                = pow ( 10.0f, pos_threshold_db / 10 ); // linear power threshold
+  const float max_pos_range_db = 11; // dB (found by analyzing pd120_pos_sense2.wav test signal)
+  pos_range_db                 = max_pos_range_db * ( 32 - pad_settings.pos_sensitivity ) / 32;
 
   // allocate memory for vectors
   if ( hil_hist             != nullptr ) delete[] hil_hist;
@@ -508,11 +520,10 @@ debug = 0.0f; // TEST
         // the buffers are filled, now calculate the metric
         const float pos_sense_metric = peak_energy / peak_energy_low;
         was_pos_sense_ready          = true;
-  
-// TEST positional sensing MIDI mapping
-stored_midi_pos = static_cast<int> ( ( 10 * log10 ( pos_sense_metric ) / 4 ) * 127 - 510 );
-stored_midi_pos = max ( 1, min ( 127, stored_midi_pos ) );
-  
+
+        // positional sensing MIDI mapping with clipping to allowed MIDI value range
+        stored_midi_pos = static_cast<int> ( ( 10 * log10 ( pos_sense_metric / pos_threshold ) / pos_range_db ) * 127 );
+        stored_midi_pos = max ( 1, min ( 127, stored_midi_pos ) );
       }
       else
       {

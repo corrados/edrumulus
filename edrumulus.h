@@ -89,9 +89,11 @@ protected:
       {
         Epadtype pad_type;
         int      velocity_threshold;   // 0..31
-        int      velocity_sensitivity; // 0..31, high value gives higher sensitivity
+        int      velocity_sensitivity; // 0..31, high values give higher sensitivity
         int      mask_time_ms;         // 0..31 (ms)
-        bool     pos_sense_is_used;    // switch positional sensing on/off
+        int      pos_threshold;        // 0..31
+        int      pos_sensitivity;      // 0..31, high values give higher sensitivity
+        bool     pos_sense_is_used;    // switches positional sensing support on or off
         float    energy_win_len_ms;
         float    scan_time_ms;
         float    decay_len_ms;
@@ -135,6 +137,8 @@ protected:
       int          mask_back_cnt;
       float        threshold;
       float        velocity_range_db;
+      float        pos_threshold;
+      float        pos_range_db;
       bool         was_above_threshold;
       float        prev_hil_filt_val;
       float        prev_hil_filt_decay_val;
