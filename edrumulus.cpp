@@ -204,13 +204,13 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       pad_settings.pos_sensitivity      = 20; // 0..31
       pad_settings.pos_sense_is_used    = true;
 
-      pad_settings.energy_win_len_ms     = 2e-3f;  // pad specific parameter: hit energy estimation time window length
-      pad_settings.scan_time_ms          = 2e-3f;  // pad specific parameter: scan time after first detected peak
-      pad_settings.decay_len_ms          = 250.0f; // pad specific parameter: length of the decay
-      pad_settings.decay_fact_db         = 1.0f;   // pad specific parameter: vertical shift of the decay function in dB
-      pad_settings.decay_grad_fact       = 200.0f; // pad specific parameter: decay function gradient factor
-      pad_settings.pos_energy_win_len_ms = 2e-3f;  // pad specific parameter: pos sense energy estimation time window length
-      pad_settings.pos_iir_alpha         = 200.0f; // pad specific parameter: IIR low-pass alpha value for positional sensing
+      pad_settings.energy_win_len_ms     = 2e-3f;   // pad specific parameter: hit energy estimation time window length
+      pad_settings.scan_time_ms          = 2.5e-3f; // pad specific parameter: scan time after first detected peak
+      pad_settings.decay_len_ms          = 250.0f;  // pad specific parameter: length of the decay
+      pad_settings.decay_fact_db         = 1.0f;    // pad specific parameter: vertical shift of the decay function in dB
+      pad_settings.decay_grad_fact       = 200.0f;  // pad specific parameter: decay function gradient factor
+      pad_settings.pos_energy_win_len_ms = 2e-3f;   // pad specific parameter: pos sense energy estimation time window length
+      pad_settings.pos_iir_alpha         = 200.0f;  // pad specific parameter: IIR low-pass alpha value for positional sensing
       break;
 
     case PD80R:
@@ -222,13 +222,13 @@ pad_settings.pos_threshold        = 16; // 0..31
 pad_settings.pos_sensitivity      = 20; // 0..31
 pad_settings.pos_sense_is_used    = true;
 
-pad_settings.energy_win_len_ms     = 2e-3f;  // pad specific parameter: hit energy estimation time window length
-pad_settings.scan_time_ms          = 2e-3f;  // pad specific parameter: scan time after first detected peak
-pad_settings.decay_len_ms          = 250.0f; // pad specific parameter: length of the decay
-pad_settings.decay_fact_db         = 1.0f;   // pad specific parameter: vertical shift of the decay function in dB
-pad_settings.decay_grad_fact       = 200.0f; // pad specific parameter: decay function gradient factor
-pad_settings.pos_energy_win_len_ms = 2e-3f;  // pad specific parameter: pos sense energy estimation time window length
-pad_settings.pos_iir_alpha         = 200.0f; // pad specific parameter: IIR low-pass alpha value for positional sensing
+pad_settings.energy_win_len_ms     = 2e-3f;   // pad specific parameter: hit energy estimation time window length
+pad_settings.scan_time_ms          = 2.5e-3f; // pad specific parameter: scan time after first detected peak
+pad_settings.decay_len_ms          = 250.0f;  // pad specific parameter: length of the decay
+pad_settings.decay_fact_db         = 1.0f;    // pad specific parameter: vertical shift of the decay function in dB
+pad_settings.decay_grad_fact       = 200.0f;  // pad specific parameter: decay function gradient factor
+pad_settings.pos_energy_win_len_ms = 2e-3f;   // pad specific parameter: pos sense energy estimation time window length
+pad_settings.pos_iir_alpha         = 200.0f;  // pad specific parameter: IIR low-pass alpha value for positional sensing
       break;
   }
 

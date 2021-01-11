@@ -222,7 +222,7 @@ a_re = [-0.037749783581601, -0.069256807147465, -1.443799477299919,  2.473967088
 a_im = [ 0,                  0.213150535195075, -1.048981722170302, -1.797442302898130, ...
          1.697288080048948,  0,                  0.035902177664014]';
 energy_window_len       = round(2e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
-scan_time               = round(2e-3 * Fs); % scan time from first detected peak
+scan_time               = round(2.5e-3 * Fs); % scan time from first detected peak
 scan_time_cnt           = 0;
 mov_av_hist_re          = zeros(energy_window_len, 1); % real part memory for moving average filter history
 mov_av_hist_im          = zeros(energy_window_len, 1); % imaginary part memory for moving average filter history

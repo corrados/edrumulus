@@ -137,7 +137,7 @@ while ~no_more_peak
   all_first_peaks = [all_first_peaks; peak_idx];
 
   % search in a pre-defined scan time for the highest peak
-  scan_time    = round(2e-3 * Fs); % scan time from first detected peak
+  scan_time    = round(2.5e-3 * Fs); % scan time from first detected peak
   [~, max_idx] = max(hil_filt(peak_idx:min(1 + peak_idx + scan_time - 1, length(hil_filt))));
   peak_idx     = peak_idx + max_idx - 1;
 
