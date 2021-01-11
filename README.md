@@ -23,7 +23,11 @@ The aim of the Edrumulus project is to create a high quality Open Source e-drum 
   we have to move the point of operation in the middle of the voltage range.
 
   A circuit diagram of my test setup is given in the following picture:
-  <br/><img src="algorithm/images/edrumulus_testing.png" width="400">
+  <br/><img src="algorithm/images/edrumulus_testing.png" width="400"><br/>
+  *WARNING* This circuit diagram is only intended for my initial tests. It does not contain any
+  protection for the ESP32 nor it is yet optimized for different pads. It just works ok for my
+  tests with a Roland PD-120. Use it at your own risk. You may destroy your ESP32 board if the
+  input signal is too strong!
 
 
 ## Algorithm development
