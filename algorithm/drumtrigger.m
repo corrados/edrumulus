@@ -36,11 +36,12 @@ Fs = 8000; % Hz
 % x = audioread("signals/pd120_pos_sense.wav");x = x(2900:10000, :);%x = x(55400:58000, :);%
 % x = audioread("signals/pd120_pos_sense2.wav");
 % x = audioread("signals/pd120_single_hits.wav");
-% x = audioread("signals/pd120_roll.wav");%x = x(311500:317600);
+% x = audioread("signals/pd120_roll.wav");%x = x(311500:317600, 1);
 % x = audioread("signals/pd120_middle_velocity.wav");
 % x = audioread("signals/pd120_hot_spot.wav");
-x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
+% x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 % x = audioread("signals/pd120_rimshot_hardsoft.wav");
+x = audioread("signals/pd80r.wav");x = x(28000:226000, 1);%x = x(1:28000, 1);%
 % x = audioread("signals/pd6.wav");
 % org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
 % org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
@@ -103,7 +104,7 @@ threshold_db = 23; % TEST: figure;plot(10.^((15:(30/31):45)/20),'.-')
 mask_time    = round(10e-3 * Fs); % mask time (e.g. 10 ms)
 
 % the following settings are trigger pad-specific (here, a PD-120 is used)
-decay_len     = round(0.25 * Fs); % decay time (e.g. 250 ms)
+decay_len     = round(0.30 * Fs); % decay time (e.g. 250 ms)
 decay_fact_db = 1; % decay factor in dB
 decay_grad    = 200 / Fs; % decay gradient factor
 
@@ -218,13 +219,13 @@ pos_sense_metric = 10 * log10(peak_energy) - 10 * log10(peak_energy_low);
 %plot(win_idx_all', 20 * log10(abs(hil(win_idx_all'))), 'k.-');
 %grid on; axis([2.3806e+04   2.3900e+04  -1.4506e+01   1.1036e+02]);
 
-%figure; plot(20 * log10(abs(hil))); hold on;
-%for i = 1:size(win_idx_all, 1)
-%  plot(win_idx_all(i, :), 20 * log10(abs(hil(win_idx_all(i, :)))), 'k.-');
-%  plot(win_idx_all(i, :), 20 * log10(abs(hil_low(win_idx_all(i, :)))), 'b.-');
-%  plot(all_peaks, 10 * log10(peak_energy), 'k');
-%  plot(all_peaks, 10 * log10(peak_energy_low), 'b');
-%end
+figure; plot(20 * log10(abs(hil))); hold on;
+for i = 1:size(win_idx_all, 1)
+  plot(win_idx_all(i, :), 20 * log10(abs(hil(win_idx_all(i, :)))), 'k.-');
+  plot(win_idx_all(i, :), 20 * log10(abs(hil_low(win_idx_all(i, :)))), 'b.-');
+  plot(all_peaks, 10 * log10(peak_energy), 'k');
+  plot(all_peaks, 10 * log10(peak_energy_low), 'b');
+end
 
 end
 
