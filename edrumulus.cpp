@@ -116,7 +116,7 @@ if ( Serial.available() > 0 )
   process_sample ( fIn, peak_found, midi_velocity, midi_pos, is_rim_shot, debug );
   Serial.println ( debug, 7 );
 }
-return false;
+return;
 */
 
   // wait for the timer to get the correct sampling rate when reading the analog value
@@ -126,14 +126,14 @@ return false;
     {    
       int   sample_org[MAX_NUM_PAD_INPUTS];
       float sample[MAX_NUM_PAD_INPUTS];
-  
+
       // get sample(s) from ADC and prepare sample(s) for processing
       for ( int j = 0; j < number_inputs[i]; j++ )
       {
         sample_org[j] = analogRead ( analog_pin[i][j] );
         sample[j]     = sample_org[j] - dc_offset[i][j]; // compensate DC offset
       }
-  
+
       // process sample
       pad[i].process_sample ( sample, peak_found[i], midi_velocity[i], midi_pos[i], is_rim_shot[i], debug );
 
