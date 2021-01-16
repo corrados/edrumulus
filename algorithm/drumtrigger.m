@@ -291,29 +291,7 @@ velocity            = (10 * log10(hil_filt(all_peaks)) / 39) * 127 - 73;
 velocity_clipped    = max(1, min(127, velocity));
 pos_sensing         = (pos_sense_metric / 4) * 127 - 510;
 pos_sensing_clipped = max(1, min(127, pos_sensing));
-% play_midi(all_peaks, velocity_clipped, pos_sensing_clipped);
 % figure; subplot(2, 1, 1), plot(velocity); title('velocity'); subplot(2, 1, 2), plot(pos_sensing); title('pos');
-
-end
-
-
-function play_midi(all_peaks, velocity, pos_sensing)
-
-dev = mididevice("output", "Lexicon Mac USB 1"); % Lexicon Omega -> TDW-20
-x   = now;
-y   = x;
-
-for i = 1:length(all_peaks)
-
-  while y < x + all_peaks(i) / 8000 / 1e5
-    pause(0.00001);
-    y = now;
-  end
-
-  midisend(dev, midimsg("controlchange", 10, 16, pos_sensing(i))); % positional sensing
-  midisend(dev, midimsg("note",          10, 38, velocity(i), 0.02));
-
-end
 
 end
 
