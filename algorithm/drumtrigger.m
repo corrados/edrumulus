@@ -42,8 +42,8 @@ Fs = 8000; % Hz
 % x = audioread("signals/pd120_roll.wav");
 % x = audioread("signals/pd120_middle_velocity.wav");
 % x = audioread("signals/pd120_hot_spot.wav");
-% x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
-x = audioread("signals/pd120_rimshot_hardsoft.wav");
+x = audioread("signals/pd120_rimshot.wav");%x = x(1200:1700, :);%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
+%x = audioread("signals/pd120_rimshot_hardsoft.wav");
 % x = audioread("signals/pd6.wav");
 % org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
 % org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
@@ -282,6 +282,8 @@ if size(x, 2) > 1
 
   x_rim_hil = x(:, 2);%filter_input_signal(x(:, 2), Fs); % rim piezo signal is in second dimension
 
+lin_reg_debug = nan(size(x_rim_hil));
+
   for i = 1:length(all_peaks)
 
     win_idx        = (all_peaks(i):all_peaks(i) + rim_shot_window_len - 1) - rim_shot_window_len / 2;
@@ -298,12 +300,28 @@ hil_filt_max_pow(i) = max(hil_filt(win_idx));
 %hil_max_pow(i)      = mean(abs(hil(win_idx)) .^ 2);
 %hil_filt_max_pow(i) = mean(hil_filt(win_idx));
 
+
+% TEST linear regression of rim signal at detected peak position
+test_window_len = round(3e-3 * Fs);
+win_idx2        = (all_peaks(i):all_peaks(i) + test_window_len - 1) - test_window_len / 2;
+win_idx2        = win_idx2((win_idx2 <= length(x_rim_hil)) & (win_idx2 > 0));
+a = 20 * log10(abs(x_rim_hil(win_idx2)));
+b = (1:length(a))';
+m(i)  = sum((b - mean(b)) .* (a - mean(a))) / sum((b - mean(b)) .^ 2);
+b0(i) = mean(a) - m(i) * mean(b);
+lin_reg_debug(win_idx2) = b0(i) + m(i) * b;
+
   end
 
   is_rim_shot = rim_max_pow > rim_shot_threshold;
 
+%% TEST
+%window_len = 10;
+%x2_filt = sqrt(filter(ones(window_len, 1) / window_len, 1, abs(x(:, 2)) .^ 2)); % moving average
+
 figure;
-plot(20 * log10(abs(x_rim_hil))); hold on; grid on;
+%plot(20 * log10(abs([x(:, 2), x(:, 1), x2_filt]))); hold on; grid on;
+plot(20 * log10(abs([x(:, 2), x(:, 1), sqrt(hil_filt)]))); hold on; grid on;
 plot(all_peaks(is_rim_shot), 10 * log10(rim_max_pow(is_rim_shot)), '*');
 plot(all_peaks(~is_rim_shot), 10 * log10(rim_max_pow(~is_rim_shot)), '*');
 %plot(all_peaks, ones(length(all_peaks), 1) * rim_shot_threshold_dB, 'r--'); % possible threshold
@@ -312,8 +330,29 @@ plot(all_peaks, 10 * log10(hil_max_pow), '*-');
 plot(all_peaks, 10 * log10(hil_filt_max_pow), '*-');
 %plot(all_peaks, 10 * log10(rim_max_pow ./ hil_max_pow) + 60, '*-');
 plot(all_peaks, 10 * log10(rim_max_pow ./ hil_filt_max_pow) + 60, '*-');
-
 %%axis([-9.8041e+02   9.9146e+04   7.5604e+01   9.6315e+01]);
+
+
+plot(all_peaks, 10 * log10(m), 'k*-'); % linear regression test
+plot(lin_reg_debug, 'k');
+%plot(20 * log10(abs(x(:, 2))) - lin_reg_debug, 'k');
+
+%axis([1085.009   1282.718     11.541     84.837]);
+%a1 = gca; f2 = figure; a2 = copyobj(a1, f2);
+%axis([3.4512e+04   3.4663e+04   1.2406e+01   7.5105e+01]);
+
+
+
+%% TEST linear regression
+%figure;
+%b = (1:100)';
+%a = randn(100, 1) + 0.4 * b + 10;
+%
+%m  = sum((b - mean(b)) .* (a - mean(a))) / sum((b - mean(b)) .^ 2);
+%b0 = mean(a) - m * mean(b)
+%
+%plot(a); hold on; plot(b0 + m * b);
+
 
 end
 
