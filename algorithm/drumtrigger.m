@@ -343,6 +343,29 @@ plot(lin_reg_debug, 'k');
 
 
 
+a1 = gca; f2 = figure; a2 = copyobj(a1, f2); legend('no rim 1'); axis([1.3126e+03   1.4691e+03  -2.3480e+00   8.0788e+01]);
+f2 = figure; a2 = copyobj(a1, f2); legend('no rim 2'); axis([4.7730e+03   4.9209e+03  -3.5131e+00   8.1233e+01]);
+f2 = figure; a2 = copyobj(a1, f2); legend('no rim 3'); axis([8.1841e+03   8.3706e+03  -8.0507e+00   8.2218e+01]);
+f2 = figure; a2 = copyobj(a1, f2); legend('no rim 4'); axis([1.1576e+04   1.1785e+04  -3.0539e+00   7.9802e+01]);
+
+%f2 = figure; a2 = copyobj(a1, f2); legend('no rim 5'); axis([]);
+%f2 = figure; a2 = copyobj(a1, f2); legend('no rim 6'); axis([]);
+%f2 = figure; a2 = copyobj(a1, f2); legend('no rim 7'); axis([]);
+%f2 = figure; a2 = copyobj(a1, f2); legend('no rim 8'); axis([]);
+
+f2 = figure; a2 = copyobj(a1, f2); legend('with rim 1'); axis([1.8161e+04   1.8322e+04  -1.6087e+00   8.7223e+01]);
+f2 = figure; a2 = copyobj(a1, f2); legend('with rim 2'); axis([2.2250e+04   2.2513e+04  -7.6793e+00   8.9130e+01]);
+f2 = figure; a2 = copyobj(a1, f2); legend('with rim 3'); axis([2.5873e+04   2.6007e+04  -8.0813e+00   8.8582e+01]);
+f2 = figure; a2 = copyobj(a1, f2); legend('with rim 4'); axis([2.9413e+04   2.9636e+04  -2.7471e+00   8.6617e+01]);
+
+%f2 = figure; a2 = copyobj(a1, f2); title('with rim 5');
+%f2 = figure; a2 = copyobj(a1, f2); title('with rim 6');
+%f2 = figure; a2 = copyobj(a1, f2); title('with rim 7');
+%f2 = figure; a2 = copyobj(a1, f2); title('with rim 8');
+
+
+
+
 %% TEST linear regression
 %figure;
 %b = (1:100)';
