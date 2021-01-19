@@ -1,5 +1,15 @@
 # Edrumulus project log
 
+- (01/19/2012) Still working on the rim shot detection using the PD-120 pad. It turns out to be very
+  difficult to get a reliable rim shot detection. So, it will take some more time to solve this problem.
+
+  The current project plan is to continue working on making the PD-120 triggering as good as possible.
+  If possible, I would like to compare the performance of Edrumulus to the TD-20 by capturing the piezo
+  signal together with the MIDI output of the TD-20.
+
+  If the PD-120 triggering is ready, I'll start to support other pad types like the PD-80R and the PD-6.
+  Then support kick trigger pads like the KD-8. Finally, the hi-hat/crash/ride pads shall be supported.
+
 - (12/22/2020) Just tested BLE MIDI (i.e. MIDI over bluetooth). I could successfully connect to GarageBand
   on an iPhone. Unfortunately, the bluetooth connection caused some interference in the audio input signal
   so that the threshold had to be increased and also we got a lot of false detections on low velocity hits
