@@ -280,7 +280,11 @@ if size(x, 2) > 1
 %plot(20 * log10(abs(rim_x_mov)));
 
 
-  x_rim_hil = filter_input_signal(x(:, 2), Fs);%hilbert(x(:, 2));%x(:, 2);%
+  %x_rim_hil = filter_input_signal(x(:, 2), Fs);%hilbert(x(:, 2));%x(:, 2);%
+
+[hil, ~] = filter_input_signal(x(:, 2), Fs);
+my_window_len = round(5e-3 * Fs);%2e-3 * Fs);
+x_rim_hil = abs(filter(ones(my_window_len, 1) / my_window_len, 1, hil)) .^ 2; % moving average
 
 lin_reg_debug = nan(size(x_rim_hil));
 
@@ -327,7 +331,8 @@ metric(i) = max(lin_reg_debug(win_idx2)) / mean(lin_reg_debug(win_idx2));
 
 figure;
 %plot(20 * log10(abs([x(:, 2), x(:, 1), x2_filt]))); hold on; grid on;
-plot(20 * log10(abs([x(:, 2), x(:, 1), sqrt(hil_filt)]))); hold on; grid on;
+%plot(20 * log10(abs([x(:, 2), x(:, 1), sqrt(hil_filt), sqrt(x_rim_hil)]))); hold on; grid on;
+plot(20 * log10(abs([sqrt(hil_filt), sqrt(x_rim_hil)]))); hold on; grid on;
 plot(all_peaks(is_rim_shot), 10 * log10(rim_max_pow(is_rim_shot)), '*');
 plot(all_peaks(~is_rim_shot), 10 * log10(rim_max_pow(~is_rim_shot)), '*');
 %plot(all_peaks, ones(length(all_peaks), 1) * rim_shot_threshold_dB, 'r--'); % possible threshold
@@ -342,11 +347,11 @@ plot(all_peaks, 10 * log10(metric), 'k*-');
 plot(lin_reg_debug, 'k');
 plot(20 * log10(abs(x(:, 2))) - lin_reg_debug, 'k');
 
-test = 20 * log10(abs(x(:, 2))) - lin_reg_debug;
-figure;x2 = test(~isnan(test));plot(x2);hold on;
-x1 = test_window_len:test_window_len:length(x2);
-y1 = ones(1, length(x2) / test_window_len);
-plot(x1, y1 * -10, 'k*-');
+%test = 20 * log10(abs(x(:, 2))) - lin_reg_debug;
+%figure;x2 = test(~isnan(test));plot(x2);hold on;
+%x1 = test_window_len:test_window_len:length(x2);
+%y1 = ones(1, length(x2) / test_window_len);
+%plot(x1, y1 * -10, 'k*-');
 
 %axis([1085.009   1282.718     11.541     84.837]);
 %a1 = gca; f2 = figure; a2 = copyobj(a1, f2);
@@ -354,15 +359,15 @@ plot(x1, y1 * -10, 'k*-');
 
 
 
-%a1 = gca; f2 = figure; a2 = copyobj(a1, f2); legend('no rim 1'); axis([1.3126e+03   1.4691e+03  -2.3480e+00   8.0788e+01]);
-%f2 = figure; a2 = copyobj(a1, f2); legend('no rim 2'); axis([4.7730e+03   4.9209e+03  -3.5131e+00   8.1233e+01]);
-%f2 = figure; a2 = copyobj(a1, f2); legend('no rim 3'); axis([8.1841e+03   8.3706e+03  -8.0507e+00   8.2218e+01]);
-%f2 = figure; a2 = copyobj(a1, f2); legend('no rim 4'); axis([1.1576e+04   1.1785e+04  -3.0539e+00   7.9802e+01]);
-%
-%f2 = figure; a2 = copyobj(a1, f2); legend('with rim 1'); axis([1.8161e+04   1.8322e+04  -1.6087e+00   8.7223e+01]);
-%f2 = figure; a2 = copyobj(a1, f2); legend('with rim 2'); axis([2.2250e+04   2.2513e+04  -7.6793e+00   8.9130e+01]);
-%f2 = figure; a2 = copyobj(a1, f2); legend('with rim 3'); axis([2.5873e+04   2.6007e+04  -8.0813e+00   8.8582e+01]);
-%f2 = figure; a2 = copyobj(a1, f2); legend('with rim 4'); axis([2.9413e+04   2.9636e+04  -2.7471e+00   8.6617e+01]);
+a1 = gca; f2 = figure; a2 = copyobj(a1, f2); legend('no rim 1'); axis([1.3126e+03   1.4691e+03  -2.3480e+00   8.0788e+01]);
+f2 = figure; a2 = copyobj(a1, f2); legend('no rim 2'); axis([4.7730e+03   4.9209e+03  -3.5131e+00   8.1233e+01]);
+f2 = figure; a2 = copyobj(a1, f2); legend('no rim 3'); axis([8.1841e+03   8.3706e+03  -8.0507e+00   8.2218e+01]);
+f2 = figure; a2 = copyobj(a1, f2); legend('no rim 4'); axis([1.1576e+04   1.1785e+04  -3.0539e+00   7.9802e+01]);
+
+f2 = figure; a2 = copyobj(a1, f2); legend('with rim 1'); axis([1.8161e+04   1.8322e+04  -1.6087e+00   8.7223e+01]);
+f2 = figure; a2 = copyobj(a1, f2); legend('with rim 2'); axis([2.2250e+04   2.2513e+04  -7.6793e+00   8.9130e+01]);
+f2 = figure; a2 = copyobj(a1, f2); legend('with rim 3'); axis([2.5873e+04   2.6007e+04  -8.0813e+00   8.8582e+01]);
+f2 = figure; a2 = copyobj(a1, f2); legend('with rim 4'); axis([2.9413e+04   2.9636e+04  -2.7471e+00   8.6617e+01]);
 
 
 
