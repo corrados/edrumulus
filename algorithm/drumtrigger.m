@@ -236,6 +236,9 @@ end
 
 function is_rim_shot = detect_rim_shot(x, hil, hil_filt, all_peaks, Fs)
 
+bWithLowPass = true;
+%bWithLowPass = false;
+
 is_rim_shot           = false(size(all_peaks));
 rim_shot_window_len   = round(5e-3 * Fs); % scan time (e.g. 6 ms)
 %rim_shot_threshold_dB = 87.5;
@@ -244,9 +247,22 @@ rim_shot_window_len   = round(5e-3 * Fs); % scan time (e.g. 6 ms)
 if size(x, 2) > 1
 
 % TEST
-[b, a]    = butter(3, 0.05, 'high');%figure;freqz(b,a,1024,8e3);
+% a0 * x0 + a1 * x1 = b0 * y0 + b1 * y1 <- one pole high pass filter
+% -> y1 * b1 = a0 * x0 + a1 * x1 - b0 * y0
+% -> y1 = (a0 * x0 + a1 * x1 - b0 * y0) / b1
+% -> y1 = (a0 * x0 + a1 * x1 - y0) / b1
+%[b, a]    = butter(3, 0.05, 'high');%figure;freqz(b,a,1024,8e3);
 %[b, a]    = butter(3, 0.2, 'high');%figure;freqz(b,a,1024,8e3);
-rim_x_low = filter(b, a, x(:, 2));
+[b, a]    = butter(1, 0.02, 'high');%figure;freqz(b,a,1024,8e3);
+if bWithLowPass
+  rim_x_low = filter(b, a, x(:, 2));
+else
+  rim_x_low = x(:, 2);
+end
+
+
+
+
 
 %alpha     = 200 / Fs;
 %rim_x_low = filter(alpha, [1, alpha - 1], rim_x);
@@ -329,7 +345,11 @@ hil_filt_max_pow(i) = hil_filt(all_peaks(i));
 %  is_rim_shot = rim_max_pow > rim_shot_threshold;
   
   rim_metric_db = 10 * log10(rim_max_pow ./ hil_filt_max_pow);
-  is_rim_shot   = rim_metric_db > -1.5; % dB
+  if bWithLowPass
+    is_rim_shot = rim_metric_db > 2.3;%-1.5; % dB
+  else
+    is_rim_shot = rim_metric_db > 3;%0.5; % dB
+  end
 
 %% TEST
 %window_len = 10;
