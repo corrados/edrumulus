@@ -298,9 +298,8 @@ lin_reg_debug = nan(size(x_rim_hil));
 
 % TEST
 %hil_max_pow(i)      = max(abs(hil(win_idx)) .^ 2);
-hil_filt_max_pow(i) = max(hil_filt(win_idx));%hil_filt_max_pow(i) = max(abs(hil(win_idx)) .^ 2);%
-
-hil_filt_max_pow(i) = hil_filt(all_peaks(i)); % TEST!!!
+%hil_filt_max_pow(i) = max(hil_filt(win_idx));%hil_filt_max_pow(i) = max(abs(hil(win_idx)) .^ 2);%
+hil_filt_max_pow(i) = hil_filt(all_peaks(i));
 
 
 %% TEST
