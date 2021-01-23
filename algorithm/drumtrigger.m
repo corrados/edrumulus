@@ -283,7 +283,7 @@ rim_x_low = filter(b, a, x(:, 2));
 
   %x_rim_hil = filter_input_signal(x(:, 2), Fs);%hilbert(x(:, 2));%x(:, 2);%
 
-[hil, ~] = filter_input_signal(x(:, 2), Fs);
+%[hil, ~] = filter_input_signal(x(:, 2), Fs);
 my_window_len = round(5e-3 * Fs);%2e-3 * Fs);
 x_rim_hil = rim_x_low;%hil;%abs(filter(ones(my_window_len, 1) / my_window_len, 1, hil)) .^ 2; % moving average
 %x_rim_hil = abs(filter(ones(my_window_len, 1) / my_window_len, 1, rim_x_low)) .^ 2; % moving average
@@ -299,6 +299,8 @@ lin_reg_debug = nan(size(x_rim_hil));
 % TEST
 %hil_max_pow(i)      = max(abs(hil(win_idx)) .^ 2);
 hil_filt_max_pow(i) = max(hil_filt(win_idx));%hil_filt_max_pow(i) = max(abs(hil(win_idx)) .^ 2);%
+
+hil_filt_max_pow(i) = hil_filt(all_peaks(i)); % TEST!!!
 
 
 %% TEST
