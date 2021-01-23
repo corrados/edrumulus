@@ -42,6 +42,11 @@ the pad in the middle. So, if we use the detection hit velocity for the start po
 cancellation, we subtract too much power in case the hit is in the middle of the pad and we may
 subtract too little if the hit is at the edge of the pad.
 
+In the following picture, the effect of the retrigger cancellation algorithm on a press roll signal
+example can be seen. The yellow line shows the exponential decay attenuation we apply to the signal
+after a hit was detected. The blue trace is the original captured signal and the orange trace is
+the captured signal after subtracting the retrigger cancellation:
+<br/>![Retrigger cancellation](images/retriggercancellation.jpg)
 
 ## Positional sensing
 
@@ -56,7 +61,6 @@ good results.
 
 It has shown that the positional sensing metric must be adjusted if a rim shot is used. So, the
 rim shot detection information has to be used for the positional sensing, too.
-
 
 ## Rim shot detection
 
@@ -142,7 +146,6 @@ of an ESP32 to transmit the MIDI signal, significant delay (about 10 ms) is intr
 
 The synthesis and digital-to-analog conversion of the drum audio signal shall not be covered by this
 project (at least not right now). So, we can ignore this part for now.
-
 
 ## Comparison of e-drum module latencies
 
