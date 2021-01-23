@@ -58,35 +58,25 @@ A log of the project can be found in the [change log](ChangeLog.md) file.
 
 ## Links
 
-- [open e-drums](https://open-e-drums.com)
+- [open e-drums](https://open-e-drums.com) ([Source code](https://github.com/RyoKosaka/HelloDrum-arduino-Library))
 
-  [Source code](https://github.com/RyoKosaka/HelloDrum-arduino-Library)
-
-- [eXaDrums](https://hackaday.io/project/9350-exadrums)
-
-  [Source code](https://github.com/SpintroniK/libeXaDrums)
+- [eXaDrums](https://hackaday.io/project/9350-exadrums) ([Source code](https://github.com/SpintroniK/libeXaDrums))
 
 - [Arduino Leanordo Midi Drum Kit](https://hoeser-medien.de/2016/11/arduino-leanordo-midi-drum-kit)
 
   Uses some re-trigger cancellation. The source code can be found embedded in the web page.
 
-- [An Arduino based standalone drum kit Hackaday](https://hackaday.io/project/171929-an-arduino-based-standalone-drum-kit)
+- [An Arduino based standalone drum kit Hackaday](https://hackaday.io/project/171929-an-arduino-based-standalone-drum-kit) ([Source code](https://hackaday.io/project/171929-an-arduino-based-standalone-drum-kit#menu-files))
 
   Generates audio, too.
-
-  [Source code](https://hackaday.io/project/171929-an-arduino-based-standalone-drum-kit#menu-files)
 
 - [aDrums](https://github.com/josuelopezv/aDrums)
 
 - [ArduinoMidiDrums](https://github.com/evankale/ArduinoMidiDrums)
 
-- [Drum Master](http://drummaster.digitalcave.ca/drummaster)
+- [Drum Master](http://drummaster.digitalcave.ca) ([Source code](https://github.com/thebiguno/microcontroller-projects/tree/master/projects/drummaster/rev2/src))
 
-  [Source code](https://github.com/thebiguno/microcontroller-projects/tree/master/projects/drummaster/rev2/src)
-
-- [Homemade Electronic Drum Kit With Arduino Mega2560](https://www.instructables.com/Homemade-Electronic-Drum-Kit-With-Arduino-Mega2560)
-
-  [Source code](https://github.com/Victor2805/Homemade-electronic-drum-kit-with-arduino)
+- [Homemade Electronic Drum Kit With Arduino Mega2560](https://www.instructables.com/Homemade-Electronic-Drum-Kit-With-Arduino-Mega2560) ([Source code](https://github.com/Victor2805/Homemade-electronic-drum-kit-with-arduino))
 
 - Forum threads with technical data
 
