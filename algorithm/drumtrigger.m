@@ -237,14 +237,15 @@ end
 function is_rim_shot = detect_rim_shot(x, hil, hil_filt, all_peaks, Fs)
 
 is_rim_shot           = false(size(all_peaks));
-rim_shot_window_len   = round(6e-3 * Fs); % scan time (e.g. 6 ms)
-rim_shot_threshold_dB = 87.5;
-rim_shot_threshold    = 10 ^ (rim_shot_threshold_dB / 10);
+rim_shot_window_len   = round(5e-3 * Fs); % scan time (e.g. 6 ms)
+%rim_shot_threshold_dB = 87.5;
+%rim_shot_threshold    = 10 ^ (rim_shot_threshold_dB / 10);
 
 if size(x, 2) > 1
 
 % TEST
 [b, a]    = butter(3, 0.05, 'high');%figure;freqz(b,a,1024,8e3);
+%[b, a]    = butter(3, 0.2, 'high');%figure;freqz(b,a,1024,8e3);
 rim_x_low = filter(b, a, x(:, 2));
 
 %alpha     = 200 / Fs;
@@ -297,7 +298,7 @@ lin_reg_debug = nan(size(x_rim_hil));
 
 % TEST
 %hil_max_pow(i)      = max(abs(hil(win_idx)) .^ 2);
-hil_filt_max_pow(i) = max(hil_filt(win_idx));
+hil_filt_max_pow(i) = max(hil_filt(win_idx));%hil_filt_max_pow(i) = max(abs(hil(win_idx)) .^ 2);%
 
 
 %% TEST
@@ -306,28 +307,28 @@ hil_filt_max_pow(i) = max(hil_filt(win_idx));
 %hil_filt_max_pow(i) = mean(hil_filt(win_idx));
 
 
-% TEST linear regression of rim signal at detected peak position
-test_window_len = round(3e-3 * Fs);
-win_idx2        = (all_peaks(i):all_peaks(i) + test_window_len - 1) - test_window_len / 2;
-win_idx2        = win_idx2((win_idx2 <= length(x_rim_hil)) & (win_idx2 > 0));
-a = 20 * log10(abs(x_rim_hil(win_idx2)));
-b = (1:length(a))';
-m(i)  = sum((b - mean(b)) .* (a - mean(a))) / sum((b - mean(b)) .^ 2);
-b0(i) = mean(a) - m(i) * mean(b);
-lin_reg_debug(win_idx2) = b0(i) + m(i) * b;
-
-s = 20 * log10(abs(x(win_idx2, 2))) - lin_reg_debug(win_idx2);
-[~, index(i)] = max(s);
-
-% TEST peak-to-average
-metric(i) = max(lin_reg_debug(win_idx2)) / mean(lin_reg_debug(win_idx2));
+%% TEST linear regression of rim signal at detected peak position
+%test_window_len = round(3e-3 * Fs);
+%win_idx2        = (all_peaks(i):all_peaks(i) + test_window_len - 1) - test_window_len / 2;
+%win_idx2        = win_idx2((win_idx2 <= length(x_rim_hil)) & (win_idx2 > 0));
+%a = 20 * log10(abs(x_rim_hil(win_idx2)));
+%b = (1:length(a))';
+%m(i)  = sum((b - mean(b)) .* (a - mean(a))) / sum((b - mean(b)) .^ 2);
+%b0(i) = mean(a) - m(i) * mean(b);
+%lin_reg_debug(win_idx2) = b0(i) + m(i) * b;
+%
+%s = 20 * log10(abs(x(win_idx2, 2))) - lin_reg_debug(win_idx2);
+%[~, index(i)] = max(s);
+%
+%% TEST peak-to-average
+%metric(i) = max(lin_reg_debug(win_idx2)) / mean(lin_reg_debug(win_idx2));
 
   end
 
-  is_rim_shot = rim_max_pow > rim_shot_threshold;
+%  is_rim_shot = rim_max_pow > rim_shot_threshold;
   
   rim_metric_db = 10 * log10(rim_max_pow ./ hil_filt_max_pow);
-  is_rim_shot   = rim_metric_db > -1; % dB
+  is_rim_shot   = rim_metric_db > -1.5; % dB
 
 %% TEST
 %window_len = 10;
@@ -344,9 +345,9 @@ plot(20 * log10(abs([sqrt(hil_filt), sqrt(x_rim_hil)]))); hold on; grid on;
 %plot(all_peaks, 10 * log10(hil_max_pow), '*-');
 %plot(all_peaks, 10 * log10(hil_filt_max_pow), '*-');
 %plot(all_peaks, 10 * log10(rim_max_pow ./ hil_max_pow) + 60, '*-');
-plot(all_peaks, rim_metric_db + 20, '*-');
-plot(all_peaks(is_rim_shot), rim_metric_db(is_rim_shot) + 20, '*');
-plot(all_peaks(~is_rim_shot), rim_metric_db(~is_rim_shot) + 20, '*');
+plot(all_peaks, rim_metric_db, '*-');
+plot(all_peaks(is_rim_shot), rim_metric_db(is_rim_shot), '*');
+plot(all_peaks(~is_rim_shot), rim_metric_db(~is_rim_shot), '*');
 %%axis([-9.8041e+02   9.9146e+04   7.5604e+01   9.6315e+01]);
 
 %plot(all_peaks, 10 * log10(metric), 'k*-');
