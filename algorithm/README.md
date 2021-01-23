@@ -19,9 +19,10 @@ complex signal. As a result, the magnitude of that complex signal is much smooth
 having modified the actual spectrum of the signal (real-valued signals have mirror symmetric spectrum).
 This effect is shown in the following picture:
 <br/>![Hilbert filter](images/hilbert.jpg)
+
 As can be seen in the graph, the default Hilbert filter in Octave uses a long impulse response which
 would introduce a large delay. To get to a more practical implementation, we use our own Hilbert filter
-design which as a very short impulse response. Using that simplified Hilbert filter leads to less
+design which has a very short impulse response. Using that simplified Hilbert filter leads to less
 power drop cancellation. To improve the situation, we apply a moving average filter after the simplified
 Hilbert filter. This is not only to reduce the power drops but to improve the velocity estimation. The
 idea of the velocity estimation is to estimate the energy of the drum stick hit on the mesh head. To
