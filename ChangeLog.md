@@ -1,6 +1,11 @@
 # Edrumulus project log
 
-- (01/19/2012) Still working on the rim shot detection using the PD-120 pad. It turns out to be very
+- (01/24/2021) Rim shot detection is now ready but does not yet perform as good as the reference
+  Roland TD-20 module. Anyway, by just rotating my PD-120 pad so that I hit the rim approximately
+  at the position where the jack plug is located, the rim shot detection works much better now
+  since the rim shot piezo is also located close to the jack plug.
+
+- (01/19/2021) Still working on the rim shot detection using the PD-120 pad. It turns out to be very
   difficult to get a reliable rim shot detection. So, it will take some more time to solve this problem.
 
   The current project plan is to continue working on making the PD-120 triggering as good as possible.
