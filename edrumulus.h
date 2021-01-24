@@ -114,9 +114,12 @@ protected:
                                     0.551482327389238f, -0.224119735833791f, -0.011665324660691f };
       const float a_im[7]      = {  0.0f,                0.213150535195075f, -1.048981722170302f, -1.797442302898130f,
                                     1.697288080048948f,  0.0f,                0.035902177664014f };
-    
+
+      // high pass filter coefficients used for rim shot detection (they are constant and must not be changed)
+      const float b_rim_high[2] = { 0.969531252908746f, -0.969531252908746f };
+      const float a_rim_high    = -0.939062505817492f;
+
       float* hil_hist        = nullptr;
-      float* rim_hil_hist    = nullptr;
       float* mov_av_hist_re  = nullptr;
       float* mov_av_hist_im  = nullptr;
       float* decay           = nullptr;
@@ -124,8 +127,7 @@ protected:
       float* hil_hist_im     = nullptr;
       float* hil_low_hist_re = nullptr;
       float* hil_low_hist_im = nullptr;
-      float* rim_hil_hist_re = nullptr;
-      float* rim_hil_hist_im = nullptr;
+      float* rim_x_high_hist = nullptr;
 
       int          Fs;
       int          number_inputs;
@@ -146,11 +148,14 @@ protected:
       int          decay_back_cnt;
       float        decay_scaling;
       float        alpha;
+      float        rim_high_prev_x;
+      float        rim_x_high;
       int          rim_shot_window_len;
-      float        rim_shot_threshold;
+      float        rim_shot_treshold_dB;
       int          pos_energy_window_len;
       int          pos_sense_cnt;
       int          rim_shot_cnt;
+      float        hil_filt_max_pow;
       int          stored_midi_velocity;
       int          stored_midi_pos;
       bool         stored_is_rimshot;

@@ -249,8 +249,8 @@ void Edrumulus::Pad::initialize()
   const float decay_grad   = pad_settings.decay_grad_fact / Fs;                 // decay gradient factor
   pos_energy_window_len    = round ( pad_settings.pos_energy_win_len_ms * Fs ); // positional sensing energy estimation time window length (e.g. 2 ms)
   alpha                    = pad_settings.pos_iir_alpha / Fs;                   // IIR low pass filter coefficient
-  rim_shot_window_len      = round ( 6e-3f * Fs );                              // window length (e.g. 6 ms)
-  rim_shot_threshold       = pow   ( 10.0f, 50.0f / 10 );                       // rim shot threshold
+  rim_shot_window_len      = round ( 5e-3f * Fs );                              // window length (e.g. 6 ms)
+  rim_shot_treshold_dB     = 2.8f;                                              // rim shot threshold in dB
 
   // The ESP32 ADC has 12 bits resulting in a range of 20*log10(2048)=66.2 dB minus the threshold value.
   // The sensitivity parameter shall be in the range of 0..31. This range should then be mapped to the
@@ -268,20 +268,17 @@ void Edrumulus::Pad::initialize()
   pos_range_db                 = max_pos_range_db * ( 32 - pad_settings.pos_sensitivity ) / 32;
 
   // allocate memory for vectors
-  if ( hil_hist             != nullptr ) delete[] hil_hist;
-  if ( rim_hil_hist         != nullptr ) delete[] rim_hil_hist;
-  if ( mov_av_hist_re       != nullptr ) delete[] mov_av_hist_re;
-  if ( mov_av_hist_im       != nullptr ) delete[] mov_av_hist_im;
-  if ( decay                != nullptr ) delete[] decay;
-  if ( hil_hist_re          != nullptr ) delete[] hil_hist_re;
-  if ( hil_hist_im          != nullptr ) delete[] hil_hist_im;
-  if ( hil_low_hist_re      != nullptr ) delete[] hil_low_hist_re;
-  if ( hil_low_hist_im      != nullptr ) delete[] hil_low_hist_im;
-  if ( rim_hil_hist_re      != nullptr ) delete[] rim_hil_hist_re;
-  if ( rim_hil_hist_im      != nullptr ) delete[] rim_hil_hist_im;
+  if ( hil_hist        != nullptr ) delete[] hil_hist;
+  if ( mov_av_hist_re  != nullptr ) delete[] mov_av_hist_re;
+  if ( mov_av_hist_im  != nullptr ) delete[] mov_av_hist_im;
+  if ( decay           != nullptr ) delete[] decay;
+  if ( hil_hist_re     != nullptr ) delete[] hil_hist_re;
+  if ( hil_hist_im     != nullptr ) delete[] hil_hist_im;
+  if ( hil_low_hist_re != nullptr ) delete[] hil_low_hist_re;
+  if ( hil_low_hist_im != nullptr ) delete[] hil_low_hist_im;
+  if ( rim_x_high_hist != nullptr ) delete[] rim_x_high_hist;
 
   hil_hist             = new float[hil_filt_len];          // memory for Hilbert filter history
-  rim_hil_hist         = new float[hil_filt_len];          // memory for rim shot detection Hilbert filter history
   mov_av_hist_re       = new float[energy_window_len];     // real part memory for moving average filter history
   mov_av_hist_im       = new float[energy_window_len];     // imaginary part memory for moving average filter history
   decay                = new float[decay_len];             // memory for decay function
@@ -289,14 +286,12 @@ void Edrumulus::Pad::initialize()
   hil_hist_im          = new float[pos_energy_window_len]; // imaginary part of memory for moving average of Hilbert filtered signal
   hil_low_hist_re      = new float[pos_energy_window_len]; // real part of memory for moving average of low-pass filtered Hilbert signal
   hil_low_hist_im      = new float[pos_energy_window_len]; // imaginary part of memory for moving average of low-pass filtered Hilbert signal
-  rim_hil_hist_re      = new float[rim_shot_window_len];   // real part of memory for rim shot detection
-  rim_hil_hist_im      = new float[rim_shot_window_len];   // imaginary part of memory for rim shot detection
+  rim_x_high_hist      = new float[rim_shot_window_len];   // memory for rim shot detection
 
   // initialization values
   for ( int i = 0; i < hil_filt_len; i++ )
   {
-    hil_hist[i]     = 0.0f;
-    rim_hil_hist[i] = 0.0f;
+    hil_hist[i] = 0.0f;
   }
 
   for ( int i = 0; i < energy_window_len; i++ )
@@ -315,8 +310,7 @@ void Edrumulus::Pad::initialize()
 
   for ( int i = 0; i < rim_shot_window_len; i++ )
   {
-    rim_hil_hist_re[i] = 0.0f;
-    rim_hil_hist_im[i] = 0.0f;
+    rim_x_high_hist[i] = 0.0f;
   }
 
   mask_back_cnt           = 0;
@@ -330,6 +324,9 @@ void Edrumulus::Pad::initialize()
   hil_low_re              = 0.0f;
   hil_low_im              = 0.0f;
   rim_shot_cnt            = 0;
+  rim_high_prev_x         = 0.0f;
+  rim_x_high              = 0.0f;
+  hil_filt_max_pow        = 0.0f;
   max_hil_filt_val        = 0.0f;
   max_hil_filt_decay_val  = 0.0f;
   peak_found_offset       = 0;
@@ -544,28 +541,21 @@ debug = 0.0f; // TEST
   {
     rim_shot_is_used = true;
 
-    // Hilbert filter
-    update_fifo ( input[1], hil_filt_len, rim_hil_hist );
-  
-    float rim_hil_re = 0;
-    float rim_hil_im = 0;
-    for ( int i = 0; i < hil_filt_len; i++ )
-    {
-      rim_hil_re += rim_hil_hist[i] * a_re[i];
-      rim_hil_im += rim_hil_hist[i] * a_im[i];
-    }
+    // one pole IIR high pass filter (y1 = (b0 * x1 + b1 * x0 - a1 * y0) / a0)
+    rim_x_high      = ( b_rim_high[0] * input[1] + b_rim_high[1] * rim_high_prev_x - a_rim_high * rim_x_high );
+    rim_high_prev_x = input[1]; // store previous x
 
-    update_fifo ( rim_hil_re, rim_shot_window_len, rim_hil_hist_re );
-    update_fifo ( rim_hil_im, rim_shot_window_len, rim_hil_hist_im );
+    update_fifo ( rim_x_high, rim_shot_window_len, rim_x_high_hist );
 
     // start condition of delay process to fill up the required buffers
     // note that rim_shot_window_len must be larger than energy_window_len,
     // pos_energy_window_len and scan_time for this to work
-    if ( was_peak_found && ( !was_rim_shot_ready ) && ( rim_shot_cnt == 0 ) )
+    if ( first_peak_found && ( !was_rim_shot_ready ) && ( rim_shot_cnt == 0 ) )
     {
       // a peak was found, we now have to start the delay process to fill up the
       // required buffer length for our metric
-      rim_shot_cnt = rim_shot_window_len / 2 - max ( scan_time, max ( energy_window_len / 2, pos_energy_window_len / 2 ) );
+      rim_shot_cnt     = rim_shot_window_len / 2 - 1;
+      hil_filt_max_pow = hil_filt;
     }
 
     if ( rim_shot_cnt > 0 )
@@ -579,12 +569,13 @@ debug = 0.0f; // TEST
         float rim_max_pow = 0;
         for ( int i = 0; i < rim_shot_window_len; i++ )
         {
-          rim_max_pow = max ( rim_max_pow, rim_hil_hist_re[i] * rim_hil_hist_re[i] + rim_hil_hist_im[i] * rim_hil_hist_im[i] );
+          rim_max_pow = max ( rim_max_pow, rim_x_high_hist[i] * rim_x_high_hist[i] );
         }
 
-        stored_is_rimshot  = rim_max_pow > rim_shot_threshold;
-        rim_shot_cnt       = 0;
-        was_rim_shot_ready = true;
+        const float rim_metric_db = 10 * log10 ( rim_max_pow / hil_filt_max_pow );
+        stored_is_rimshot         = rim_metric_db > rim_shot_treshold_dB;
+        rim_shot_cnt              = 0;
+        was_rim_shot_ready        = true;
 
 // TODO:
 // - positional sensing must be adjusted if a rim shot is detected (note that this must be done BEFORE the MIDI clipping!)
@@ -593,7 +584,7 @@ debug = 0.0f; // TEST
 //   time window -> if yes, restart everything using the new detected peak
 if ( stored_is_rimshot )
 {
-  stored_midi_pos = 0; // as a quick hack disable positional sensing if a rim shot is detected
+  stored_midi_pos = 0; // as a quick hack, disable positional sensing if a rim shot is detected
 }
 
       }

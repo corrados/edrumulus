@@ -50,7 +50,7 @@ void setup()
 
   // analog pins are 34 and 35
   const int analog_pins[]         = { 34, 35 };
-  const int analog_pins_rimshot[] = { -1, -1 }; // no rim shot
+  const int analog_pins_rimshot[] = { 35, -1 }; // optional rim shot
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
 
   // initialize GPIO port for status LED
