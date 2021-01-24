@@ -71,14 +71,15 @@ support rim shot detection, we need a second input signal. At this point I want 
 by [RyoKosaka](https://github.com/RyoKosaka).
 
 Unfortunately, when I tried out different algorithms for rim shot detection I found out that a simple
-algorithm as proposed by RyoKosaka did not give me the expected
-results. After I found out that the rim shot detection is not that straightforward, I did some testing
-with my Roland TDW-20 and I figured out that even this professional module has its problems with
-rim shot detection. The detection results were not perfect either.
+algorithm as proposed by RyoKosaka did not give me the expected performance. After I found out that
+the rim shot detection is not that straightforward, I did some testing with my Roland TDW-20 and I
+figured out that even this professional module has its problems with rim shot detection. The
+detection results were not perfect either.
 
-The current algorithm design uses a low pass filtered rim piezo signal and applies an absolute
-threshold (i.e. not a metric which is normalized with the piezo signal of the mesh pad). Then it
-showed that the scan time must be enlarged to 6 ms which causes additional trigger delay.
+The current algorithm design uses a high pass filtered rim piezo signal and the rim shot detection
+metric is the ratio between the peak power of the head piezo compared to the peak power of the high
+pass filtered rim piezo signal where we search for the rim peak power in a predefined time window.
+This window is 5 ms long which will caus additional trigger delay to the overall algorithm.
 
 
 # Test signals
