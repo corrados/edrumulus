@@ -79,7 +79,7 @@ detection results were not perfect either.
 The current algorithm design uses a high pass filtered rim piezo signal and the rim shot detection
 metric is the ratio between the peak power of the head piezo compared to the peak power of the high
 pass filtered rim piezo signal where we search for the rim peak power in a predefined time window.
-This window is 5 ms long which will caus additional trigger delay to the overall algorithm.
+This window is 5 ms long which will cause an additional trigger delay to the overall algorithm.
 
 
 # Test signals
