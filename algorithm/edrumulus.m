@@ -36,7 +36,8 @@ close all
 % x = audioread("signals/pd120_pos_sense.wav");x = x(2900:10000, :);%x = x(55400:58000, :);%
 % x = audioread("signals/pd120_pos_sense2.wav");
 x = audioread("signals/pd120_rimshot.wav");x = x(168000:171000, :);%x = x(1:8000, :);%x = x(1:34000, :);%x = x(1:100000, :);
-% x = x(1300:5000); % * 1000;
+%x = audioread("signals/pd120_rimshot_hardsoft.wav");
+
 
 % match the signal level of the ESP32
 x = x * 25000;
@@ -206,9 +207,10 @@ global hil_low_hist_re;
 global hil_low_hist_im;
 global pos_sense_cnt;
 global rim_shot_window_len;
-global rim_shot_threshold;
+global rim_shot_treshold_dB;
 global rim_x_high_hist;
 global rim_shot_cnt;
+global hil_filt_max_pow;
 global stored_pos_sense_metric;
 global stored_is_rimshot;
 global max_hil_filt_val;
@@ -256,9 +258,10 @@ hil_hist_im             = zeros(pos_energy_window_len, 1);
 hil_low_hist_re         = zeros(pos_energy_window_len, 1);
 hil_low_hist_im         = zeros(pos_energy_window_len, 1);
 rim_shot_window_len     = round(5e-3 * Fs); % window length (e.g. 6 ms)
-rim_shot_threshold      = 10 ^ (87.5 / 10);
+rim_shot_treshold_dB    = 2.3; % dB
 rim_x_high_hist         = zeros(rim_shot_window_len, 1);
 rim_shot_cnt            = 0;
+hil_filt_max_pow        = 0;
 stored_pos_sense_metric = 0;
 stored_is_rimshot       = false;
 max_hil_filt_val        = 0;
@@ -328,9 +331,10 @@ global hil_low_hist_re;
 global hil_low_hist_im;
 global pos_sense_cnt;
 global rim_shot_window_len;
-global rim_shot_threshold;
+global rim_shot_treshold_dB;
 global rim_x_high_hist;
 global rim_shot_cnt;
+global hil_filt_max_pow;
 global stored_pos_sense_metric;
 global stored_is_rimshot;
 global max_hil_filt_val;
@@ -511,11 +515,12 @@ if length(x) > 1 % rim piezo signal is in second dimension
   % start condition of delay process to fill up the required buffers
   % note that rim_shot_window_len must be larger than energy_window_len,
   % pos_energy_window_len and scan_time for this to work
-  if was_peak_found && (~was_rim_shot_ready) && (rim_shot_cnt == 0)
+  if first_peak_found && (~was_rim_shot_ready) && (rim_shot_cnt == 0)
 
     % a peak was found, we now have to start the delay process to fill up the
     % required buffer length for our metric
-    rim_shot_cnt = rim_shot_window_len / 2 - max(scan_time, max(energy_window_len / 2, pos_energy_window_len / 2));
+    rim_shot_cnt     = rim_shot_window_len / 2 - 1;
+    hil_filt_max_pow = hil_filt;
 
   end
 
@@ -529,7 +534,8 @@ if length(x) > 1 % rim piezo signal is in second dimension
       % the buffers are filled, now calculate the metric
       rim_max_pow        = max(rim_x_high_hist .* rim_x_high_hist);
       rim_max_pow_debug  = rim_max_pow; % just for debugging
-      stored_is_rimshot  = rim_max_pow > rim_shot_threshold;
+      rim_metric_db      = 10 * log10(rim_max_pow / hil_filt_max_pow);
+      stored_is_rimshot  = rim_metric_db > rim_shot_treshold_dB;
       rim_shot_cnt       = 0;
       was_rim_shot_ready = true;
 
