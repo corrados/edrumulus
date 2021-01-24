@@ -238,10 +238,6 @@ rim_shot_treshold_dB = 2.3; % dB
 if size(x, 2) > 1
 
   % one pole IIR high pass filter
-  % a0 * x0 + a1 * x1 = b0 * y0 + b1 * y1 <- 
-  % -> y1 * b1 = a0 * x0 + a1 * x1 - b0 * y0
-  % -> y1 = (a0 * x0 + a1 * x1 - b0 * y0) / b1
-  % -> y1 = (x0 + a1 * x1 - b0 * y0) / b1
   [b, a]     = butter(1, 0.02, 'high');
   rim_x_high = filter(b, a, x(:, 2));
 

@@ -227,7 +227,7 @@ a_im = [ 0,                  0.213150535195075, -1.048981722170302, -1.797442302
          1.697288080048948,  0,                  0.035902177664014]';
 rim_high_prev_x         = 0;
 rim_x_high              = 0;
-b_rim_high              = [0.969531252908746  -0.969531252908746];
+b_rim_high              = [0.969531252908746, -0.969531252908746];
 a_rim_high              = -0.939062505817492;
 energy_window_len       = round(2e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
 scan_time               = round(2.5e-3 * Fs); % scan time from first detected peak
@@ -354,12 +354,10 @@ x_rim_high_debug  = 0; % just for debugging
 
 % Calculate peak detection -----------------------------------------------------
 % hilbert filter
-hil_hist = update_fifo(x(1), hil_filt_len, hil_hist);
-hil_re   = sum(hil_hist .* a_re);
-hil_im   = sum(hil_hist .* a_im);
-
+hil_hist  = update_fifo(x(1), hil_filt_len, hil_hist);
+hil_re    = sum(hil_hist .* a_re);
+hil_im    = sum(hil_hist .* a_im);
 hil_debug = complex(hil_re, hil_im); % just for debugging
-
 
 % moving average filter
 mov_av_hist_re = update_fifo(hil_re, energy_window_len, mov_av_hist_re);
@@ -367,10 +365,8 @@ mov_av_hist_im = update_fifo(hil_im, energy_window_len, mov_av_hist_im);
 mov_av_re      = sum(mov_av_hist_re) / energy_window_len;
 mov_av_im      = sum(mov_av_hist_im) / energy_window_len;
 
-hil_filt = mov_av_re * mov_av_re + mov_av_im * mov_av_im;
-
+hil_filt       = mov_av_re * mov_av_re + mov_av_im * mov_av_im;
 hil_filt_debug = hil_filt; % just for debugging
-
 
 % exponential decay assumption (note that we must not use hil_filt_org since a
 % previous peak might not be faded out and the peak detection works on hil_filt)
@@ -389,7 +385,6 @@ if decay_back_cnt > 0
 else
   hil_filt_decay = hil_filt;
 end
-
 
 % threshold test
 if ((hil_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
@@ -506,8 +501,9 @@ if length(x) > 1 % rim piezo signal is in second dimension
 
   rim_shot_is_used = true;
 
-  % one pole IIR high pass filter
-  rim_x_high       = (rim_high_prev_x + a_rim_high * x(2) - b_rim_high(1) * rim_x_high) / b_rim_high(2);
+  % one pole IIR high pass filter (y1 = (b0 * x1 + b1 * x0 - a1 * y0) / a0)
+  rim_x_high       = (b_rim_high(1) * x(2) + b_rim_high(2) * rim_high_prev_x - a_rim_high * rim_x_high);
+  rim_high_prev_x  = x(2); % store previous x
   x_rim_high_debug = rim_x_high; % just for debugging
 
   rim_x_high_hist = update_fifo(rim_x_high, rim_shot_window_len, rim_x_high_hist);
