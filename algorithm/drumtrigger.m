@@ -39,7 +39,7 @@ Fs = 8000; % Hz
 %x = audioread("signals/pd120_roll.wav");%x = x(311500:317600);
 %x = audioread("signals/pd120_middle_velocity.wav");
 %x = audioread("signals/pd120_hot_spot.wav");
-x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
+x = audioread("signals/pd120_rimshot.wav");x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x = audioread("signals/pd6.wav");
 %org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
@@ -62,7 +62,7 @@ x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:340
 % x        = round(x / quant);
 % x        = x / max(abs(x)) * max_val;
 
-processing(x * 25000, Fs, false); % scale to the ESP32 input range
+processing(x * 25000, Fs); % scale to the ESP32 input range
 
 end
 
@@ -241,7 +241,7 @@ if size(x, 2) > 1
   % a0 * x0 + a1 * x1 = b0 * y0 + b1 * y1 <- 
   % -> y1 * b1 = a0 * x0 + a1 * x1 - b0 * y0
   % -> y1 = (a0 * x0 + a1 * x1 - b0 * y0) / b1
-  % -> y1 = (a0 * x0 + a1 * x1 - y0) / b1
+  % -> y1 = (x0 + a1 * x1 - b0 * y0) / b1
   [b, a]     = butter(1, 0.02, 'high');
   rim_x_high = filter(b, a, x(:, 2));
 
@@ -268,7 +268,7 @@ end
 end
 
 
-function processing(x, Fs, do_realtime)
+function processing(x, Fs)
 
 % calculate peak detection and positional sensing
 [hil, hil_filt]              = filter_input_signal(x(:, 1), Fs);
@@ -276,19 +276,15 @@ function processing(x, Fs, do_realtime)
 is_rim_shot                  = detect_rim_shot(x, hil_filt, all_first_peaks, Fs);
 pos_sense_metric             = calc_pos_sense_metric(hil, hil_filt, Fs, all_first_peaks);
 
-if ~do_realtime
-  figure % open figure to keep previous plots (not desired for real-time)
-end
 
 % plot results
-cla
+figure
 plot(10 * log10([abs(x(:, 1)) .^ 2, hil_filt])); grid on; hold on;
 plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'g*');
 plot(all_peaks, pos_sense_metric + 40, 'k*');
 title('Green marker: level; Black marker: position');
 xlabel('samples'); ylabel('dB');
 ylim([-10, 90]);
-drawnow;
 
 
 % TEST
