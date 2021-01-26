@@ -22,6 +22,7 @@
 %*******************************************************************************
 
 function drumtrigger
+global pad;
 
 % Drum trigger tests
 
@@ -35,15 +36,31 @@ Fs = 8000; % Hz
 %x = audioread("signals/esp32_pd120.wav");
 %x = audioread("signals/pd120_pos_sense.wav");x = x(2900:10000, :);%x = x(55400:58000, :);%
 %x = audioread("signals/pd120_pos_sense2.wav");
-%x = audioread("signals/pd120_single_hits.wav");
+x = audioread("signals/pd120_single_hits.wav");
 %x = audioread("signals/pd120_roll.wav");%x = x(311500:317600);
 %x = audioread("signals/pd120_middle_velocity.wav");
 %x = audioread("signals/pd120_hot_spot.wav");
-x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
+%x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x = audioread("signals/pd6.wav");
+%x = audioread("signals/pd8.wav");
 %org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
 %org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
+
+padtype = 'pd120';
+
+switch padtype
+  case 'pd120'
+    pad.threshold_db          = 23;
+    pad.mask_time_ms          = 10;
+    pad.energy_win_len_ms     = 2;   % pad specific parameter: hit energy estimation time window length
+    pad.scan_time_ms          = 2.5; % pad specific parameter: scan time after first detected peak
+    pad.decay_len_ms          = 250; % pad specific parameter: length of the decay
+    pad.decay_fact_db         = 1;   % pad specific parameter: vertical shift of the decay function in dB
+    pad.decay_grad_fact       = 200; % pad specific parameter: decay function gradient factor
+    pad.pos_energy_win_len_ms = 2;   % pad specific parameter: pos sense energy estimation time window length
+    pad.pos_iir_alpha         = 200; % pad specific parameter: IIR low-pass alpha value for positional sensing
+end
 
 
 % % TEST call reference mode for C++ implementation
@@ -85,8 +102,9 @@ end
 
 
 function [hil, hil_filt] = filter_input_signal(x, Fs)
+global pad;
 
-energy_window_len = round(2e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
+energy_window_len = round(pad.energy_win_len_ms * 1e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
 
 % Hilbert filter
 hil = myhilbert(x);
@@ -98,14 +116,13 @@ end
 
 
 function [all_peaks, all_first_peaks] = calc_peak_detection(hil_filt, Fs)
+global pad;
 
-threshold_db = 23; % TEST: figure;plot(10.^((15:(30/31):45)/20),'.-')
-mask_time    = round(10e-3 * Fs); % mask time (e.g. 10 ms)
+mask_time = round(pad.mask_time_ms * 1e-3 * Fs); % mask time (e.g. 10 ms)
 
-% the following settings are trigger pad-specific (here, a PD-120 is used)
-decay_len     = round(0.25 * Fs); % decay time (e.g. 250 ms)
-decay_fact_db = 1; % decay factor in dB
-decay_grad    = 200 / Fs; % decay gradient factor
+% the following settings are trigger pad-specific
+decay_len  = round(pad.decay_len_ms * 1e-3 * Fs); % decay time (e.g. 250 ms)
+decay_grad = pad.decay_grad_fact / Fs; % decay gradient factor
 
 last_peak_idx   = 0;
 all_peaks       = [];
@@ -118,7 +135,7 @@ hil_filt_org    = hil_filt;            % only for debugging
 while ~no_more_peak
 
   % find values above threshold, masking regions which are already done
-  above_thresh = (hil_filt > 10 ^ (threshold_db / 10)) & [zeros(last_peak_idx, 1); ones(length(hil_filt) - last_peak_idx, 1)];
+  above_thresh = (hil_filt > 10 ^ (pad.threshold_db / 10)) & [zeros(last_peak_idx, 1); ones(length(hil_filt) - last_peak_idx, 1)];
   peak_start   = find(diff(above_thresh) > 0);
 
   % exit condition
@@ -137,7 +154,7 @@ while ~no_more_peak
   all_first_peaks = [all_first_peaks; peak_idx];
 
   % search in a pre-defined scan time for the highest peak
-  scan_time    = round(2.5e-3 * Fs); % scan time from first detected peak
+  scan_time    = round(pad.scan_time_ms * 1e-3 * Fs); % scan time from first detected peak
   [~, max_idx] = max(hil_filt(peak_idx:min(1 + peak_idx + scan_time - 1, length(hil_filt))));
   peak_idx     = peak_idx + max_idx - 1;
 
@@ -147,7 +164,7 @@ while ~no_more_peak
 
   % exponential decay assumption (note that we must not use hil_filt_org since a
   % previous peak might not be faded out and the peak detection works on hil_filt)
-  decay           = hil_filt(peak_idx) * 10 ^ (decay_fact_db / 10) * 10 .^ (-(0:decay_len - 1) / 10 * decay_grad);
+  decay           = hil_filt(peak_idx) * 10 ^ (pad.decay_fact_db / 10) * 10 .^ (-(0:decay_len - 1) / 10 * decay_grad);
   decay_x         = peak_idx + (0:decay_len - 1) + 2; % NOTE "+ 2" delay needed for sample-wise processing
   valid_decay_idx = decay_x <= length(hil_filt);
   decay           = decay(valid_decay_idx);
@@ -172,8 +189,9 @@ end
 
 
 function pos_sense_metric = calc_pos_sense_metric(hil, hil_filt, Fs, all_peaks)
+global pad;
 
-pos_energy_window_len = round(2e-3 * Fs); % positional sensing energy estimation time window length (e.g. 2 ms)
+pos_energy_window_len = round(pad.pos_energy_win_len_ms * 1e-3 * Fs); % positional sensing energy estimation time window length (e.g. 2 ms)
 
 % low pass filter of the Hilbert signal
 % lp_ir_len = 80; % low-pass filter length
@@ -182,7 +200,7 @@ pos_energy_window_len = round(2e-3 * Fs); % positional sensing energy estimation
 % hil_low   = filter(a, 1, hil);
 % hil_low   = hil_low(lp_ir_len / 2:end);
 % use a simple one-pole IIR filter for less CPU processing and shorter delay
-alpha   = 0.025 * 8e3 / Fs;
+alpha   = pad.pos_iir_alpha / Fs;
 hil_low = filter(alpha, [1, alpha - 1], hil);
 
 % figure; plot(20 * log10(abs([hil(1:length(hil_low)), hil_low]))); hold on;
@@ -253,11 +271,11 @@ if size(x, 2) > 1
   rim_metric_db = 10 * log10(rim_max_pow ./ hil_filt_max_pow);
   is_rim_shot   = rim_metric_db > rim_shot_treshold_dB;
 
-figure;
-plot(10 * log10(abs([hil_filt, rim_x_high]))); hold on; grid on;
-plot(all_first_peaks, rim_metric_db, '*-');
-plot(all_first_peaks(is_rim_shot), rim_metric_db(is_rim_shot), '*');
-plot(all_first_peaks(~is_rim_shot), rim_metric_db(~is_rim_shot), '*');
+%figure;
+%plot(10 * log10(abs([hil_filt, rim_x_high]))); hold on; grid on;
+%plot(all_first_peaks, rim_metric_db, '*-');
+%plot(all_first_peaks(is_rim_shot), rim_metric_db(is_rim_shot), '*');
+%plot(all_first_peaks(~is_rim_shot), rim_metric_db(~is_rim_shot), '*');
 
 end
 
