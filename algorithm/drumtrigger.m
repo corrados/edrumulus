@@ -43,23 +43,29 @@ x = audioread("signals/pd120_single_hits.wav");
 %x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x = audioread("signals/pd6.wav");
-%x = audioread("signals/pd8.wav");
+%x = audioread("signals/pd8.wav");%x = x(1:100000, :);
 %org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
 %org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
 
-padtype = 'pd120';
+padtype = 'pd120';%'pd8';
+
+% pad PRESET settings first, then overwrite these with pad specific properties
+pad.threshold_db          = 23;
+pad.mask_time_ms          = 10;
+pad.energy_win_len_ms     = 2;
+pad.scan_time_ms          = 2.5;
+pad.decay_len_ms          = 250;
+pad.decay_fact_db         = 1;
+pad.decay_grad_fact       = 200;
+pad.pos_energy_win_len_ms = 2;
+pad.pos_iir_alpha         = 200;
 
 switch padtype
   case 'pd120'
-    pad.threshold_db          = 23;
-    pad.mask_time_ms          = 10;
-    pad.energy_win_len_ms     = 2;   % pad specific parameter: hit energy estimation time window length
-    pad.scan_time_ms          = 2.5; % pad specific parameter: scan time after first detected peak
-    pad.decay_len_ms          = 250; % pad specific parameter: length of the decay
-    pad.decay_fact_db         = 1;   % pad specific parameter: vertical shift of the decay function in dB
-    pad.decay_grad_fact       = 200; % pad specific parameter: decay function gradient factor
-    pad.pos_energy_win_len_ms = 2;   % pad specific parameter: pos sense energy estimation time window length
-    pad.pos_iir_alpha         = 200; % pad specific parameter: IIR low-pass alpha value for positional sensing
+    % note: the PRESET settings are from the PD120 pad
+  case 'pd8'
+    pad.scan_time_ms    = 3.5;
+    pad.decay_grad_fact = 400;
 end
 
 

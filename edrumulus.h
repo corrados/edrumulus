@@ -64,7 +64,8 @@ protected:
       enum Epadtype
       {
         PD120,
-        PD80R
+        PD80R,
+        PD8
       };
 
       void setup ( const int conf_Fs,

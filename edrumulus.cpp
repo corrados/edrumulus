@@ -194,41 +194,34 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   // apply new pad type and set all parameters to the default values for that pad type
   pad_settings.pad_type = new_pad_type;
 
+  // apply PRESET settings (might be overwritten by pad-specific properties)
+  pad_settings.velocity_threshold    = 8;  // 0..31
+  pad_settings.velocity_sensitivity  = 3;  // 0..31
+  pad_settings.mask_time_ms          = 10; // 0..31 (ms)
+  pad_settings.pos_threshold         = 16; // 0..31
+  pad_settings.pos_sensitivity       = 20; // 0..31
+  pad_settings.pos_sense_is_used     = true;
+  pad_settings.energy_win_len_ms     = 2.0f;   // pad specific parameter: hit energy estimation time window length
+  pad_settings.scan_time_ms          = 2.5f;   // pad specific parameter: scan time after first detected peak
+  pad_settings.decay_len_ms          = 250.0f; // pad specific parameter: length of the decay
+  pad_settings.decay_fact_db         = 1.0f;   // pad specific parameter: vertical shift of the decay function in dB
+  pad_settings.decay_grad_fact       = 200.0f; // pad specific parameter: decay function gradient factor
+  pad_settings.pos_energy_win_len_ms = 2.0f;   // pad specific parameter: pos sense energy estimation time window length
+  pad_settings.pos_iir_alpha         = 200.0f; // pad specific parameter: IIR low-pass alpha value for positional sensing
+
   switch ( new_pad_type )
   {
     case PD120:
-      pad_settings.velocity_threshold   = 8;  // 0..31
-      pad_settings.velocity_sensitivity = 3;  // 0..31
-      pad_settings.mask_time_ms         = 10; // 0..31 (ms)
-      pad_settings.pos_threshold        = 16; // 0..31
-      pad_settings.pos_sensitivity      = 20; // 0..31
-      pad_settings.pos_sense_is_used    = true;
-
-      pad_settings.energy_win_len_ms     = 2.0f;   // pad specific parameter: hit energy estimation time window length
-      pad_settings.scan_time_ms          = 2.5f;   // pad specific parameter: scan time after first detected peak
-      pad_settings.decay_len_ms          = 250.0f; // pad specific parameter: length of the decay
-      pad_settings.decay_fact_db         = 1.0f;   // pad specific parameter: vertical shift of the decay function in dB
-      pad_settings.decay_grad_fact       = 200.0f; // pad specific parameter: decay function gradient factor
-      pad_settings.pos_energy_win_len_ms = 2.0f;   // pad specific parameter: pos sense energy estimation time window length
-      pad_settings.pos_iir_alpha         = 200.0f; // pad specific parameter: IIR low-pass alpha value for positional sensing
+      // note: the PRESET settings are from the PD-120 pad
       break;
 
     case PD80R:
-// TODO these are just a copy of the PD120 but we need to adjust these values to the PD80R pad properties:
-pad_settings.velocity_threshold   = 8;  // 0..31
-pad_settings.velocity_sensitivity = 4;  // 0..31
-pad_settings.mask_time_ms         = 10; // 0..31 (ms)
-pad_settings.pos_threshold        = 16; // 0..31
-pad_settings.pos_sensitivity      = 20; // 0..31
-pad_settings.pos_sense_is_used    = true;
+// TODO add support for PD-80R pad
+pad_settings.velocity_sensitivity = 4;
+      break;
 
-pad_settings.energy_win_len_ms     = 2.0f;   // pad specific parameter: hit energy estimation time window length
-pad_settings.scan_time_ms          = 2.5f;   // pad specific parameter: scan time after first detected peak
-pad_settings.decay_len_ms          = 250.0f; // pad specific parameter: length of the decay
-pad_settings.decay_fact_db         = 1.0f;   // pad specific parameter: vertical shift of the decay function in dB
-pad_settings.decay_grad_fact       = 200.0f; // pad specific parameter: decay function gradient factor
-pad_settings.pos_energy_win_len_ms = 2.0f;   // pad specific parameter: pos sense energy estimation time window length
-pad_settings.pos_iir_alpha         = 200.0f; // pad specific parameter: IIR low-pass alpha value for positional sensing
+    case PD8:
+// TODO add support for PD-8 pad
       break;
   }
 
