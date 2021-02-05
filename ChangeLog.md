@@ -1,5 +1,11 @@
 # Edrumulus project log
 
+- (02/05/2021) I am currently evaluating the great [Drumgizmo](https://drumgizmo.org) software
+  to be used in conjunction with Edrumulus. I am in contact with the [main developer](https://drumgizmo.org/wiki/doku.php?id=team) and have
+  already written some code to [support ALSA MIDI in Drumgizmo](https://linuxmusicians.com/viewtopic.php?f=56&t=22714).
+  I am currently trying to run Drumgizmo on a Raspberry Pi zero but I assume that I will
+  need at least a Raspberry Pi 4 to get a decent performance.
+
 - (01/24/2021) Rim shot detection is now ready but does not yet perform as good as the reference
   Roland TD-20 module. Anyway, by just rotating my PD-120 pad so that I hit the rim approximately
   at the position where the jack plug is located, the rim shot detection works much better now
