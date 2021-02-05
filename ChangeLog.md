@@ -67,5 +67,3 @@
   the position.
 
 - The algorithm is optimized for Roland PD-120 pad only. Other pad types should be supported, too.
-
-- The normalization of the positional sensing should be improved.
