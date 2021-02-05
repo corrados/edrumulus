@@ -54,9 +54,13 @@ pad.threshold_db          = 23;
 pad.mask_time_ms          = 10;
 pad.energy_win_len_ms     = 2;
 pad.scan_time_ms          = 2.5;
-pad.decay_len_ms          = 250;
 pad.decay_fact_db         = 1;
-pad.decay_grad_fact       = 200;
+pad.decay_len_ms1         = 0; % not used
+pad.decay_len_ms2         = 250;
+pad.decay_len_ms3         = 0; % not used
+pad.decay_grad_fact1      = 200;
+pad.decay_grad_fact2      = 200;
+pad.decay_grad_fact3      = 200;
 pad.pos_energy_win_len_ms = 2;
 pad.pos_iir_alpha         = 200;
 
@@ -65,7 +69,7 @@ switch padtype
     % note: the PRESET settings are from the PD120 pad
   case 'pd8'
     pad.scan_time_ms    = 3.5;
-    pad.decay_grad_fact = 400;
+    %pad.decay_grad_fact2 = 400;
 end
 
 
@@ -127,8 +131,18 @@ global pad;
 mask_time = round(pad.mask_time_ms * 1e-3 * Fs); % mask time (e.g. 10 ms)
 
 % the following settings are trigger pad-specific
-decay_len  = round(pad.decay_len_ms * 1e-3 * Fs); % decay time (e.g. 250 ms)
-decay_grad = pad.decay_grad_fact / Fs; % decay gradient factor
+decay_len1  = round(pad.decay_len_ms1 * 1e-3 * Fs); % decay time (e.g. 250 ms)
+decay_grad1 = pad.decay_grad_fact1 / Fs;            % decay gradient factor
+decay_len2  = round(pad.decay_len_ms2 * 1e-3 * Fs);
+decay_grad2 = pad.decay_grad_fact2 / Fs;
+decay_len3  = round(pad.decay_len_ms3 * 1e-3 * Fs);
+decay_grad3 = pad.decay_grad_fact3 / Fs;
+
+decay_curve1 = 10 ^ (pad.decay_fact_db / 10) * 10 .^ (-(0:decay_len1) / 10 * decay_grad1);
+decay_curve2 = 10 .^ (-(0:decay_len2) / 10 * decay_grad2);
+decay_curve3 = 10 .^ (-(0:decay_len3 - 1) / 10 * decay_grad3);
+decay_curve  = [decay_curve1(1:end - 1), decay_curve1(end) * decay_curve2(1:end - 1), decay_curve1(end) * decay_curve2(end) * decay_curve3];
+decay_len    = decay_len1 + decay_len2 + decay_len3;
 
 last_peak_idx   = 0;
 all_peaks       = [];
@@ -170,7 +184,7 @@ while ~no_more_peak
 
   % exponential decay assumption (note that we must not use hil_filt_org since a
   % previous peak might not be faded out and the peak detection works on hil_filt)
-  decay           = hil_filt(peak_idx) * 10 ^ (pad.decay_fact_db / 10) * 10 .^ (-(0:decay_len - 1) / 10 * decay_grad);
+  decay           = hil_filt(peak_idx) * decay_curve;
   decay_x         = peak_idx + (0:decay_len - 1) + 2; % NOTE "+ 2" delay needed for sample-wise processing
   valid_decay_idx = decay_x <= length(hil_filt);
   decay           = decay(valid_decay_idx);
