@@ -32,10 +32,10 @@ close all
 
 % load test data
 % x = audioread("signals/pd120_roll.wav");
-%x = audioread("signals/pd120_single_hits.wav");
+x = audioread("signals/pd120_single_hits.wav");
 % x = audioread("signals/pd120_pos_sense.wav");x = x(2900:10000, :);%x = x(55400:58000, :);%
 % x = audioread("signals/pd120_pos_sense2.wav");
-x = audioread("signals/pd120_rimshot.wav");x = x(168000:171000, :);%x = x(1:8000, :);%x = x(1:34000, :);%x = x(1:100000, :);
+%x = audioread("signals/pd120_rimshot.wav");x = x(168000:171000, :);%x = x(1:8000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 
 
@@ -243,9 +243,6 @@ was_above_threshold     = false;
 prev_hil_filt_val       = 0;
 prev_hil_filt_decay_val = 0;
 decay_fact              = power(10, 1 / 10); % decay factor of 1 dB
-decay_len               = round(0.25 * Fs); % decay time (e.g. 250 ms)
-decay_grad              = 200 / Fs; % decay gradient factor
-decay                   = power(10, -(0:decay_len - 1) / 10 * decay_grad);
 decay_back_cnt          = 0;
 decay_scaling           = 1;
 alpha                   = 200 / Fs;
@@ -270,6 +267,26 @@ peak_found_offset       = 0;
 was_peak_found          = false;
 was_pos_sense_ready     = false;
 was_rim_shot_ready      = false;
+decay_len1              = round(0 * Fs); % not used
+decay_grad1             = 200 / Fs;
+decay_len2              = round(0.25 * Fs);% decay time (e.g. 250 ms)
+decay_grad2             = 200 / Fs; % decay gradient factor
+decay_len3              = round(0 * Fs); % not used
+decay_grad3             = 200 / Fs;
+
+% calculate the decay curve
+decay = zeros(decay_len1 + decay_len2 + decay_len3, 1);
+for i = 1:decay_len1
+  decay(i) = power(10, -(i - 1) / 10 * decay_grad1);
+end
+decay_fact1 = power(10, -decay_len1 / 10 * decay_grad1);
+for i = 1:decay_len2
+  decay(decay_len1 + i) = decay_fact1 * power(10, -(i - 1) / 10 * decay_grad2);
+end
+decay_fact2 = decay_fact1 * power(10, -decay_len2 / 10 * decay_grad2);
+for i = 1:decay_len3
+  decay(decay_len1 + decay_len2 + i) = decay_fact2 * power(10, -(i - 1) / 10 * decay_grad3);
+end
 
 end
 
