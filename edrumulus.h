@@ -97,9 +97,9 @@ protected:
         bool     pos_sense_is_used;    // switches positional sensing support on or off
         float    energy_win_len_ms;
         float    scan_time_ms;
-        float    decay_len_ms;
         float    decay_fact_db;
-        float    decay_grad_fact;
+        float    decay_len1_ms,    decay_len2_ms,    decay_len3_ms;
+        float    decay_grad_fact1, decay_grad_fact2, decay_grad_fact3;
         float    pos_energy_win_len_ms;
         float    pos_iir_alpha;
       };
@@ -135,7 +135,7 @@ protected:
       int          energy_window_len;
       int          scan_time;
       int          scan_time_cnt;
-      int          decay_len;
+      int          decay_len, decay_len1, decay_len2, decay_len3;
       int          mask_time;
       int          mask_back_cnt;
       float        threshold;

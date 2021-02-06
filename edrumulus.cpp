@@ -203,9 +203,13 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.pos_sense_is_used     = true;
   pad_settings.energy_win_len_ms     = 2.0f;   // pad specific parameter: hit energy estimation time window length
   pad_settings.scan_time_ms          = 2.5f;   // pad specific parameter: scan time after first detected peak
-  pad_settings.decay_len_ms          = 250.0f; // pad specific parameter: length of the decay
   pad_settings.decay_fact_db         = 1.0f;   // pad specific parameter: vertical shift of the decay function in dB
-  pad_settings.decay_grad_fact       = 200.0f; // pad specific parameter: decay function gradient factor
+  pad_settings.decay_len1_ms         = 0.0f;   // pad specific parameter: length of the decay 1
+  pad_settings.decay_grad_fact1      = 200.0f; // pad specific parameter: decay function gradient factor 1
+  pad_settings.decay_len2_ms         = 250.0f; // pad specific parameter: length of the decay 2
+  pad_settings.decay_grad_fact2      = 200.0f; // pad specific parameter: decay function gradient factor 2
+  pad_settings.decay_len3_ms         = 0.0f;   // pad specific parameter: length of the decay 3
+  pad_settings.decay_grad_fact3      = 200.0f; // pad specific parameter: decay function gradient factor 3
   pad_settings.pos_energy_win_len_ms = 2.0f;   // pad specific parameter: pos sense energy estimation time window length
   pad_settings.pos_iir_alpha         = 200.0f; // pad specific parameter: IIR low-pass alpha value for positional sensing
 
@@ -234,12 +238,17 @@ void Edrumulus::Pad::initialize()
   // set algorithm parameters
   const float threshold_db = 15.0f + pad_settings.velocity_threshold;           // gives us a threshold range of 15..46 dB
   threshold                = pow   ( 10.0f, threshold_db / 10 );                // linear power threshold
-  energy_window_len        = round ( pad_settings.energy_win_len_ms * 1e-3f * Fs );     // hit energy estimation time window length (e.g. 2 ms)
-  scan_time                = round ( pad_settings.scan_time_ms * 1e-3f * Fs );          // scan time from first detected peak
+  energy_window_len        = round ( pad_settings.energy_win_len_ms * 1e-3f * Fs ); // hit energy estimation time window length (e.g. 2 ms)
+  scan_time                = round ( pad_settings.scan_time_ms * 1e-3f * Fs );  // scan time from first detected peak
   mask_time                = round ( pad_settings.mask_time_ms * 1e-3f * Fs );  // mask time (e.g. 10 ms)
-  decay_len                = round ( pad_settings.decay_len_ms * 1e-3f * Fs );  // decay time (e.g. 250 ms)
+  decay_len1               = round ( pad_settings.decay_len1_ms * 1e-3f * Fs ); // decay time 1 (e.g. 250 ms)
+  decay_len2               = round ( pad_settings.decay_len2_ms * 1e-3f * Fs ); // decay time 2 (e.g. 250 ms)
+  decay_len3               = round ( pad_settings.decay_len3_ms * 1e-3f * Fs ); // decay time 3 (e.g. 250 ms)
+  decay_len                = decay_len1 + decay_len2 + decay_len3;
   decay_fact               = pow   ( 10.0f, pad_settings.decay_fact_db / 10 );  // decay factor of 1 dB
-  const float decay_grad   = pad_settings.decay_grad_fact / Fs;                 // decay gradient factor
+  const float decay_grad1  = pad_settings.decay_grad_fact1 / Fs;                // decay gradient factor 1
+  const float decay_grad2  = pad_settings.decay_grad_fact2 / Fs;                // decay gradient factor 2
+  const float decay_grad3  = pad_settings.decay_grad_fact3 / Fs;                // decay gradient factor 3
   pos_energy_window_len    = round ( pad_settings.pos_energy_win_len_ms * 1e-3f * Fs ); // positional sensing energy estimation time window length (e.g. 2 ms)
   alpha                    = pad_settings.pos_iir_alpha / Fs;                   // IIR low pass filter coefficient
   rim_shot_window_len      = round ( 5e-3f * Fs );                              // window length (e.g. 6 ms)
@@ -329,9 +338,19 @@ void Edrumulus::Pad::initialize()
   stored_is_rimshot       = false;
 
   // calculate the decay curve
-  for ( int i = 0; i < decay_len; i++ )
+  for ( int i = 0; i < decay_len1; i++ )
   {
-    decay[i] = pow ( 10.0f, -i / 10.0f * decay_grad );
+    decay[i] = pow ( 10.0f, -i / 10.0f * decay_grad1 );
+  }
+  const float decay_fact1 = pow ( 10.0f, -decay_len1 / 10.0f * decay_grad1 );
+  for ( int i = 0; i < decay_len2; i++ )
+  {
+    decay[decay_len1 + i] = decay_fact1 * pow ( 10.0f, -i / 10.0f * decay_grad2 );
+  }
+  const float decay_fact2 = decay_fact1 * pow ( 10.0f, -decay_len2 / 10.0f * decay_grad2 );
+  for ( int i = 0; i < decay_len3; i++ )
+  {
+    decay[decay_len1 + decay_len2 + i] = decay_fact2 * pow ( 10.0f, -i / 10.0f * decay_grad3 );
   }
 }
 
