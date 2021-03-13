@@ -36,8 +36,8 @@ Fs = 8000; % Hz
 %x = audioread("signals/esp32_pd120.wav");
 %x = audioread("signals/pd120_pos_sense.wav");x = x(2900:10000, :);%x = x(55400:58000, :);%
 %x = audioread("signals/pd120_pos_sense2.wav");
-x = audioread("signals/pd120_single_hits.wav");
-%x = audioread("signals/pd120_roll.wav");%x = x(311500:317600);
+%x = audioread("signals/pd120_single_hits.wav");
+x = audioread("signals/pd120_roll.wav");%x = x(311500:317600);
 %x = audioread("signals/pd120_middle_velocity.wav");
 %x = audioread("signals/pd120_hot_spot.wav");
 %x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
@@ -125,7 +125,7 @@ hil_filt = abs(filter(ones(energy_window_len, 1) / energy_window_len, 1, hil)) .
 end
 
 
-function [all_peaks, all_first_peaks] = calc_peak_detection(hil_filt, Fs)
+function [all_peaks, all_first_peaks] = calc_peak_detection(x, hil_filt, Fs)
 global pad;
 
 mask_time = round(pad.mask_time_ms * 1e-3 * Fs); % mask time (e.g. 10 ms)
@@ -151,6 +151,10 @@ i               = 1;
 no_more_peak    = false;
 decay_all       = nan(size(hil_filt)); % only for debugging
 hil_filt_org    = hil_filt;            % only for debugging
+
+%% TEST
+%alpha = 200 / Fs;
+%x_filt = filter(alpha, [1, alpha - 1], abs(x));
 
 while ~no_more_peak
 
@@ -182,9 +186,20 @@ while ~no_more_peak
   all_peaks     = [all_peaks; peak_idx];
   last_peak_idx = min(peak_idx + mask_time, length(hil_filt));
 
+% TEST estimate the decay power
+decay_power_est_offset_ms = 7;
+decay_power_est_offset  = round(decay_power_est_offset_ms * 1e-3 * Fs);
+decay_power_est_idx = min(peak_idx + decay_power_est_offset, length(hil_filt));
+
   % exponential decay assumption (note that we must not use hil_filt_org since a
   % previous peak might not be faded out and the peak detection works on hil_filt)
-  decay           = hil_filt(peak_idx) * decay_curve;
+  
+% TEST
+%scaling = hil_filt(peak_idx);
+scaling = min(hil_filt(peak_idx), mean(hil_filt_org(decay_power_est_idx + (0:40))) * 50);
+ 
+ 
+  decay           = scaling * decay_curve;
   decay_x         = peak_idx + (0:decay_len - 1) + 2; % NOTE "+ 2" delay needed for sample-wise processing
   valid_decay_idx = decay_x <= length(hil_filt);
   decay           = decay(valid_decay_idx);
@@ -202,8 +217,8 @@ while ~no_more_peak
 
 end
 
-%figure; plot(10 * log10([hil_filt_org, hil_filt, decay_all])); hold on;
-%plot(all_peaks, 10 * log10(hil_filt_org(all_peaks)), 'k*');
+figure; plot(10 * log10([hil_filt_org, hil_filt, decay_all])); hold on;
+plot(all_peaks, 10 * log10(hil_filt_org(all_peaks)), 'k*');
 
 end
 
@@ -306,7 +321,7 @@ function processing(x, Fs)
 
 % calculate peak detection and positional sensing
 [hil, hil_filt]              = filter_input_signal(x(:, 1), Fs);
-[all_peaks, all_first_peaks] = calc_peak_detection(hil_filt, Fs);
+[all_peaks, all_first_peaks] = calc_peak_detection(x(:, 1), hil_filt, Fs);
 is_rim_shot                  = detect_rim_shot(x, hil_filt, all_first_peaks, Fs);
 pos_sense_metric             = calc_pos_sense_metric(hil, hil_filt, Fs, all_first_peaks);
 
