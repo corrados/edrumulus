@@ -105,7 +105,7 @@ void loop()
   }
 #endif
 
-/*
+
 // TEST receiving MIDI messages to change the pad settings: Virtual MIDI Piano Keyboard -> loopMIDI -> Hairless MIDI
 if ( MIDI.read ( 1 ) ) // read only on channel 1
 {
@@ -129,6 +129,20 @@ if ( MIDI.read ( 1 ) ) // read only on channel 1
       is_used = true;
     }
 
+    // controller 3: positional sensing threshold
+    if ( controller == 3 )
+    {
+      edrumulus.set_pos_threshold ( 0, value );
+      is_used = true;
+    }
+
+    // controller 4: positional sensing sensitivity
+    if ( controller == 4 )
+    {
+      edrumulus.set_pos_sensitivity ( 0, value );
+      is_used = true;
+    }
+
 // TEST some audio feedback that the settings was correctly received
 if ( is_used )
 {
@@ -138,5 +152,5 @@ if ( is_used )
 
   }
 }
-*/
+
 }

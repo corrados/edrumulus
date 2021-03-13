@@ -50,6 +50,8 @@ public:
   // configure the pads
   void set_velocity_threshold   ( const int pad_idx, const int new_threshold ) { pad[pad_idx].set_velocity_threshold ( new_threshold ); }
   void set_velocity_sensitivity ( const int pad_idx, const int new_velocity )  { pad[pad_idx].set_velocity_sensitivity ( new_velocity ); }
+  void set_pos_threshold        ( const int pad_idx, const int new_threshold ) { pad[pad_idx].set_pos_threshold ( new_threshold ); }
+  void set_pos_sensitivity      ( const int pad_idx, const int new_velocity )  { pad[pad_idx].set_pos_sensitivity ( new_velocity ); }
   void set_mask_time            ( const int pad_idx, const int new_time )      { pad[pad_idx].set_mask_time ( new_time ); }
 
   // overload and error handling
@@ -82,6 +84,8 @@ protected:
 
       void set_velocity_threshold   ( const int new_threshold ) { pad_settings.velocity_threshold   = new_threshold; initialize(); }
       void set_velocity_sensitivity ( const int new_velocity )  { pad_settings.velocity_sensitivity = new_velocity;  initialize(); }
+      void set_pos_threshold        ( const int new_threshold ) { pad_settings.pos_threshold        = new_threshold; initialize(); }
+      void set_pos_sensitivity      ( const int new_velocity )  { pad_settings.pos_sensitivity      = new_velocity;  initialize(); }
       void set_mask_time            ( const int new_time_ms )   { pad_settings.mask_time_ms         = new_time_ms;   initialize(); }
 
 
