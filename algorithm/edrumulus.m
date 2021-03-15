@@ -275,7 +275,8 @@ decay_len3              = round(0 * Fs); % not used
 decay_grad3             = 200 / Fs;
 
 % calculate the decay curve
-decay = zeros(decay_len1 + decay_len2 + decay_len3, 1);
+decay_len = decay_len1 + decay_len2 + decay_len3;
+decay     = zeros(decay_len, 1);
 for i = 1:decay_len1
   decay(i) = power(10, -(i - 1) / 10 * decay_grad1);
 end
