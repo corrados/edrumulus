@@ -36,24 +36,25 @@ Fs = 8000; % Hz
 %x = audioread("signals/esp32_pd120.wav");
 %x = audioread("signals/pd120_pos_sense.wav");x = x(2900:10000, :);%x = x(55400:58000, :);%
 %x = audioread("signals/pd120_pos_sense2.wav");
-x = audioread("signals/pd120_single_hits.wav");
-%x = audioread("signals/pd120_roll.wav");%x = x(311500:317600);
+%x = audioread("signals/pd120_single_hits.wav");
+x = audioread("signals/pd120_roll.wav");%x = x(311500:317600, :);
 %x = audioread("signals/pd120_middle_velocity.wav");
 %x = audioread("signals/pd120_hot_spot.wav");
 %x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x = audioread("signals/pd6.wav");
-%x = audioread("signals/pd8.wav");%x = x(1:100000, :);
+%x = audioread("signals/pd8.wav");%x = x(420000:470000, :);%x = x(1:100000, :);
 %org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
 %org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
 
-padtype = 'pd120';%'pd8';
+padtype = 'pd120';%'pd8';%
 
 % pad PRESET settings first, then overwrite these with pad specific properties
 pad.threshold_db          = 23;
-pad.mask_time_ms          = 10;
+pad.mask_time_ms          = 6;
 pad.energy_win_len_ms     = 2;
 pad.scan_time_ms          = 2.5;
+pad.main_peak_dist_ms     = 2.25;
 pad.decay_fact_db         = 1;
 pad.decay_len_ms1         = 0; % not used
 pad.decay_len_ms2         = 250;
@@ -68,8 +69,15 @@ switch padtype
   case 'pd120'
     % note: the PRESET settings are from the PD120 pad
   case 'pd8'
-    pad.scan_time_ms    = 3.5;
-    %pad.decay_grad_fact2 = 400;
+    pad.scan_time_ms     = 3.5;
+    pad.mask_time_ms     = 7;
+    pad.decay_fact_db    = 3;
+    pad.decay_len_ms1    = 10;
+    pad.decay_grad_fact1 = 30;
+    pad.decay_len_ms2    = 30;
+    pad.decay_grad_fact2 = 800;
+    pad.decay_len_ms3    = 150;
+    pad.decay_grad_fact3 = 120;
 end
 
 
@@ -131,12 +139,13 @@ global pad;
 mask_time = round(pad.mask_time_ms * 1e-3 * Fs); % mask time (e.g. 10 ms)
 
 % the following settings are trigger pad-specific
-decay_len1  = round(pad.decay_len_ms1 * 1e-3 * Fs); % decay time (e.g. 250 ms)
-decay_grad1 = pad.decay_grad_fact1 / Fs;            % decay gradient factor
-decay_len2  = round(pad.decay_len_ms2 * 1e-3 * Fs);
-decay_grad2 = pad.decay_grad_fact2 / Fs;
-decay_len3  = round(pad.decay_len_ms3 * 1e-3 * Fs);
-decay_grad3 = pad.decay_grad_fact3 / Fs;
+decay_len1     = round(pad.decay_len_ms1 * 1e-3 * Fs); % decay time (e.g. 250 ms)
+decay_grad1    = pad.decay_grad_fact1 / Fs;            % decay gradient factor
+decay_len2     = round(pad.decay_len_ms2 * 1e-3 * Fs);
+decay_grad2    = pad.decay_grad_fact2 / Fs;
+decay_len3     = round(pad.decay_len_ms3 * 1e-3 * Fs);
+decay_grad3    = pad.decay_grad_fact3 / Fs;
+main_peak_dist = pad.main_peak_dist_ms * 1e-3 * Fs;
 
 decay_curve1 = 10 ^ (pad.decay_fact_db / 10) * 10 .^ (-(0:decay_len1) / 10 * decay_grad1);
 decay_curve2 = 10 .^ (-(0:decay_len2) / 10 * decay_grad2);
@@ -147,6 +156,7 @@ decay_len    = decay_len1 + decay_len2 + decay_len3;
 last_peak_idx   = 0;
 all_peaks       = [];
 all_first_peaks = [];
+all_sec_peaks   = [];
 i               = 1;
 no_more_peak    = false;
 decay_all       = nan(size(hil_filt)); % only for debugging
@@ -178,6 +188,24 @@ while ~no_more_peak
   [~, max_idx] = max(hil_filt(peak_idx:min(1 + peak_idx + scan_time - 1, length(hil_filt))));
   peak_idx     = peak_idx + max_idx - 1;
 
+  % calculate power left/right of detected peak for second main peak position detection
+  if peak_idx - main_peak_dist < 1
+    all_sec_peaks = [all_sec_peaks; 1];
+  elseif peak_idx + main_peak_dist > length(hil_filt_org)
+    all_sec_peaks = [all_sec_peaks; length(hil_filt_org)];
+  else
+
+    power_hypo_left  = hil_filt_org(peak_idx - main_peak_dist);
+    power_hypo_right = hil_filt_org(peak_idx + main_peak_dist);
+
+    if power_hypo_left > power_hypo_right
+      all_sec_peaks = [all_sec_peaks; peak_idx - main_peak_dist];
+    else
+      all_sec_peaks = [all_sec_peaks; peak_idx + main_peak_dist];
+    end
+
+  end
+
   % store the new detected peak
   all_peaks     = [all_peaks; peak_idx];
   last_peak_idx = min(peak_idx + mask_time, length(hil_filt));
@@ -202,8 +230,41 @@ while ~no_more_peak
 
 end
 
-%figure; plot(10 * log10([hil_filt_org, hil_filt, decay_all])); hold on;
-%plot(all_peaks, 10 * log10(hil_filt_org(all_peaks)), 'k*');
+figure; plot(10 * log10([hil_filt_org, hil_filt, decay_all])); hold on;
+plot(all_peaks, 10 * log10(hil_filt_org(all_peaks)), 'k*');
+plot(all_sec_peaks, 10 * log10(hil_filt_org(all_sec_peaks)), 'y*');
+
+% TODO What is this zoom area for?
+%axis([2.835616531556589e+05   2.856098468655325e+05  -1.994749771562022e+01   4.962270061651073e+01]);
+
+% incorrect triggering: low level hit prior to high level hit
+%axis([2.924131435344061e+05   2.947458419243922e+05  -1.015529367435146e+00   5.738834385758622e+01]);
+%axis([2.421239842841798e+05   2.444566826741658e+05   5.379662774744027e+00   6.378353599976542e+01]);
+
+% difficult region with low level hits (at the edge?)
+%axis([3.116618850384215e+05   3.139945834284076e+05  -8.199169855910323e+00   5.020470336911105e+01]);
+
+% second hit has almost only one peak, not two as usual
+%axis([3.205408049935086e+05   3.228735033834946e+05   1.221288177597649e+01   7.061675500099790e+01]);
+
+% three missed hits at low level hits in the middle position
+%axis([3.325856532044706e+05   3.349183515944567e+05   1.177485491692314e+01   7.017872814194450e+01]);
+%axis([3.351685187444009e+05   3.375012171343870e+05   8.358245416306897e+00   6.676211864132827e+01]);
+%axis([3.411346824123786e+05   3.434673808023647e+05   1.011035285252035e+01   6.851422607754172e+01]);
+
+% difficult to identify hits by eye (low level hits at the edge)
+%axis([ 2.834549475082915e+05   2.857876458982775e+05  -6.009035560643461e+00   5.239483766437795e+01]);
+%axis([2.510387063358597e+05   2.533714047258457e+05  -1.628766970109801e+00   5.677510625491159e+01]);
+%axis([2.492000129465431e+05   2.515327113365291e+05  -5.220587214347390e+00   5.318328601067400e+01]);
+%axis([2.459957253014613e+05   2.483284236914473e+05  -3.818901265376631e+00   5.458497195964476e+01]);
+%axis([2.217960652971447e+05   2.241287636871307e+05  -3.118058290891270e+00   5.528581493413012e+01]);
+%axis([2.195405332117799e+05   2.218732316017659e+05  -1.278345482867138e+00   5.712552774215425e+01]);
+%axis([2.053756894239842e+05   2.077083878139702e+05   2.985512097249909e-01   5.870242443474638e+01]);
+%axis([1.634437624356316e+05   1.657764608256176e+05  -1.803977713731133e+00   5.659989551129024e+01]);
+
+% are these real hits?
+%axis([1.014064009176438e+05   1.037390993076298e+05  -5.045376470726055e+00   5.335849675429534e+01]);
+
 
 end
 
