@@ -55,6 +55,9 @@ pad.mask_time_ms          = 6;
 pad.energy_win_len_ms     = 2;
 pad.scan_time_ms          = 2.5;
 pad.main_peak_dist_ms     = 2.25;
+pad.decay_est_delay2nd_ms = 2.5;
+pad.decay_est_len_ms      = 3;
+pad.decay_est_fact_db     = 15;
 pad.decay_fact_db         = 1;
 pad.decay_len_ms1         = 0; % not used
 pad.decay_len_ms2         = 250;
@@ -139,13 +142,16 @@ global pad;
 mask_time = round(pad.mask_time_ms * 1e-3 * Fs); % mask time (e.g. 10 ms)
 
 % the following settings are trigger pad-specific
-decay_len1     = round(pad.decay_len_ms1 * 1e-3 * Fs); % decay time (e.g. 250 ms)
-decay_grad1    = pad.decay_grad_fact1 / Fs;            % decay gradient factor
-decay_len2     = round(pad.decay_len_ms2 * 1e-3 * Fs);
-decay_grad2    = pad.decay_grad_fact2 / Fs;
-decay_len3     = round(pad.decay_len_ms3 * 1e-3 * Fs);
-decay_grad3    = pad.decay_grad_fact3 / Fs;
-main_peak_dist = pad.main_peak_dist_ms * 1e-3 * Fs;
+decay_len1         = round(pad.decay_len_ms1 * 1e-3 * Fs); % decay time (e.g. 250 ms)
+decay_grad1        = pad.decay_grad_fact1 / Fs;            % decay gradient factor
+decay_len2         = round(pad.decay_len_ms2 * 1e-3 * Fs);
+decay_grad2        = pad.decay_grad_fact2 / Fs;
+decay_len3         = round(pad.decay_len_ms3 * 1e-3 * Fs);
+decay_grad3        = pad.decay_grad_fact3 / Fs;
+main_peak_dist     = pad.main_peak_dist_ms * 1e-3 * Fs;
+decay_est_delay2nd = pad.decay_est_delay2nd_ms * 1e-3 * Fs;
+decay_est_len      = pad.decay_est_len_ms * 1e-3 * Fs;
+decay_est_fact     = 10 ^ (pad.decay_est_fact_db / 10);
 
 decay_curve1 = 10 ^ (pad.decay_fact_db / 10) * 10 .^ (-(0:decay_len1) / 10 * decay_grad1);
 decay_curve2 = 10 .^ (-(0:decay_len2) / 10 * decay_grad2);
@@ -159,8 +165,9 @@ all_first_peaks = [];
 all_sec_peaks   = [];
 i               = 1;
 no_more_peak    = false;
+hil_filt_org    = hil_filt;
 decay_all       = nan(size(hil_filt)); % only for debugging
-hil_filt_org    = hil_filt;            % only for debugging
+decay_est_rng   = nan(size(hil_filt)); % only for debugging
 
 while ~no_more_peak
 
@@ -189,6 +196,8 @@ while ~no_more_peak
   peak_idx     = peak_idx + max_idx - 1;
 
   % calculate power left/right of detected peak for second main peak position detection
+  first_peak_idx = peak_idx; % initialization
+
   if peak_idx - main_peak_dist < 1
     all_sec_peaks = [all_sec_peaks; 1];
   elseif peak_idx + main_peak_dist > length(hil_filt_org)
@@ -199,10 +208,30 @@ while ~no_more_peak
     power_hypo_right = hil_filt_org(peak_idx + main_peak_dist);
 
     if power_hypo_left > power_hypo_right
-      all_sec_peaks = [all_sec_peaks; peak_idx - main_peak_dist];
+
+      all_sec_peaks  = [all_sec_peaks; peak_idx - main_peak_dist];
+      first_peak_idx = peak_idx - main_peak_dist;
+
     else
       all_sec_peaks = [all_sec_peaks; peak_idx + main_peak_dist];
     end
+
+  end
+
+  % estimate current decay power
+  decay_factor = hil_filt_org(peak_idx);
+
+  if first_peak_idx + main_peak_dist + decay_est_delay2nd + decay_est_len - 1 <= length(hil_filt_org)
+
+    % average power measured right after the two main peaks (it showed for high level hits
+    % close to the pad center the decay has much lower power right after the main peaks) in
+    % a predefined time intervall, but never use a higher decay factor than derived from the
+    % main peak (in case a second hit is right behind our main peaks to avoid very high
+    % decay curve placement)
+    decay_power  = mean(hil_filt_org(first_peak_idx + main_peak_dist + decay_est_delay2nd + (0:decay_est_len - 1)));
+    decay_factor = min(decay_factor, decay_est_fact * decay_power);
+
+    decay_est_rng(first_peak_idx + main_peak_dist + decay_est_delay2nd + (0:decay_est_len - 1)) = decay_power; % only for debugging
 
   end
 
@@ -212,7 +241,7 @@ while ~no_more_peak
 
   % exponential decay assumption (note that we must not use hil_filt_org since a
   % previous peak might not be faded out and the peak detection works on hil_filt)
-  decay           = hil_filt_org(peak_idx) * decay_curve;
+  decay           = decay_factor * decay_curve;
   decay_x         = peak_idx + (0:decay_len - 1) + 2; % NOTE "+ 2" delay needed for sample-wise processing
   valid_decay_idx = decay_x <= length(hil_filt);
   decay           = decay(valid_decay_idx);
@@ -230,7 +259,7 @@ while ~no_more_peak
 
 end
 
-figure; plot(10 * log10([hil_filt_org, hil_filt, decay_all])); hold on;
+figure; plot(10 * log10([hil_filt_org, hil_filt, decay_all, decay_est_rng])); hold on;
 plot(all_peaks, 10 * log10(hil_filt_org(all_peaks)), 'k*');
 plot(all_sec_peaks, 10 * log10(hil_filt_org(all_sec_peaks)), 'y*');
 
