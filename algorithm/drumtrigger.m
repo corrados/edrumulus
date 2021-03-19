@@ -37,7 +37,7 @@ Fs = 8000; % Hz
 %x = audioread("signals/pd120_pos_sense.wav");x = x(2900:10000, :);%x = x(55400:58000, :);%
 %x = audioread("signals/pd120_pos_sense2.wav");
 %x = audioread("signals/pd120_single_hits.wav");
-x = audioread("signals/pd120_roll.wav");%x = x(311500:317600, :);
+x = audioread("signals/pd120_roll.wav");%x = x(292410:294749, :);%x = x(311500:317600, :);
 %x = audioread("signals/pd120_middle_velocity.wav");
 %x = audioread("signals/pd120_hot_spot.wav");
 %x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
@@ -148,9 +148,9 @@ decay_len2         = round(pad.decay_len_ms2 * 1e-3 * Fs);
 decay_grad2        = pad.decay_grad_fact2 / Fs;
 decay_len3         = round(pad.decay_len_ms3 * 1e-3 * Fs);
 decay_grad3        = pad.decay_grad_fact3 / Fs;
-main_peak_dist     = pad.main_peak_dist_ms * 1e-3 * Fs;
-decay_est_delay2nd = pad.decay_est_delay2nd_ms * 1e-3 * Fs;
-decay_est_len      = pad.decay_est_len_ms * 1e-3 * Fs;
+main_peak_dist     = round(pad.main_peak_dist_ms * 1e-3 * Fs);
+decay_est_delay2nd = round(pad.decay_est_delay2nd_ms * 1e-3 * Fs);
+decay_est_len      = round(pad.decay_est_len_ms * 1e-3 * Fs);
 decay_est_fact     = 10 ^ (pad.decay_est_fact_db / 10);
 
 decay_curve1 = 10 ^ (pad.decay_fact_db / 10) * 10 .^ (-(0:decay_len1) / 10 * decay_grad1);
