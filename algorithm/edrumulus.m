@@ -191,6 +191,8 @@ global was_above_threshold;
 global prev_hil_filt_val;
 global main_peak_dist;
 global hist_main_peak_pow_left;
+global power_hypo_left;
+global power_hypo_right_cnt;
 global decay_est_delay2nd;
 global decay_est_len;
 global decay_est_fact;
@@ -240,6 +242,8 @@ was_above_threshold     = false;
 prev_hil_filt_val       = 0;
 main_peak_dist          = round(2.25e-3 * Fs);
 hist_main_peak_pow_left = zeros(main_peak_dist, 1); % memory for left main peak power
+power_hypo_left         = 0;
+power_hypo_right_cnt    = 0;
 decay_est_delay2nd      = round(2.5e-3 * Fs);
 decay_est_len           = round(3e-3 * Fs);
 decay_est_fact          = 10 ^ (15 / 10);
@@ -333,6 +337,8 @@ global was_above_threshold;
 global prev_hil_filt_val;
 global main_peak_dist;
 global hist_main_peak_pow_left;
+global power_hypo_left;
+global power_hypo_right_cnt;
 global decay_est_delay2nd;
 global decay_est_len;
 global decay_est_fact;
@@ -440,12 +446,14 @@ if ((hil_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
     if scan_time_cnt <= 0
 
       % scan time expired
-      prev_hil_filt_val   = 0;
-      was_above_threshold = false;
-      decay_scaling       = max_hil_filt_val * decay_fact;
-      decay_back_cnt      = decay_len - peak_found_offset;
-      mask_back_cnt       = mask_time - peak_found_offset;
-      was_peak_found      = true;
+      prev_hil_filt_val    = 0;
+      was_above_threshold  = false;
+      decay_scaling        = max_hil_filt_val * decay_fact;
+      decay_back_cnt       = decay_len - peak_found_offset;
+      mask_back_cnt        = mask_time - peak_found_offset;
+      power_hypo_left      = hist_main_peak_pow_left(1);
+      power_hypo_right_cnt = main_peak_dist;
+      was_peak_found       = true;
 
     end
 
@@ -457,8 +465,25 @@ if mask_back_cnt > 0
   mask_back_cnt = mask_back_cnt - 1;
 end
 
-% store history for left main peak power
+% manage right/left main peak detection by power comparision
 hist_main_peak_pow_left = update_fifo(hil_filt, main_peak_dist, hist_main_peak_pow_left);
+
+if power_hypo_right_cnt > 0
+
+  power_hypo_right_cnt = power_hypo_right_cnt - 1;
+
+  % end condition
+  if power_hypo_right_cnt <= 0
+
+
+% TODO now main peak decision can be made...
+%power_hypo_left <> hil_filt
+
+
+
+  end
+
+end
 
 hil_filt_decay_debug = hil_filt_decay; % just for debugging
 
