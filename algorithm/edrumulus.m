@@ -31,8 +31,8 @@ global rim_shot_window_len;
 close all
 
 % load test data
-% x = audioread("signals/pd120_roll.wav");
-x = audioread("signals/pd120_single_hits.wav");
+x = audioread("signals/pd120_roll.wav");x = x(292410:294749, :);
+%x = audioread("signals/pd120_single_hits.wav");
 % x = audioread("signals/pd120_pos_sense.wav");x = x(2900:10000, :);%x = x(55400:58000, :);%
 % x = audioread("signals/pd120_pos_sense2.wav");
 %x = audioread("signals/pd120_rimshot.wav");x = x(168000:171000, :);%x = x(1:8000, :);%x = x(1:34000, :);%x = x(1:100000, :);
@@ -192,7 +192,11 @@ global mask_back_cnt;
 global threshold;
 global was_above_threshold;
 global prev_hil_filt_val;
-global prev_hil_filt_decay_val;
+global main_peak_dist;
+global hist_main_peak_pow_left;
+global decay_est_delay2nd;
+global decay_est_len;
+global decay_est_fact;
 global decay_fact;
 global decay_len;
 global decay;
@@ -214,7 +218,6 @@ global hil_filt_max_pow;
 global stored_pos_sense_metric;
 global stored_is_rimshot;
 global max_hil_filt_val;
-global max_hil_filt_decay_val;
 global peak_found_offset;
 global was_peak_found;
 global was_pos_sense_ready;
@@ -236,12 +239,16 @@ scan_time               = round(2.5e-3 * Fs); % scan time from first detected pe
 scan_time_cnt           = 0;
 mov_av_hist_re          = zeros(energy_window_len, 1); % real part memory for moving average filter history
 mov_av_hist_im          = zeros(energy_window_len, 1); % imaginary part memory for moving average filter history
-mask_time               = round(10e-3 * Fs); % mask time (e.g. 10 ms)
+mask_time               = round(6e-3 * Fs); % mask time (e.g. 10 ms)
 mask_back_cnt           = 0;
 threshold               = power(10, 23 / 10); % 23 dB threshold
 was_above_threshold     = false;
 prev_hil_filt_val       = 0;
-prev_hil_filt_decay_val = 0;
+main_peak_dist          = round(2.25e-3 * Fs);
+hist_main_peak_pow_left = zeros(main_peak_dist, 1); % memory for left main peak power
+decay_est_delay2nd      = round(2.5e-3 * Fs);
+decay_est_len           = round(3e-3 * Fs);
+decay_est_fact          = 10 ^ (15 / 10);
 decay_fact              = power(10, 1 / 10); % decay factor of 1 dB
 decay_back_cnt          = 0;
 decay_scaling           = 1;
@@ -262,7 +269,6 @@ hil_filt_max_pow        = 0;
 stored_pos_sense_metric = 0;
 stored_is_rimshot       = false;
 max_hil_filt_val        = 0;
-max_hil_filt_decay_val  = 0;
 peak_found_offset       = 0;
 was_peak_found          = false;
 was_pos_sense_ready     = false;
@@ -334,7 +340,11 @@ global mask_back_cnt;
 global threshold;
 global was_above_threshold;
 global prev_hil_filt_val;
-global prev_hil_filt_decay_val;
+global main_peak_dist;
+global hist_main_peak_pow_left;
+global decay_est_delay2nd;
+global decay_est_len;
+global decay_est_fact;
 global decay_fact;
 global decay_len;
 global decay;
@@ -356,7 +366,6 @@ global hil_filt_max_pow;
 global stored_pos_sense_metric;
 global stored_is_rimshot;
 global max_hil_filt_val;
-global max_hil_filt_decay_val;
 global peak_found_offset;
 global was_peak_found;
 global was_pos_sense_ready;
@@ -414,31 +423,26 @@ if ((hil_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
   was_above_threshold = true;
 
   % climb to the maximum of the first peak
-  if (prev_hil_filt_decay_val < hil_filt_decay) && (scan_time_cnt == 0)
-
-    prev_hil_filt_decay_val = hil_filt_decay;
-    prev_hil_filt_val       = hil_filt; % needed for further processing
-
+  if (prev_hil_filt_val < hil_filt) && (scan_time_cnt == 0)
+    prev_hil_filt_val = hil_filt;
   else
 
     % start condition of scan time
     if scan_time_cnt == 0
 
       % search in a pre-defined scan time for the highest peak
-      scan_time_cnt          = scan_time;               % initialize scan time counter
-      max_hil_filt_decay_val = prev_hil_filt_decay_val; % initialize maximum value with first peak
-      max_hil_filt_val       = prev_hil_filt_val;       % initialize maximum value with first peak
-      peak_found_offset      = scan_time;               % position of first peak after scan time expired
-      first_peak_found       = true;
+      scan_time_cnt     = scan_time;         % initialize scan time counter
+      max_hil_filt_val  = prev_hil_filt_val; % initialize maximum value with first peak
+      peak_found_offset = scan_time;         % position of first peak after scan time expired
+      first_peak_found  = true;
 
     end
 
     % search for a maximum in the scan time interval
-    if hil_filt_decay > max_hil_filt_decay_val
+    if hil_filt > max_hil_filt_val
 
-      max_hil_filt_decay_val = hil_filt_decay;
-      max_hil_filt_val       = hil_filt;          % we need to store the origianl Hilbert filtered signal for the decay
-      peak_found_offset      = scan_time_cnt - 1; % update position of detected peak
+      max_hil_filt_val  = hil_filt;          % we need to store the origianl Hilbert filtered signal for the decay
+      peak_found_offset = scan_time_cnt - 1; % update position of detected peak
 
     end
 
@@ -448,12 +452,12 @@ if ((hil_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
     if scan_time_cnt <= 0
 
       % scan time expired
-      prev_hil_filt_decay_val = 0;
-      was_above_threshold     = false;
-      decay_scaling           = max_hil_filt_val * decay_fact;
-      decay_back_cnt          = decay_len - peak_found_offset;
-      mask_back_cnt           = mask_time - peak_found_offset;
-      was_peak_found          = true;
+      prev_hil_filt_val   = 0;
+      was_above_threshold = false;
+      decay_scaling       = max_hil_filt_val * decay_fact;
+      decay_back_cnt      = decay_len - peak_found_offset;
+      mask_back_cnt       = mask_time - peak_found_offset;
+      was_peak_found      = true;
 
     end
 
@@ -464,6 +468,9 @@ end
 if mask_back_cnt > 0
   mask_back_cnt = mask_back_cnt - 1;
 end
+
+% store history for left main peak power
+hist_main_peak_pow_left = update_fifo(hil_filt, main_peak_dist, hist_main_peak_pow_left);
 
 hil_filt_decay_debug = hil_filt_decay; % just for debugging
 
