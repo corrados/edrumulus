@@ -197,12 +197,16 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   // apply PRESET settings (might be overwritten by pad-specific properties)
   pad_settings.velocity_threshold    = 8;  // 0..31
   pad_settings.velocity_sensitivity  = 3;  // 0..31
-  pad_settings.mask_time_ms          = 10; // 0..31 (ms)
+  pad_settings.mask_time_ms          = 6;  // 0..31 (ms)
   pad_settings.pos_threshold         = 16; // 0..31
   pad_settings.pos_sensitivity       = 20; // 0..31
   pad_settings.pos_sense_is_used     = true;
   pad_settings.energy_win_len_ms     = 2.0f;   // pad specific parameter: hit energy estimation time window length
   pad_settings.scan_time_ms          = 2.5f;   // pad specific parameter: scan time after first detected peak
+  pad_settings.main_peak_dist_ms     = 2.25f;  // pad specific parameter: distance between the two main peaks
+  pad_settings.decay_est_delay2nd_ms = 2.5f;   // pad specific parameter: delay after second main peak until decay power estimation starts
+  pad_settings.decay_est_len_ms      = 3.0f;   // pad specific parameter: decay power estimation window length
+  pad_settings.decay_est_fact_db     = 15.0f;  // pad specific parameter: decay power estimation factor (to get over decay ripple)
   pad_settings.decay_fact_db         = 1.0f;   // pad specific parameter: vertical shift of the decay function in dB
   pad_settings.decay_len1_ms         = 0.0f;   // pad specific parameter: length of the decay 1
   pad_settings.decay_grad_fact1      = 200.0f; // pad specific parameter: decay function gradient factor 1
@@ -225,7 +229,17 @@ pad_settings.velocity_sensitivity = 4;
       break;
 
     case PD8:
-// TODO add support for PD-8 pad
+      pad_settings.mask_time_ms     = 7;
+      pad_settings.pos_threshold    = 29;
+      pad_settings.pos_sensitivity  = 29;
+      pad_settings.scan_time_ms     = 3.5f;
+      pad_settings.decay_fact_db    = 3.0f;
+      pad_settings.decay_len1_ms    = 10.0f;
+      pad_settings.decay_grad_fact1 = 30.0f;
+      pad_settings.decay_len2_ms    = 30.0f;
+      pad_settings.decay_grad_fact2 = 800.0f;
+      pad_settings.decay_len3_ms    = 150.0f;
+      pad_settings.decay_grad_fact3 = 120.0f;
       break;
   }
 
@@ -239,8 +253,8 @@ void Edrumulus::Pad::initialize()
   const float threshold_db = 15.0f + pad_settings.velocity_threshold;           // gives us a threshold range of 15..46 dB
   threshold                = pow   ( 10.0f, threshold_db / 10 );                // linear power threshold
   energy_window_len        = round ( pad_settings.energy_win_len_ms * 1e-3f * Fs ); // hit energy estimation time window length (e.g. 2 ms)
-  scan_time                = round ( pad_settings.scan_time_ms * 1e-3f * Fs );  // scan time from first detected peak
-  mask_time                = round ( pad_settings.mask_time_ms * 1e-3f * Fs );  // mask time (e.g. 10 ms)
+  scan_time                = round ( pad_settings.scan_time_ms  * 1e-3f * Fs ); // scan time from first detected peak
+  mask_time                = round ( pad_settings.mask_time_ms  * 1e-3f * Fs ); // mask time (e.g. 10 ms)
   decay_len1               = round ( pad_settings.decay_len1_ms * 1e-3f * Fs ); // decay time 1 (e.g. 250 ms)
   decay_len2               = round ( pad_settings.decay_len2_ms * 1e-3f * Fs ); // decay time 2 (e.g. 250 ms)
   decay_len3               = round ( pad_settings.decay_len3_ms * 1e-3f * Fs ); // decay time 3 (e.g. 250 ms)
@@ -249,6 +263,10 @@ void Edrumulus::Pad::initialize()
   const float decay_grad1  = pad_settings.decay_grad_fact1 / Fs;                // decay gradient factor 1
   const float decay_grad2  = pad_settings.decay_grad_fact2 / Fs;                // decay gradient factor 2
   const float decay_grad3  = pad_settings.decay_grad_fact3 / Fs;                // decay gradient factor 3
+  main_peak_dist           = round ( pad_settings.main_peak_dist_ms     * 1e-3f * Fs );
+  decay_est_delay2nd       = round ( pad_settings.decay_est_delay2nd_ms * 1e-3f * Fs );
+  decay_est_len            = round ( pad_settings.decay_est_len_ms      * 1e-3f * Fs );
+  decay_est_fact           = pow ( 10.0f, pad_settings.decay_est_fact_db / 10 );
   pos_energy_window_len    = round ( pad_settings.pos_energy_win_len_ms * 1e-3f * Fs ); // positional sensing energy estimation time window length (e.g. 2 ms)
   alpha                    = pad_settings.pos_iir_alpha / Fs;                   // IIR low pass filter coefficient
   rim_shot_window_len      = round ( 5e-3f * Fs );                              // window length (e.g. 6 ms)
@@ -280,15 +298,16 @@ void Edrumulus::Pad::initialize()
   if ( hil_low_hist_im != nullptr ) delete[] hil_low_hist_im;
   if ( rim_x_high_hist != nullptr ) delete[] rim_x_high_hist;
 
-  hil_hist             = new float[hil_filt_len];          // memory for Hilbert filter history
-  mov_av_hist_re       = new float[energy_window_len];     // real part memory for moving average filter history
-  mov_av_hist_im       = new float[energy_window_len];     // imaginary part memory for moving average filter history
-  decay                = new float[decay_len];             // memory for decay function
-  hil_hist_re          = new float[pos_energy_window_len]; // real part of memory for moving average of Hilbert filtered signal
-  hil_hist_im          = new float[pos_energy_window_len]; // imaginary part of memory for moving average of Hilbert filtered signal
-  hil_low_hist_re      = new float[pos_energy_window_len]; // real part of memory for moving average of low-pass filtered Hilbert signal
-  hil_low_hist_im      = new float[pos_energy_window_len]; // imaginary part of memory for moving average of low-pass filtered Hilbert signal
-  rim_x_high_hist      = new float[rim_shot_window_len];   // memory for rim shot detection
+  hil_hist                = new float[hil_filt_len];          // memory for Hilbert filter history
+  mov_av_hist_re          = new float[energy_window_len];     // real part memory for moving average filter history
+  mov_av_hist_im          = new float[energy_window_len];     // imaginary part memory for moving average filter history
+  decay                   = new float[decay_len];             // memory for decay function
+  hist_main_peak_pow_left = new float[main_peak_dist];        // memory for left main peak power
+  hil_hist_re             = new float[pos_energy_window_len]; // real part of memory for moving average of Hilbert filtered signal
+  hil_hist_im             = new float[pos_energy_window_len]; // imaginary part of memory for moving average of Hilbert filtered signal
+  hil_low_hist_re         = new float[pos_energy_window_len]; // real part of memory for moving average of low-pass filtered Hilbert signal
+  hil_low_hist_im         = new float[pos_energy_window_len]; // imaginary part of memory for moving average of low-pass filtered Hilbert signal
+  rim_x_high_hist         = new float[rim_shot_window_len];   // memory for rim shot detection
 
   // initialization values
   for ( int i = 0; i < hil_filt_len; i++ )
@@ -300,6 +319,11 @@ void Edrumulus::Pad::initialize()
   {
     mov_av_hist_re[i]  = 0.0f;
     mov_av_hist_im[i]  = 0.0f;
+  }
+
+  for ( int i = 0; i < main_peak_dist; i++ )
+  {
+    hist_main_peak_pow_left[i] = 0.0f;
   }
 
   for ( int i = 0; i < pos_energy_window_len; i++ )
@@ -318,10 +342,14 @@ void Edrumulus::Pad::initialize()
   mask_back_cnt           = 0;
   was_above_threshold     = false;
   prev_hil_filt_val       = 0.0f;
-  prev_hil_filt_decay_val = 0.0f;
   decay_back_cnt          = 0;
   decay_scaling           = 1.0f;
   scan_time_cnt           = 0;
+  power_hypo_left         = 0.0f;
+  power_hypo_right_cnt    = 0;
+  decay_pow_est_start_cnt = 0;
+  decay_pow_est_cnt       = 0;
+  decay_pow_est_sum       = 0.0f;
   pos_sense_cnt           = 0;
   hil_low_re              = 0.0f;
   hil_low_im              = 0.0f;
@@ -330,7 +358,6 @@ void Edrumulus::Pad::initialize()
   rim_x_high              = 0.0f;
   hil_filt_max_pow        = 0.0f;
   max_hil_filt_val        = 0.0f;
-  max_hil_filt_decay_val  = 0.0f;
   peak_found_offset       = 0;
   was_peak_found          = false;
   was_pos_sense_ready     = false;
@@ -415,14 +442,12 @@ debug = 0.0f; // TEST
 
   const float hil_filt = mov_av_re * mov_av_re + mov_av_im * mov_av_im;
 
-
-  // exponential decay assumption (note that we must not use hil_filt_org since a
-  // previous peak might not be faded out and the peak detection works on hil_filt)
-  // subtract decay (with clipping at zero)
+  // exponential decay assumption
   float hil_filt_decay = hil_filt;
 
   if ( decay_back_cnt > 0 )
   {
+    // subtract decay (with clipping at zero)
     const float cur_decay = decay_scaling * decay[decay_len - decay_back_cnt];
     hil_filt_decay        = hil_filt - cur_decay;
     decay_back_cnt--;
@@ -439,10 +464,9 @@ debug = 0.0f; // TEST
     was_above_threshold = true;
 
     // climb to the maximum of the first peak
-    if ( ( prev_hil_filt_decay_val < hil_filt_decay ) && ( scan_time_cnt == 0 ) )
+    if ( ( prev_hil_filt_val < hil_filt ) && ( scan_time_cnt == 0 ) )
     {
-      prev_hil_filt_decay_val = hil_filt_decay;
-      prev_hil_filt_val       = hil_filt; // needed for further processing
+      prev_hil_filt_val = hil_filt;
     }
     else
     {
@@ -450,19 +474,19 @@ debug = 0.0f; // TEST
       if ( scan_time_cnt == 0 )
       {
         // search in a pre-defined scan time for the highest peak
-        scan_time_cnt          = scan_time;               // initialize scan time counter
-        max_hil_filt_decay_val = prev_hil_filt_decay_val; // initialize maximum value with first peak
-        max_hil_filt_val       = prev_hil_filt_val;       // initialize maximum value with first peak
-        peak_found_offset      = scan_time;               // position of first peak after scan time expired
-        first_peak_found       = true;
+        scan_time_cnt     = scan_time;                  // initialize scan time counter
+        max_hil_filt_val  = prev_hil_filt_val;          // initialize maximum value with first peak
+        peak_found_offset = scan_time;                  // position of first peak after scan time expired
+        power_hypo_left   = hist_main_peak_pow_left[0]; // for left/right main peak detection
+        first_peak_found  = true;
       }
 
       // search for a maximum in the scan time interval
-      if ( hil_filt_decay > max_hil_filt_decay_val )
+      if ( hil_filt > max_hil_filt_val )
       {
-        max_hil_filt_decay_val = hil_filt_decay;
-        max_hil_filt_val       = hil_filt;          // we need to store the origianl Hilbert filtered signal for the decay
-        peak_found_offset      = scan_time_cnt - 1; // update position of detected peak
+        max_hil_filt_val  = hil_filt;                   // we need to store the origianl Hilbert filtered signal for the decay
+        peak_found_offset = scan_time_cnt - 1;          // update position of detected peak
+        power_hypo_left   = hist_main_peak_pow_left[0]; // for left/right main peak detection
       }
 
       scan_time_cnt--;
@@ -470,17 +494,21 @@ debug = 0.0f; // TEST
       // end condition of scan time
       if ( scan_time_cnt <= 0 )
       {
-        // scan time expired
-        prev_hil_filt_decay_val = 0.0f;
-        was_above_threshold     = false;
-        decay_scaling           = max_hil_filt_val * decay_fact;
-        decay_back_cnt          = decay_len - peak_found_offset;
-        mask_back_cnt           = mask_time - peak_found_offset;
-        was_peak_found          = true;
-
         // calculate the MIDI velocity value with clipping to allowed MIDI value range
         stored_midi_velocity = static_cast<int> ( ( 10 * log10 ( prev_hil_filt_val / threshold ) / velocity_range_db ) * 127 );
         stored_midi_velocity = max ( 1, min ( 127, stored_midi_velocity ) );
+
+        // scan time expired
+        prev_hil_filt_val   = 0.0f;
+        was_above_threshold = false;
+        decay_scaling       = max_hil_filt_val * decay_fact;
+        decay_back_cnt      = decay_len - peak_found_offset;
+        mask_back_cnt       = mask_time - peak_found_offset;
+        was_peak_found      = true;
+
+        // for left/right main peak detection (note that we have to add one because
+        // we first decrement and then we check for end condition)
+        power_hypo_right_cnt = max ( 1, main_peak_dist - peak_found_offset + 1 );
       }
     }
   }
@@ -488,6 +516,57 @@ debug = 0.0f; // TEST
   if ( mask_back_cnt > 0 )
   {
     mask_back_cnt--;
+  }
+
+  // manage left/right main peak detection by power comparision
+  update_fifo ( hil_filt, main_peak_dist, hist_main_peak_pow_left );
+
+  if ( power_hypo_right_cnt > 0 )
+  {
+    power_hypo_right_cnt--;
+
+    // end condition
+    if ( power_hypo_right_cnt <= 0 )
+    {
+      // now we can detect if the main peak was the left/right main peak and we can
+      // now start the counter for the decay power estimation interval start (note
+      // that we have to add one because we first decrement and then we check for
+      // end condition)
+      if ( power_hypo_left > hil_filt )
+      {
+        decay_pow_est_start_cnt = decay_est_delay2nd - main_peak_dist + 1; // detected peak is right main peak
+      }
+      else
+      {
+        decay_pow_est_start_cnt = decay_est_delay2nd + 1; // detected peak is left main peak
+      }
+    }
+  }
+
+  // decay power estimation
+  if ( decay_pow_est_start_cnt > 0 )
+  {
+    decay_pow_est_start_cnt--;
+
+    // end condition
+    if ( decay_pow_est_start_cnt <= 0 )
+    {
+      decay_pow_est_cnt = decay_est_len; // now the power estimation can start
+    }
+  }
+
+  if ( decay_pow_est_cnt > 0 )
+  {
+    decay_pow_est_sum += hil_filt; // sum up the powers in pre-defined interval
+    decay_pow_est_cnt--;
+
+    // end condition
+    if ( decay_pow_est_cnt <= 0 )
+    {
+      const float decay_power = decay_pow_est_sum / decay_est_len;                   // calculate average power
+      decay_pow_est_sum       = 0.0f;                                                // we have to reset the sum for the next calculation
+      decay_scaling           = min ( decay_scaling, decay_est_fact * decay_power ); // adjust the decay curve
+    }
   }
 
 

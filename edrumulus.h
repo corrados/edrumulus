@@ -101,6 +101,10 @@ protected:
         bool     pos_sense_is_used;    // switches positional sensing support on or off
         float    energy_win_len_ms;
         float    scan_time_ms;
+        float    main_peak_dist_ms;
+        float    decay_est_delay2nd_ms;
+        float    decay_est_len_ms;
+        float    decay_est_fact_db;
         float    decay_fact_db;
         float    decay_len1_ms,    decay_len2_ms,    decay_len3_ms;
         float    decay_grad_fact1, decay_grad_fact2, decay_grad_fact3;
@@ -124,15 +128,16 @@ protected:
       const float b_rim_high[2] = { 0.969531252908746f, -0.969531252908746f };
       const float a_rim_high    = -0.939062505817492f;
 
-      float* hil_hist        = nullptr;
-      float* mov_av_hist_re  = nullptr;
-      float* mov_av_hist_im  = nullptr;
-      float* decay           = nullptr;
-      float* hil_hist_re     = nullptr;
-      float* hil_hist_im     = nullptr;
-      float* hil_low_hist_re = nullptr;
-      float* hil_low_hist_im = nullptr;
-      float* rim_x_high_hist = nullptr;
+      float* hil_hist                = nullptr;
+      float* mov_av_hist_re          = nullptr;
+      float* mov_av_hist_im          = nullptr;
+      float* decay                   = nullptr;
+      float* hist_main_peak_pow_left = nullptr;
+      float* hil_hist_re             = nullptr;
+      float* hil_hist_im             = nullptr;
+      float* hil_low_hist_re         = nullptr;
+      float* hil_low_hist_im         = nullptr;
+      float* rim_x_high_hist         = nullptr;
 
       int          Fs;
       int          number_inputs;
@@ -148,7 +153,15 @@ protected:
       float        pos_range_db;
       bool         was_above_threshold;
       float        prev_hil_filt_val;
-      float        prev_hil_filt_decay_val;
+      int          main_peak_dist;
+      int          decay_est_delay2nd;
+      int          decay_est_len;
+      float        decay_est_fact;
+      float        power_hypo_left;
+      int          power_hypo_right_cnt;
+      int          decay_pow_est_start_cnt;
+      int          decay_pow_est_cnt;
+      float        decay_pow_est_sum;
       float        decay_fact;
       int          decay_back_cnt;
       float        decay_scaling;
@@ -165,7 +178,6 @@ protected:
       int          stored_midi_pos;
       bool         stored_is_rimshot;
       float        max_hil_filt_val;
-      float        max_hil_filt_decay_val;
       int          peak_found_offset;
       bool         was_peak_found;
       bool         was_pos_sense_ready;

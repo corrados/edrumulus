@@ -522,8 +522,8 @@ end
 
 if decay_pow_est_cnt > 0
 
-  decay_pow_est_sum += hil_filt; % sum up the powers in pre-defined interval
-  decay_pow_est_cnt  = decay_pow_est_cnt - 1;
+  decay_pow_est_sum = decay_pow_est_sum + hil_filt; % sum up the powers in pre-defined interval
+  decay_pow_est_cnt = decay_pow_est_cnt - 1;
 
   % end condition
   if decay_pow_est_cnt <= 0
