@@ -55,6 +55,7 @@ peak_found           = false(size(x, 1), 1);
 peak_found_offset    = zeros(size(x, 1), 1);
 pos_sense_metric     = zeros(size(x, 1), 1);
 is_rim_shot          = false(size(x, 1), 1);
+is_left_main_peak    = false(size(x, 1), 1);
 
 for i = 1:size(x, 1)
 
@@ -67,7 +68,8 @@ for i = 1:size(x, 1)
    peak_found(i), ...
    peak_found_offset(i), ...
    pos_sense_metric(i), ...
-   is_rim_shot(i)] = process_sample(x(i, :));
+   is_rim_shot(i), ...
+   is_left_main_peak(i)] = process_sample(x(i, :));
 
 end
 
@@ -78,12 +80,16 @@ peak_found_corrected(peak_found_idx)   = true;
 is_rim_shot_idx                        = find(is_rim_shot) - peak_found_offset(is_rim_shot);
 is_rim_shot_corrected                  = false(size(is_rim_shot));
 is_rim_shot_corrected(is_rim_shot_idx) = true;
+is_left_main_peak_idx                              = find(is_left_main_peak) - peak_found_offset(is_left_main_peak);
+is_left_main_peak_corrected                        = false(size(is_left_main_peak));
+is_left_main_peak_corrected(is_left_main_peak_idx) = true;
 
 figure; plot(10 * log10(abs([hil_filt_debug, hil_filt_decay_debug, cur_decay_debug, x_rim_high_debug]))); hold on; grid on;
         plot(10 * log10(rim_max_pow_debug), 'y*');
-        plot(find(peak_found_corrected),  10 * log10(hil_filt_debug(peak_found_corrected)), 'g*');
-        plot(find(is_rim_shot_corrected), 10 * log10(hil_filt_debug(is_rim_shot_corrected)), 'b*');
-        plot(find(peak_found_corrected),  10 * log10(pos_sense_metric(peak_found)) + 40, 'k*');
+        plot(find(peak_found_corrected),        10 * log10(hil_filt_debug(peak_found_corrected)), 'g*');
+        plot(find(is_rim_shot_corrected),       10 * log10(hil_filt_debug(is_rim_shot_corrected)), 'b*');
+        plot(find(peak_found_corrected),        10 * log10(pos_sense_metric(peak_found)) + 40, 'k*');
+        plot(find(is_left_main_peak_corrected), 10 * log10(hil_filt_debug(is_left_main_peak_corrected)), 'y*');
         ylim([-10, 90]);
 % figure; plot(20 * log10(abs([x, hil_debug, hil_filt_debug])));
 
@@ -316,7 +322,8 @@ function [hil_debug, ...
           peak_found, ...
           peak_found_offset, ...
           pos_sense_metric, ...
-          is_rim_shot] = process_sample(x)
+          is_rim_shot, ...
+          is_left_main_peak] = process_sample(x)
 
 global Fs;
 global a_re a_im;
@@ -369,6 +376,7 @@ global was_rim_shot_ready;
 peak_found        = false;
 pos_sense_metric  = 0;
 is_rim_shot       = false;
+is_left_main_peak = false;
 first_peak_found  = false; % only used internally
 pos_sense_is_used = true;  % only used internally to enable/disable positional sensing
 rim_shot_is_used  = false; % only used internally
@@ -393,11 +401,10 @@ mov_av_im      = sum(mov_av_hist_im) / energy_window_len;
 hil_filt       = mov_av_re * mov_av_re + mov_av_im * mov_av_im;
 hil_filt_debug = hil_filt; % just for debugging
 
-% exponential decay assumption (note that we must not use hil_filt_org since a
-% previous peak might not be faded out and the peak detection works on hil_filt)
-% subtract decay (with clipping at zero)
+% exponential decay assumption
 if decay_back_cnt > 0
 
+  % subtract decay (with clipping at zero)
   cur_decay       = decay_scaling * decay(1 + decay_len - decay_back_cnt);
   cur_decay_debug = cur_decay; % just for debugging
   hil_filt_decay  = hil_filt - cur_decay;
@@ -451,8 +458,8 @@ if ((hil_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
       decay_scaling        = max_hil_filt_val * decay_fact;
       decay_back_cnt       = decay_len - peak_found_offset;
       mask_back_cnt        = mask_time - peak_found_offset;
-      power_hypo_left      = hist_main_peak_pow_left(1);
-      power_hypo_right_cnt = main_peak_dist;
+      power_hypo_left      = hist_main_peak_pow_left(1); % for left/right main peak detection
+      power_hypo_right_cnt = main_peak_dist;             % for left/right main peak detection
       was_peak_found       = true;
 
     end
@@ -465,7 +472,7 @@ if mask_back_cnt > 0
   mask_back_cnt = mask_back_cnt - 1;
 end
 
-% manage right/left main peak detection by power comparision
+% manage left/right main peak detection by power comparision
 hist_main_peak_pow_left = update_fifo(hil_filt, main_peak_dist, hist_main_peak_pow_left);
 
 if power_hypo_right_cnt > 0
@@ -475,11 +482,21 @@ if power_hypo_right_cnt > 0
   % end condition
   if power_hypo_right_cnt <= 0
 
+    % now we can detect if the main peak was the left/right main peak and we can
+    % now start the counter for the decay power estimation interval start
 
-% TODO now main peak decision can be made...
-%power_hypo_left <> hil_filt
+% TEST
+disp(['power_hypo_left: ' num2str(10*log10(power_hypo_left)) ' / hil_filt:' num2str(10*log10(hil_filt))]);
 
+    if power_hypo_left > hil_filt
 
+      % detected peak is left main peak
+      is_left_main_peak       = true;
+      decay_pow_est_start_cnt = decay_est_delay2nd - main_peak_dist;
+
+    else
+      decay_pow_est_start_cnt = decay_est_delay2nd; % detected peak is right main peak
+    end
 
   end
 
