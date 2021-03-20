@@ -196,6 +196,9 @@ global main_peak_dist;
 global hist_main_peak_pow_left;
 global power_hypo_left;
 global power_hypo_right_cnt;
+global decay_pow_est_start_cnt;
+global decay_pow_est_cnt;
+global decay_pow_est_sum;
 global decay_est_delay2nd;
 global decay_est_len;
 global decay_est_fact;
@@ -247,6 +250,9 @@ main_peak_dist          = round(2.25e-3 * Fs);
 hist_main_peak_pow_left = zeros(main_peak_dist, 1); % memory for left main peak power
 power_hypo_left         = 0;
 power_hypo_right_cnt    = 0;
+decay_pow_est_start_cnt = 0;
+decay_pow_est_cnt       = 0;
+decay_pow_est_sum       = 0;
 decay_est_delay2nd      = round(2.5e-3 * Fs);
 decay_est_len           = round(3e-3 * Fs);
 decay_est_fact          = 10 ^ (15 / 10);
@@ -343,6 +349,9 @@ global main_peak_dist;
 global hist_main_peak_pow_left;
 global power_hypo_left;
 global power_hypo_right_cnt;
+global decay_pow_est_start_cnt;
+global decay_pow_est_cnt;
+global decay_pow_est_sum;
 global decay_est_delay2nd;
 global decay_est_len;
 global decay_est_fact;
@@ -482,16 +491,46 @@ if power_hypo_right_cnt > 0
   if power_hypo_right_cnt <= 0
 
     % now we can detect if the main peak was the left/right main peak and we can
-    % now start the counter for the decay power estimation interval start
+    % now start the counter for the decay power estimation interval start (note
+    % that we have to add one because we first decrement and then we check for
+    % end condition)
     if power_hypo_left > hil_filt
-      decay_pow_est_start_cnt = decay_est_delay2nd - main_peak_dist; % detected peak is right main peak
+      decay_pow_est_start_cnt = decay_est_delay2nd - main_peak_dist + 1; % detected peak is right main peak
     else
 
       % detected peak is left main peak
       is_left_main_peak       = true;
-      decay_pow_est_start_cnt = decay_est_delay2nd;
+      decay_pow_est_start_cnt = decay_est_delay2nd + 1;
 
     end
+
+  end
+
+end
+
+% decay power estimation
+if decay_pow_est_start_cnt > 0
+
+  decay_pow_est_start_cnt = decay_pow_est_start_cnt - 1;
+
+  % end condition
+  if decay_pow_est_start_cnt <= 0
+    decay_pow_est_cnt = decay_est_len; % now the power estimation can start
+  end
+
+end
+
+if decay_pow_est_cnt > 0
+
+  decay_pow_est_sum += hil_filt; % sum up the powers in pre-defined interval
+  decay_pow_est_cnt  = decay_pow_est_cnt - 1;
+
+  % end condition
+  if decay_pow_est_cnt <= 0
+
+    decay_power       = decay_pow_est_sum / decay_est_len;                % calculate average power
+    decay_pow_est_sum = 0;                                                % we have to reset the sum for the next calculation
+    decay_scaling     = min(decay_scaling, decay_est_fact * decay_power); % adjust the decay curve
 
   end
 
