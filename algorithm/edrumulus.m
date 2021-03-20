@@ -46,7 +46,7 @@ Setup();
 
 % loop
 hil_debug            = zeros(size(x, 1), 1);
-hil_filt_debug       = zeros(size(x, 1), 1);
+hil_filt             = zeros(size(x, 1), 1);
 hil_filt_decay_debug = zeros(size(x, 1), 1);
 cur_decay_debug      = zeros(size(x, 1), 1);
 rim_max_pow_debug    = zeros(size(x, 1), 1);
@@ -60,7 +60,7 @@ is_left_main_peak    = false(size(x, 1), 1);
 for i = 1:size(x, 1)
 
   [hil_debug(i), ...
-   hil_filt_debug(i), ...
+   hil_filt(i), ...
    hil_filt_decay_debug(i), ...
    cur_decay_debug(i), ...
    rim_max_pow_debug(i), ...
@@ -84,14 +84,14 @@ is_left_main_peak_idx                              = find(is_left_main_peak) - p
 is_left_main_peak_corrected                        = false(size(is_left_main_peak));
 is_left_main_peak_corrected(is_left_main_peak_idx) = true;
 
-figure; plot(10 * log10(abs([hil_filt_debug, hil_filt_decay_debug, cur_decay_debug, x_rim_high_debug]))); hold on; grid on;
+figure; plot(10 * log10(abs([hil_filt, hil_filt_decay_debug, cur_decay_debug, x_rim_high_debug]))); hold on; grid on;
         plot(10 * log10(rim_max_pow_debug), 'y*');
-        plot(find(peak_found_corrected),        10 * log10(hil_filt_debug(peak_found_corrected)), 'g*');
-        plot(find(is_rim_shot_corrected),       10 * log10(hil_filt_debug(is_rim_shot_corrected)), 'b*');
+        plot(find(peak_found_corrected),        10 * log10(hil_filt(peak_found_corrected)), 'g*');
+        plot(find(is_rim_shot_corrected),       10 * log10(hil_filt(is_rim_shot_corrected)), 'b*');
         plot(find(peak_found_corrected),        10 * log10(pos_sense_metric(peak_found)) + 40, 'k*');
-        plot(find(is_left_main_peak_corrected), 10 * log10(hil_filt_debug(is_left_main_peak_corrected)), 'y*');
+        plot(find(is_left_main_peak_corrected), 10 * log10(hil_filt(is_left_main_peak_corrected)), 'y*');
         ylim([-10, 90]);
-% figure; plot(20 * log10(abs([x, hil_debug, hil_filt_debug])));
+% figure; plot(20 * log10(abs([x, hil_debug, hil_filt])));
 
 return;
 
@@ -314,7 +314,7 @@ end
 
 
 function [hil_debug, ...
-          hil_filt_debug, ...
+          hil_filt, ...
           hil_filt_decay_debug, ...
           cur_decay_debug, ...
           rim_max_pow_debug, ...
@@ -397,9 +397,7 @@ mov_av_hist_re = update_fifo(hil_re, energy_window_len, mov_av_hist_re);
 mov_av_hist_im = update_fifo(hil_im, energy_window_len, mov_av_hist_im);
 mov_av_re      = sum(mov_av_hist_re) / energy_window_len;
 mov_av_im      = sum(mov_av_hist_im) / energy_window_len;
-
 hil_filt       = mov_av_re * mov_av_re + mov_av_im * mov_av_im;
-hil_filt_debug = hil_filt; % just for debugging
 
 % exponential decay assumption
 if decay_back_cnt > 0
