@@ -80,16 +80,13 @@ peak_found_corrected(peak_found_idx)   = true;
 is_rim_shot_idx                        = find(is_rim_shot) - peak_found_offset(is_rim_shot);
 is_rim_shot_corrected                  = false(size(is_rim_shot));
 is_rim_shot_corrected(is_rim_shot_idx) = true;
-is_left_main_peak_idx                              = find(is_left_main_peak) - peak_found_offset(is_left_main_peak);
-is_left_main_peak_corrected                        = false(size(is_left_main_peak));
-is_left_main_peak_corrected(is_left_main_peak_idx) = true;
 
 figure; plot(10 * log10(abs([hil_filt, hil_filt_decay_debug, cur_decay_debug, x_rim_high_debug]))); hold on; grid on;
         plot(10 * log10(rim_max_pow_debug), 'y*');
-        plot(find(peak_found_corrected),        10 * log10(hil_filt(peak_found_corrected)), 'g*');
-        plot(find(is_rim_shot_corrected),       10 * log10(hil_filt(is_rim_shot_corrected)), 'b*');
-        plot(find(peak_found_corrected),        10 * log10(pos_sense_metric(peak_found)) + 40, 'k*');
-        plot(find(is_left_main_peak_corrected), 10 * log10(hil_filt(is_left_main_peak_corrected)), 'y*');
+        plot(find(peak_found_corrected),  10 * log10(hil_filt(peak_found_corrected)), 'g*');
+        plot(find(is_rim_shot_corrected), 10 * log10(hil_filt(is_rim_shot_corrected)), 'b*');
+        plot(find(peak_found_corrected),  10 * log10(pos_sense_metric(peak_found)) + 40, 'k*');
+        plot(find(is_left_main_peak),     10 * log10(hil_filt(is_left_main_peak)), 'y*');
         ylim([-10, 90]);
 % figure; plot(20 * log10(abs([x, hil_debug, hil_filt])));
 
@@ -430,9 +427,10 @@ if ((hil_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
     if scan_time_cnt == 0
 
       % search in a pre-defined scan time for the highest peak
-      scan_time_cnt     = scan_time;         % initialize scan time counter
-      max_hil_filt_val  = prev_hil_filt_val; % initialize maximum value with first peak
-      peak_found_offset = scan_time;         % position of first peak after scan time expired
+      scan_time_cnt     = scan_time;                  % initialize scan time counter
+      max_hil_filt_val  = prev_hil_filt_val;          % initialize maximum value with first peak
+      peak_found_offset = scan_time;                  % position of first peak after scan time expired
+      power_hypo_left   = hist_main_peak_pow_left(1); % for left/right main peak detection
       first_peak_found  = true;
 
     end
@@ -440,8 +438,9 @@ if ((hil_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
     % search for a maximum in the scan time interval
     if hil_filt > max_hil_filt_val
 
-      max_hil_filt_val  = hil_filt;          % we need to store the origianl Hilbert filtered signal for the decay
-      peak_found_offset = scan_time_cnt - 1; % update position of detected peak
+      max_hil_filt_val  = hil_filt;                   % we need to store the origianl Hilbert filtered signal for the decay
+      peak_found_offset = scan_time_cnt - 1;          % update position of detected peak
+      power_hypo_left   = hist_main_peak_pow_left(1); % for left/right main peak detection
 
     end
 
@@ -456,9 +455,11 @@ if ((hil_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
       decay_scaling        = max_hil_filt_val * decay_fact;
       decay_back_cnt       = decay_len - peak_found_offset;
       mask_back_cnt        = mask_time - peak_found_offset;
-      power_hypo_left      = hist_main_peak_pow_left(1); % for left/right main peak detection
-      power_hypo_right_cnt = main_peak_dist;             % for left/right main peak detection
       was_peak_found       = true;
+
+      % for left/right main peak detection (note that we have to add one because
+      % we first decrement and then we check for end condition)
+      power_hypo_right_cnt = max(1, main_peak_dist - peak_found_offset + 1);
 
     end
 
@@ -482,18 +483,14 @@ if power_hypo_right_cnt > 0
 
     % now we can detect if the main peak was the left/right main peak and we can
     % now start the counter for the decay power estimation interval start
-
-% TEST
-disp(['power_hypo_left: ' num2str(10*log10(power_hypo_left)) ' / hil_filt:' num2str(10*log10(hil_filt))]);
-
     if power_hypo_left > hil_filt
+      decay_pow_est_start_cnt = decay_est_delay2nd - main_peak_dist; % detected peak is right main peak
+    else
 
       % detected peak is left main peak
       is_left_main_peak       = true;
-      decay_pow_est_start_cnt = decay_est_delay2nd - main_peak_dist;
+      decay_pow_est_start_cnt = decay_est_delay2nd;
 
-    else
-      decay_pow_est_start_cnt = decay_est_delay2nd; % detected peak is right main peak
     end
 
   end
