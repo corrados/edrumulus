@@ -1,5 +1,5 @@
 /******************************************************************************\
- * Copyright (c) 2020-2020
+ * Copyright (c) 2020-2021
  * Author: Volker Fischer
  ******************************************************************************
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -103,54 +103,51 @@ void loop()
       MIDI.sendNoteOff       ( 38,                                        0,                                 10 ); // we need a note off
     }
   }
-#endif
 
-
-// TEST receiving MIDI messages to change the pad settings: Virtual MIDI Piano Keyboard -> loopMIDI -> Hairless MIDI
-if ( MIDI.read ( 1 ) ) // read only on channel 1
-{
-  if ( MIDI.getType() == midi::ControlChange )
+  // receiving MIDI messages to change the pad settings: edrumuluscontrol.m -> loopMIDI -> Hairless MIDI
+  if ( MIDI.read ( 1 ) ) // read only on channel 1
   {
-    bool           is_used    = false;
-    midi::DataByte controller = MIDI.getData1();
-    midi::DataByte value      = MIDI.getData2();
-
-    // controller 1: threshold
-    if ( controller == 1 )
+    if ( MIDI.getType() == midi::ControlChange )
     {
-      edrumulus.set_velocity_threshold ( 0, value );
-      is_used = true;
+      bool           is_used    = false;
+      midi::DataByte controller = MIDI.getData1();
+      midi::DataByte value      = MIDI.getData2();
+  
+      // controller 1: threshold
+      if ( controller == 1 )
+      {
+        edrumulus.set_velocity_threshold ( 0, value );
+        is_used = true;
+      }
+  
+      // controller 2: sensitivity
+      if ( controller == 2 )
+      {
+        edrumulus.set_velocity_sensitivity ( 0, value );
+        is_used = true;
+      }
+  
+      // controller 3: positional sensing threshold
+      if ( controller == 3 )
+      {
+        edrumulus.set_pos_threshold ( 0, value );
+        is_used = true;
+      }
+  
+      // controller 4: positional sensing sensitivity
+      if ( controller == 4 )
+      {
+        edrumulus.set_pos_sensitivity ( 0, value );
+        is_used = true;
+      }
+
+      // give some audio feedback that the setting was correctly received
+      if ( is_used )
+      {
+        MIDI.sendNoteOn  ( 33, value, 10 );
+        MIDI.sendNoteOff ( 33, 0,     10 );
+      }
     }
-
-    // controller 2: sensitivity
-    if ( controller == 2 )
-    {
-      edrumulus.set_velocity_sensitivity ( 0, value );
-      is_used = true;
-    }
-
-    // controller 3: positional sensing threshold
-    if ( controller == 3 )
-    {
-      edrumulus.set_pos_threshold ( 0, value );
-      is_used = true;
-    }
-
-    // controller 4: positional sensing sensitivity
-    if ( controller == 4 )
-    {
-      edrumulus.set_pos_sensitivity ( 0, value );
-      is_used = true;
-    }
-
-// TEST some audio feedback that the settings was correctly received
-if ( is_used )
-{
-  MIDI.sendNoteOn  ( 33, value, 10 );
-  MIDI.sendNoteOff ( 33, 0,     10 );
-}
-
   }
-}
-
+#endif
 }
