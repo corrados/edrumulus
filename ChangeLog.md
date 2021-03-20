@@ -1,5 +1,10 @@
 # Edrumulus project log
 
+- (03/20/2021) The retrigger cancellation algorithm is now improved. The decay power is now estimated
+  and the decay curve adjusted accordingly. I also bought three used patchbays which have a lot of
+  jack sockets which can be used as trigger inputs.
+  <br/>![Used patchbays](algorithm/images/patchbays.jpg)
+
 - (02/05/2021) I am currently evaluating the great [Drumgizmo](https://drumgizmo.org) software
   to be used in conjunction with Edrumulus. I am in contact with the [main developer](https://drumgizmo.org/wiki/doku.php?id=team) and have
   already written some code to [support ALSA MIDI in Drumgizmo](https://linuxmusicians.com/viewtopic.php?f=56&t=22714).
