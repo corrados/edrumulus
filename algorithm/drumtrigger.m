@@ -34,7 +34,7 @@ Fs = 8000; % Hz
 
 % TEST process recordings
 %x = audioread("signals/esp32_pd120.wav");
-%x = audioread("signals/pd120_pos_sense.wav");x = x(2900:10000, :);%x = x(55400:58000, :);%
+%x = audioread("signals/pd120_pos_sense.wav");%x = x(2900:10000, :);%x = x(55400:58000, :);%
 %x = audioread("signals/pd120_pos_sense2.wav");
 %x = audioread("signals/pd120_single_hits.wav");
 x = audioread("signals/pd120_roll.wav");%x = x(292410:294749, :);%x = x(311500:317600, :);
@@ -165,14 +165,14 @@ all_first_peaks = [];
 all_sec_peaks   = [];
 i               = 1;
 no_more_peak    = false;
-hil_filt_org    = hil_filt;
+hil_filt_decay  = hil_filt;
 decay_all       = nan(size(hil_filt)); % only for debugging
 decay_est_rng   = nan(size(hil_filt)); % only for debugging
 
 while ~no_more_peak
 
   % find values above threshold, masking regions which are already done
-  above_thresh = (hil_filt > 10 ^ (pad.threshold_db / 10)) & [zeros(last_peak_idx, 1); ones(length(hil_filt) - last_peak_idx, 1)];
+  above_thresh = (hil_filt_decay > 10 ^ (pad.threshold_db / 10)) & [zeros(last_peak_idx, 1); ones(length(hil_filt_decay) - last_peak_idx, 1)];
   peak_start   = find(diff(above_thresh) > 0);
 
   % exit condition
@@ -200,12 +200,12 @@ while ~no_more_peak
 
   if peak_idx - main_peak_dist < 1
     all_sec_peaks = [all_sec_peaks; 1];
-  elseif peak_idx + main_peak_dist > length(hil_filt_org)
-    all_sec_peaks = [all_sec_peaks; length(hil_filt_org)];
+  elseif peak_idx + main_peak_dist > length(hil_filt)
+    all_sec_peaks = [all_sec_peaks; length(hil_filt)];
   else
 
-    power_hypo_left  = hil_filt_org(peak_idx - main_peak_dist);
-    power_hypo_right = hil_filt_org(peak_idx + main_peak_dist);
+    power_hypo_left  = hil_filt(peak_idx - main_peak_dist);
+    power_hypo_right = hil_filt(peak_idx + main_peak_dist);
 
     if power_hypo_left > power_hypo_right
 
@@ -219,16 +219,16 @@ while ~no_more_peak
   end
 
   % estimate current decay power
-  decay_factor = hil_filt_org(peak_idx);
+  decay_factor = hil_filt(peak_idx);
 
-  if first_peak_idx + main_peak_dist + decay_est_delay2nd + decay_est_len - 1 <= length(hil_filt_org)
+  if first_peak_idx + main_peak_dist + decay_est_delay2nd + decay_est_len - 1 <= length(hil_filt)
 
     % average power measured right after the two main peaks (it showed for high level hits
     % close to the pad center the decay has much lower power right after the main peaks) in
     % a predefined time intervall, but never use a higher decay factor than derived from the
     % main peak (in case a second hit is right behind our main peaks to avoid very high
     % decay curve placement)
-    decay_power  = mean(hil_filt_org(first_peak_idx + main_peak_dist + decay_est_delay2nd + (0:decay_est_len - 1)));
+    decay_power  = mean(hil_filt(first_peak_idx + main_peak_dist + decay_est_delay2nd + (0:decay_est_len - 1)));
     decay_factor = min(decay_factor, decay_est_fact * decay_power);
 
     decay_est_rng(first_peak_idx + main_peak_dist + decay_est_delay2nd + (0:decay_est_len - 1)) = decay_power; % only for debugging
@@ -239,29 +239,28 @@ while ~no_more_peak
   all_peaks     = [all_peaks; peak_idx];
   last_peak_idx = min(peak_idx + mask_time, length(hil_filt));
 
-  % exponential decay assumption (note that we must not use hil_filt_org since a
-  % previous peak might not be faded out and the peak detection works on hil_filt)
+  % exponential decay assumption
   decay           = decay_factor * decay_curve;
   decay_x         = peak_idx + (0:decay_len - 1) + 2; % NOTE "+ 2" delay needed for sample-wise processing
-  valid_decay_idx = decay_x <= length(hil_filt);
+  valid_decay_idx = decay_x <= length(hil_filt_decay);
   decay           = decay(valid_decay_idx);
   decay_x         = decay_x(valid_decay_idx);
 
   % subtract decay (with clipping at zero)
-  hil_filt_new                   = hil_filt(decay_x) - decay.';
+  hil_filt_new                   = hil_filt_decay(decay_x) - decay.';
   hil_filt_new(hil_filt_new < 0) = 0;
 
   % update filtered signal
-  hil_filt(decay_x) = hil_filt_new;
-  i                 = i + 1;
+  hil_filt_decay(decay_x) = hil_filt_new;
+  i                       = i + 1;
 
   decay_all(decay_x) = decay; % only for debugging
 
 end
 
-figure; plot(10 * log10([hil_filt_org, hil_filt, decay_all, decay_est_rng])); hold on;
-plot(all_peaks, 10 * log10(hil_filt_org(all_peaks)), 'k*');
-plot(all_sec_peaks, 10 * log10(hil_filt_org(all_sec_peaks)), 'y*');
+figure; plot(10 * log10([hil_filt, hil_filt_decay, decay_all, decay_est_rng])); hold on;
+plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'k*');
+plot(all_sec_peaks, 10 * log10(hil_filt(all_sec_peaks)), 'y*');
 
 % TODO What is this zoom area for?
 %axis([2.835616531556589e+05   2.856098468655325e+05  -1.994749771562022e+01   4.962270061651073e+01]);
