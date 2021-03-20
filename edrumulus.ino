@@ -112,40 +112,59 @@ void loop()
       bool           is_used    = false;
       midi::DataByte controller = MIDI.getData1();
       midi::DataByte value      = MIDI.getData2();
-  
-      // controller 1: threshold
+
+      // controller 1: pad type
       if ( controller == 1 )
+      {
+        switch ( value )
+        {
+          case 0: edrumulus.set_pad_type ( 0, Edrumulus::PD120 ); break;
+          case 1: edrumulus.set_pad_type ( 0, Edrumulus::PD80R ); break;
+          case 2: edrumulus.set_pad_type ( 0, Edrumulus::PD8 );   break;
+        }
+        is_used = true;
+      }
+
+      // controller 2: threshold
+      if ( controller == 2 )
       {
         edrumulus.set_velocity_threshold ( 0, value );
         is_used = true;
       }
   
-      // controller 2: sensitivity
-      if ( controller == 2 )
+      // controller 3: sensitivity
+      if ( controller == 3 )
       {
         edrumulus.set_velocity_sensitivity ( 0, value );
         is_used = true;
       }
   
-      // controller 3: positional sensing threshold
-      if ( controller == 3 )
+      // controller 4: positional sensing threshold
+      if ( controller == 4 )
       {
         edrumulus.set_pos_threshold ( 0, value );
         is_used = true;
       }
   
-      // controller 4: positional sensing sensitivity
-      if ( controller == 4 )
+      // controller 5: positional sensing sensitivity
+      if ( controller == 5 )
       {
         edrumulus.set_pos_sensitivity ( 0, value );
+        is_used = true;
+      }
+
+      // controller 6: rim shot threshold
+      if ( controller == 6 )
+      {
+        edrumulus.set_rim_shot_treshold ( 0, value );
         is_used = true;
       }
 
       // give some audio feedback that the setting was correctly received
       if ( is_used )
       {
-        MIDI.sendNoteOn  ( 33, value, 10 );
-        MIDI.sendNoteOff ( 33, 0,     10 );
+        MIDI.sendNoteOn  ( 30 + controller, value, 10 );
+        MIDI.sendNoteOff ( 30 + controller, 0,     10 );
       }
     }
   }

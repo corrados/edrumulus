@@ -31,6 +31,13 @@
 class Edrumulus
 {
 public:
+  enum Epadtype
+  {
+    PD120,
+    PD80R,
+    PD8
+  };
+
   Edrumulus();
 
   // call this function during the Setup function of the main program
@@ -48,11 +55,13 @@ public:
   bool get_is_rim_shot   ( const int pad_idx ) { return is_rim_shot[pad_idx]; }
 
   // configure the pads
-  void set_velocity_threshold   ( const int pad_idx, const int new_threshold ) { pad[pad_idx].set_velocity_threshold ( new_threshold ); }
-  void set_velocity_sensitivity ( const int pad_idx, const int new_velocity )  { pad[pad_idx].set_velocity_sensitivity ( new_velocity ); }
-  void set_pos_threshold        ( const int pad_idx, const int new_threshold ) { pad[pad_idx].set_pos_threshold ( new_threshold ); }
-  void set_pos_sensitivity      ( const int pad_idx, const int new_velocity )  { pad[pad_idx].set_pos_sensitivity ( new_velocity ); }
-  void set_mask_time            ( const int pad_idx, const int new_time )      { pad[pad_idx].set_mask_time ( new_time ); }
+  void set_pad_type             ( const int pad_idx, const Epadtype new_pad_type ) { pad[pad_idx].set_pad_type ( new_pad_type ); }
+  void set_velocity_threshold   ( const int pad_idx, const int new_threshold )     { pad[pad_idx].set_velocity_threshold ( new_threshold ); }
+  void set_velocity_sensitivity ( const int pad_idx, const int new_velocity )      { pad[pad_idx].set_velocity_sensitivity ( new_velocity ); }
+  void set_pos_threshold        ( const int pad_idx, const int new_threshold )     { pad[pad_idx].set_pos_threshold ( new_threshold ); }
+  void set_pos_sensitivity      ( const int pad_idx, const int new_velocity )      { pad[pad_idx].set_pos_sensitivity ( new_velocity ); }
+  void set_mask_time            ( const int pad_idx, const int new_time )          { pad[pad_idx].set_mask_time ( new_time ); }
+  void set_rim_shot_treshold    ( const int pad_idx, const int new_threshold )     { pad[pad_idx].set_rim_shot_treshold ( new_threshold ); }
 
   // overload and error handling
   bool get_status_is_overload() { return status_is_overload; }
@@ -63,13 +72,6 @@ protected:
   class Pad
   {
     public:
-      enum Epadtype
-      {
-        PD120,
-        PD80R,
-        PD8
-      };
-
       void setup ( const int conf_Fs,
                    const int conf_number_inputs = 1 );
 
@@ -87,6 +89,7 @@ protected:
       void set_pos_threshold        ( const int new_threshold ) { pad_settings.pos_threshold        = new_threshold; initialize(); }
       void set_pos_sensitivity      ( const int new_velocity )  { pad_settings.pos_sensitivity      = new_velocity;  initialize(); }
       void set_mask_time            ( const int new_time_ms )   { pad_settings.mask_time_ms         = new_time_ms;   initialize(); }
+      void set_rim_shot_treshold    ( const int new_threshold ) { pad_settings.rim_shot_treshold    = new_threshold; initialize(); }
 
 
     protected:
@@ -98,6 +101,7 @@ protected:
         int      mask_time_ms;         // 0..31 (ms)
         int      pos_threshold;        // 0..31
         int      pos_sensitivity;      // 0..31, high values give higher sensitivity
+        int      rim_shot_treshold;    // 0..31
         bool     pos_sense_is_used;    // switches positional sensing support on or off
         float    energy_win_len_ms;
         float    scan_time_ms;
@@ -110,6 +114,7 @@ protected:
         float    decay_grad_fact1, decay_grad_fact2, decay_grad_fact3;
         float    pos_energy_win_len_ms;
         float    pos_iir_alpha;
+        float    rim_shot_window_len_ms;
       };
 
       void initialize();

@@ -195,27 +195,29 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.pad_type = new_pad_type;
 
   // apply PRESET settings (might be overwritten by pad-specific properties)
-  pad_settings.velocity_threshold    = 8;  // 0..31
-  pad_settings.velocity_sensitivity  = 3;  // 0..31
-  pad_settings.mask_time_ms          = 6;  // 0..31 (ms)
-  pad_settings.pos_threshold         = 16; // 0..31
-  pad_settings.pos_sensitivity       = 20; // 0..31
-  pad_settings.pos_sense_is_used     = true;
-  pad_settings.energy_win_len_ms     = 2.0f;   // pad specific parameter: hit energy estimation time window length
-  pad_settings.scan_time_ms          = 2.5f;   // pad specific parameter: scan time after first detected peak
-  pad_settings.main_peak_dist_ms     = 2.25f;  // pad specific parameter: distance between the two main peaks
-  pad_settings.decay_est_delay2nd_ms = 2.5f;   // pad specific parameter: delay after second main peak until decay power estimation starts
-  pad_settings.decay_est_len_ms      = 3.0f;   // pad specific parameter: decay power estimation window length
-  pad_settings.decay_est_fact_db     = 15.0f;  // pad specific parameter: decay power estimation factor (to get over decay ripple)
-  pad_settings.decay_fact_db         = 1.0f;   // pad specific parameter: vertical shift of the decay function in dB
-  pad_settings.decay_len1_ms         = 0.0f;   // pad specific parameter: length of the decay 1
-  pad_settings.decay_grad_fact1      = 200.0f; // pad specific parameter: decay function gradient factor 1
-  pad_settings.decay_len2_ms         = 250.0f; // pad specific parameter: length of the decay 2
-  pad_settings.decay_grad_fact2      = 200.0f; // pad specific parameter: decay function gradient factor 2
-  pad_settings.decay_len3_ms         = 0.0f;   // pad specific parameter: length of the decay 3
-  pad_settings.decay_grad_fact3      = 200.0f; // pad specific parameter: decay function gradient factor 3
-  pad_settings.pos_energy_win_len_ms = 2.0f;   // pad specific parameter: pos sense energy estimation time window length
-  pad_settings.pos_iir_alpha         = 200.0f; // pad specific parameter: IIR low-pass alpha value for positional sensing
+  pad_settings.velocity_threshold     = 5;  // 0..31
+  pad_settings.velocity_sensitivity   = 1;  // 0..31
+  pad_settings.mask_time_ms           = 6;  // 0..31 (ms)
+  pad_settings.pos_threshold          = 9;  // 0..31
+  pad_settings.pos_sensitivity        = 14; // 0..31
+  pad_settings.rim_shot_treshold      = 11; // 0..31
+  pad_settings.pos_sense_is_used      = true;
+  pad_settings.energy_win_len_ms      = 2.0f;   // pad specific parameter: hit energy estimation time window length
+  pad_settings.scan_time_ms           = 2.5f;   // pad specific parameter: scan time after first detected peak
+  pad_settings.main_peak_dist_ms      = 2.25f;  // pad specific parameter: distance between the two main peaks
+  pad_settings.decay_est_delay2nd_ms  = 2.5f;   // pad specific parameter: delay after second main peak until decay power estimation starts
+  pad_settings.decay_est_len_ms       = 3.0f;   // pad specific parameter: decay power estimation window length
+  pad_settings.decay_est_fact_db      = 15.0f;  // pad specific parameter: decay power estimation factor (to get over decay ripple)
+  pad_settings.decay_fact_db          = 1.0f;   // pad specific parameter: vertical shift of the decay function in dB
+  pad_settings.decay_len1_ms          = 0.0f;   // pad specific parameter: length of the decay 1
+  pad_settings.decay_grad_fact1       = 200.0f; // pad specific parameter: decay function gradient factor 1
+  pad_settings.decay_len2_ms          = 250.0f; // pad specific parameter: length of the decay 2
+  pad_settings.decay_grad_fact2       = 200.0f; // pad specific parameter: decay function gradient factor 2
+  pad_settings.decay_len3_ms          = 0.0f;   // pad specific parameter: length of the decay 3
+  pad_settings.decay_grad_fact3       = 200.0f; // pad specific parameter: decay function gradient factor 3
+  pad_settings.pos_energy_win_len_ms  = 2.0f;   // pad specific parameter: pos sense energy estimation time window length
+  pad_settings.pos_iir_alpha          = 200.0f; // pad specific parameter: IIR low-pass alpha value for positional sensing
+  pad_settings.rim_shot_window_len_ms = 5.0f;   // pad specific parameter: window length for rim shot detection
 
   switch ( new_pad_type )
   {
@@ -267,10 +269,10 @@ void Edrumulus::Pad::initialize()
   decay_est_delay2nd       = round ( pad_settings.decay_est_delay2nd_ms * 1e-3f * Fs );
   decay_est_len            = round ( pad_settings.decay_est_len_ms      * 1e-3f * Fs );
   decay_est_fact           = pow ( 10.0f, pad_settings.decay_est_fact_db / 10 );
-  pos_energy_window_len    = round ( pad_settings.pos_energy_win_len_ms * 1e-3f * Fs ); // positional sensing energy estimation time window length (e.g. 2 ms)
-  alpha                    = pad_settings.pos_iir_alpha / Fs;                   // IIR low pass filter coefficient
-  rim_shot_window_len      = round ( 5e-3f * Fs );                              // window length (e.g. 6 ms)
-  rim_shot_treshold_dB     = 2.8f;                                              // rim shot threshold in dB
+  pos_energy_window_len    = round ( pad_settings.pos_energy_win_len_ms * 1e-3f * Fs );  // positional sensing energy estimation time window length (e.g. 2 ms)
+  alpha                    = pad_settings.pos_iir_alpha / Fs;                            // IIR low pass filter coefficient
+  rim_shot_window_len      = round ( pad_settings.rim_shot_window_len_ms * 1e-3f * Fs ); // window length (e.g. 5 ms)
+  rim_shot_treshold_dB     = pad_settings.rim_shot_treshold / 4.0f;                      // gives us a rim shot threshold range of 0..7.75 dB
 
   // The ESP32 ADC has 12 bits resulting in a range of 20*log10(2048)=66.2 dB minus the threshold value.
   // The sensitivity parameter shall be in the range of 0..31. This range should then be mapped to the
