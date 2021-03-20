@@ -29,7 +29,7 @@ pkg load statistics
 
 % prepare serial port
 try
-  a = serialport("COM7", 115200);
+  a = serialport("COM7", 250000);
 catch
 end
 flush(a);

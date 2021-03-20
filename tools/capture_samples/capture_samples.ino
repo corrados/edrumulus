@@ -34,7 +34,7 @@ void IRAM_ATTR on_timer()
 
 void setup()
 {
-  Serial.begin ( 115200 );
+  Serial.begin ( 250000 );
 
   // prepare timer at a rate of given sampling rate
   timer_semaphore = xSemaphoreCreateBinary();
