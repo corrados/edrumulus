@@ -231,17 +231,19 @@ pad_settings.velocity_sensitivity = 4;
       break;
 
     case PD8:
-      pad_settings.mask_time_ms     = 7;
-      pad_settings.pos_threshold    = 29;
-      pad_settings.pos_sensitivity  = 29;
-      pad_settings.scan_time_ms     = 3.5f;
-      pad_settings.decay_fact_db    = 3.0f;
-      pad_settings.decay_len1_ms    = 10.0f;
-      pad_settings.decay_grad_fact1 = 30.0f;
-      pad_settings.decay_len2_ms    = 30.0f;
-      pad_settings.decay_grad_fact2 = 800.0f;
-      pad_settings.decay_len3_ms    = 150.0f;
-      pad_settings.decay_grad_fact3 = 120.0f;
+      pad_settings.mask_time_ms          = 7;
+      pad_settings.pos_threshold         = 29;
+      pad_settings.pos_sensitivity       = 29;
+      pad_settings.scan_time_ms          = 1.3f;
+      pad_settings.main_peak_dist_ms     = 0.75f;
+      pad_settings.decay_est_delay2nd_ms = 6.0f;
+      pad_settings.decay_fact_db         = 5.0f;
+      pad_settings.decay_len1_ms         = 10.0f;
+      pad_settings.decay_grad_fact1      = 30.0f;
+      pad_settings.decay_len2_ms         = 30.0f;
+      pad_settings.decay_grad_fact2      = 600.0f;
+      pad_settings.decay_len3_ms         = 150.0f;
+      pad_settings.decay_grad_fact3      = 120.0f;
       break;
   }
 

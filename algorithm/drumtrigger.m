@@ -30,7 +30,8 @@ close all;
 pkg load signal
 pkg load audio
 
-Fs = 8000; % Hz
+Fs      = 8000; % Hz
+padtype = 'pd120'; % default
 
 % TEST process recordings
 %x = audioread("signals/esp32_pd120.wav");
@@ -43,11 +44,11 @@ x = audioread("signals/pd120_roll.wav");%x = x(292410:294749, :);%x = x(311500:3
 %x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x = audioread("signals/pd6.wav");
-%x = audioread("signals/pd8.wav");%x = x(420000:470000, :);%x = x(1:100000, :);
+%x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
 %org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
 
-padtype = 'pd120';%'pd8';%
+
 
 % pad PRESET settings first, then overwrite these with pad specific properties
 pad.threshold_db          = 23;
@@ -72,15 +73,17 @@ switch padtype
   case 'pd120'
     % note: the PRESET settings are from the PD120 pad
   case 'pd8'
-    pad.scan_time_ms     = 3.5;
-    pad.mask_time_ms     = 7;
-    pad.decay_fact_db    = 3;
-    pad.decay_len_ms1    = 10;
-    pad.decay_grad_fact1 = 30;
-    pad.decay_len_ms2    = 30;
-    pad.decay_grad_fact2 = 800;
-    pad.decay_len_ms3    = 150;
-    pad.decay_grad_fact3 = 120;
+    pad.scan_time_ms          = 1.3;
+    pad.main_peak_dist_ms     = 0.75;
+    pad.decay_est_delay2nd_ms = 6;
+    pad.mask_time_ms          = 7;
+    pad.decay_fact_db         = 5;
+    pad.decay_len_ms1         = 10;
+    pad.decay_grad_fact1      = 30;
+    pad.decay_len_ms2         = 30;
+    pad.decay_grad_fact2      = 600;
+    pad.decay_len_ms3         = 150;
+    pad.decay_grad_fact3      = 120;
 end
 
 
