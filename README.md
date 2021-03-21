@@ -24,15 +24,8 @@ The aim of the Edrumulus project is to create a high quality Open Source e-drum 
 
   A circuit diagram of my test setup is given in the following picture:
   <br/><img src="algorithm/images/edrumulus_testing.png" width="400"><br/>
-  *WARNING* This circuit diagram is only intended for my initial tests. It does not contain any
-  protection for the ESP32 nor it is yet optimized for different pads. It just works ok for my
-  tests with a Roland PD-120. Use it at your own risk. You may destroy your ESP32 board if the
-  input signal is too strong!
+  *WARNING* This circuit diagram is only intended for my initial tests. Use it at your own risk.
 
-  Update 14.03.2021: In my newest circuit diagram I have removed the capacitor and added a
-  100 k Ohm resister. The two 10 k Ohm resisters were exchanged by two 20 (or 22) k Ohm resistors.
-  Parallel to the two 20 k Ohm resistors I have added two diodes to prevent high volatges to
-  destroy the ESP32 (protection) similar to [this schematic](https://www.megadrum.info/sites/default/files/analogue_board_kicad.png).
 
 ## Algorithm development
 
