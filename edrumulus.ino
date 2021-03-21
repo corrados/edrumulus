@@ -83,25 +83,18 @@ void loop()
   }
 
 #ifdef USE_MIDI
-  // first pad
-  if ( number_pads > 0 )
+  // send MIDI note to drum synthesizer
+  for ( int pad_idx = 0; pad_idx < number_pads; pad_idx++ )
   {
-    if ( edrumulus.get_peak_found ( 0 ) )
+    if ( edrumulus.get_peak_found ( pad_idx ) )
     {
-      MIDI.sendControlChange ( 16,                                        edrumulus.get_midi_pos ( 0 ),      midi_channel ); // positional sensing
-      MIDI.sendNoteOn        ( edrumulus.get_is_rim_shot ( 0 ) ? 40 : 38, edrumulus.get_midi_velocity ( 0 ), midi_channel ); // (note, velocity, channel)
-      MIDI.sendNoteOff       ( 38,                                        0,                                 midi_channel ); // we need a note off
-    }
-  }
+      const int midi_pos      = edrumulus.get_midi_pos ( pad_idx );
+      const int midi_velocity = edrumulus.get_midi_velocity ( pad_idx );
+      const int midi_note     = edrumulus.get_is_rim_shot ( pad_idx ) ? 40 : 38;
 
-  // second pad
-  if ( number_pads > 1 )
-  {
-    if ( edrumulus.get_peak_found ( 1 ) )
-    {
-      MIDI.sendControlChange ( 16,                                        edrumulus.get_midi_pos ( 1 ),      midi_channel ); // positional sensing
-      MIDI.sendNoteOn        ( edrumulus.get_is_rim_shot ( 1 ) ? 48 : 48, edrumulus.get_midi_velocity ( 1 ), midi_channel ); // (note, velocity, channel)
-      MIDI.sendNoteOff       ( 38,                                        0,                                 midi_channel ); // we need a note off
+      MIDI.sendControlChange ( 16,        midi_pos,      midi_channel ); // positional sensing
+      MIDI.sendNoteOn        ( midi_note, midi_velocity, midi_channel ); // (note, velocity, channel)
+      MIDI.sendNoteOff       ( midi_note, 0,             midi_channel ); // we need a note off
     }
   }
 
