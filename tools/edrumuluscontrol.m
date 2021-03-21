@@ -224,28 +224,28 @@ switch hObject
        case 2
          set(GUI.val1, 'string', 'PD8');
      end
-     midisend(GUI.midi_dev, midimsg("controlchange", 1, 1, value));
+     midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, value));
      reset_sliders; % if a pad type is changed, all parameters are reset in the ESP32
 
    case GUI.slider2
      set(GUI.val2, 'string', num2str(value));
-     midisend(GUI.midi_dev, midimsg("controlchange", 1, 2, value));
+     midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, value));
 
    case GUI.slider3
      set(GUI.val3, 'string', num2str(value));
-     midisend(GUI.midi_dev, midimsg("controlchange", 1, 3, value));
+     midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, value));
 
    case GUI.slider4
      set(GUI.val4, 'string', num2str(value));
-     midisend(GUI.midi_dev, midimsg("controlchange", 1, 4, value));
+     midisend(GUI.midi_dev, midimsg("controlchange", 10, 105, value));
 
    case GUI.slider5
      set(GUI.val5, 'string', num2str(value));
-     midisend(GUI.midi_dev, midimsg("controlchange", 1, 5, value));
+     midisend(GUI.midi_dev, midimsg("controlchange", 10, 106, value));
 
    case GUI.slider6
      set(GUI.val6, 'string', num2str(value));
-     midisend(GUI.midi_dev, midimsg("controlchange", 1, 6, value));
+     midisend(GUI.midi_dev, midimsg("controlchange", 10, 107, value));
 end
 
 end
