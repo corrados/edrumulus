@@ -54,6 +54,10 @@ void setup()
   const int analog_pins_rimshot[] = { 35, -1 }; // optional rim shot
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
 
+  // some fundamental settings which do not change during operation
+  edrumulus.set_midi_notes ( 0, 38, 40 );
+  edrumulus.set_midi_notes ( 1, 38, 40 );
+
   // initialize GPIO port for status LED
   pinMode ( status_LED_pin, OUTPUT );
 }
@@ -90,7 +94,7 @@ void loop()
     {
       const int midi_pos      = edrumulus.get_midi_pos ( pad_idx );
       const int midi_velocity = edrumulus.get_midi_velocity ( pad_idx );
-      const int midi_note     = edrumulus.get_is_rim_shot ( pad_idx ) ? 40 : 38;
+      const int midi_note     = edrumulus.get_midi_note ( pad_idx );
 
       MIDI.sendControlChange ( 16,        midi_pos,      midi_channel ); // positional sensing
       MIDI.sendNoteOn        ( midi_note, midi_velocity, midi_channel ); // (note, velocity, channel)

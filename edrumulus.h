@@ -52,7 +52,7 @@ public:
   bool get_peak_found    ( const int pad_idx ) { return peak_found[pad_idx]; }
   int  get_midi_velocity ( const int pad_idx ) { return midi_velocity[pad_idx]; }
   int  get_midi_pos      ( const int pad_idx ) { return midi_pos[pad_idx]; }
-  bool get_is_rim_shot   ( const int pad_idx ) { return is_rim_shot[pad_idx]; }
+  int  get_midi_note     ( const int pad_idx ) { return is_rim_shot[pad_idx] ? pad[pad_idx].get_midi_note_rim() : pad[pad_idx].get_midi_note(); }
 
   // configure the pads
   void set_pad_type             ( const int pad_idx, const Epadtype new_pad_type ) { pad[pad_idx].set_pad_type ( new_pad_type ); }
@@ -62,6 +62,8 @@ public:
   void set_pos_sensitivity      ( const int pad_idx, const int new_velocity )      { pad[pad_idx].set_pos_sensitivity ( new_velocity ); }
   void set_mask_time            ( const int pad_idx, const int new_time )          { pad[pad_idx].set_mask_time ( new_time ); }
   void set_rim_shot_treshold    ( const int pad_idx, const int new_threshold )     { pad[pad_idx].set_rim_shot_treshold ( new_threshold ); }
+
+  void set_midi_notes ( const int pad_idx, const int new_midi_note, const int new_midi_note_rim ) { pad[pad_idx].set_midi_notes ( new_midi_note, new_midi_note_rim ); }
 
   // overload and error handling
   bool get_status_is_overload() { return status_is_overload; }
@@ -83,6 +85,7 @@ protected:
                             float&       debug );
 
       void set_pad_type ( const Epadtype new_pad_type );
+      void set_midi_notes ( const int new_midi_note, const int new_midi_note_rim ) { midi_note = new_midi_note; midi_note_rim = new_midi_note_rim; }
 
       void set_velocity_threshold   ( const int new_threshold ) { pad_settings.velocity_threshold   = new_threshold; initialize(); }
       void set_velocity_sensitivity ( const int new_velocity )  { pad_settings.velocity_sensitivity = new_velocity;  initialize(); }
@@ -91,6 +94,8 @@ protected:
       void set_mask_time            ( const int new_time_ms )   { pad_settings.mask_time_ms         = new_time_ms;   initialize(); }
       void set_rim_shot_treshold    ( const int new_threshold ) { pad_settings.rim_shot_treshold    = new_threshold; initialize(); }
 
+      int get_midi_note()     { return midi_note; }
+      int get_midi_note_rim() { return midi_note_rim; }
 
     protected:
       struct Epadsettings
@@ -190,6 +195,8 @@ protected:
       float        hil_low_re;
       float        hil_low_im;
       Epadsettings pad_settings;
+      int          midi_note;
+      int          midi_note_rim;
   };
 
   // constant definitions

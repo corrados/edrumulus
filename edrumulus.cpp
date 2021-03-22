@@ -184,8 +184,10 @@ void Edrumulus::Pad::setup ( const int conf_Fs,
   Fs            = conf_Fs;
   number_inputs = conf_number_inputs;
 
-  // initialize with default pad type
+  // initialize with default pad type and other defaults
   set_pad_type ( PD120 );
+  midi_note     = 38;
+  midi_note_rim = 40;
 }
 
 
@@ -271,10 +273,10 @@ void Edrumulus::Pad::initialize()
   decay_est_delay2nd       = round ( pad_settings.decay_est_delay2nd_ms * 1e-3f * Fs );
   decay_est_len            = round ( pad_settings.decay_est_len_ms      * 1e-3f * Fs );
   decay_est_fact           = pow ( 10.0f, pad_settings.decay_est_fact_db / 10 );
-  pos_energy_window_len    = round ( pad_settings.pos_energy_win_len_ms * 1e-3f * Fs );  // positional sensing energy estimation time window length (e.g. 2 ms)
-  alpha                    = pad_settings.pos_iir_alpha / Fs;                            // IIR low pass filter coefficient
-  rim_shot_window_len      = round ( pad_settings.rim_shot_window_len_ms * 1e-3f * Fs ); // window length (e.g. 5 ms)
-  rim_shot_treshold_dB     = pad_settings.rim_shot_treshold / 4.0f;                      // gives us a rim shot threshold range of 0..7.75 dB
+  pos_energy_window_len    = round ( pad_settings.pos_energy_win_len_ms * 1e-3f * Fs );      // positional sensing energy estimation time window length (e.g. 2 ms)
+  alpha                    = pad_settings.pos_iir_alpha / Fs;                                // IIR low pass filter coefficient
+  rim_shot_window_len      = round ( pad_settings.rim_shot_window_len_ms * 1e-3f * Fs );     // window length (e.g. 5 ms)
+  rim_shot_treshold_dB     = static_cast<float> ( pad_settings.rim_shot_treshold ) / 2 - 13; // gives us a rim shot threshold range of -13..2.5 dB
 
   // The ESP32 ADC has 12 bits resulting in a range of 20*log10(2048)=66.2 dB minus the threshold value.
   // The sensitivity parameter shall be in the range of 0..31. This range should then be mapped to the
