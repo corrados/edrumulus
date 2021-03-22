@@ -292,15 +292,16 @@ void Edrumulus::Pad::initialize()
   pos_range_db                 = max_pos_range_db * ( 32 - pad_settings.pos_sensitivity ) / 32;
 
   // allocate memory for vectors
-  if ( hil_hist        != nullptr ) delete[] hil_hist;
-  if ( mov_av_hist_re  != nullptr ) delete[] mov_av_hist_re;
-  if ( mov_av_hist_im  != nullptr ) delete[] mov_av_hist_im;
-  if ( decay           != nullptr ) delete[] decay;
-  if ( hil_hist_re     != nullptr ) delete[] hil_hist_re;
-  if ( hil_hist_im     != nullptr ) delete[] hil_hist_im;
-  if ( hil_low_hist_re != nullptr ) delete[] hil_low_hist_re;
-  if ( hil_low_hist_im != nullptr ) delete[] hil_low_hist_im;
-  if ( rim_x_high_hist != nullptr ) delete[] rim_x_high_hist;
+  if ( hil_hist                != nullptr ) delete[] hil_hist;
+  if ( mov_av_hist_re          != nullptr ) delete[] mov_av_hist_re;
+  if ( mov_av_hist_im          != nullptr ) delete[] mov_av_hist_im;
+  if ( decay                   != nullptr ) delete[] decay;
+  if ( hist_main_peak_pow_left != nullptr ) delete[] hist_main_peak_pow_left;
+  if ( hil_hist_re             != nullptr ) delete[] hil_hist_re;
+  if ( hil_hist_im             != nullptr ) delete[] hil_hist_im;
+  if ( hil_low_hist_re         != nullptr ) delete[] hil_low_hist_re;
+  if ( hil_low_hist_im         != nullptr ) delete[] hil_low_hist_im;
+  if ( rim_x_high_hist         != nullptr ) delete[] rim_x_high_hist;
 
   hil_hist                = new float[hil_filt_len];          // memory for Hilbert filter history
   mov_av_hist_re          = new float[energy_window_len];     // real part memory for moving average filter history

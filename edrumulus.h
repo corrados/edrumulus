@@ -25,7 +25,7 @@
 
 #include "Arduino.h"
 
-#define MAX_NUM_PADS         10 // a maximum of 10 pads are supported
+#define MAX_NUM_PADS         12 // a maximum of 12 pads are supported
 #define MAX_NUM_PAD_INPUTS   2  // a maximum of 2 sensors per pad is supported
 
 class Edrumulus
