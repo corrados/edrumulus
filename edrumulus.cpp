@@ -203,7 +203,8 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.pos_threshold          = 9;  // 0..31
   pad_settings.pos_sensitivity        = 14; // 0..31
   pad_settings.rim_shot_treshold      = 11; // 0..31
-  pad_settings.pos_sense_is_used      = true;
+  pad_settings.pos_sense_is_used      = false; // must be explicitely enabled if it shall be used
+  pad_settings.rim_shot_is_used       = false; // must be explicitely enabled if it shall be used
   pad_settings.energy_win_len_ms      = 2.0f;   // pad specific parameter: hit energy estimation time window length
   pad_settings.scan_time_ms           = 2.5f;   // pad specific parameter: scan time after first detected peak
   pad_settings.main_peak_dist_ms      = 2.25f;  // pad specific parameter: distance between the two main peaks
@@ -415,8 +416,8 @@ void Edrumulus::Pad::process_sample ( const float* input,
   midi_pos                     = 0;
   is_rim_shot                  = false;
   bool       first_peak_found  = false; // only used internally
-  bool       rim_shot_is_used  = false; // only used internally
-  const bool pos_sense_is_used = pad_settings.pos_sense_is_used; // can be applied directly without calling initialize()
+  const bool pos_sense_is_used = pad_settings.pos_sense_is_used;                         // can be applied directly without calling initialize()
+  const bool rim_shot_is_used  = pad_settings.rim_shot_is_used && ( number_inputs > 1 ); // can be applied directly without calling initialize()
 
 debug = 0.0f; // TEST
 
@@ -634,12 +635,10 @@ debug = 0.0f; // TEST
 
 
   // Calculate rim shot detection -------------------------------------------------
-  // rim piezo signal is in second dimension
-  if ( number_inputs > 1 )
+  if ( rim_shot_is_used )
   {
-    rim_shot_is_used = true;
-
     // one pole IIR high pass filter (y1 = (b0 * x1 + b1 * x0 - a1 * y0) / a0)
+    // note that rim input signal is in second dimension of the input vector
     rim_x_high      = ( b_rim_high[0] * input[1] + b_rim_high[1] * rim_high_prev_x - a_rim_high * rim_x_high );
     rim_high_prev_x = input[1]; // store previous x
 

@@ -63,7 +63,9 @@ public:
   void set_mask_time            ( const int pad_idx, const int new_time )          { pad[pad_idx].set_mask_time ( new_time ); }
   void set_rim_shot_treshold    ( const int pad_idx, const int new_threshold )     { pad[pad_idx].set_rim_shot_treshold ( new_threshold ); }
 
-  void set_midi_notes ( const int pad_idx, const int new_midi_note, const int new_midi_note_rim ) { pad[pad_idx].set_midi_notes ( new_midi_note, new_midi_note_rim ); }
+  void set_midi_notes        ( const int pad_idx, const int new_midi_note, const int new_midi_note_rim ) { pad[pad_idx].set_midi_notes ( new_midi_note, new_midi_note_rim ); }
+  void set_rim_shot_is_used  ( const int pad_idx, const bool new_is_used ) { pad[pad_idx].set_rim_shot_is_used ( new_is_used ); }
+  void set_pos_sense_is_used ( const int pad_idx, const bool new_is_used ) { pad[pad_idx].set_pos_sense_is_used ( new_is_used ); }
 
   // overload and error handling
   bool get_status_is_overload() { return status_is_overload; }
@@ -84,8 +86,10 @@ protected:
                             bool&        is_rim_shot,
                             float&       debug );
 
-      void set_pad_type ( const Epadtype new_pad_type );
-      void set_midi_notes ( const int new_midi_note, const int new_midi_note_rim ) { midi_note = new_midi_note; midi_note_rim = new_midi_note_rim; }
+      void set_pad_type          ( const Epadtype new_pad_type );
+      void set_midi_notes        ( const int new_midi_note, const int new_midi_note_rim ) { midi_note = new_midi_note; midi_note_rim = new_midi_note_rim; }
+      void set_rim_shot_is_used  ( const bool new_is_used ) { pad_settings.rim_shot_is_used = new_is_used; }
+      void set_pos_sense_is_used ( const bool new_is_used ) { pad_settings.pos_sense_is_used = new_is_used; }
 
       void set_velocity_threshold   ( const int new_threshold ) { pad_settings.velocity_threshold   = new_threshold; initialize(); }
       void set_velocity_sensitivity ( const int new_velocity )  { pad_settings.velocity_sensitivity = new_velocity;  initialize(); }
@@ -108,6 +112,7 @@ protected:
         int      pos_sensitivity;      // 0..31, high values give higher sensitivity
         int      rim_shot_treshold;    // 0..31
         bool     pos_sense_is_used;    // switches positional sensing support on or off
+        bool     rim_shot_is_used;     // switches rim shot detection on or off
         float    energy_win_len_ms;
         float    scan_time_ms;
         float    main_peak_dist_ms;

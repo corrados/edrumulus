@@ -49,14 +49,26 @@ void setup()
   Serial.begin ( 115200 );
 #endif
 
-  // analog pins are 34 and 35
-  const int analog_pins[]         = { 34, 35 };
-  const int analog_pins_rimshot[] = { 35, -1 }; // optional rim shot
+  // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | tom1 | tom2 | crash | ride | tom3
+  const int analog_pins[]         = { 34,    32,     33,       26,         27,    14,    12,      4,    15 };
+  const int analog_pins_rimshot[] = { 35,    -1,     25,       -1,         -1,    -1,    13,      2,    -1 };
+
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
 
   // some fundamental settings which do not change during operation
-  edrumulus.set_midi_notes ( 0, 38, 40 );
-  edrumulus.set_midi_notes ( 1, 38, 40 );
+  edrumulus.set_pad_type          ( 0, Edrumulus::PD120 );
+  edrumulus.set_midi_notes        ( 0, 38, 40 ); // snare
+  edrumulus.set_rim_shot_is_used  ( 0, true );
+  edrumulus.set_pos_sense_is_used ( 0, true );
+
+  edrumulus.set_midi_notes ( 1, 36, 36 ); // kick
+  edrumulus.set_midi_notes ( 2, 42, 42 ); // TODO hi-hat
+  edrumulus.set_midi_notes ( 3, 22, 22 ); // TODO hi-hat-ctrl
+  edrumulus.set_midi_notes ( 4, 48, 48 ); // tom 1
+  edrumulus.set_midi_notes ( 5, 45, 45 ); // tom 2
+  edrumulus.set_midi_notes ( 6, 55, 49 ); // crash
+  edrumulus.set_midi_notes ( 7, 51, 66 ); // ride
+  edrumulus.set_midi_notes ( 8, 41, 41 ); // tom 3
 
   // initialize GPIO port for status LED
   pinMode ( status_LED_pin, OUTPUT );
