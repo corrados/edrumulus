@@ -131,6 +131,10 @@ return;
       for ( int j = 0; j < number_inputs[i]; j++ )
       {
         sample_org[j] = analogRead ( analog_pin[i][j] );
+
+// TEST
+//sample_org[j] = 1800;
+        
         sample[j]     = sample_org[j] - dc_offset[i][j]; // compensate DC offset
       }
 
@@ -140,7 +144,7 @@ return;
       // overload detection
       for ( int j = 0; j < number_inputs[i]; j++ )
       {
-        is_overload |= ( sample_org[j] >= 4094 ) || ( sample_org[j] <= 1 );
+//        is_overload |= ( sample_org[j] >= 4094 ) || ( sample_org[j] <= 1 );
       }
     }
 
@@ -166,6 +170,12 @@ return;
     {
       // set error flag if sample rate deviation is too large
       status_is_error            = ( abs ( 1.0f / ( micros() - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f - Fs ) > samplerate_max_error_Hz );
+
+
+// TEST
+Serial.println ( 1.0f / ( micros() - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f, 7 );
+
+
       samplerate_prev_micros_cnt = 0;
       samplerate_prev_micros     = micros();
     }

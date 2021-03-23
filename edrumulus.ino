@@ -21,7 +21,7 @@
  SOFTWARE.
 \******************************************************************************/
 
-#define USE_MIDI
+//#define USE_MIDI
 
 #include "edrumulus.h"
 
@@ -34,7 +34,7 @@ MIDI_CREATE_DEFAULT_INSTANCE();     // Hairless USB MIDI
 #endif
 
 Edrumulus edrumulus;
-const int number_pads      = 1;//5; // <- tested: with current code the ESP32 can only handle up to 5 pads
+const int number_pads      = 6;//5; // <- tested: with current code the ESP32 can only handle up to 5 pads
 const int status_LED_pin   = 2; // internal LED used for overload indicator
 const int midi_channel     = 10; // default for edrums is 10
 bool      is_status_LED_on = false;
@@ -51,7 +51,8 @@ void setup()
 
   // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | tom1 | tom2 | crash | ride | tom3
   const int analog_pins[]         = { 34,    32,     33,       26,         27,    14,    12,      4,    15 };
-  const int analog_pins_rimshot[] = { 35,    -1,     25,       -1,         -1,    -1,    13,      2,    -1 };
+//  const int analog_pins_rimshot[] = { 35,    -1,     25,       -1,         -1,    -1,    13,      2,    -1 };
+  const int analog_pins_rimshot[] = { 35,    -1,     -1,       -1,         -1,    -1,    -1,      -1,    -1 };
 
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
 
