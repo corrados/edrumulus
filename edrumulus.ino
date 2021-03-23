@@ -51,7 +51,7 @@ void setup()
 
   // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | tom1 | tom2 | crash | ride | tom3
   const int analog_pins[]         = { 34,    32,     33,       26,         27,    14,    12,      4,    15 };
-  const int analog_pins_rimshot[] = { 35,    -1,     25,       -1,         -1,    -1,    13,      2,    -1 };
+  const int analog_pins_rimshot[] = { 35,    -1, -1/*25*/,     -1,         -1,    -1, -1/*13*/,   2,    -1 };
 
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
 

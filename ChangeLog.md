@@ -1,5 +1,11 @@
 # Edrumulus project log
 
+- (03/23/2021) I just updated the Ardunio board manager "ESP32 by Espressif Systems" to Version
+  1.0.5 and now the code runs much slower on the ESP32 module so that I cannot even run just one
+  pad with 8 kHz sampling rate anymore. So I had to revert the board manager version to 1.0.4. I
+  hope that with the next board manager update this issue will be fixed and we get back to the
+  normal speed on the hardware. For the time being I will stick to version 1.0.4.
+
 - (03/20/2021) The retrigger cancellation algorithm is now improved. The decay power is now estimated
   and the decay curve adjusted accordingly. I also bought three used patchbays which have a lot of
   jack sockets which can be used as trigger inputs.
