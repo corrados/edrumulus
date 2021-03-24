@@ -5,6 +5,15 @@
 The aim of the Edrumulus project is to create a high quality Open Source e-drum trigger module software.
 
 
+---
+
+⚠️ **NOTE that you have to use Ardunio board manager "ESP32 by Espressif Systems" VERSION 1.0.4 (i.e., do not use the
+latest release 1.0.5) to get edrumulus working as expected, see https://github.com/espressif/arduino-esp32/issues/4973).**
+
+---
+
+
+
 ## Project specifications
 
 - The trigger performance shall be similar or better than the Roland TDW-20.
@@ -48,7 +57,7 @@ three steps:
 The algorithms are described in [this document](algorithm/README.md).
 
 
-## Project log and TODO list
+## Project log
 
 A log of the project can be found in the [change log](ChangeLog.md) file.
 
