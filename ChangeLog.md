@@ -1,7 +1,7 @@
 # Edrumulus project log
 
 - (03/24/2021) Measurements of Hi-Hat controllers:
-   **VH-12 controller:** open **14 kOhm**, closed **10 kOhm**, pressed **8 kOhm**
+   **VH-12 controller:** open **14 kOhm**, closed **10 kOhm**, pressed **8 kOhm**,
    **FD-8 controller:**  open **50 kOhm**, closed **0 Ohm**.
 
 - (03/23/2021) I just updated the Ardunio board manager "ESP32 by Espressif Systems" to Version
