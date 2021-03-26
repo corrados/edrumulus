@@ -8,7 +8,7 @@ The aim of the Edrumulus project is to create a high quality Open Source e-drum 
 ---
 
 ⚠️ **NOTE that you have to use Ardunio board manager "ESP32 by Espressif Systems" VERSION 1.0.4 (i.e., do not use the
-latest release 1.0.5) to get edrumulus working as expected, see https://github.com/espressif/arduino-esp32/issues/4973).**
+latest release 1.0.5) to get Edrumulus working as expected, see https://github.com/espressif/arduino-esp32/issues/4973).**
 
 ---
 
