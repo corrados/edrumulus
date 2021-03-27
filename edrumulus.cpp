@@ -67,8 +67,10 @@ void Edrumulus::setup ( const int  conf_num_pads,
     analog_pin[i][1] = conf_analog_pins_rim_shot[i];
     number_inputs[i] = conf_analog_pins_rim_shot[i] >= 0 ? 2 : 1;
 
-    // setup the pad
+    // setup the pad and init pad parameters
     pad[i].setup ( Fs, number_inputs[i] );
+    peak_found[i]    = false;
+    control_found[i] = false;
   }
 
   // estimate the DC offset for all inputs
@@ -135,12 +137,19 @@ return;
       }
 
       // process sample
-      pad[i].process_sample ( sample, peak_found[i], midi_velocity[i], midi_pos[i], is_rim_shot[i], debug );
-
-      // overload detection
-      for ( int j = 0; j < number_inputs[i]; j++ )
+      if ( pad[i].get_is_control() )
       {
-        is_overload |= ( sample_org[j] >= 4094 ) || ( sample_org[j] <= 1 );
+        pad[i].process_control_sample ( sample_org, control_found[i], midi_ctrl_value[i] );
+      }
+      else
+      {
+        pad[i].process_sample ( sample, peak_found[i], midi_velocity[i], midi_pos[i], is_rim_shot[i], debug );
+
+        // overload detection
+        for ( int j = 0; j < number_inputs[i]; j++ )
+        {
+          is_overload |= ( sample_org[j] >= 4094 ) || ( sample_org[j] <= 1 );
+        }
       }
     }
 
@@ -188,6 +197,7 @@ void Edrumulus::Pad::setup ( const int conf_Fs,
   set_pad_type ( PD120 );
   midi_note     = 38;
   midi_note_rim = 40;
+  midi_ctrl_ch  = 4; // CC4, usually used for hi-hat
 }
 
 
@@ -371,6 +381,7 @@ void Edrumulus::Pad::initialize()
   was_pos_sense_ready     = false;
   was_rim_shot_ready      = false;
   stored_is_rimshot       = false;
+  prev_ctrl_value         = 0;
 
   // calculate the decay curve
   for ( int i = 0; i < decay_len1; i++ )
@@ -714,4 +725,48 @@ if ( stored_is_rimshot )
 // TEST
 debug = hil_low_re;
 
+}
+
+void Edrumulus::Pad::process_control_sample ( const int* input,
+                                              bool&      change_found,
+                                              int&       midi_ctrl_value )
+{
+// TEST just a quick hack implementation for now -> TODO improve the implementation
+
+  change_found = false;
+
+  if ( input[0] < 500 )
+  {
+    midi_ctrl_value = 127;
+  }
+  else if ( input[0] < 1000 )
+  {
+    midi_ctrl_value = 100;
+  }
+  else if ( input[0] < 1500 )
+  {
+    midi_ctrl_value = 80;
+  }
+  else if ( input[0] < 2000 )
+  {
+    midi_ctrl_value = 60;
+  }
+  else if ( input[0] < 2500 )
+  {
+    midi_ctrl_value = 40;
+  }
+  else if ( input[0] < 3000 )
+  {
+    midi_ctrl_value = 20;
+  }
+  else
+  {
+    midi_ctrl_value = 0;
+  }
+
+  if ( midi_ctrl_value != prev_ctrl_value )
+  {
+    change_found    = true;
+    prev_ctrl_value = midi_ctrl_value;
+  }
 }

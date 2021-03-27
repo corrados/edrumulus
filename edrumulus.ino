@@ -34,7 +34,7 @@ MIDI_CREATE_DEFAULT_INSTANCE();     // Hairless USB MIDI
 #endif
 
 Edrumulus edrumulus;
-const int number_pads      = 1;//5; // <- tested: with current code the ESP32 can only handle up to 5 pads
+const int number_pads      = 6;
 const int status_LED_pin   = 2; // internal LED used for overload indicator
 const int midi_channel     = 10; // default for edrums is 10
 bool      is_status_LED_on = false;
@@ -49,9 +49,9 @@ void setup()
   Serial.begin ( 115200 );
 #endif
 
-  // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | tom1 | tom2 | crash | ride | tom3
-  const int analog_pins[]         = { 34,    32,     33,       26,         27,    14,    12,      4,    15 };
-  const int analog_pins_rimshot[] = { 35,    -1, -1/*25*/,     -1,         -1,    -1, -1/*13*/,   2,    -1 };
+  // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
+  const int analog_pins[]         = { 34,    32,     33,       26,         12,     27,    4,     14,    15 };
+  const int analog_pins_rimshot[] = { 35,    -1,  -1/*25*/,    -1,      -1/*13*/,  -1,  -1/*2*/, -1,    -1 };
 
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
 
@@ -62,12 +62,15 @@ void setup()
   edrumulus.set_pos_sense_is_used ( 0, true );
 
   edrumulus.set_midi_notes ( 1, 36, 36 ); // kick
-  edrumulus.set_midi_notes ( 2, 42, 42 ); // TODO hi-hat
-  edrumulus.set_midi_notes ( 3, 22, 22 ); // TODO hi-hat-ctrl
-  edrumulus.set_midi_notes ( 4, 48, 48 ); // tom 1
-  edrumulus.set_midi_notes ( 5, 45, 45 ); // tom 2
-  edrumulus.set_midi_notes ( 6, 55, 49 ); // crash
-  edrumulus.set_midi_notes ( 7, 51, 66 ); // ride
+  edrumulus.set_midi_notes ( 2, 26, 26 ); // hi-hat
+
+  edrumulus.set_midi_ctrl_ch ( 3, 4 ); // hi-hat-ctrl
+  edrumulus.set_pad_type     ( 3, Edrumulus::FD8 );
+
+  edrumulus.set_midi_notes ( 4, 55, 49 ); // crash
+  edrumulus.set_midi_notes ( 5, 48, 48 ); // tom 1
+  edrumulus.set_midi_notes ( 6, 51, 66 ); // ride
+  edrumulus.set_midi_notes ( 7, 45, 45 ); // tom 2
   edrumulus.set_midi_notes ( 8, 41, 41 ); // tom 3
 
   // initialize GPIO port for status LED
@@ -111,6 +114,14 @@ void loop()
       MIDI.sendControlChange ( 16,        midi_pos,      midi_channel ); // positional sensing
       MIDI.sendNoteOn        ( midi_note, midi_velocity, midi_channel ); // (note, velocity, channel)
       MIDI.sendNoteOff       ( midi_note, 0,             midi_channel ); // we need a note off
+    }
+
+    if ( edrumulus.get_control_found ( pad_idx ) )
+    {
+      const int midi_ctrl_ch    = edrumulus.get_midi_ctrl_ch ( pad_idx );
+      const int midi_ctrl_value = edrumulus.get_midi_ctrl_value ( pad_idx );
+
+      MIDI.sendControlChange ( midi_ctrl_ch, midi_ctrl_value, midi_channel );
     }
   }
 
