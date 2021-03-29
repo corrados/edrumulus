@@ -38,6 +38,7 @@ const int number_pads      = 6;
 const int status_LED_pin   = 2; // internal LED used for overload indicator
 const int midi_channel     = 10; // default for edrums is 10
 bool      is_status_LED_on = false;
+int       selected_pad     = 0;
 
 
 void setup()
@@ -139,9 +140,9 @@ void loop()
       {
         switch ( value )
         {
-          case 0: edrumulus.set_pad_type ( 0, Edrumulus::PD120 ); break;
-          case 1: edrumulus.set_pad_type ( 0, Edrumulus::PD80R ); break;
-          case 2: edrumulus.set_pad_type ( 0, Edrumulus::PD8 );   break;
+          case 0: edrumulus.set_pad_type ( selected_pad, Edrumulus::PD120 ); break;
+          case 1: edrumulus.set_pad_type ( selected_pad, Edrumulus::PD80R ); break;
+          case 2: edrumulus.set_pad_type ( selected_pad, Edrumulus::PD8 );   break;
         }
         is_used = true;
       }
@@ -149,36 +150,43 @@ void loop()
       // controller 103: threshold
       if ( controller == 103 )
       {
-        edrumulus.set_velocity_threshold ( 0, value );
+        edrumulus.set_velocity_threshold ( selected_pad, value );
         is_used = true;
       }
   
       // controller 104: sensitivity
       if ( controller == 104 )
       {
-        edrumulus.set_velocity_sensitivity ( 0, value );
+        edrumulus.set_velocity_sensitivity ( selected_pad, value );
         is_used = true;
       }
   
       // controller 105: positional sensing threshold
       if ( controller == 105 )
       {
-        edrumulus.set_pos_threshold ( 0, value );
+        edrumulus.set_pos_threshold ( selected_pad, value );
         is_used = true;
       }
   
       // controller 106: positional sensing sensitivity
       if ( controller == 106 )
       {
-        edrumulus.set_pos_sensitivity ( 0, value );
+        edrumulus.set_pos_sensitivity ( selected_pad, value );
         is_used = true;
       }
 
       // controller 107: rim shot threshold
       if ( controller == 107 )
       {
-        edrumulus.set_rim_shot_treshold ( 0, value );
+        edrumulus.set_rim_shot_treshold ( selected_pad, value );
         is_used = true;
+      }
+
+      // controller 108: select pad
+      if ( ( controller == 108 ) && ( value < MAX_NUM_PADS ) )
+      {
+        selected_pad = value;
+        is_used      = true;
       }
 
       // give some feedback that the setting was correctly received
