@@ -46,7 +46,15 @@ for i = 1:length(midi_devices.output)
 end
 GUI.midi_dev = [];
 
+% default settings button
+GUI.set_but = uicontrol(figure_handle, ...
+  'style',    'pushbutton', ... 
+  'string',   'Default Settings', ...
+  'units',    'normalized', ...
+  'position', [0.7, 0.9, 0.3, 0.1], ...
+  'callback', @button_callback);
 
+% settings panel
 GUI.set_panel = uipanel(figure_handle, ...
   'Title',    'Edrumulus settings', ...
   'Position', [0 0 1 0.6]);
@@ -276,3 +284,46 @@ switch hObject
 end
 
 end
+
+
+function button_callback(hObject)
+
+global GUI;
+
+% snare
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 0)); % pad 0
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 2)); % PD8
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 13)); % threshold
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 11)); % sensitivity
+
+% kick
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 1)); % pad 1
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 0)); % PD120
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 9)); % threshold
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 9)); % sensitivity
+
+% hi-hat
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 2)); % pad 2
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 2)); % PD8
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 9)); % threshold
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 11)); % sensitivity
+
+% crash
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 4)); % pad 4
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 2)); % PD8
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 13)); % threshold
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 21)); % sensitivity
+
+% tom 1
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 5)); % pad 5
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 1)); % PD80R
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 9)); % threshold
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 0)); % sensitivity
+
+% cleanup GUI
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 0)); % pad 0
+reset_sliders;
+
+end
+
+
