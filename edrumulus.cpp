@@ -304,58 +304,17 @@ void Edrumulus::Pad::initialize()
   const float max_pos_range_db = 11; // dB (found by analyzing pd120_pos_sense2.wav test signal)
   pos_range_db                 = max_pos_range_db * ( 32 - pad_settings.pos_sensitivity ) / 32;
 
-  // allocate memory for vectors
-  if ( hil_hist                != nullptr ) delete[] hil_hist;
-  if ( mov_av_hist_re          != nullptr ) delete[] mov_av_hist_re;
-  if ( mov_av_hist_im          != nullptr ) delete[] mov_av_hist_im;
-  if ( decay                   != nullptr ) delete[] decay;
-  if ( hist_main_peak_pow_left != nullptr ) delete[] hist_main_peak_pow_left;
-  if ( hil_hist_re             != nullptr ) delete[] hil_hist_re;
-  if ( hil_hist_im             != nullptr ) delete[] hil_hist_im;
-  if ( hil_low_hist_re         != nullptr ) delete[] hil_low_hist_re;
-  if ( hil_low_hist_im         != nullptr ) delete[] hil_low_hist_im;
-  if ( rim_x_high_hist         != nullptr ) delete[] rim_x_high_hist;
-
-  hil_hist                = new float[hil_filt_len];          // memory for Hilbert filter history
-  mov_av_hist_re          = new float[energy_window_len];     // real part memory for moving average filter history
-  mov_av_hist_im          = new float[energy_window_len];     // imaginary part memory for moving average filter history
-  decay                   = new float[decay_len];             // memory for decay function
-  hist_main_peak_pow_left = new float[main_peak_dist];        // memory for left main peak power
-  hil_hist_re             = new float[pos_energy_window_len]; // real part of memory for moving average of Hilbert filtered signal
-  hil_hist_im             = new float[pos_energy_window_len]; // imaginary part of memory for moving average of Hilbert filtered signal
-  hil_low_hist_re         = new float[pos_energy_window_len]; // real part of memory for moving average of low-pass filtered Hilbert signal
-  hil_low_hist_im         = new float[pos_energy_window_len]; // imaginary part of memory for moving average of low-pass filtered Hilbert signal
-  rim_x_high_hist         = new float[rim_shot_window_len];   // memory for rim shot detection
-
-  // initialization values
-  for ( int i = 0; i < hil_filt_len; i++ )
-  {
-    hil_hist[i] = 0.0f;
-  }
-
-  for ( int i = 0; i < energy_window_len; i++ )
-  {
-    mov_av_hist_re[i]  = 0.0f;
-    mov_av_hist_im[i]  = 0.0f;
-  }
-
-  for ( int i = 0; i < main_peak_dist; i++ )
-  {
-    hist_main_peak_pow_left[i] = 0.0f;
-  }
-
-  for ( int i = 0; i < pos_energy_window_len; i++ )
-  {
-    hil_hist_re[i]     = 0.0f;
-    hil_hist_im[i]     = 0.0f;
-    hil_low_hist_re[i] = 0.0f;
-    hil_low_hist_im[i] = 0.0f;
-  }
-
-  for ( int i = 0; i < rim_shot_window_len; i++ )
-  {
-    rim_x_high_hist[i] = 0.0f;
-  }
+  // allocate and initialize memory for vectors
+  allocate_initialize ( &hil_hist,                hil_filt_len );          // memory for Hilbert filter history
+  allocate_initialize ( &mov_av_hist_re,          energy_window_len );     // real part memory for moving average filter history
+  allocate_initialize ( &mov_av_hist_im,          energy_window_len );     // imaginary part memory for moving average filter history
+  allocate_initialize ( &decay,                   decay_len );             // memory for decay function
+  allocate_initialize ( &hist_main_peak_pow_left, main_peak_dist );        // memory for left main peak power
+  allocate_initialize ( &hil_hist_re,             pos_energy_window_len ); // real part of memory for moving average of Hilbert filtered signal
+  allocate_initialize ( &hil_hist_im,             pos_energy_window_len ); // imaginary part of memory for moving average of Hilbert filtered signal
+  allocate_initialize ( &hil_low_hist_re,         pos_energy_window_len ); // real part of memory for moving average of low-pass filtered Hilbert signal
+  allocate_initialize ( &hil_low_hist_im,         pos_energy_window_len ); // imaginary part of memory for moving average of low-pass filtered Hilbert signal
+  allocate_initialize ( &rim_x_high_hist,         rim_shot_window_len );   // memory for rim shot detection
 
   mask_back_cnt           = 0;
   was_above_threshold     = false;
@@ -398,19 +357,6 @@ void Edrumulus::Pad::initialize()
   {
     decay[decay_len1 + decay_len2 + i] = decay_fact2 * pow ( 10.0f, -i / 10.0f * decay_grad3 );
   }
-}
-
-
-void Edrumulus::Pad::update_fifo ( const float input,
-                                   const int   fifo_length,
-                                   float*      fifo_memory )
-{
-  // move all values in the history one step back and put new value on the top
-  for ( int i = 0; i < fifo_length - 1; i++ )
-  {
-    fifo_memory[i] = fifo_memory[i + 1];
-  }
-  fifo_memory[fifo_length - 1] = input;
 }
 
 

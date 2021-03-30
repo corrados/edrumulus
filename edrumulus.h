@@ -140,9 +140,6 @@ protected:
       };
 
       void initialize();
-      void update_fifo ( const float input,
-                         const int   fifo_length,
-                         float*      fifo_memory );
 
       // Hilbert filter coefficients (they are constant and must not be changed)
       const int   hil_filt_len = 7;
@@ -246,3 +243,36 @@ protected:
   hw_timer_t*                timer = nullptr;
   static void IRAM_ATTR      on_timer();
 };
+
+
+// Utility functions -----------------------------------------------------------------
+
+static void update_fifo ( const float input,
+                          const int   fifo_length,
+                          float*      fifo_memory )
+{
+  // move all values in the history one step back and put new value on the top
+  for ( int i = 0; i < fifo_length - 1; i++ )
+  {
+    fifo_memory[i] = fifo_memory[i + 1];
+  }
+  fifo_memory[fifo_length - 1] = input;
+}
+
+static void allocate_initialize ( float**   array_memory,
+                                  const int array_length )
+{
+  // (delete and) allocate memory
+  if ( *array_memory != nullptr )
+  {
+    delete[] *array_memory;
+  }
+
+  *array_memory = new float[array_length];
+
+  // initialization values
+  for ( int i = 0; i < array_length; i++ )
+  {
+    ( *array_memory )[i] = 0.0f;
+  }
+}
