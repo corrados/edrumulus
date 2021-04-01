@@ -213,7 +213,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.pos_threshold          = 9;  // 0..31
   pad_settings.pos_sensitivity        = 14; // 0..31
   pad_settings.rim_shot_treshold      = 11; // 0..31
-  pad_settings.midi_curve_type        = LINEAR;
+  pad_settings.curve_type             = LINEAR;
   pad_settings.pos_sense_is_used      = false; // must be explicitely enabled if it shall be used
   pad_settings.rim_shot_is_used       = false; // must be explicitely enabled if it shall be used
   pad_settings.energy_win_len_ms      = 2.0f;   // pad specific parameter: hit energy estimation time window length
@@ -361,25 +361,25 @@ void Edrumulus::Pad::initialize()
   }
 
   // calculate MIDI curve (taken from RyoKosaka HelloDrum-arduino-Library: int HelloDrum::curve() function)
-  float midi_curve_param;
+  float curve_param;
 
-  switch ( pad_settings.midi_curve_type )
+  switch ( pad_settings.curve_type )
   {
-    case EXP1: midi_curve_param = 1.02; break;
-    case EXP2: midi_curve_param = 1.04; break;
-    case LOG1: midi_curve_param = 0.98; break;
-    case LOG2: midi_curve_param = 0.96; break;
+    case EXP1: curve_param = 1.02; break;
+    case EXP2: curve_param = 1.04; break;
+    case LOG1: curve_param = 0.98; break;
+    case LOG2: curve_param = 0.96; break;
   }
 
   for ( int i = 0; i < 128; i++ )
   {
-    if ( pad_settings.midi_curve_type == LINEAR )
+    if ( pad_settings.curve_type == LINEAR )
     {
       midi_curve[i] = i;
     }
     else
     {
-      midi_curve[i] = round ( ( 126 / ( pow ( midi_curve_param, 126 ) - 1 ) ) * ( pow ( midi_curve_param, i - 1 ) - 1 ) + 1 );
+      midi_curve[i] = round ( ( 126 / ( pow ( curve_param, 126 ) - 1 ) ) * ( pow ( curve_param, i - 1 ) - 1 ) + 1 );
     }
   }
 }

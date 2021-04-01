@@ -194,11 +194,11 @@ void loop()
       {
         switch ( value )
         {
-          case 0: edrumulus.set_midi_curve ( selected_pad, Edrumulus::LINEAR ); break;
-          case 1: edrumulus.set_midi_curve ( selected_pad, Edrumulus::EXP1 );   break;
-          case 2: edrumulus.set_midi_curve ( selected_pad, Edrumulus::EXP2 );   break;
-          case 3: edrumulus.set_midi_curve ( selected_pad, Edrumulus::LOG1 );   break;
-          case 4: edrumulus.set_midi_curve ( selected_pad, Edrumulus::LOG2 );   break;
+          case 0: edrumulus.set_curve ( selected_pad, Edrumulus::LINEAR ); break;
+          case 1: edrumulus.set_curve ( selected_pad, Edrumulus::EXP1 );   break;
+          case 2: edrumulus.set_curve ( selected_pad, Edrumulus::EXP2 );   break;
+          case 3: edrumulus.set_curve ( selected_pad, Edrumulus::LOG1 );   break;
+          case 4: edrumulus.set_curve ( selected_pad, Edrumulus::LOG2 );   break;
         }
         is_used = true;
       }
