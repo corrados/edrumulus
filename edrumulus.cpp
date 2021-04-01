@@ -240,8 +240,13 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       break;
 
     case PD80R:
-// TODO add support for PD-80R pad
-pad_settings.velocity_sensitivity = 4;
+      pad_settings.velocity_sensitivity = 4;
+      pad_settings.scan_time_ms         = 3.0f;
+      pad_settings.main_peak_dist_ms    = 2.4f;
+      pad_settings.decay_len2_ms        = 75.0f;
+      pad_settings.decay_grad_fact2     = 300.0f;
+      pad_settings.decay_len3_ms        = 250.0f;
+      pad_settings.decay_grad_fact3     = 100.0f;
       break;
 
     case PD8:
