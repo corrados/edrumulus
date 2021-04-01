@@ -366,9 +366,9 @@ void Edrumulus::Pad::initialize()
   switch ( pad_settings.midi_curve_type )
   {
     case EXP1: midi_curve_param = 1.02; break;
-    case EXP2: midi_curve_param = 1.05; break;
+    case EXP2: midi_curve_param = 1.04; break;
     case LOG1: midi_curve_param = 0.98; break;
-    case LOG2: midi_curve_param = 0.95; break;
+    case LOG2: midi_curve_param = 0.96; break;
   }
 
   for ( int i = 0; i < 128; i++ )
@@ -379,7 +379,7 @@ void Edrumulus::Pad::initialize()
     }
     else
     {
-      midi_curve[i] = ( 126 / ( pow ( midi_curve_param, 126 ) - 1 ) ) * ( pow ( midi_curve_param, i - 1 ) - 1 ) + 1;
+      midi_curve[i] = round ( ( 126 / ( pow ( midi_curve_param, 126 ) - 1 ) ) * ( pow ( midi_curve_param, i - 1 ) - 1 ) + 1 );
     }
   }
 }
