@@ -108,13 +108,17 @@ void loop()
   {
     if ( edrumulus.get_peak_found ( pad_idx ) )
     {
-      const int midi_pos      = edrumulus.get_midi_pos ( pad_idx );
-      const int midi_velocity = edrumulus.get_midi_velocity ( pad_idx );
-      const int midi_note     = edrumulus.get_midi_note ( pad_idx );
+      // send midi positional control message if positional sensing is enabled for the current pad
+      if ( edrumulus.get_pos_sense_is_used ( pad_idx ) )
+      {
+        const int midi_pos = edrumulus.get_midi_pos ( pad_idx );
+        MIDI.sendControlChange ( 16, midi_pos, midi_channel ); // positional sensing
+      }
 
-      MIDI.sendControlChange ( 16,        midi_pos,      midi_channel ); // positional sensing
-      MIDI.sendNoteOn        ( midi_note, midi_velocity, midi_channel ); // (note, velocity, channel)
-      MIDI.sendNoteOff       ( midi_note, 0,             midi_channel ); // we need a note off
+      const int midi_velocity = edrumulus.get_midi_velocity ( pad_idx );
+      const int midi_note     = edrumulus.get_midi_note     ( pad_idx );
+      MIDI.sendNoteOn  ( midi_note, midi_velocity, midi_channel ); // (note, velocity, channel)
+      MIDI.sendNoteOff ( midi_note, 0,             midi_channel ); // we need a note off
     }
 
     if ( edrumulus.get_control_found ( pad_idx ) )

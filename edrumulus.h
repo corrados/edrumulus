@@ -87,6 +87,8 @@ public:
   bool get_status_is_overload() { return status_is_overload; }
   bool get_status_is_error()    { return status_is_error; }
 
+  // query functions
+  bool get_pos_sense_is_used ( const int pad_idx ) { return pad[pad_idx].get_pos_sense_is_used(); }
 
 protected:
   class Pad
@@ -120,10 +122,11 @@ protected:
       void set_rim_shot_treshold    ( const int        new_threshold ) { pad_settings.rim_shot_treshold    = new_threshold; initialize(); }
       void set_curve                ( const Ecurvetype new_curve )     { pad_settings.curve_type           = new_curve;     initialize(); }
 
-      int  get_midi_note()     { return midi_note; }
-      int  get_midi_note_rim() { return midi_note_rim; }
-      int  get_midi_ctrl_ch()  { return midi_ctrl_ch; }
-      bool get_is_control()    { return pad_settings.pad_type == FD8; }
+      int  get_midi_note()         { return midi_note; }
+      int  get_midi_note_rim()     { return midi_note_rim; }
+      int  get_midi_ctrl_ch()      { return midi_ctrl_ch; }
+      bool get_is_control()        { return pad_settings.pad_type == FD8; }
+      bool get_pos_sense_is_used() { return pad_settings.pos_sense_is_used; }
 
     protected:
       struct Epadsettings
