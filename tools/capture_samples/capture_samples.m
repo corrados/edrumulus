@@ -29,7 +29,7 @@ pkg load statistics
 
 % prepare serial port
 try
-  a = serialport("COM7", 250000);
+  a = serialport("COM7", 500000);
 catch
 end
 flush(a);
@@ -51,5 +51,7 @@ figure; subplot(2, 1, 1), plot(x); grid on; title('raw linear sample data');
 axis([0, length(x), 0, 2^12]);
 
 subplot(2, 1, 2), plot(20 * log10(abs(x - nanmean(x)))); grid on; ylabel('dB'); title('power');
+
+%audiowrite('testout.wav',(x-1893)/4096,8000);
 
 

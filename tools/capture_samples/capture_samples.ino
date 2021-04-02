@@ -21,10 +21,15 @@
  SOFTWARE.
 \******************************************************************************/
 
-const int                  analog_pin = 34;
+const int                  analog_pin = 25;
 const int                  Fs         = 8000;
 volatile SemaphoreHandle_t timer_semaphore;
 hw_timer_t*                timer = nullptr;
+const int                  dc_offset_est_len   = 5000; // samples
+float                      dc_offset           = 0.0f;
+int                        prvious_sample1     = 0;
+int                        prvious_sample2     = 0;
+int                        prvious_sample1_out = 0;
 
 void IRAM_ATTR on_timer()
 {
@@ -34,7 +39,18 @@ void IRAM_ATTR on_timer()
 
 void setup()
 {
-  Serial.begin ( 250000 );
+  Serial.begin ( 500000 );
+
+  // estimate the DC offset
+  float dc_offset_sum = 0.0f;
+
+  for ( int i = 0; i < dc_offset_est_len; i++ )
+  {
+    dc_offset_sum += analogRead ( analog_pin );
+    delayMicroseconds ( 100 );
+  }
+
+  dc_offset = dc_offset_sum / dc_offset_est_len;
 
   // prepare timer at a rate of given sampling rate
   timer_semaphore = xSemaphoreCreateBinary();
@@ -49,7 +65,32 @@ void loop()
   // wait for the timer to get the correct sampling rate when reading the analog value
   if ( xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
   {
-    const int sample = analogRead ( analog_pin );
+    const int sample_raw = analogRead ( analog_pin );
+
+// TEST
+int sample = sample_raw; // TEST
+/*
+// remove single spikes
+const int noise_threshold    = 6;
+const int max_peak_threshold = 100;
+
+const int sample_abs_no_dc = abs ( sample_raw - static_cast<int> ( dc_offset ) );
+
+const bool remove_spike = ( prvious_sample2 < noise_threshold ) &&
+                          ( ( prvious_sample1 > noise_threshold ) && ( prvious_sample1 < max_peak_threshold ) ) &&
+                          ( sample_abs_no_dc < noise_threshold );
+
+prvious_sample2     = prvious_sample1;
+prvious_sample1     = sample_abs_no_dc;
+prvious_sample1_out = sample_raw;
+
+int sample = 2000;//dc_offset;
+if ( !remove_spike )
+{
+  sample = prvious_sample1_out;
+}
+*/
+
 
     // for debugging: send samples to Octave with binary format via serial interface
     byte send_buf[4];
