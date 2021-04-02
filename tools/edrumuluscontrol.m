@@ -54,6 +54,14 @@ GUI.set_but = uicontrol(figure_handle, ...
   'position', [0.7, 0.9, 0.3, 0.1], ...
   'callback', @button_callback);
 
+% spike cancellation checkbox
+GUI.spike_chbx = uicontrol(figure_handle, ...
+  'style',    'checkbox', ...
+  'string',   'Spike Cancellation', ...
+  'units',    'normalized', ...
+  'position', [0.7, 0.75, 0.3, 0.1], ...
+  'callback', @checkbox_callback);
+
 % settings panel
 GUI.set_panel = uipanel(figure_handle, ...
   'Title',    'Edrumulus settings', ...
@@ -361,6 +369,16 @@ midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 0)); % sensitivity
 % cleanup GUI
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 0)); % pad 0
 reset_sliders;
+
+end
+
+
+function checkbox_callback(hObject)
+
+global GUI;
+
+% spike cancellation checkbox
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 110, get(hObject, 'value')));
 
 end
 

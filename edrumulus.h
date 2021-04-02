@@ -77,10 +77,11 @@ public:
   void set_rim_shot_treshold    ( const int pad_idx, const int        new_threshold ) { pad[pad_idx].set_rim_shot_treshold ( new_threshold ); }
   void set_curve                ( const int pad_idx, const Ecurvetype new_curve )     { pad[pad_idx].set_curve ( new_curve ); }
 
-  void set_midi_notes        ( const int pad_idx, const int new_midi_note, const int new_midi_note_rim ) { pad[pad_idx].set_midi_notes ( new_midi_note, new_midi_note_rim ); }
-  void set_midi_ctrl_ch      ( const int pad_idx, const int new_midi_ctrl_ch )                           { pad[pad_idx].set_midi_ctrl_ch ( new_midi_ctrl_ch ); }
-  void set_rim_shot_is_used  ( const int pad_idx, const bool new_is_used ) { pad[pad_idx].set_rim_shot_is_used ( new_is_used ); }
-  void set_pos_sense_is_used ( const int pad_idx, const bool new_is_used ) { pad[pad_idx].set_pos_sense_is_used ( new_is_used ); }
+  void set_midi_notes           ( const int pad_idx, const int new_midi_note, const int new_midi_note_rim ) { pad[pad_idx].set_midi_notes ( new_midi_note, new_midi_note_rim ); }
+  void set_midi_ctrl_ch         ( const int pad_idx, const int new_midi_ctrl_ch )                           { pad[pad_idx].set_midi_ctrl_ch ( new_midi_ctrl_ch ); }
+  void set_rim_shot_is_used     ( const int pad_idx, const bool new_is_used ) { pad[pad_idx].set_rim_shot_is_used ( new_is_used ); }
+  void set_pos_sense_is_used    ( const int pad_idx, const bool new_is_used ) { pad[pad_idx].set_pos_sense_is_used ( new_is_used ); }
+  void set_spike_cancel_is_used ( const bool new_is_used )                    { spike_cancel_is_used = new_is_used; }
 
   // overload and error handling
   bool get_status_is_overload() { return status_is_overload; }
@@ -238,6 +239,10 @@ protected:
   int           number_inputs[MAX_NUM_PADS];
   int           analog_pin[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   float         dc_offset[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  float         prev_input_abs1[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  float         prev_input_abs2[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  float         prev_input[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  bool          spike_cancel_is_used;
   int           overload_LED_cnt;
   int           overload_LED_on_time;
   bool          status_is_overload;
@@ -255,6 +260,41 @@ protected:
   volatile SemaphoreHandle_t timer_semaphore;
   hw_timer_t*                timer = nullptr;
   static void IRAM_ATTR      on_timer();
+
+
+  // -----------------------------------------------------------------------------
+  // ESP32 Specific Functions ----------------------------------------------------
+  // -----------------------------------------------------------------------------
+  
+  float cancel_single_spikes ( const float input,
+                               const int   pad_index,
+                               const int   input_channel_index )
+  {
+    const int noise_threshold    = 8;   // highest assumed noise amplitude
+    const int max_peak_threshold = 100; // maximum assumed ESP32 spike amplitude
+
+    const float input_abs    = abs ( input );
+    float       return_value = 0.0f; // value in case a spike was detected
+
+    // remove single spikes by checking if right before and right after the detected
+    // spike we only have noise and no useful signal (since the ESP32 spikes mostly
+    // are on just one single sample)
+    if ( !( ( prev_input_abs2[pad_index][input_channel_index] < noise_threshold ) &&
+            ( ( prev_input_abs1[pad_index][input_channel_index] > noise_threshold ) &&
+              ( prev_input_abs1[pad_index][input_channel_index] < max_peak_threshold ) ) &&
+            ( input_abs < noise_threshold ) ) )
+    {
+      return_value = prev_input[pad_index][input_channel_index];
+    }
+
+    // update two-step input signal memory where we store the last second absolute samples of
+    // the input signal and one previous untouched input sample 
+    prev_input_abs2[pad_index][input_channel_index] = prev_input_abs1[pad_index][input_channel_index];
+    prev_input_abs1[pad_index][input_channel_index] = input_abs;
+    prev_input[pad_index][input_channel_index]      = input;
+
+    return return_value;
+  }
 };
 
 

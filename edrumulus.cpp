@@ -37,6 +37,7 @@ Edrumulus::Edrumulus() :
   samplerate_prev_micros_cnt = 0;
   samplerate_prev_micros     = micros();
   status_is_error            = false;
+  spike_cancel_is_used       = false;
 
   // prepare timer at a rate of given sampling rate
   timer_semaphore = xSemaphoreCreateBinary();
@@ -134,6 +135,11 @@ return;
       {
         sample_org[j] = analogRead ( analog_pin[i][j] );
         sample[j]     = sample_org[j] - dc_offset[i][j]; // compensate DC offset
+
+        if ( spike_cancel_is_used )
+        {
+          sample[j] = cancel_single_spikes ( sample[j], i, j );
+        }
       }
 
       // process sample

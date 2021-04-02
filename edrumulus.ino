@@ -203,6 +203,13 @@ void loop()
         is_used = true;
       }
 
+      // controller 110: enable spike cancellation algorithm
+      if ( controller == 110 )
+      {
+        edrumulus.set_spike_cancel_is_used ( value > 0 );
+        is_used = true;
+      }
+
       // give some feedback that the setting was correctly received
       if ( is_used )
       {
