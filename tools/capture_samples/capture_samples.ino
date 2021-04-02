@@ -71,7 +71,7 @@ void loop()
 int sample = sample_raw; // TEST
 /*
 // remove single spikes
-const int noise_threshold    = 6;
+const int noise_threshold    = 8;
 const int max_peak_threshold = 100;
 
 const int sample_abs_no_dc = abs ( sample_raw - static_cast<int> ( dc_offset ) );
@@ -80,17 +80,16 @@ const bool remove_spike = ( prvious_sample2 < noise_threshold ) &&
                           ( ( prvious_sample1 > noise_threshold ) && ( prvious_sample1 < max_peak_threshold ) ) &&
                           ( sample_abs_no_dc < noise_threshold );
 
-prvious_sample2     = prvious_sample1;
-prvious_sample1     = sample_abs_no_dc;
-prvious_sample1_out = sample_raw;
-
-int sample = 2000;//dc_offset;
+int sample = dc_offset;
 if ( !remove_spike )
 {
   sample = prvious_sample1_out;
 }
-*/
 
+prvious_sample2     = prvious_sample1;
+prvious_sample1     = sample_abs_no_dc;
+prvious_sample1_out = sample_raw;
+*/
 
     // for debugging: send samples to Octave with binary format via serial interface
     byte send_buf[4];
