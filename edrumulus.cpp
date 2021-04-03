@@ -39,6 +39,9 @@ Edrumulus::Edrumulus() :
   status_is_error            = false;
   spike_cancel_is_used       = false;
 
+  // prepare the ADC and analog GPIO inputs
+  my_init_analogRead();
+
   // prepare timer at a rate of given sampling rate
   timer_semaphore = xSemaphoreCreateBinary();
   timer           = timerBegin ( 0, 80, true ); // prescaler of 80 (i.e. below we have 1 MHz instead of 80 MHz)
@@ -86,12 +89,12 @@ void Edrumulus::setup ( const int  conf_num_pads,
         if ( k == 0 )
         {
           // initial value
-          dc_offset_sum[i][j] = analogRead ( analog_pin[i][j] );
+          dc_offset_sum[i][j] = my_analogRead ( analog_pin[i][j] );
         }
         else
         {
           // intermediate value, add to the existing value
-          dc_offset_sum[i][j] += analogRead ( analog_pin[i][j] );
+          dc_offset_sum[i][j] += my_analogRead ( analog_pin[i][j] );
         }
 
         if ( k == dc_offset_est_len - 1 )
@@ -136,7 +139,7 @@ return;
 
 // TODO the hi-hat controller must not be read at 8 kHz sampling rate but much less
 
-        sample_org[j] = analogRead ( analog_pin[i][j] );
+        sample_org[j] = my_analogRead ( analog_pin[i][j] );
         sample[j]     = sample_org[j] - dc_offset[i][j]; // compensate DC offset
 
         if ( spike_cancel_is_used )

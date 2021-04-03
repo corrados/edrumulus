@@ -1,5 +1,8 @@
 # Edrumulus project log
 
+- (04/03/2021) The Edrumulus now implements its own analogRead function so we can use
+   the newest arduino-esp32 library version (which is 1.0.6 at present time).
+
 - (04/01/2021) Some speed tests with 6 pads:
   Everything + adc1_get_raw call: **0.368 ms**, Everything: **0.1162 ms**, Without process sample: **0.077 ms**,
   Without analogRead: **0.0455 ms**.<br/>
