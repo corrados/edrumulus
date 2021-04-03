@@ -35,15 +35,16 @@ padtype = 'pd120'; % default
 
 % TEST process recordings
 %x = audioread("signals/esp32_pd120.wav");
+%x = audioread("signals/esp32_pd8.wav");padtype = 'pd8';
 %x = audioread("signals/pd120_pos_sense.wav");%x = x(2900:10000, :);%x = x(55400:58000, :);%
 %x = audioread("signals/pd120_pos_sense2.wav");
-%x = audioread("signals/pd120_single_hits.wav");
+x = audioread("signals/pd120_single_hits.wav");
 %x = audioread("signals/pd120_roll.wav");%x = x(292410:294749, :);%x = x(311500:317600, :);
 %x = audioread("signals/pd120_middle_velocity.wav");
 %x = audioread("signals/pd120_hot_spot.wav");
 %x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
-x = audioread("signals/pd80r.wav");padtype = 'pd80r';%x = x(52000:60000, :);
+%x = audioread("signals/pd80r.wav");padtype = 'pd80r';%x = x(52000:60000, :);
 %x = audioread("signals/pd6.wav");
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
