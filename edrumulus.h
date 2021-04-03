@@ -24,6 +24,9 @@
 #pragma once
 
 #include "Arduino.h"
+//#include "soc/rtc_io_reg.h"
+//#include "soc/rtc_cntl_reg.h"
+#include "soc/sens_reg.h"
 
 #define MAX_NUM_PADS         12 // a maximum of 12 pads are supported
 #define MAX_NUM_PAD_INPUTS   2  // a maximum of 2 sensors per pad is supported
@@ -297,6 +300,33 @@ protected:
     prev_input[pad_index][input_channel_index]      = input;
 
     return return_value;
+  }
+
+  void my_init_analogRead()
+  {
+    // set attenuation of 11 dB
+    WRITE_PERI_REG ( SENS_SAR_ATTEN1_REG, 0x0FFFFFFFF );
+    WRITE_PERI_REG ( SENS_SAR_ATTEN2_REG, 0x0FFFFFFFF );
+
+    // set both ADCs to 12 bit resolution using 8 cycles and 1 sample
+    SET_PERI_REG_BITS ( SENS_SAR_READ_CTRL_REG,   SENS_SAR1_SAMPLE_CYCLE, 8, SENS_SAR1_SAMPLE_CYCLE_S ); // cycles
+    SET_PERI_REG_BITS ( SENS_SAR_READ_CTRL2_REG,  SENS_SAR2_SAMPLE_CYCLE, 8, SENS_SAR2_SAMPLE_CYCLE_S );
+    SET_PERI_REG_BITS ( SENS_SAR_READ_CTRL_REG,   SENS_SAR1_SAMPLE_NUM,   0, SENS_SAR1_SAMPLE_NUM_S ); // # samples
+    SET_PERI_REG_BITS ( SENS_SAR_READ_CTRL2_REG,  SENS_SAR2_SAMPLE_NUM,   0, SENS_SAR2_SAMPLE_NUM_S );
+    SET_PERI_REG_BITS ( SENS_SAR_READ_CTRL_REG,   SENS_SAR1_CLK_DIV,      1, SENS_SAR1_CLK_DIV_S ); // clock div
+    SET_PERI_REG_BITS ( SENS_SAR_READ_CTRL2_REG,  SENS_SAR2_CLK_DIV,      1, SENS_SAR2_CLK_DIV_S );
+    SET_PERI_REG_BITS ( SENS_SAR_START_FORCE_REG, SENS_SAR1_BIT_WIDTH,    3, SENS_SAR1_BIT_WIDTH_S ); // width
+    SET_PERI_REG_BITS ( SENS_SAR_READ_CTRL_REG,   SENS_SAR1_SAMPLE_BIT,   3, SENS_SAR1_SAMPLE_BIT_S );
+    SET_PERI_REG_BITS ( SENS_SAR_START_FORCE_REG, SENS_SAR2_BIT_WIDTH,    3, SENS_SAR2_BIT_WIDTH_S );
+    SET_PERI_REG_BITS ( SENS_SAR_READ_CTRL2_REG,  SENS_SAR2_SAMPLE_BIT,   3, SENS_SAR2_SAMPLE_BIT_S );
+
+// TEST
+int8_t channel = digitalPinToAnalogChannel(34);
+  }
+
+  uint16_t my_analogRead ( uint8_t pin )
+  {
+
   }
 };
 
