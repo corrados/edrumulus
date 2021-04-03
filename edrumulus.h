@@ -24,6 +24,7 @@
 #pragma once
 
 #include "Arduino.h"
+#include "soc/sens_reg.h"
 
 #define MAX_NUM_PADS         12 // a maximum of 12 pads are supported
 #define MAX_NUM_PAD_INPUTS   2  // a maximum of 2 sensors per pad is supported
@@ -295,6 +296,39 @@ protected:
     prev_input_abs2[pad_index][input_channel_index] = prev_input_abs1[pad_index][input_channel_index];
     prev_input_abs1[pad_index][input_channel_index] = input_abs;
     prev_input[pad_index][input_channel_index]      = input;
+
+    return return_value;
+  }
+
+  uint16_t my_analogRead ( uint8_t pin )
+  {
+    uint16_t return_value = 0;
+    int8_t   channel      = digitalPinToAnalogChannel ( pin );
+
+    if ( channel > 9 )
+    {
+      channel -= 10;
+      CLEAR_PERI_REG_MASK ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_START_SAR_M );
+      SET_PERI_REG_BITS ( SENS_SAR_MEAS_START2_REG, SENS_SAR2_EN_PAD, ( 1 << channel ), SENS_SAR2_EN_PAD_S );
+      SET_PERI_REG_MASK ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_START_SAR_M );
+    }
+    else
+    {
+      CLEAR_PERI_REG_MASK ( SENS_SAR_MEAS_START1_REG, SENS_MEAS1_START_SAR_M );
+      SET_PERI_REG_BITS ( SENS_SAR_MEAS_START1_REG, SENS_SAR1_EN_PAD, ( 1 << channel ), SENS_SAR1_EN_PAD_S );
+      SET_PERI_REG_MASK ( SENS_SAR_MEAS_START1_REG, SENS_MEAS1_START_SAR_M );
+    }
+
+    if ( channel > 7 )
+    {
+      while ( GET_PERI_REG_MASK ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DONE_SAR ) == 0 );
+      return_value = GET_PERI_REG_BITS2 ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DATA_SAR, SENS_MEAS2_DATA_SAR_S );
+    }
+    else
+    {
+      while ( GET_PERI_REG_MASK ( SENS_SAR_MEAS_START1_REG, SENS_MEAS1_DONE_SAR ) == 0 );
+      return_value = GET_PERI_REG_BITS2 ( SENS_SAR_MEAS_START1_REG, SENS_MEAS1_DATA_SAR, SENS_MEAS1_DATA_SAR_S );
+    }
 
     return return_value;
   }
