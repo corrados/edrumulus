@@ -133,6 +133,9 @@ return;
       // get sample(s) from ADC and prepare sample(s) for processing
       for ( int j = 0; j < number_inputs[i]; j++ )
       {
+
+// TODO the hi-hat controller must not be read at 8 kHz sampling rate but much less
+
         sample_org[j] = analogRead ( analog_pin[i][j] );
         sample[j]     = sample_org[j] - dc_offset[i][j]; // compensate DC offset
 
