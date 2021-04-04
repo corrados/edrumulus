@@ -239,14 +239,23 @@ protected:
   const int samplerate_max_error_Hz = 100; // tolerate a sample rate deviation of 100 Hz
   const int ctrl_subsampling        = 10; // the sampling rate of the control can be much lower
 
+  enum Espikestate
+  {
+    ST_NOISE,
+    ST_SPIKE,
+    ST_OTHER
+  };
+
   int           Fs;
   int           number_pads;
   int           number_inputs[MAX_NUM_PADS];
   int           analog_pin[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   float         dc_offset[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  float         prev_input_abs1[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  float         prev_input_abs2[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  float         prev_input[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  Espikestate   prev1_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  Espikestate   prev2_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  Espikestate   prev3_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  float         prev_input1[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  float         prev_input2[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   bool          spike_cancel_is_used;
   int           overload_LED_cnt;
   int           overload_LED_on_time;
@@ -272,32 +281,55 @@ protected:
   // ESP32 Specific Functions ----------------------------------------------------
   // -----------------------------------------------------------------------------
   
-  float cancel_single_spikes ( const float input,
-                               const int   pad_index,
-                               const int   input_channel_index )
+  float cancel_ADC_spikes ( const float input,
+                            const int   pad_index,
+                            const int   input_channel_index )
   {
     const int noise_threshold    = 8;   // highest assumed noise amplitude
     const int max_peak_threshold = 100; // maximum assumed ESP32 spike amplitude
 
+    float       return_value = prev_input2[pad_index][input_channel_index]; // normal return value in case no spike was detected
     const float input_abs    = abs ( input );
-    float       return_value = 0.0f; // value in case a spike was detected
+    Espikestate input_state  = ST_OTHER; // initialization value, might be overwritten
 
-    // remove single spikes by checking if right before and right after the detected
-    // spike we only have noise and no useful signal (since the ESP32 spikes mostly
-    // are on just one single sample)
-    if ( !( ( prev_input_abs2[pad_index][input_channel_index] < noise_threshold ) &&
-            ( ( prev_input_abs1[pad_index][input_channel_index] > noise_threshold ) &&
-              ( prev_input_abs1[pad_index][input_channel_index] < max_peak_threshold ) ) &&
-            ( input_abs < noise_threshold ) ) )
+    if ( input_abs < noise_threshold )
     {
-      return_value = prev_input[pad_index][input_channel_index];
+      input_state = ST_NOISE;
+    }
+    else if ( input_abs < max_peak_threshold )
+    {
+      input_state = ST_SPIKE;
     }
 
-    // update two-step input signal memory where we store the last second absolute samples of
-    // the input signal and one previous untouched input sample 
-    prev_input_abs2[pad_index][input_channel_index] = prev_input_abs1[pad_index][input_channel_index];
-    prev_input_abs1[pad_index][input_channel_index] = input_abs;
-    prev_input[pad_index][input_channel_index]      = input;
+    // remove single spikes by checking if right before and right after the detected
+    // spike(s) we only have noise and no useful signal (since the ESP32 spikes mostly
+    // are on just one or two sample(s))
+    //
+    // check for single spike sample case
+    if ( ( prev3_input_state[pad_index][input_channel_index] == ST_NOISE ) &&
+         ( prev2_input_state[pad_index][input_channel_index] == ST_SPIKE ) &&
+         ( prev1_input_state[pad_index][input_channel_index] == ST_NOISE ) )
+    {
+      return_value = 0.0f; // remove single spike
+    }
+
+    // check for two sample spike case
+    if ( ( prev3_input_state[pad_index][input_channel_index] == ST_NOISE ) &&
+         ( prev2_input_state[pad_index][input_channel_index] == ST_SPIKE ) &&
+         ( prev1_input_state[pad_index][input_channel_index] == ST_SPIKE ) &&
+         ( input_state                                       == ST_NOISE ) )
+    {
+      prev_input1[pad_index][input_channel_index] = 0.0f; // remove two sample spike
+      return_value                                = 0.0f; // remove two sample spike
+    }
+
+    // update three-step input signal memory where we store the last three states of
+    // the input signal and two previous untouched input samples
+    prev3_input_state[pad_index][input_channel_index] = prev2_input_state[pad_index][input_channel_index];
+    prev2_input_state[pad_index][input_channel_index] = prev1_input_state[pad_index][input_channel_index];
+    prev1_input_state[pad_index][input_channel_index] = input_state;
+    prev_input2[pad_index][input_channel_index]       = prev_input1[pad_index][input_channel_index];
+    prev_input1[pad_index][input_channel_index]       = input;
 
     return return_value;
   }
@@ -343,7 +375,11 @@ protected:
   uint16_t my_analogRead ( uint8_t pin )
   {
     const int8_t channel = digitalPinToAnalogChannel ( pin );
-
+/*
+// TEST
+CLEAR_PERI_REG_MASK ( RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_XPD_DAC | RTC_IO_PDAC1_DAC_XPD_FORCE ); // stop dac1
+CLEAR_PERI_REG_MASK ( RTC_IO_PAD_DAC2_REG, RTC_IO_PDAC2_XPD_DAC | RTC_IO_PDAC2_DAC_XPD_FORCE ); // stop dac2
+*/
     pinMode ( pin, ANALOG );
 
     if ( channel > 9 )
