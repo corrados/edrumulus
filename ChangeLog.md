@@ -1,5 +1,10 @@
 # Edrumulus project log
 
+- (04/04/2021) This is how the ESP32 ADC signal looks like:
+   <br/>![ESP32 ADC Signals](algorithm/images/esp32adc.jpg)<br/>
+   These spikes seem to be a hardware restriction of the ESP32. I am trying to mitigate this
+   effect by implementing a spike suppression algorithm.
+
 - (04/03/2021) The Edrumulus now implements its own analogRead function so we can use
    the newest arduino-esp32 library version (which is 1.0.6 at present time).
 
