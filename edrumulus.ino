@@ -34,7 +34,7 @@ MIDI_CREATE_DEFAULT_INSTANCE();     // Hairless USB MIDI
 #endif
 
 Edrumulus edrumulus;
-const int number_pads      = 6;
+const int number_pads      = 8;
 const int status_LED_pin   = 2; // internal LED used for overload indicator
 const int midi_channel     = 10; // default for edrums is 10
 bool      is_status_LED_on = false;
@@ -52,7 +52,7 @@ void setup()
 
   // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
   const int analog_pins[]         = { 25,    33,     32,       36,         26,     39,    27,    12,    15 };
-  const int analog_pins_rimshot[] = { 35,    -1,  -1/*34*/,    -1,      -1/*14*/,  -1,  -1/*13*/, -1,   -1 };
+  const int analog_pins_rimshot[] = { 35,    -1,     34,       -1,         14,     -1,    13,    -1,    -1 };
 
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
 

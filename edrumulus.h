@@ -237,6 +237,7 @@ protected:
   const int dc_offset_est_len       = 5000; // samples
   const int samplerate_max_cnt      = 10000; // samples
   const int samplerate_max_error_Hz = 100; // tolerate a sample rate deviation of 100 Hz
+  const int ctrl_subsampling        = 10; // the sampling rate of the control can be much lower
 
   int           Fs;
   int           number_pads;
@@ -251,6 +252,7 @@ protected:
   int           overload_LED_on_time;
   bool          status_is_overload;
   bool          status_is_error;
+  int           ctrl_sample_cnt;
   int           samplerate_prev_micros_cnt;
   unsigned long samplerate_prev_micros;
   Pad           pad[MAX_NUM_PADS];

@@ -27,7 +27,7 @@ Edrumulus* edrumulus_pointer = nullptr;
 
 
 Edrumulus::Edrumulus() :
-  Fs ( 8000 ) // this is the most fundamental system parameter: system sampling rate
+  Fs ( 5500 ) // this is the most fundamental system parameter: system sampling rate
 {
   // initializations
   edrumulus_pointer          = this;                 // global pointer to this class needed for static callback function
@@ -38,9 +38,10 @@ Edrumulus::Edrumulus() :
   samplerate_prev_micros     = micros();
   status_is_error            = false;
   spike_cancel_is_used       = false;
+  ctrl_sample_cnt            = ctrl_subsampling;
 
   // prepare the ADC and analog GPIO inputs
-  my_init_analogRead();
+//  my_init_analogRead();
 
   // prepare timer at a rate of given sampling rate
   timer_semaphore = xSemaphoreCreateBinary();
@@ -71,10 +72,8 @@ void Edrumulus::setup ( const int  conf_num_pads,
     analog_pin[i][1] = conf_analog_pins_rim_shot[i];
     number_inputs[i] = conf_analog_pins_rim_shot[i] >= 0 ? 2 : 1;
 
-    // setup the pad and init pad parameters
+    // setup the pad
     pad[i].setup ( Fs, number_inputs[i] );
-    peak_found[i]    = false;
-    control_found[i] = false;
   }
 
   // estimate the DC offset for all inputs
@@ -89,12 +88,12 @@ void Edrumulus::setup ( const int  conf_num_pads,
         if ( k == 0 )
         {
           // initial value
-          dc_offset_sum[i][j] = my_analogRead ( analog_pin[i][j] );
+          dc_offset_sum[i][j] = analogRead ( analog_pin[i][j] );
         }
         else
         {
           // intermediate value, add to the existing value
-          dc_offset_sum[i][j] += my_analogRead ( analog_pin[i][j] );
+          dc_offset_sum[i][j] += analogRead ( analog_pin[i][j] );
         }
 
         if ( k == dc_offset_est_len - 1 )
@@ -111,7 +110,6 @@ void Edrumulus::setup ( const int  conf_num_pads,
 
 void Edrumulus::process()
 {
-  bool  is_overload = false;
   float debug;
 
 /*
@@ -128,19 +126,46 @@ return;
   // wait for the timer to get the correct sampling rate when reading the analog value
   if ( xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
   {
+    // manage subsampling of control input
+    bool do_ctrl_sampling = false;
+    ctrl_sample_cnt--;
+
+    if ( ctrl_sample_cnt == 0 )
+    {
+      do_ctrl_sampling = true;
+      ctrl_sample_cnt  = ctrl_subsampling;
+    }
+
+// TEST!!!
+int allinputs[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+
     for ( int i = 0; i < number_pads; i++ )
-    {    
-      int   sample_org[MAX_NUM_PAD_INPUTS];
-      float sample[MAX_NUM_PAD_INPUTS];
+    {
+      int        sample_org[MAX_NUM_PAD_INPUTS];
+      float      sample[MAX_NUM_PAD_INPUTS];
+      const bool is_ctrl_pad = pad[i].get_is_control();
+      peak_found[i]          = false;
+      control_found[i]       = false;
+
+// TEST!!!
+allinputs[i][0] = 0;
+
+/*
+      // the hi-hat controller must not be read at 8 kHz sampling rate but much less
+      if ( is_ctrl_pad && !do_ctrl_sampling )
+      {
+        continue; // skip this controller pad for this sample
+      }
+*/
 
       // get sample(s) from ADC and prepare sample(s) for processing
       for ( int j = 0; j < number_inputs[i]; j++ )
       {
-
-// TODO the hi-hat controller must not be read at 8 kHz sampling rate but much less
-
-        sample_org[j] = my_analogRead ( analog_pin[i][j] );
+        sample_org[j] = analogRead ( analog_pin[i][j] );
         sample[j]     = sample_org[j] - dc_offset[i][j]; // compensate DC offset
+
+// TEST!!!
+allinputs[i][j] = sample_org[j];
 
         if ( spike_cancel_is_used )
         {
@@ -149,7 +174,7 @@ return;
       }
 
       // process sample
-      if ( pad[i].get_is_control() )
+      if ( is_ctrl_pad )
       {
         pad[i].process_control_sample ( sample_org, control_found[i], midi_ctrl_value[i] );
       }
@@ -160,26 +185,35 @@ return;
         // overload detection
         for ( int j = 0; j < number_inputs[i]; j++ )
         {
-          is_overload |= ( sample_org[j] >= 4094 ) || ( sample_org[j] <= 1 );
+          if ( ( sample_org[j] >= 4094 ) || ( sample_org[j] <= 1 ) )
+          {
+            overload_LED_cnt = overload_LED_on_time;
+          }
         }
       }
     }
 
-    // overload detection
-    if ( is_overload )
-    {
-      overload_LED_cnt   = overload_LED_on_time;
-      status_is_overload = true;
-    }
+/*
+// TEST!!!
+Serial.println ( String(allinputs[0][0]) + "\t" +
+                 String(allinputs[0][1]) + "\t" +
+                 String(allinputs[1][0]) + "\t" +
+                 String(allinputs[2][0]) + "\t" +
+                 String(allinputs[2][1]) + "\t" +
+                 String(allinputs[3][0]) + "\t" +
+                 String(allinputs[4][0]) + "\t" +
+                 String(allinputs[4][1]) + "\t" +
+                 String(allinputs[5][0]) + "\t" +
+                 String(allinputs[6][0]) + "\t" +
+                 String(allinputs[6][1]) + "\t" +
+                 String(allinputs[7][0]) );
+*/
 
-    if ( overload_LED_cnt > 1 )
+    // overload detection: keep LED on for a while
+    if ( overload_LED_cnt > 0 )
     {
       overload_LED_cnt--;
-    }
-    else if ( overload_LED_cnt == 1 ) // transition to off state
-    {
-      overload_LED_cnt   = 0; // idle state
-      status_is_overload = false;
+      status_is_overload = ( overload_LED_cnt > 0 );
     }
 
     // sampling rate check (i.e. if CPU is overloaded, the sample rate will drop which is bad)
@@ -219,7 +253,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.pad_type = new_pad_type;
 
   // apply PRESET settings (might be overwritten by pad-specific properties)
-  pad_settings.velocity_threshold     = 15; // 0..31
+  pad_settings.velocity_threshold     = 18; // 0..31
   pad_settings.velocity_sensitivity   = 1;  // 0..31
   pad_settings.mask_time_ms           = 6;  // 0..31 (ms)
   pad_settings.pos_threshold          = 9;  // 0..31
