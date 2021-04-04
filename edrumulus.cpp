@@ -27,7 +27,7 @@ Edrumulus* edrumulus_pointer = nullptr;
 
 
 Edrumulus::Edrumulus() :
-  Fs ( 5500 ) // this is the most fundamental system parameter: system sampling rate
+  Fs ( 6500 ) // this is the most fundamental system parameter: system sampling rate
 {
   // initializations
   edrumulus_pointer          = this;                 // global pointer to this class needed for static callback function
@@ -41,7 +41,7 @@ Edrumulus::Edrumulus() :
   ctrl_sample_cnt            = ctrl_subsampling;
 
   // prepare the ADC and analog GPIO inputs
-//  my_init_analogRead();
+  my_init_analogRead();
 
   // prepare timer at a rate of given sampling rate
   timer_semaphore = xSemaphoreCreateBinary();
@@ -88,12 +88,12 @@ void Edrumulus::setup ( const int  conf_num_pads,
         if ( k == 0 )
         {
           // initial value
-          dc_offset_sum[i][j] = analogRead ( analog_pin[i][j] );
+          dc_offset_sum[i][j] = my_analogRead ( analog_pin[i][j] );
         }
         else
         {
           // intermediate value, add to the existing value
-          dc_offset_sum[i][j] += analogRead ( analog_pin[i][j] );
+          dc_offset_sum[i][j] += my_analogRead ( analog_pin[i][j] );
         }
 
         if ( k == dc_offset_est_len - 1 )
@@ -150,18 +150,16 @@ int allinputs[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
 // TEST!!!
 allinputs[i][0] = 0;
 
-/*
       // the hi-hat controller must not be read at 8 kHz sampling rate but much less
       if ( is_ctrl_pad && !do_ctrl_sampling )
       {
         continue; // skip this controller pad for this sample
       }
-*/
 
       // get sample(s) from ADC and prepare sample(s) for processing
       for ( int j = 0; j < number_inputs[i]; j++ )
       {
-        sample_org[j] = analogRead ( analog_pin[i][j] );
+        sample_org[j] = my_analogRead ( analog_pin[i][j] );
         sample[j]     = sample_org[j] - dc_offset[i][j]; // compensate DC offset
 
 // TEST!!!
@@ -253,7 +251,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.pad_type = new_pad_type;
 
   // apply PRESET settings (might be overwritten by pad-specific properties)
-  pad_settings.velocity_threshold     = 18; // 0..31
+  pad_settings.velocity_threshold     = 13; // 0..31
   pad_settings.velocity_sensitivity   = 1;  // 0..31
   pad_settings.mask_time_ms           = 6;  // 0..31 (ms)
   pad_settings.pos_threshold          = 9;  // 0..31

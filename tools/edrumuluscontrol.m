@@ -363,7 +363,7 @@ midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 21)); % sensitivity
 % tom 1
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 5)); % pad 5
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 1)); % PD80R
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 13)); % threshold
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 9)); % threshold
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 0)); % sensitivity
 
 % cleanup GUI

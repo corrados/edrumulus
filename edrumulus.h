@@ -342,15 +342,15 @@ protected:
 
   uint16_t my_analogRead ( uint8_t pin )
   {
-    int8_t channel = digitalPinToAnalogChannel ( pin );
+    const int8_t channel = digitalPinToAnalogChannel ( pin );
 
     pinMode ( pin, ANALOG );
 
     if ( channel > 9 )
     {
-      channel -= 10;
+      const int8_t channel_modified = channel - 10;
       CLEAR_PERI_REG_MASK ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_START_SAR_M );
-      SET_PERI_REG_BITS   ( SENS_SAR_MEAS_START2_REG, SENS_SAR2_EN_PAD, ( 1 << channel ), SENS_SAR2_EN_PAD_S );
+      SET_PERI_REG_BITS   ( SENS_SAR_MEAS_START2_REG, SENS_SAR2_EN_PAD, ( 1 << channel_modified ), SENS_SAR2_EN_PAD_S );
       SET_PERI_REG_MASK   ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_START_SAR_M );
     }
     else
