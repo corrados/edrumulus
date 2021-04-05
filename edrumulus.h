@@ -30,12 +30,14 @@
 #define MAX_NUM_PADS         12   // a maximum of 12 pads are supported
 #define MAX_NUM_PAD_INPUTS   2    // a maximum of 2 sensors per pad is supported
 #define ADC_MAX_RANGE        4096 // ESP32 ADC has 12 bits -> 0..4095
+#define ADC_MAX_NOISE_AMPL   8    // highest assumed ADC noise amplitude in the ADC input range unit
 
 class Edrumulus
 {
 public:
   enum Epadtype
   {
+// TODO if new pads are added, check if get_is_control() and get_is_rim_switch() must be updated
     PD120,
     PD80R,
     PD8,
@@ -128,7 +130,8 @@ protected:
       int  get_midi_note()         { return midi_note; }
       int  get_midi_note_rim()     { return midi_note_rim; }
       int  get_midi_ctrl_ch()      { return midi_ctrl_ch; }
-      bool get_is_control()        { return pad_settings.pad_type == FD8; }
+      bool get_is_control()        { return pad_settings.pad_type == FD8; } // TODO check if new pads must be added here
+      bool get_is_rim_switch()     { return pad_settings.pad_type == PD8; } // TODO check if new pads must be added here
       bool get_pos_sense_is_used() { return pad_settings.pos_sense_is_used; }
 
     protected:
@@ -214,6 +217,7 @@ protected:
       float        rim_x_high;
       int          rim_shot_window_len;
       float        rim_shot_treshold_dB;
+      float        rim_switch_treshold;
       int          pos_energy_window_len;
       int          pos_sense_cnt;
       int          rim_shot_cnt;
@@ -287,14 +291,13 @@ protected:
                             const int   pad_index,
                             const int   input_channel_index )
   {
-    const int noise_threshold    = 8;   // highest assumed noise amplitude
     const int max_peak_threshold = 100; // maximum assumed ESP32 spike amplitude
 
     float       return_value = prev_input2[pad_index][input_channel_index]; // normal return value in case no spike was detected
     const float input_abs    = abs ( input );
     Espikestate input_state  = ST_OTHER; // initialization value, might be overwritten
 
-    if ( input_abs < noise_threshold )
+    if ( input_abs < ADC_MAX_NOISE_AMPL )
     {
       input_state = ST_NOISE;
     }

@@ -319,10 +319,11 @@ void Edrumulus::Pad::initialize()
   decay_est_delay2nd       = round ( pad_settings.decay_est_delay2nd_ms * 1e-3f * Fs );
   decay_est_len            = round ( pad_settings.decay_est_len_ms      * 1e-3f * Fs );
   decay_est_fact           = pow ( 10.0f, pad_settings.decay_est_fact_db / 10 );
-  pos_energy_window_len    = round ( pad_settings.pos_energy_win_len_ms * 1e-3f * Fs );      // positional sensing energy estimation time window length (e.g. 2 ms)
-  alpha                    = pad_settings.pos_iir_alpha / Fs;                                // IIR low pass filter coefficient
-  rim_shot_window_len      = round ( pad_settings.rim_shot_window_len_ms * 1e-3f * Fs );     // window length (e.g. 5 ms)
-  rim_shot_treshold_dB     = static_cast<float> ( pad_settings.rim_shot_treshold ) / 2 - 13; // gives us a rim shot threshold range of -13..2.5 dB
+  pos_energy_window_len    = round ( pad_settings.pos_energy_win_len_ms * 1e-3f * Fs );         // positional sensing energy estimation time window length (e.g. 2 ms)
+  alpha                    = pad_settings.pos_iir_alpha / Fs;                                   // IIR low pass filter coefficient
+  rim_shot_window_len      = round ( pad_settings.rim_shot_window_len_ms * 1e-3f * Fs );        // window length (e.g. 5 ms)
+  rim_shot_treshold_dB     = static_cast<float> ( pad_settings.rim_shot_treshold ) / 2 - 13;    // gives us a rim shot threshold range of -13..2.5 dB
+  rim_switch_treshold      = -ADC_MAX_NOISE_AMPL + 9 * ( pad_settings.rim_shot_treshold - 31 ); // rim switch linear threshold
 
   // The ESP32 ADC has 12 bits resulting in a range of 20*log10(2048)=66.2 dB minus the threshold value.
   // The sensitivity parameter shall be in the range of 0..31. This range should then be mapped to the
@@ -653,42 +654,65 @@ debug = 0.0f; // TEST
   // Calculate rim shot detection -------------------------------------------------
   if ( rim_shot_is_used )
   {
-    // one pole IIR high pass filter (y1 = (b0 * x1 + b1 * x0 - a1 * y0) / a0)
-    // note that rim input signal is in second dimension of the input vector
-    rim_x_high      = ( b_rim_high[0] * input[1] + b_rim_high[1] * rim_high_prev_x - a_rim_high * rim_x_high );
-    rim_high_prev_x = input[1]; // store previous x
-
-    update_fifo ( rim_x_high, rim_shot_window_len, rim_x_high_hist );
-
-    // start condition of delay process to fill up the required buffers
-    // note that rim_shot_window_len must be larger than energy_window_len,
-    // pos_energy_window_len and scan_time for this to work
-    if ( first_peak_found && ( !was_rim_shot_ready ) && ( rim_shot_cnt == 0 ) )
+    if ( get_is_rim_switch() )
     {
-      // a peak was found, we now have to start the delay process to fill up the
-      // required buffer length for our metric
-      rim_shot_cnt     = rim_shot_window_len / 2 - 1;
-      hil_filt_max_pow = hil_filt;
-    }
+      // as a quick hack we re-use the rim_x_high memory and length parameter for the switch on detection
+      update_fifo ( input[1] < rim_switch_treshold, rim_shot_window_len, rim_x_high_hist );
 
-    if ( rim_shot_cnt > 0 )
-    {
-      rim_shot_cnt--;
-
-      // end condition
-      if ( rim_shot_cnt <= 0 )
+      // at the end of the scan time search the history buffer for any switch on
+      if ( was_peak_found )
       {
-        // the buffers are filled, now calculate the metric
-        float rim_max_pow = 0;
+        stored_is_rimshot = false;
+
         for ( int i = 0; i < rim_shot_window_len; i++ )
         {
-          rim_max_pow = max ( rim_max_pow, rim_x_high_hist[i] * rim_x_high_hist[i] );
+          if ( rim_x_high_hist[i] > 0 )
+          {
+            stored_is_rimshot = true;
+          }
         }
 
-        const float rim_metric_db = 10 * log10 ( rim_max_pow / hil_filt_max_pow );
-        stored_is_rimshot         = rim_metric_db > rim_shot_treshold_dB;
-        rim_shot_cnt              = 0;
-        was_rim_shot_ready        = true;
+        was_rim_shot_ready = true;
+      }
+    }
+    else
+    {
+      // one pole IIR high pass filter (y1 = (b0 * x1 + b1 * x0 - a1 * y0) / a0)
+      // note that rim input signal is in second dimension of the input vector
+      rim_x_high      = ( b_rim_high[0] * input[1] + b_rim_high[1] * rim_high_prev_x - a_rim_high * rim_x_high );
+      rim_high_prev_x = input[1]; // store previous x
+
+      update_fifo ( rim_x_high, rim_shot_window_len, rim_x_high_hist );
+
+      // start condition of delay process to fill up the required buffers
+      // note that rim_shot_window_len must be larger than energy_window_len,
+      // pos_energy_window_len and scan_time for this to work
+      if ( first_peak_found && ( !was_rim_shot_ready ) && ( rim_shot_cnt == 0 ) )
+      {
+        // a peak was found, we now have to start the delay process to fill up the
+        // required buffer length for our metric
+        rim_shot_cnt     = rim_shot_window_len / 2 - 1;
+        hil_filt_max_pow = hil_filt;
+      }
+
+      if ( rim_shot_cnt > 0 )
+      {
+        rim_shot_cnt--;
+
+        // end condition
+        if ( rim_shot_cnt <= 0 )
+        {
+          // the buffers are filled, now calculate the metric
+          float rim_max_pow = 0;
+          for ( int i = 0; i < rim_shot_window_len; i++ )
+          {
+            rim_max_pow = max ( rim_max_pow, rim_x_high_hist[i] * rim_x_high_hist[i] );
+          }
+
+          const float rim_metric_db = 10 * log10 ( rim_max_pow / hil_filt_max_pow );
+          stored_is_rimshot         = rim_metric_db > rim_shot_treshold_dB;
+          rim_shot_cnt              = 0;
+          was_rim_shot_ready        = true;
 
 // TODO:
 // - positional sensing must be adjusted if a rim shot is detected (note that this must be done BEFORE the MIDI clipping!)
@@ -700,14 +724,15 @@ if ( stored_is_rimshot )
   stored_midi_pos = 0; // as a quick hack, disable positional sensing if a rim shot is detected
 }
 
-      }
-      else
-      {
-        // we need a further delay for the positional sensing estimation, consider
-        // this additional delay for the overall peak found offset
-        if ( was_peak_found && ( !pos_sense_is_used || was_pos_sense_ready ) )
+        }
+        else
         {
-          peak_found_offset++;
+          // we need a further delay for the positional sensing estimation, consider
+          // this additional delay for the overall peak found offset
+          if ( was_peak_found && ( !pos_sense_is_used || was_pos_sense_ready ) )
+          {
+            peak_found_offset++;
+          }
         }
       }
     }

@@ -214,6 +214,19 @@ void loop()
         is_used = true;
       }
 
+      // controller 111: enable/disable rim shot and positional sensing support
+      if ( controller == 111 )
+      {
+        switch ( value )
+        {
+          case 0: edrumulus.set_rim_shot_is_used (selected_pad, false ); edrumulus.set_pos_sense_is_used ( selected_pad, false ); break;
+          case 1: edrumulus.set_rim_shot_is_used (selected_pad, true );  edrumulus.set_pos_sense_is_used ( selected_pad, false ); break;
+          case 2: edrumulus.set_rim_shot_is_used (selected_pad, false ); edrumulus.set_pos_sense_is_used ( selected_pad, true );  break;
+          case 3: edrumulus.set_rim_shot_is_used (selected_pad, true );  edrumulus.set_pos_sense_is_used ( selected_pad, true );  break;
+        }
+        is_used = true;
+      }
+
       // give some feedback that the setting was correctly received
       if ( is_used )
       {
