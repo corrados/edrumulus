@@ -82,12 +82,6 @@ void Edrumulus::setup ( const int  conf_num_pads,
   // estimate the DC offset for all inputs
   float dc_offset_sum[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
 
-  // if the GIOP 25/26 are used, we have to set the DAC to 0 to get correct DC offset estimates
-  // (note that it seems to be sufficient to set DAC1 to 0)
-  dac_i2s_enable();
-  dac_output_enable  ( DAC_CHANNEL_1 );
-  dac_output_voltage ( DAC_CHANNEL_1, 0 );
-
   for ( int k = 0; k < dc_offset_est_len; k++ )
   {
     for ( int i = 0; i < number_pads; i++ )

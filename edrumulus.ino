@@ -50,9 +50,11 @@ void setup()
   Serial.begin ( 115200 );
 #endif
 
+  // NOTE: avoid GPIO 25/26 for piezo inputs since they are DAC pins which cause an incorrect DC offset
+  //       estimation and DC offset drift which makes the spike cancellation algorithm not working correctly
   // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
-  const int analog_pins[]         = { 25,    33,     32,       36,         26,     39,    27,    12,    15 };
-  const int analog_pins_rimshot[] = { 35,    -1,     34,       -1,         14,     -1,    13,    -1,    -1 };
+  const int analog_pins[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    15 };
+  const int analog_pins_rimshot[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1 };
 
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
 
