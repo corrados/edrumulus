@@ -27,7 +27,10 @@ Edrumulus* edrumulus_pointer = nullptr;
 
 
 Edrumulus::Edrumulus() :
-  Fs ( 6500 ) // this is the most fundamental system parameter: system sampling rate
+
+// TODO try to increase the sampling rate again...
+
+  Fs ( 6000 ) // this is the most fundamental system parameter: system sampling rate
 {
   // initializations
   edrumulus_pointer          = this;                 // global pointer to this class needed for static callback function
@@ -37,7 +40,7 @@ Edrumulus::Edrumulus() :
   samplerate_prev_micros_cnt = 0;
   samplerate_prev_micros     = micros();
   status_is_error            = false;
-  spike_cancel_is_used       = false;
+  spike_cancel_is_used       = true; // use spike cancellation per default (note that it increases the latency)
   ctrl_sample_cnt            = ctrl_subsampling;
 
   // prepare the ADC and analog GPIO inputs

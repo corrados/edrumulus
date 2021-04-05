@@ -34,7 +34,7 @@ MIDI_CREATE_DEFAULT_INSTANCE();     // Hairless USB MIDI
 #endif
 
 Edrumulus edrumulus;
-const int number_pads      = 7;
+const int number_pads      = 8;
 const int status_LED_pin   = 2; // internal LED used for overload indicator
 const int midi_channel     = 10; // default for edrums is 10
 bool      is_status_LED_on = false;
