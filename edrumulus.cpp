@@ -164,7 +164,8 @@ return;
         sample_org[j] = my_analogRead ( analog_pin[i][j] );
         sample[j]     = sample_org[j] - dc_offset[i][j]; // compensate DC offset
 
-        if ( spike_cancel_is_used )
+        // ADC spike cancellation (do not use spike cancellation for rim switches since they have short peaks)
+        if ( spike_cancel_is_used && !( pad[i].get_is_rim_switch() && ( j > 0 ) ) )
         {
           sample[j] = cancel_ADC_spikes ( sample[j], i, j );
         }
