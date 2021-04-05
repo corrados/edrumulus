@@ -79,6 +79,12 @@ void Edrumulus::setup ( const int  conf_num_pads,
   // estimate the DC offset for all inputs
   float dc_offset_sum[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
 
+  // if the GIOP 25/26 are used, we have to set the DAC to 0 to get correct DC offset estimates
+  // (note that it seems to be sufficient to set DAC1 to 0)
+  dac_i2s_enable();
+  dac_output_enable  ( DAC_CHANNEL_1 );
+  dac_output_voltage ( DAC_CHANNEL_1, 0 );
+
   for ( int k = 0; k < dc_offset_est_len; k++ )
   {
     for ( int i = 0; i < number_pads; i++ )
@@ -90,21 +96,57 @@ void Edrumulus::setup ( const int  conf_num_pads,
           // initial value
           dc_offset_sum[i][j] = my_analogRead ( analog_pin[i][j] );
         }
+        else if ( k == dc_offset_est_len - 1 )
+        {
+          // we are done, calculate the DC offset now
+          dc_offset[i][j] = dc_offset_sum[i][j] / dc_offset_est_len;
+        }
         else
         {
           // intermediate value, add to the existing value
           dc_offset_sum[i][j] += my_analogRead ( analog_pin[i][j] );
         }
-
-        if ( k == dc_offset_est_len - 1 )
-        {
-          // we are done, calculate the DC offset now
-          dc_offset[i][j] = dc_offset_sum[i][j] / dc_offset_est_len;
-        }
       }
     }
     delayMicroseconds ( 100 );
   }
+
+/*
+  // estimate the DC offset for all inputs
+  float dc_offset_sum[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+
+  for ( int k = 0; k < dc_offset_est_len; k++ )
+  {
+    for ( int i = 0; i < number_pads; i++ )
+    {
+      for ( int j = 0; j < number_inputs[i]; j++ )
+      {
+        if ( k == 0 )
+        {
+          // initial value
+          dc_offset_sum[i][j] = my_analogRead ( analog_pin[i][j] );
+        }
+        else if ( k == dc_offset_est_len - 1 )
+        {
+          // we are done, calculate the DC offset now
+// TODO it seems for the ESP32 ADC we underestimate the DC offset by a fixed offset (measured: 3) which
+//      we consider here, i.e. "+ 3"
+          dc_offset[i][j] = dc_offset_sum[i][j] / dc_offset_est_len + 3;
+        }
+        else
+        {
+          // intermediate value, add to the existing value
+          dc_offset_sum[i][j] += my_analogRead ( analog_pin[i][j] );
+        }
+      }
+    }
+
+    // it has shown that if GPIO 25/26 is used which support DAC on the ESP23, we
+    // need a much larger delay between samples to get a correct DC offset estimation
+    // (in the the previous code the delay was just 100 micro seconds)
+    delay ( 2 ); // 2 milli seconds delay needed for GPIO 25/26
+  }
+*/
 }
 
 
@@ -150,6 +192,7 @@ int allinputs[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
 // TEST!!!
 allinputs[i][0] = 0;
 
+
       // the hi-hat controller must not be read at 8 kHz sampling rate but much less
       if ( is_ctrl_pad && !do_ctrl_sampling )
       {
@@ -163,12 +206,17 @@ allinputs[i][0] = 0;
         sample[j]     = sample_org[j] - dc_offset[i][j]; // compensate DC offset
 
 // TEST!!!
-allinputs[i][j] = sample_org[j];
+//allinputs[i][j] = sample_org[j];
+
+//allinputs[i][j] = cancel_ADC_spikes ( sample[j], i, j );
+allinputs[i][j] = sample[j];
+
 
         if ( spike_cancel_is_used )
         {
-          sample[j] = cancel_single_spikes ( sample[j], i, j );
+          sample[j] = cancel_ADC_spikes ( sample[j], i, j );
         }
+
       }
 
       // process sample
@@ -183,7 +231,8 @@ allinputs[i][j] = sample_org[j];
         // overload detection
         for ( int j = 0; j < number_inputs[i]; j++ )
         {
-          if ( ( sample_org[j] >= 4094 ) || ( sample_org[j] <= 1 ) )
+          // check for the two lowest/largest possible ADC range values
+          if ( ( sample_org[j] >= ( ADC_MAX_RANGE - 2 ) ) || ( sample_org[j] <= 1 ) )
           {
             overload_LED_cnt = overload_LED_on_time;
           }
@@ -203,8 +252,7 @@ Serial.println ( String(allinputs[0][0]) + "\t" +
                  String(allinputs[4][1]) + "\t" +
                  String(allinputs[5][0]) + "\t" +
                  String(allinputs[6][0]) + "\t" +
-                 String(allinputs[6][1]) + "\t" +
-                 String(allinputs[7][0]) );
+                 String(allinputs[6][1]) );
 */
 
     // overload detection: keep LED on for a while
@@ -343,7 +391,7 @@ void Edrumulus::Pad::initialize()
   // The sensitivity parameter shall be in the range of 0..31. This range should then be mapped to the
   // maximum possible dynamic where sensitivity of 31 means that we have no dynamic at all and 0 means
   // that we use the full possible ADC range.
-  const float max_velocity_range_db = 20 * log10 ( 2048 ) - threshold_db;
+  const float max_velocity_range_db = 20 * log10 ( ADC_MAX_RANGE / 2 ) - threshold_db;
   velocity_range_db                 = max_velocity_range_db * ( 32 - pad_settings.velocity_sensitivity ) / 32;
 
   // The positional sensing MIDI assignment parameters are dependent on, e.g., the filter design

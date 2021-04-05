@@ -25,9 +25,11 @@
 
 #include "Arduino.h"
 #include "soc/sens_reg.h"
+#include "driver/dac.h"
 
-#define MAX_NUM_PADS         12 // a maximum of 12 pads are supported
-#define MAX_NUM_PAD_INPUTS   2  // a maximum of 2 sensors per pad is supported
+#define MAX_NUM_PADS         12   // a maximum of 12 pads are supported
+#define MAX_NUM_PAD_INPUTS   2    // a maximum of 2 sensors per pad is supported
+#define ADC_MAX_RANGE        4096 // ESP32 ADC has 12 bits -> 0..4095
 
 class Edrumulus
 {
@@ -365,7 +367,7 @@ protected:
     SET_PERI_REG_MASK   ( SENS_SAR_MEAS_START2_REG, SENS_SAR2_EN_PAD_FORCE_M ); // SAR ADC2 pad enable bitmap is controlled by SW
     CLEAR_PERI_REG_MASK ( SENS_SAR_MEAS_WAIT2_REG,  SENS_FORCE_XPD_SAR_M ); // force XPD_SAR=0, use XPD_FSM
     SET_PERI_REG_BITS   ( SENS_SAR_MEAS_WAIT2_REG,  SENS_FORCE_XPD_AMP, 0x2, SENS_FORCE_XPD_AMP_S ); // force XPD_AMP=0
-    CLEAR_PERI_REG_MASK ( SENS_SAR_MEAS_CTRL_REG,   0xfff << SENS_AMP_RST_FB_FSM_S ); //clear FSM
+    CLEAR_PERI_REG_MASK ( SENS_SAR_MEAS_CTRL_REG,   0xfff << SENS_AMP_RST_FB_FSM_S ); // clear FSM
     SET_PERI_REG_BITS   ( SENS_SAR_MEAS_WAIT1_REG,  SENS_SAR_AMP_WAIT1, 0x1, SENS_SAR_AMP_WAIT1_S );
     SET_PERI_REG_BITS   ( SENS_SAR_MEAS_WAIT1_REG,  SENS_SAR_AMP_WAIT2, 0x1, SENS_SAR_AMP_WAIT2_S );
     SET_PERI_REG_BITS   ( SENS_SAR_MEAS_WAIT2_REG,  SENS_SAR_AMP_WAIT3, 0x1, SENS_SAR_AMP_WAIT3_S );
@@ -375,11 +377,7 @@ protected:
   uint16_t my_analogRead ( uint8_t pin )
   {
     const int8_t channel = digitalPinToAnalogChannel ( pin );
-/*
-// TEST
-CLEAR_PERI_REG_MASK ( RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_XPD_DAC | RTC_IO_PDAC1_DAC_XPD_FORCE ); // stop dac1
-CLEAR_PERI_REG_MASK ( RTC_IO_PAD_DAC2_REG, RTC_IO_PDAC2_XPD_DAC | RTC_IO_PDAC2_DAC_XPD_FORCE ); // stop dac2
-*/
+
     pinMode ( pin, ANALOG );
 
     if ( channel > 9 )
