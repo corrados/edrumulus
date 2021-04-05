@@ -110,43 +110,6 @@ void Edrumulus::setup ( const int  conf_num_pads,
     }
     delayMicroseconds ( 100 );
   }
-
-/*
-  // estimate the DC offset for all inputs
-  float dc_offset_sum[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-
-  for ( int k = 0; k < dc_offset_est_len; k++ )
-  {
-    for ( int i = 0; i < number_pads; i++ )
-    {
-      for ( int j = 0; j < number_inputs[i]; j++ )
-      {
-        if ( k == 0 )
-        {
-          // initial value
-          dc_offset_sum[i][j] = my_analogRead ( analog_pin[i][j] );
-        }
-        else if ( k == dc_offset_est_len - 1 )
-        {
-          // we are done, calculate the DC offset now
-// TODO it seems for the ESP32 ADC we underestimate the DC offset by a fixed offset (measured: 3) which
-//      we consider here, i.e. "+ 3"
-          dc_offset[i][j] = dc_offset_sum[i][j] / dc_offset_est_len + 3;
-        }
-        else
-        {
-          // intermediate value, add to the existing value
-          dc_offset_sum[i][j] += my_analogRead ( analog_pin[i][j] );
-        }
-      }
-    }
-
-    // it has shown that if GPIO 25/26 is used which support DAC on the ESP23, we
-    // need a much larger delay between samples to get a correct DC offset estimation
-    // (in the the previous code the delay was just 100 micro seconds)
-    delay ( 2 ); // 2 milli seconds delay needed for GPIO 25/26
-  }
-*/
 }
 
 
@@ -178,9 +141,6 @@ return;
       ctrl_sample_cnt  = ctrl_subsampling;
     }
 
-// TEST!!!
-int allinputs[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-
     for ( int i = 0; i < number_pads; i++ )
     {
       int        sample_org[MAX_NUM_PAD_INPUTS];
@@ -188,10 +148,6 @@ int allinputs[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
       const bool is_ctrl_pad = pad[i].get_is_control();
       peak_found[i]          = false;
       control_found[i]       = false;
-
-// TEST!!!
-allinputs[i][0] = 0;
-
 
       // the hi-hat controller must not be read at 8 kHz sampling rate but much less
       if ( is_ctrl_pad && !do_ctrl_sampling )
@@ -204,13 +160,6 @@ allinputs[i][0] = 0;
       {
         sample_org[j] = my_analogRead ( analog_pin[i][j] );
         sample[j]     = sample_org[j] - dc_offset[i][j]; // compensate DC offset
-
-// TEST!!!
-//allinputs[i][j] = sample_org[j];
-
-//allinputs[i][j] = cancel_ADC_spikes ( sample[j], i, j );
-allinputs[i][j] = sample[j];
-
 
         if ( spike_cancel_is_used )
         {
@@ -239,21 +188,6 @@ allinputs[i][j] = sample[j];
         }
       }
     }
-
-/*
-// TEST!!!
-Serial.println ( String(allinputs[0][0]) + "\t" +
-                 String(allinputs[0][1]) + "\t" +
-                 String(allinputs[1][0]) + "\t" +
-                 String(allinputs[2][0]) + "\t" +
-                 String(allinputs[2][1]) + "\t" +
-                 String(allinputs[3][0]) + "\t" +
-                 String(allinputs[4][0]) + "\t" +
-                 String(allinputs[4][1]) + "\t" +
-                 String(allinputs[5][0]) + "\t" +
-                 String(allinputs[6][0]) + "\t" +
-                 String(allinputs[6][1]) );
-*/
 
     // overload detection: keep LED on for a while
     if ( overload_LED_cnt > 0 )
@@ -299,7 +233,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.pad_type = new_pad_type;
 
   // apply PRESET settings (might be overwritten by pad-specific properties)
-  pad_settings.velocity_threshold     = 13; // 0..31
+  pad_settings.velocity_threshold     = 9;  // 0..31
   pad_settings.velocity_sensitivity   = 1;  // 0..31
   pad_settings.mask_time_ms           = 6;  // 0..31 (ms)
   pad_settings.pos_threshold          = 9;  // 0..31
