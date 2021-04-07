@@ -269,6 +269,11 @@ protected:
   int           ctrl_sample_cnt;
   int           samplerate_prev_micros_cnt;
   unsigned long samplerate_prev_micros;
+
+// TEST
+int           samplerate_prev_micros_cnt1;
+unsigned long samplerate_prev_micros1;
+
   Pad           pad[MAX_NUM_PADS];
   bool          peak_found[MAX_NUM_PADS];
   bool          control_found[MAX_NUM_PADS];
@@ -278,8 +283,13 @@ protected:
   bool          is_rim_shot[MAX_NUM_PADS];
 
   volatile SemaphoreHandle_t timer_semaphore;
+
+// TEST
+volatile SemaphoreHandle_t timer_semaphore1;
+
   hw_timer_t*                timer = nullptr;
   static void IRAM_ATTR      on_timer();
+  static void analog_read_task ( void* param );
 
 
   // -----------------------------------------------------------------------------

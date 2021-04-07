@@ -30,7 +30,7 @@ Edrumulus::Edrumulus() :
 
 // TODO try to increase the sampling rate again...
 
-  Fs ( 6000 ) // this is the most fundamental system parameter: system sampling rate
+  Fs ( 8000 ) // this is the most fundamental system parameter: system sampling rate
 {
   // initializations
   edrumulus_pointer          = this;                 // global pointer to this class needed for static callback function
@@ -39,6 +39,11 @@ Edrumulus::Edrumulus() :
   status_is_overload         = false;
   samplerate_prev_micros_cnt = 0;
   samplerate_prev_micros     = micros();
+
+// TEST
+samplerate_prev_micros_cnt1 = 0;
+samplerate_prev_micros1     = micros();
+
   status_is_error            = false;
   spike_cancel_is_used       = true; // use spike cancellation per default (note that it increases the latency)
   ctrl_sample_cnt            = ctrl_subsampling;
@@ -48,6 +53,10 @@ Edrumulus::Edrumulus() :
 
   // prepare timer at a rate of given sampling rate
   timer_semaphore = xSemaphoreCreateBinary();
+
+// TEST
+timer_semaphore1 = xSemaphoreCreateBinary();
+
   timer           = timerBegin ( 0, 80, true ); // prescaler of 80 (i.e. below we have 1 MHz instead of 80 MHz)
   timerAttachInterrupt ( timer, &on_timer, true );
   timerAlarmWrite      ( timer, 1000000 / Fs, true ); // here we define the sampling rate (1 MHz / Fs)
@@ -58,7 +67,10 @@ Edrumulus::Edrumulus() :
 void IRAM_ATTR Edrumulus::on_timer()
 {
   // tell the main loop that a sample can be read by setting the semaphore
-  xSemaphoreGiveFromISR ( edrumulus_pointer->timer_semaphore, NULL );
+  xSemaphoreGive ( edrumulus_pointer->timer_semaphore );
+
+// TEST
+xSemaphoreGive ( edrumulus_pointer->timer_semaphore1 );
 }
 
 
@@ -107,7 +119,50 @@ void Edrumulus::setup ( const int  conf_num_pads,
     }
     delayMicroseconds ( 100 );
   }
+
+
+// TEST
+xTaskCreatePinnedToCore ( analog_read_task, "analog_read_task", 2000, NULL, 1, NULL, 0 );
+
+
 }
+
+void Edrumulus::analog_read_task ( void* param )
+{
+  for (;;)
+  {
+    if ( xSemaphoreTake ( edrumulus_pointer->timer_semaphore1, portMAX_DELAY ) == pdTRUE )
+    {
+
+static int test2 = 0;
+
+
+for ( int i = 0; i < 10; i++ )
+{
+  test2 += edrumulus_pointer->my_analogRead ( 36);//2 );
+  //test2 += edrumulus_pointer->my_analogRead ( 35);//4 );
+  //test2 += edrumulus_pointer->my_analogRead ( 15 );
+}
+
+
+      // sampling rate check (i.e. if CPU is overloaded, the sample rate will drop which is bad)
+      if ( edrumulus_pointer->samplerate_prev_micros_cnt1 >= edrumulus_pointer->samplerate_max_cnt )
+      {
+
+// TEST
+float test = 1.0f / ( micros() - edrumulus_pointer->samplerate_prev_micros1 ) * edrumulus_pointer->samplerate_max_cnt * 1e6f;
+Serial.println ( String ( xPortGetCoreID() ) + ": " + String ( test ) + "  /  " + String ( test2 ) );
+
+        edrumulus_pointer->samplerate_prev_micros_cnt1 = 0;
+        edrumulus_pointer->samplerate_prev_micros1     = micros();
+      }
+      edrumulus_pointer->samplerate_prev_micros_cnt1++;
+    }
+  }
+}
+
+
+
 
 
 void Edrumulus::process()
@@ -126,7 +181,7 @@ return;
 */
 
   // wait for the timer to get the correct sampling rate when reading the analog value
-  if ( xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
+  if ( true)//xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
   {
     // manage subsampling of control input
     bool do_ctrl_sampling = false;
@@ -155,7 +210,7 @@ return;
       // get sample(s) from ADC and prepare sample(s) for processing
       for ( int j = 0; j < number_inputs[i]; j++ )
       {
-        sample_org[j] = my_analogRead ( analog_pin[i][j] );
+        //sample_org[j] = my_analogRead ( analog_pin[i][j] );
         sample[j]     = sample_org[j] - dc_offset[i][j]; // compensate DC offset
 
         // ADC spike cancellation (do not use spike cancellation for rim switches since they have short peaks)
@@ -198,6 +253,11 @@ return;
     {
       // set error flag if sample rate deviation is too large
       status_is_error            = ( abs ( 1.0f / ( micros() - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f - Fs ) > samplerate_max_error_Hz );
+
+// TEST
+float test = 1.0f / ( micros() - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f;
+Serial.println ( String ( xPortGetCoreID() ) + ": " + String ( test ) );
+
       samplerate_prev_micros_cnt = 0;
       samplerate_prev_micros     = micros();
     }
@@ -237,8 +297,8 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.pos_sensitivity        = 14; // 0..31
   pad_settings.rim_shot_treshold      = 11; // 0..31
   pad_settings.curve_type             = LINEAR;
-  pad_settings.pos_sense_is_used      = false; // must be explicitely enabled if it shall be used
-  pad_settings.rim_shot_is_used       = false; // must be explicitely enabled if it shall be used
+  pad_settings.pos_sense_is_used      = true;//false; // must be explicitely enabled if it shall be used
+  pad_settings.rim_shot_is_used       = true;//false; // must be explicitely enabled if it shall be used
   pad_settings.energy_win_len_ms      = 2.0f;   // pad specific parameter: hit energy estimation time window length
   pad_settings.scan_time_ms           = 2.5f;   // pad specific parameter: scan time after first detected peak
   pad_settings.main_peak_dist_ms      = 2.25f;  // pad specific parameter: distance between the two main peaks
