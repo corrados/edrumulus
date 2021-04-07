@@ -52,13 +52,29 @@ Edrumulus::Edrumulus() :
   timerAttachInterrupt ( timer, &on_timer, true );
   timerAlarmWrite      ( timer, 1000000 / Fs, true ); // here we define the sampling rate (1 MHz / Fs)
   timerAlarmEnable     ( timer );
+
+// TEST
+task_handle = 0;//xTaskGetCurrentTaskHandle();
 }
 
 
 void IRAM_ATTR Edrumulus::on_timer()
 {
   // tell the main loop that a sample can be read by setting the semaphore
-  xSemaphoreGiveFromISR ( edrumulus_pointer->timer_semaphore, NULL );
+  //xSemaphoreGive ( edrumulus_pointer->timer_semaphore );
+
+// TEST
+if ( edrumulus_pointer->task_handle != 0 )
+{
+  BaseType_t xHigherPriorityTaskWoken;
+  xHigherPriorityTaskWoken = pdFALSE;
+  
+  xTaskNotifyGive ( /* The handle of the task to which 
+                              the notification is being sent. */
+                           edrumulus_pointer->task_handle );
+  
+  //portYIELD_FROM_ISR();
+}
 }
 
 
@@ -107,6 +123,9 @@ void Edrumulus::setup ( const int  conf_num_pads,
     }
     delayMicroseconds ( 100 );
   }
+
+// TEST
+task_handle = xTaskGetCurrentTaskHandle();  
 }
 
 
@@ -126,7 +145,8 @@ return;
 */
 
   // wait for the timer to get the correct sampling rate when reading the analog value
-  if ( xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
+  //if ( xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
+  if ( ulTaskNotifyTake ( pdFALSE, portMAX_DELAY ) != 0 )
   {
     // manage subsampling of control input
     bool do_ctrl_sampling = false;
@@ -198,6 +218,10 @@ return;
     {
       // set error flag if sample rate deviation is too large
       status_is_error            = ( abs ( 1.0f / ( micros() - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f - Fs ) > samplerate_max_error_Hz );
+
+// TEST
+Serial.println ( 1.0f / ( micros() - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f, 7 );
+
       samplerate_prev_micros_cnt = 0;
       samplerate_prev_micros     = micros();
     }

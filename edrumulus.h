@@ -280,6 +280,7 @@ protected:
   volatile SemaphoreHandle_t timer_semaphore;
   hw_timer_t*                timer = nullptr;
   static void IRAM_ATTR      on_timer();
+  TaskHandle_t task_handle;
 
 
   // -----------------------------------------------------------------------------

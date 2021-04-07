@@ -21,7 +21,7 @@
  SOFTWARE.
 \******************************************************************************/
 
-#define USE_MIDI
+//#define USE_MIDI
 
 #include "edrumulus.h"
 
