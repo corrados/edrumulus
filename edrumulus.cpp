@@ -163,7 +163,6 @@ return;
         {
           sample[j] = cancel_ADC_spikes ( sample[j], i, j );
         }
-
       }
 
       // process sample

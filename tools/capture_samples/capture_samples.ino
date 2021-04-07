@@ -23,8 +23,12 @@
 
 #include "soc/sens_reg.h"
 
-const int                  analog_pin = 35;//25;
-const int                  Fs         = 8000;
+#define DO_MULT_INPUT_CAPTURE_TEST
+
+const int                  analog_pin                     = 35;//25;
+const int                  num_all_pings                  = 15;
+const int                  all_analog_pins[num_all_pings] = { 36, 39, 34, 35, 32, 33, 25, 26, 27, 14, 12, 13, 4, 2, 15 };
+const int                  Fs                             = 8000;
 volatile SemaphoreHandle_t timer_semaphore;
 hw_timer_t*                timer = nullptr;
 const int                  dc_offset_est_len   = 5000; // samples
@@ -111,7 +115,11 @@ uint16_t my_analogRead ( uint8_t pin )
 
 void setup()
 {
+#ifdef DO_MULT_INPUT_CAPTURE_TEST
+  Serial.begin ( 115200 );
+#else
   Serial.begin ( 500000 );
+#endif
 
   my_init_analogRead();
 
@@ -139,6 +147,8 @@ void loop()
   // wait for the timer to get the correct sampling rate when reading the analog value
   if ( xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
   {
+
+#ifndef DO_MULT_INPUT_CAPTURE_TEST    
     const int sample_raw = my_analogRead ( analog_pin );
 
 // TEST
@@ -172,5 +182,30 @@ prvious_sample1_out = sample_raw;
     send_buf[2] = sample >> 8;   // high byte
     send_buf[3] = sample & 0xFF; // low byte
     Serial.write ( send_buf, 4 );
+#else
+    // capture from all analog inputs
+    int sample_org[num_all_pings];
+
+    for ( int i = 0; i < num_all_pings; i++ )
+    {
+      sample_org[i] = my_analogRead ( all_analog_pins[i] );
+    }
+
+    Serial.println ( String ( sample_org[0] ) + "\t" +
+                     String ( sample_org[1] ) + "\t" +
+                     String ( sample_org[2] ) + "\t" +
+                     String ( sample_org[3] ) + "\t" +
+                     String ( sample_org[4] ) + "\t" +
+                     String ( sample_org[5] ) + "\t" +
+                     String ( sample_org[6] ) + "\t" +
+                     String ( sample_org[7] ) + "\t" +
+                     String ( sample_org[8] ) + "\t" +
+                     String ( sample_org[9] ) + "\t" +
+                     String ( sample_org[10] ) + "\t" +
+                     String ( sample_org[11] ) + "\t" +
+                     String ( sample_org[12] ) + "\t" +
+                     String ( sample_org[13] ) + "\t" +
+                     String ( sample_org[14] ) );
+#endif
   }
 }
