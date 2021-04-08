@@ -47,18 +47,51 @@ Edrumulus::Edrumulus() :
   my_init_analogRead();
 
   // prepare timer at a rate of given sampling rate
-  timer_semaphore = xSemaphoreCreateBinary();
-  timer           = timerBegin ( 0, 80, true ); // prescaler of 80 (i.e. below we have 1 MHz instead of 80 MHz)
+  timer_semaphore  = xSemaphoreCreateBinary();
+  timer_semaphore2 = xSemaphoreCreateBinary();
+  timer            = timerBegin ( 0, 80, true ); // prescaler of 80 (i.e. below we have 1 MHz instead of 80 MHz)
   timerAttachInterrupt ( timer, &on_timer, true );
   timerAlarmWrite      ( timer, 1000000 / Fs, true ); // here we define the sampling rate (1 MHz / Fs)
   timerAlarmEnable     ( timer );
+
+// TEST
+process_done_semaphore = xSemaphoreCreateBinary();
+xTaskCreatePinnedToCore ( other_process_thread, "other_process_thread", 10000, NULL, 1, NULL, 0 );
 }
 
 
 void IRAM_ATTR Edrumulus::on_timer()
 {
   // tell the main loop that a sample can be read by setting the semaphore
-  xSemaphoreGiveFromISR ( edrumulus_pointer->timer_semaphore, NULL );
+  xSemaphoreGive ( edrumulus_pointer->timer_semaphore );
+  xSemaphoreGive ( edrumulus_pointer->timer_semaphore2 );
+}
+
+
+void Edrumulus::other_process_thread ( void* param )
+{
+  for ( ; ; )
+  {
+    // wait for the timer to get the correct sampling rate when reading the analog value
+    if ( xSemaphoreTake ( edrumulus_pointer->timer_semaphore2, portMAX_DELAY ) == pdTRUE )
+    {
+      //edrumulus_pointer->process_pads ( 0, 3 );
+    }
+
+    xSemaphoreGive ( edrumulus_pointer->process_done_semaphore );
+  }
+}
+
+
+void Edrumulus::process()
+{
+  // wait for the timer to get the correct sampling rate when reading the analog value
+  if ( xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
+  {
+    process_pads ( 4, number_pads - 1 );
+
+    xSemaphoreTake ( process_done_semaphore, portMAX_DELAY );
+  }
 }
 
 
@@ -110,7 +143,8 @@ void Edrumulus::setup ( const int  conf_num_pads,
 }
 
 
-void Edrumulus::process()
+void Edrumulus::process_pads ( const int start_pad_idx,
+                               const int stop_pad_idx )
 {
   float debug;
 
@@ -125,84 +159,84 @@ if ( Serial.available() > 0 )
 return;
 */
 
-  // wait for the timer to get the correct sampling rate when reading the analog value
-  if ( xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
-  {
-    // manage subsampling of control input
-    bool do_ctrl_sampling = false;
-    ctrl_sample_cnt--;
+  // manage subsampling of control input
+  bool do_ctrl_sampling = false;
+  ctrl_sample_cnt--;
 
-    if ( ctrl_sample_cnt == 0 )
+  if ( ctrl_sample_cnt == 0 )
+  {
+    do_ctrl_sampling = true;
+    ctrl_sample_cnt  = ctrl_subsampling;
+  }
+
+  for ( int i = start_pad_idx; i <= stop_pad_idx; i++ )
+  {
+    int        sample_org[MAX_NUM_PAD_INPUTS];
+    float      sample[MAX_NUM_PAD_INPUTS];
+    const bool is_ctrl_pad = pad[i].get_is_control();
+    peak_found[i]          = false;
+    control_found[i]       = false;
+
+    // the hi-hat controller must not be read at 8 kHz sampling rate but much less
+    if ( is_ctrl_pad && !do_ctrl_sampling )
     {
-      do_ctrl_sampling = true;
-      ctrl_sample_cnt  = ctrl_subsampling;
+      continue; // skip this controller pad for this sample
     }
 
-    for ( int i = 0; i < number_pads; i++ )
+    // get sample(s) from ADC and prepare sample(s) for processing
+    for ( int j = 0; j < number_inputs[i]; j++ )
     {
-      int        sample_org[MAX_NUM_PAD_INPUTS];
-      float      sample[MAX_NUM_PAD_INPUTS];
-      const bool is_ctrl_pad = pad[i].get_is_control();
-      peak_found[i]          = false;
-      control_found[i]       = false;
+      sample_org[j] = my_analogRead ( analog_pin[i][j] );
+      sample[j]     = sample_org[j] - dc_offset[i][j]; // compensate DC offset
 
-      // the hi-hat controller must not be read at 8 kHz sampling rate but much less
-      if ( is_ctrl_pad && !do_ctrl_sampling )
+      // ADC spike cancellation (do not use spike cancellation for rim switches since they have short peaks)
+      if ( spike_cancel_is_used && !( pad[i].get_is_rim_switch() && ( j > 0 ) ) )
       {
-        continue; // skip this controller pad for this sample
+        sample[j] = cancel_ADC_spikes ( sample[j], i, j );
       }
+    }
 
-      // get sample(s) from ADC and prepare sample(s) for processing
+    // process sample
+    if ( is_ctrl_pad )
+    {
+      pad[i].process_control_sample ( sample_org, control_found[i], midi_ctrl_value[i] );
+    }
+    else
+    {
+      pad[i].process_sample ( sample, peak_found[i], midi_velocity[i], midi_pos[i], is_rim_shot[i], debug );
+
+      // overload detection
       for ( int j = 0; j < number_inputs[i]; j++ )
       {
-        sample_org[j] = my_analogRead ( analog_pin[i][j] );
-        sample[j]     = sample_org[j] - dc_offset[i][j]; // compensate DC offset
-
-        // ADC spike cancellation (do not use spike cancellation for rim switches since they have short peaks)
-        if ( spike_cancel_is_used && !( pad[i].get_is_rim_switch() && ( j > 0 ) ) )
+        // check for the two lowest/largest possible ADC range values
+        if ( ( sample_org[j] >= ( ADC_MAX_RANGE - 2 ) ) || ( sample_org[j] <= 1 ) )
         {
-          sample[j] = cancel_ADC_spikes ( sample[j], i, j );
-        }
-      }
-
-      // process sample
-      if ( is_ctrl_pad )
-      {
-        pad[i].process_control_sample ( sample_org, control_found[i], midi_ctrl_value[i] );
-      }
-      else
-      {
-        pad[i].process_sample ( sample, peak_found[i], midi_velocity[i], midi_pos[i], is_rim_shot[i], debug );
-
-        // overload detection
-        for ( int j = 0; j < number_inputs[i]; j++ )
-        {
-          // check for the two lowest/largest possible ADC range values
-          if ( ( sample_org[j] >= ( ADC_MAX_RANGE - 2 ) ) || ( sample_org[j] <= 1 ) )
-          {
-            overload_LED_cnt = overload_LED_on_time;
-          }
+          overload_LED_cnt = overload_LED_on_time;
         }
       }
     }
-
-    // overload detection: keep LED on for a while
-    if ( overload_LED_cnt > 0 )
-    {
-      overload_LED_cnt--;
-      status_is_overload = ( overload_LED_cnt > 0 );
-    }
-
-    // sampling rate check (i.e. if CPU is overloaded, the sample rate will drop which is bad)
-    if ( samplerate_prev_micros_cnt >= samplerate_max_cnt )
-    {
-      // set error flag if sample rate deviation is too large
-      status_is_error            = ( abs ( 1.0f / ( micros() - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f - Fs ) > samplerate_max_error_Hz );
-      samplerate_prev_micros_cnt = 0;
-      samplerate_prev_micros     = micros();
-    }
-    samplerate_prev_micros_cnt++;
   }
+
+  // overload detection: keep LED on for a while
+  if ( overload_LED_cnt > 0 )
+  {
+    overload_LED_cnt--;
+    status_is_overload = ( overload_LED_cnt > 0 );
+  }
+
+  // sampling rate check (i.e. if CPU is overloaded, the sample rate will drop which is bad)
+  if ( samplerate_prev_micros_cnt >= samplerate_max_cnt )
+  {
+    // set error flag if sample rate deviation is too large
+    status_is_error            = ( abs ( 1.0f / ( micros() - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f - Fs ) > samplerate_max_error_Hz );
+
+float test = 1.0f / ( micros() - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f;
+Serial.println ( String ( xPortGetCoreID() ) + ": " + String ( test ) );
+
+    samplerate_prev_micros_cnt = 0;
+    samplerate_prev_micros     = micros();
+  }
+  samplerate_prev_micros_cnt++;
 }
 
 

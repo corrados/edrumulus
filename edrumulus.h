@@ -277,9 +277,11 @@ protected:
   int           midi_ctrl_value[MAX_NUM_PADS];
   bool          is_rim_shot[MAX_NUM_PADS];
 
-  volatile SemaphoreHandle_t timer_semaphore;
+  volatile SemaphoreHandle_t timer_semaphore, timer_semaphore2, process_done_semaphore;
   hw_timer_t*                timer = nullptr;
   static void IRAM_ATTR      on_timer();
+  static void other_process_thread ( void* param );
+  void        process_pads ( const int start_pad_idx, const int stop_pad_idx );
 
 
   // -----------------------------------------------------------------------------
