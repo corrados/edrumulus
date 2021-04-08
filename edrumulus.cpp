@@ -39,6 +39,11 @@ Edrumulus::Edrumulus() :
   status_is_overload         = false;
   samplerate_prev_micros_cnt = 0;
   samplerate_prev_micros     = micros();
+
+  samplerate_prev_micros_cnt1 = 0;
+  samplerate_prev_micros1     = micros();
+
+  
   status_is_error            = false;
   spike_cancel_is_used       = true; // use spike cancellation per default (note that it increases the latency)
   ctrl_sample_cnt            = ctrl_subsampling;
@@ -63,10 +68,11 @@ xTaskCreatePinnedToCore ( other_process_thread, "other_process_thread", 10000, N
 void IRAM_ATTR Edrumulus::on_timer()
 {
   // tell the main loop that a sample can be read by setting the semaphore
-  xSemaphoreGive ( edrumulus_pointer->timer_semaphore );
-  xSemaphoreGive ( edrumulus_pointer->timer_semaphore2 );
+  xSemaphoreGiveFromISR ( edrumulus_pointer->timer_semaphore, NULL );
+  
 }
 
+int split_pad_idx = 3;
 
 void Edrumulus::other_process_thread ( void* param )
 {
@@ -75,10 +81,26 @@ void Edrumulus::other_process_thread ( void* param )
     // wait for the timer to get the correct sampling rate when reading the analog value
     if ( xSemaphoreTake ( edrumulus_pointer->timer_semaphore2, portMAX_DELAY ) == pdTRUE )
     {
-      //edrumulus_pointer->process_pads ( 0, 3 );
-    }
+      edrumulus_pointer->process_pads ( 0, split_pad_idx );
 
-    xSemaphoreGive ( edrumulus_pointer->process_done_semaphore );
+/*
+      // sampling rate check (i.e. if CPU is overloaded, the sample rate will drop which is bad)
+      if ( edrumulus_pointer->samplerate_prev_micros_cnt1 >= edrumulus_pointer->samplerate_max_cnt )
+      {
+        // set error flag if sample rate deviation is too large
+  //    status_is_error            = ( abs ( 1.0f / ( micros() - edrumulus_pointer->samplerate_prev_micros1 ) * edrumulus_pointer->samplerate_max_cnt * 1e6f - Fs ) > edrumulus_pointer->samplerate_max_error_Hz );
+
+float test = 1.0f / ( micros() - edrumulus_pointer->samplerate_prev_micros1 ) * edrumulus_pointer->samplerate_max_cnt * 1e6f;
+Serial.println ( String ( xPortGetCoreID() ) + ": " + String ( test ) );
+
+        edrumulus_pointer->samplerate_prev_micros_cnt1 = 0;
+        edrumulus_pointer->samplerate_prev_micros1     = micros();
+      }
+      edrumulus_pointer->samplerate_prev_micros_cnt1++;
+*/
+
+      xSemaphoreGive ( edrumulus_pointer->process_done_semaphore );
+    }
   }
 }
 
@@ -86,9 +108,13 @@ void Edrumulus::other_process_thread ( void* param )
 void Edrumulus::process()
 {
   // wait for the timer to get the correct sampling rate when reading the analog value
-  if ( xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
+  if ( true)//xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
   {
-    process_pads ( 4, number_pads - 1 );
+    read_samples();
+
+    xSemaphoreGive ( timer_semaphore2 );
+
+    process_pads ( split_pad_idx + 1, number_pads - 1 );
 
     xSemaphoreTake ( process_done_semaphore, portMAX_DELAY );
   }
@@ -143,22 +169,8 @@ void Edrumulus::setup ( const int  conf_num_pads,
 }
 
 
-void Edrumulus::process_pads ( const int start_pad_idx,
-                               const int stop_pad_idx )
+void Edrumulus::read_samples()
 {
-  float debug;
-
-/*
-// for debugging: take samples from Octave, process and return result to Octave
-if ( Serial.available() > 0 )
-{
-  const float fIn = Serial.parseFloat();
-  process_sample ( fIn, peak_found, midi_velocity, midi_pos, is_rim_shot, debug );
-  Serial.println ( debug, 7 );
-}
-return;
-*/
-
   // manage subsampling of control input
   bool do_ctrl_sampling = false;
   ctrl_sample_cnt--;
@@ -169,10 +181,10 @@ return;
     ctrl_sample_cnt  = ctrl_subsampling;
   }
 
-  for ( int i = start_pad_idx; i <= stop_pad_idx; i++ )
+  for ( int i = 0; i < number_pads; i++ )
   {
-    int        sample_org[MAX_NUM_PAD_INPUTS];
-    float      sample[MAX_NUM_PAD_INPUTS];
+    //int        sample_org[MAX_NUM_PAD_INPUTS];
+    //float      sample[MAX_NUM_PAD_INPUTS];
     const bool is_ctrl_pad = pad[i].get_is_control();
     peak_found[i]          = false;
     control_found[i]       = false;
@@ -186,30 +198,30 @@ return;
     // get sample(s) from ADC and prepare sample(s) for processing
     for ( int j = 0; j < number_inputs[i]; j++ )
     {
-      sample_org[j] = my_analogRead ( analog_pin[i][j] );
-      sample[j]     = sample_org[j] - dc_offset[i][j]; // compensate DC offset
+      sample_org1[i][j] = my_analogRead ( analog_pin[i][j] );
+      sample1[i][j]     = sample_org1[i][j] - dc_offset[i][j]; // compensate DC offset
 
       // ADC spike cancellation (do not use spike cancellation for rim switches since they have short peaks)
       if ( spike_cancel_is_used && !( pad[i].get_is_rim_switch() && ( j > 0 ) ) )
       {
-        sample[j] = cancel_ADC_spikes ( sample[j], i, j );
+        sample1[i][j] = cancel_ADC_spikes ( sample1[i][j], i, j );
       }
     }
 
     // process sample
     if ( is_ctrl_pad )
     {
-      pad[i].process_control_sample ( sample_org, control_found[i], midi_ctrl_value[i] );
+      //pad[i].process_control_sample ( sample_org1[i], control_found[i], midi_ctrl_value[i] );
     }
     else
     {
-      pad[i].process_sample ( sample, peak_found[i], midi_velocity[i], midi_pos[i], is_rim_shot[i], debug );
+      //pad[i].process_sample ( sample1[i], peak_found[i], midi_velocity[i], midi_pos[i], is_rim_shot[i], debug );
 
       // overload detection
       for ( int j = 0; j < number_inputs[i]; j++ )
       {
         // check for the two lowest/largest possible ADC range values
-        if ( ( sample_org[j] >= ( ADC_MAX_RANGE - 2 ) ) || ( sample_org[j] <= 1 ) )
+        if ( ( sample_org1[i][j] >= ( ADC_MAX_RANGE - 2 ) ) || ( sample_org1[i][j] <= 1 ) )
         {
           overload_LED_cnt = overload_LED_on_time;
         }
@@ -238,6 +250,60 @@ Serial.println ( String ( xPortGetCoreID() ) + ": " + String ( test ) );
   }
   samplerate_prev_micros_cnt++;
 }
+
+
+void Edrumulus::process_pads ( const int start_pad_idx,
+                               const int stop_pad_idx )
+{
+  float debug;
+
+/*
+// for debugging: take samples from Octave, process and return result to Octave
+if ( Serial.available() > 0 )
+{
+  const float fIn = Serial.parseFloat();
+  process_sample ( fIn, peak_found, midi_velocity, midi_pos, is_rim_shot, debug );
+  Serial.println ( debug, 7 );
+}
+return;
+*/
+
+  // manage subsampling of control input
+  bool do_ctrl_sampling = false;
+  ctrl_sample_cnt--;
+
+  if ( ctrl_sample_cnt == 0 )
+  {
+    do_ctrl_sampling = true;
+    ctrl_sample_cnt  = ctrl_subsampling;
+  }
+
+  for ( int i = start_pad_idx; i <= stop_pad_idx; i++ )
+  {
+    //int        sample_org[MAX_NUM_PAD_INPUTS];
+    //float      sample[MAX_NUM_PAD_INPUTS];
+    const bool is_ctrl_pad = pad[i].get_is_control();
+    peak_found[i]          = false;
+    control_found[i]       = false;
+
+    // the hi-hat controller must not be read at 8 kHz sampling rate but much less
+    if ( is_ctrl_pad && !do_ctrl_sampling )
+    {
+      continue; // skip this controller pad for this sample
+    }
+
+    // process sample
+    if ( is_ctrl_pad )
+    {
+      pad[i].process_control_sample ( sample_org1[i], control_found[i], midi_ctrl_value[i] );
+    }
+    else
+    {
+      pad[i].process_sample ( sample1[i], peak_found[i], midi_velocity[i], midi_pos[i], is_rim_shot[i], debug );
+    }
+  }
+}
+
 
 
 // -----------------------------------------------------------------------------

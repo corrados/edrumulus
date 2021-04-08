@@ -242,7 +242,7 @@ protected:
   const int dc_offset_est_len       = 5000; // samples
   const int samplerate_max_cnt      = 10000; // samples
   const int samplerate_max_error_Hz = 100; // tolerate a sample rate deviation of 100 Hz
-  const int ctrl_subsampling        = 10; // the sampling rate of the control can be much lower
+  const int ctrl_subsampling        = 1;//10; // the sampling rate of the control can be much lower
 
   enum Espikestate
   {
@@ -256,6 +256,10 @@ protected:
   int           number_inputs[MAX_NUM_PADS];
   int           analog_pin[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   float         dc_offset[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+
+int        sample_org1[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+float      sample1[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+
   Espikestate   prev1_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   Espikestate   prev2_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   Espikestate   prev3_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
@@ -269,6 +273,10 @@ protected:
   int           ctrl_sample_cnt;
   int           samplerate_prev_micros_cnt;
   unsigned long samplerate_prev_micros;
+
+  int           samplerate_prev_micros_cnt1;
+  unsigned long samplerate_prev_micros1;
+
   Pad           pad[MAX_NUM_PADS];
   bool          peak_found[MAX_NUM_PADS];
   bool          control_found[MAX_NUM_PADS];
@@ -281,6 +289,7 @@ protected:
   hw_timer_t*                timer = nullptr;
   static void IRAM_ATTR      on_timer();
   static void other_process_thread ( void* param );
+  void read_samples();
   void        process_pads ( const int start_pad_idx, const int stop_pad_idx );
 
 
