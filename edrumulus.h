@@ -242,7 +242,6 @@ protected:
   const int dc_offset_est_len       = 5000; // samples
   const int samplerate_max_cnt      = 10000; // samples
   const int samplerate_max_error_Hz = 100; // tolerate a sample rate deviation of 100 Hz
-  const int ctrl_subsampling        = 10; // the sampling rate of the control can be much lower
 
   enum Espikestate
   {
@@ -256,6 +255,7 @@ protected:
   int           number_inputs[MAX_NUM_PADS];
   int           analog_pin[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   float         dc_offset[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  int           sample_org[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   Espikestate   prev1_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   Espikestate   prev2_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   Espikestate   prev3_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
@@ -266,7 +266,6 @@ protected:
   int           overload_LED_on_time;
   bool          status_is_overload;
   bool          status_is_error;
-  int           ctrl_sample_cnt;
   int           samplerate_prev_micros_cnt;
   unsigned long samplerate_prev_micros;
   Pad           pad[MAX_NUM_PADS];
@@ -280,6 +279,7 @@ protected:
   volatile SemaphoreHandle_t timer_semaphore;
   hw_timer_t*                timer = nullptr;
   static void IRAM_ATTR      on_timer();
+  void                       process_pads();
 
 
   // -----------------------------------------------------------------------------
