@@ -23,17 +23,15 @@
 
 #include "edrumulus.h"
 
-Edrumulus* edrumulus_pointer = nullptr;
-
 
 Edrumulus::Edrumulus() :
 
 // TODO try to increase the sampling rate again...
 
-  Fs ( 5500 ) // this is the most fundamental system parameter: system sampling rate
+  Fs              ( 5500 ), // this is the most fundamental system parameter: system sampling rate
+  edrumulus_esp32 ( Fs )
 {
   // initializations
-  edrumulus_pointer          = this;                 // global pointer to this class needed for static callback function
   overload_LED_on_time       = round ( 0.25f * Fs ); // minimum overload LED on time (e.g., 250 ms)
   overload_LED_cnt           = 0;
   status_is_overload         = false;
@@ -41,23 +39,6 @@ Edrumulus::Edrumulus() :
   samplerate_prev_micros     = micros();
   status_is_error            = false;
   spike_cancel_is_used       = true; // use spike cancellation per default (note that it increases the latency)
-
-  // prepare the ADC and analog GPIO inputs
-  my_init_analogRead();
-
-  // prepare timer at a rate of given sampling rate
-  timer_semaphore = xSemaphoreCreateBinary();
-  timer           = timerBegin ( 0, 80, true ); // prescaler of 80 (i.e. below we have 1 MHz instead of 80 MHz)
-  timerAttachInterrupt ( timer, &on_timer, true );
-  timerAlarmWrite      ( timer, 1000000 / Fs, true ); // here we define the sampling rate (1 MHz / Fs)
-  timerAlarmEnable     ( timer );
-}
-
-
-void IRAM_ATTR Edrumulus::on_timer()
-{
-  // tell the main loop that a sample can be read by setting the semaphore
-  xSemaphoreGiveFromISR ( edrumulus_pointer->timer_semaphore, NULL );
 }
 
 
@@ -90,7 +71,7 @@ void Edrumulus::setup ( const int  conf_num_pads,
         if ( k == 0 )
         {
           // initial value
-          dc_offset_sum[i][j] = my_analogRead ( analog_pin[i][j] );
+          dc_offset_sum[i][j] = edrumulus_esp32.my_analogRead ( analog_pin[i][j] );
         }
         else if ( k == dc_offset_est_len - 1 )
         {
@@ -100,7 +81,7 @@ void Edrumulus::setup ( const int  conf_num_pads,
         else
         {
           // intermediate value, add to the existing value
-          dc_offset_sum[i][j] += my_analogRead ( analog_pin[i][j] );
+          dc_offset_sum[i][j] += edrumulus_esp32.my_analogRead ( analog_pin[i][j] );
         }
       }
     }
@@ -110,25 +91,6 @@ void Edrumulus::setup ( const int  conf_num_pads,
 
 
 void Edrumulus::process()
-{
-  // wait for the timer to get the correct sampling rate when reading the analog value
-  if ( xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
-  {
-    // get samples from the ADCs
-    for ( int i = 0; i < number_pads; i++ )
-    {
-      for ( int j = 0; j < number_inputs[i]; j++ )
-      {
-        sample_org[i][j] = my_analogRead ( analog_pin[i][j] );
-      }
-    }
-
-    process_pads();
-  }
-}
-
-
-void Edrumulus::process_pads()
 {
   float debug;
 
@@ -142,6 +104,12 @@ if ( Serial.available() > 0 )
 }
 return;
 */
+
+  // note that this is a blocking function
+  edrumulus_esp32.capture_samples ( number_pads,
+                                    number_inputs,
+                                    analog_pin,
+                                    sample_org );
 
   for ( int i = 0; i < number_pads; i++ )
   {
@@ -159,7 +127,7 @@ return;
       // ADC spike cancellation (do not use spike cancellation for rim switches since they have short peaks)
       if ( spike_cancel_is_used && !( pad[i].get_is_rim_switch() && ( j > 0 ) ) )
       {
-        sample[j] = cancel_ADC_spikes ( sample[j], i, j );
+        sample[j] = edrumulus_esp32.cancel_ADC_spikes ( sample[j], i, j );
       }
     }
 
