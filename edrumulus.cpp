@@ -28,8 +28,7 @@ Edrumulus::Edrumulus() :
 
 // TODO try to increase the sampling rate again...
 
-  Fs              ( 5500 ), // this is the most fundamental system parameter: system sampling rate
-  edrumulus_esp32 ( Fs )
+  Fs ( 5500 ) // this is the most fundamental system parameter: system sampling rate
 {
   // initializations
   overload_LED_on_time       = round ( 0.25f * Fs ); // minimum overload LED on time (e.g., 250 ms)
@@ -58,6 +57,10 @@ void Edrumulus::setup ( const int  conf_num_pads,
     // setup the pad
     pad[i].setup ( Fs, number_inputs[i] );
   }
+
+  // setup the ESP32 specific object, this has to be done after assigning the analog
+  // pin numbers and before using the analog read function (as in the DC offset estimator)
+  edrumulus_esp32.setup ( Fs );
 
   // estimate the DC offset for all inputs
   float dc_offset_sum[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
@@ -110,6 +113,19 @@ return;
                                     number_inputs,
                                     analog_pin,
                                     sample_org );
+
+/*
+// TEST
+String serial_print;
+for ( int i = 0; i < number_pads; i++ )
+{
+  for ( int j = 0; j < number_inputs[i]; j++ )
+  {
+    serial_print += String ( sample_org[i][j] ) + "\t";
+  }
+}
+Serial.println ( serial_print );
+*/
 
   for ( int i = 0; i < number_pads; i++ )
   {

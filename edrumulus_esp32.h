@@ -45,7 +45,9 @@ public:
     ST_OTHER
   };
 
-  Edrumulus_esp32 ( const int conf_Fs );
+  Edrumulus_esp32();
+
+  void setup ( const int conf_Fs );
 
   uint16_t my_analogRead ( uint8_t pin );
 

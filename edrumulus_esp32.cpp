@@ -26,11 +26,17 @@
 Edrumulus_esp32* edrumulus_esp32_pointer = nullptr;
 
 
-Edrumulus_esp32::Edrumulus_esp32 ( const int conf_Fs )
+Edrumulus_esp32::Edrumulus_esp32()
+{
+  // global pointer to this class needed for static callback function
+  edrumulus_esp32_pointer = this;
+}
+
+
+void Edrumulus_esp32::setup ( const int conf_Fs )
 {
   // set essential parameters
-  Fs                      = conf_Fs;
-  edrumulus_esp32_pointer = this; // global pointer to this class needed for static callback function
+  Fs = conf_Fs;
 
   // prepare the ADC and analog GPIO inputs
   init_my_analogRead();
