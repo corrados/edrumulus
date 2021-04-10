@@ -1,5 +1,8 @@
 # Edrumulus project log
 
+- (04/10/2021) Here is what my current Edrumulus prototype looks like:
+  <br/>![Prototype 1](algorithm/images/edrumulus_prototype1.jpg)
+
 - (04/04/2021) This is how the ESP32 ADC signal looks like:
    <br/>![ESP32 ADC Signals](algorithm/images/esp32adc.png)<br/>
    These spikes seem to be a hardware restriction of the ESP32. I am trying to mitigate this
