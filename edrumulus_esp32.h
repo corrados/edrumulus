@@ -53,7 +53,7 @@ public:
                const int number_inputs[],
                int       analog_pin[][MAX_NUM_PAD_INPUTS] );
 
-  uint16_t my_analogRead ( uint8_t pin );
+  uint16_t my_analogRead ( const uint8_t pin );
 
   void capture_samples ( const int number_pads,
                          const int number_inputs[],
@@ -72,6 +72,11 @@ protected:
 
   void init_my_analogRead ( const int total_number_inputs,
                             int       input_pin[] );
+
+  void my_analogRead_parallel ( const uint8_t pin_adc1,
+                                const uint8_t pin_adc2,
+                                uint16_t&     out_adc1,
+                                uint16_t&     out_adc2 );
 
   int         num_pin_pairs;
   int         adc1_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
