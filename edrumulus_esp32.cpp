@@ -305,14 +305,13 @@ void Edrumulus_esp32::my_analogRead_parallel ( const uint8_t pin_adc1,
   const int8_t channel_adc1 = digitalPinToAnalogChannel ( pin_adc1 );
   const int8_t channel_adc2 = digitalPinToAnalogChannel ( pin_adc2 ) - 10;
 
-  CLEAR_PERI_REG_MASK ( SENS_SAR_MEAS_START1_REG, SENS_MEAS1_START_SAR_M );
-  CLEAR_PERI_REG_MASK ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_START_SAR_M );
-
   // start ADC1
+  CLEAR_PERI_REG_MASK ( SENS_SAR_MEAS_START1_REG, SENS_MEAS1_START_SAR_M );
   SET_PERI_REG_BITS   ( SENS_SAR_MEAS_START1_REG, SENS_SAR1_EN_PAD, ( 1 << channel_adc1 ), SENS_SAR1_EN_PAD_S );
   SET_PERI_REG_MASK   ( SENS_SAR_MEAS_START1_REG, SENS_MEAS1_START_SAR_M );
 
   // start ADC2
+  CLEAR_PERI_REG_MASK ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_START_SAR_M );
   SET_PERI_REG_BITS   ( SENS_SAR_MEAS_START2_REG, SENS_SAR2_EN_PAD, ( 1 << channel_adc2 ), SENS_SAR2_EN_PAD_S );
   SET_PERI_REG_MASK   ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_START_SAR_M );
 
