@@ -47,7 +47,10 @@ public:
 
   Edrumulus_esp32();
 
-  void setup ( const int conf_Fs );
+  void setup ( const int conf_Fs,
+               const int number_pads,
+               const int number_inputs[],
+               int       analog_pin[][MAX_NUM_PAD_INPUTS] );
 
   uint16_t my_analogRead ( uint8_t pin );
 
@@ -67,6 +70,8 @@ protected:
   static void IRAM_ATTR      on_timer();
   void                       init_my_analogRead();
 
+  int         input_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+  int         input_adc[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
   Espikestate prev1_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   Espikestate prev2_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   Espikestate prev3_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];

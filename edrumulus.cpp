@@ -60,7 +60,10 @@ void Edrumulus::setup ( const int  conf_num_pads,
 
   // setup the ESP32 specific object, this has to be done after assigning the analog
   // pin numbers and before using the analog read function (as in the DC offset estimator)
-  edrumulus_esp32.setup ( Fs );
+  edrumulus_esp32.setup ( Fs,
+                          number_pads,
+                          number_inputs,
+                          analog_pin );
 
   // estimate the DC offset for all inputs
   float dc_offset_sum[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
@@ -98,11 +101,11 @@ void Edrumulus::process()
   float debug;
 
 /*
-// for debugging: take samples from Octave, process and return result to Octave
+// TEST for debugging: take samples from Octave, process and return result to Octave
 if ( Serial.available() > 0 )
 {
   const float fIn = Serial.parseFloat();
-  process_sample ( fIn, peak_found, midi_velocity, midi_pos, is_rim_shot, debug );
+  pad[0].process_sample ( fIn, peak_found, midi_velocity, midi_pos, is_rim_shot, debug );
   Serial.println ( debug, 7 );
 }
 return;
@@ -115,7 +118,7 @@ return;
                                     sample_org );
 
 /*
-// TEST
+// TEST for plotting all captures samples in the serial plotter (but with low sampling rate)
 String serial_print;
 for ( int i = 0; i < number_pads; i++ )
 {

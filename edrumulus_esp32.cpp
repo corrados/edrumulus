@@ -33,10 +33,74 @@ Edrumulus_esp32::Edrumulus_esp32()
 }
 
 
-void Edrumulus_esp32::setup ( const int conf_Fs )
+void Edrumulus_esp32::setup ( const int conf_Fs,
+                              const int number_pads,
+                              const int number_inputs[],
+                              int       analog_pin[][MAX_NUM_PAD_INPUTS] )
 {
   // set essential parameters
   Fs = conf_Fs;
+
+
+// TODO use number_pads, number_inputs, analog_pin
+int  total_number_inputs = 0; // we use it as a counter, too
+bool input_is_used[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+
+for ( int i = 0; i < number_pads; i++ )
+{
+  for ( int j = 0; j < number_inputs[i]; j++ )
+  {
+    // store pin number in vector and identify ADC number for each pin
+    input_pin[total_number_inputs]     = analog_pin[i][j];
+    input_adc[total_number_inputs]     = ( digitalPinToAnalogChannel ( analog_pin[i][j] ) >= 10 ); // channel < 10 -> ADC1, channel >= 10 -> ADC2
+    input_is_used[total_number_inputs] = false; // initialization needed for ADC pairs identification
+    total_number_inputs++;
+  }
+}
+
+
+int num_pin_pairs = 0; // we use it as a counter, too
+int adc1_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+int adc2_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+
+// find ADC pairs, i.e., one pin uses ADC1 and the other uses ADC2
+for ( int i = 0; i < total_number_inputs - 1; i++ )
+{
+  for ( int j = total_number_inputs - 1; j > i; j-- )
+  {
+    // check for different ADCs: 0+0=0, 1+0=1 (pair), 0+1=1 (pair), 1+1=2
+    if ( !input_is_used[j] && ( input_adc[i] + input_adc[j] == 1 ) )
+    {
+      if ( input_adc[i] == 0 )
+      {
+        adc1_pin[num_pin_pairs] = input_pin[i];
+        adc2_pin[num_pin_pairs] = input_pin[j];
+      }
+      else
+      {
+        adc1_pin[num_pin_pairs] = input_pin[j];
+        adc2_pin[num_pin_pairs] = input_pin[i];
+      }
+
+      num_pin_pairs++;
+      input_is_used[i] = true;
+      input_is_used[j] = true;
+      break;
+    }
+  }
+}
+
+/*
+// TEST for debugging the algorithm
+String serial_print = "Pairs: ";
+for ( int i = 0; i < num_pin_pairs; i++ )
+{
+  serial_print += String ( i ) + ": " + String ( adc1_pin[i] ) + "/" + String ( adc2_pin[i] ) + ", ";
+}
+Serial.println ( serial_print );
+*/
+
+
 
   // prepare the ADC and analog GPIO inputs
   init_my_analogRead();
@@ -181,21 +245,14 @@ uint16_t Edrumulus_esp32::my_analogRead ( uint8_t pin )
     CLEAR_PERI_REG_MASK ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_START_SAR_M );
     SET_PERI_REG_BITS   ( SENS_SAR_MEAS_START2_REG, SENS_SAR2_EN_PAD, ( 1 << channel_modified ), SENS_SAR2_EN_PAD_S );
     SET_PERI_REG_MASK   ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_START_SAR_M );
+    while ( GET_PERI_REG_MASK ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DONE_SAR ) == 0 );
+    return GET_PERI_REG_BITS2 ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DATA_SAR, SENS_MEAS2_DATA_SAR_S );
   }
   else
   {
     CLEAR_PERI_REG_MASK ( SENS_SAR_MEAS_START1_REG, SENS_MEAS1_START_SAR_M );
     SET_PERI_REG_BITS   ( SENS_SAR_MEAS_START1_REG, SENS_SAR1_EN_PAD, ( 1 << channel ), SENS_SAR1_EN_PAD_S );
     SET_PERI_REG_MASK   ( SENS_SAR_MEAS_START1_REG, SENS_MEAS1_START_SAR_M );
-  }
-
-  if ( channel > 7 )
-  {
-    while ( GET_PERI_REG_MASK ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DONE_SAR ) == 0 );
-    return GET_PERI_REG_BITS2 ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DATA_SAR, SENS_MEAS2_DATA_SAR_S );
-  }
-  else
-  {
     while ( GET_PERI_REG_MASK ( SENS_SAR_MEAS_START1_REG, SENS_MEAS1_DONE_SAR ) == 0 );
     return GET_PERI_REG_BITS2 ( SENS_SAR_MEAS_START1_REG, SENS_MEAS1_DATA_SAR, SENS_MEAS1_DATA_SAR_S );
   }
