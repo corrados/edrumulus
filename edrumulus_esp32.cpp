@@ -42,10 +42,9 @@ void Edrumulus_esp32::setup ( const int conf_Fs,
   Fs = conf_Fs;
 
   // create linear vectors containing the pin/ADC information for each pad and pad-input
-  int  total_number_inputs = 0; // we use it as a counter, too
   bool input_is_used[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
-  int  input_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
   int  input_adc[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+  total_number_inputs = 0; // we use it as a counter, too
 
   for ( int i = 0; i < number_pads; i++ )
   {
@@ -73,13 +72,13 @@ void Edrumulus_esp32::setup ( const int conf_Fs,
         {
           if ( input_adc[i] == 0 )
           {
-            adc1_pin[num_pin_pairs] = input_pin[i];
-            adc2_pin[num_pin_pairs] = input_pin[j];
+            adc1_index[num_pin_pairs] = i;
+            adc2_index[num_pin_pairs] = j;
           }
           else
           {
-            adc1_pin[num_pin_pairs] = input_pin[j];
-            adc2_pin[num_pin_pairs] = input_pin[i];
+            adc1_index[num_pin_pairs] = j;
+            adc2_index[num_pin_pairs] = i;
           }
 
           num_pin_pairs++;
@@ -98,13 +97,13 @@ void Edrumulus_esp32::setup ( const int conf_Fs,
   {
     if ( !input_is_used[i] )
     {
-      single_pin[num_pin_single] = input_pin[i];
+      single_index[num_pin_single] = i;
       num_pin_single++;
     }
   }
 
   // prepare the ADC and analog GPIO inputs
-  init_my_analogRead ( total_number_inputs, input_pin );
+  init_my_analogRead();
 
   // prepare timer at a rate of given sampling rate
   timer_semaphore = xSemaphoreCreateBinary();
@@ -137,12 +136,29 @@ void Edrumulus_esp32::capture_samples ( const int number_pads,
   // wait for the timer to get the correct sampling rate when reading the analog value
   if ( xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
   {
-    // get samples from the ADCs
+    // first read the ADC pairs samples
+    for ( int i = 0; i < num_pin_pairs; i++ )
+    {
+      my_analogRead_parallel ( input_pin[adc1_index[i]],
+                               input_pin[adc2_index[i]],
+                               input_sample[adc1_index[i]],
+                               input_sample[adc2_index[i]] );
+    }
+
+    // second read the single ADC samples
+    for ( int i = 0; i < num_pin_single; i++ )
+    {
+      input_sample[single_index[i]] = my_analogRead ( input_pin[single_index[i]] );
+    }
+
+    // copy captured samples in pad buffer
+    int input_cnt = 0;
+
     for ( int i = 0; i < number_pads; i++ )
     {
       for ( int j = 0; j < number_inputs[i]; j++ )
       {
-        sample_org[i][j] = my_analogRead ( analog_pin[i][j] );
+        sample_org[i][j] = input_sample[input_cnt++];
       }
     }
   }
@@ -206,8 +222,7 @@ float Edrumulus_esp32::cancel_ADC_spikes ( const float input,
 // which made the analogRead function so slow that we cannot use that anymore for Edrumulus:
 // https://github.com/espressif/arduino-esp32/issues/4973, https://github.com/espressif/arduino-esp32/pull/3377
 // As a workaround, we had to write our own analogRead function.
-void Edrumulus_esp32::init_my_analogRead ( const int total_number_inputs,
-                                           int       input_pin[] )
+void Edrumulus_esp32::init_my_analogRead()
 {
   // if the GIOP 25/26 are used, we have to set the DAC to 0 to get correct DC offset estimates and reduce the number of large spikes
   dac_i2s_enable();

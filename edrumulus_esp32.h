@@ -70,20 +70,22 @@ protected:
   hw_timer_t*                timer = nullptr;
   static void IRAM_ATTR      on_timer();
 
-  void init_my_analogRead ( const int total_number_inputs,
-                            int       input_pin[] );
-
+  void init_my_analogRead();
   void my_analogRead_parallel ( const uint8_t pin_adc1,
                                 const uint8_t pin_adc2,
                                 uint16_t&     out_adc1,
                                 uint16_t&     out_adc2 );
 
+  int         total_number_inputs;
+  int         input_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+  uint16_t    input_sample[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+
   int         num_pin_pairs;
-  int         adc1_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
-  int         adc2_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+  int         adc1_index[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+  int         adc2_index[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
 
   int         num_pin_single;
-  int         single_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+  int         single_index[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
 
   Espikestate prev1_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   Espikestate prev2_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];

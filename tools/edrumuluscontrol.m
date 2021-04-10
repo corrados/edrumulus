@@ -369,6 +369,18 @@ midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 1)); % PD80R
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 9)); % threshold
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 0)); % sensitivity
 
+% ride
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 6)); % pad 6
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 2)); % PD8
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 18)); % threshold
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 21)); % sensitivity
+
+% tom 2
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 7)); % pad 7
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 1)); % PD80R
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 18)); % threshold
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 0)); % sensitivity
+
 % cleanup GUI
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 0)); % pad 0
 reset_sliders;
