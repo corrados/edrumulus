@@ -44,6 +44,8 @@ void Edrumulus_esp32::setup ( const int conf_Fs,
   // create linear vectors containing the pin/ADC information for each pad and pad-input
   int  total_number_inputs = 0; // we use it as a counter, too
   bool input_is_used[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+  int  input_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+  int  input_adc[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
 
   for ( int i = 0; i < number_pads; i++ )
   {
@@ -120,7 +122,7 @@ Serial.println ( serial_print );
 
 
   // prepare the ADC and analog GPIO inputs
-  init_my_analogRead();
+  init_my_analogRead ( total_number_inputs, input_pin );
 
   // prepare timer at a rate of given sampling rate
   timer_semaphore = xSemaphoreCreateBinary();
@@ -134,7 +136,14 @@ Serial.println ( serial_print );
 void IRAM_ATTR Edrumulus_esp32::on_timer()
 {
   // tell the main loop that a sample can be read by setting the semaphore
-  xSemaphoreGiveFromISR ( edrumulus_esp32_pointer->timer_semaphore, NULL );
+  static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+  xSemaphoreGiveFromISR ( edrumulus_esp32_pointer->timer_semaphore, &xHigherPriorityTaskWoken );
+
+  if ( xHigherPriorityTaskWoken == pdTRUE )
+  {
+    portYIELD_FROM_ISR();
+  }
 }
 
 
@@ -215,7 +224,8 @@ float Edrumulus_esp32::cancel_ADC_spikes ( const float input,
 // which made the analogRead function so slow that we cannot use that anymore for Edrumulus:
 // https://github.com/espressif/arduino-esp32/issues/4973, https://github.com/espressif/arduino-esp32/pull/3377
 // As a workaround, we had to write our own analogRead function.
-void Edrumulus_esp32::init_my_analogRead()
+void Edrumulus_esp32::init_my_analogRead ( const int total_number_inputs,
+                                           int       input_pin[] )
 {
   // if the GIOP 25/26 are used, we have to set the DAC to 0 to get correct DC offset estimates and reduce the number of large spikes
   dac_i2s_enable();
@@ -257,14 +267,18 @@ void Edrumulus_esp32::init_my_analogRead()
   SET_PERI_REG_BITS   ( SENS_SAR_MEAS_WAIT1_REG,  SENS_SAR_AMP_WAIT2, 0x1, SENS_SAR_AMP_WAIT2_S );
   SET_PERI_REG_BITS   ( SENS_SAR_MEAS_WAIT2_REG,  SENS_SAR_AMP_WAIT3, 0x1, SENS_SAR_AMP_WAIT3_S );
   while ( GET_PERI_REG_BITS2 ( SENS_SAR_SLAVE_ADDR1_REG, 0x7, SENS_MEAS_STATUS_S ) != 0 );
+
+  // configure all pins to analog read
+  for ( int i = 0; i < total_number_inputs; i++ )
+  {
+    pinMode ( input_pin[i], ANALOG );
+  }
 }
 
 
 uint16_t Edrumulus_esp32::my_analogRead ( uint8_t pin )
 {
   const int8_t channel = digitalPinToAnalogChannel ( pin );
-
-  pinMode ( pin, ANALOG );
 
   if ( channel > 9 )
   {

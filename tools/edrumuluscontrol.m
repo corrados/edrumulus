@@ -340,8 +340,8 @@ global GUI;
 % snare
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 0)); % pad 0
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 2)); % PD8
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 3)); % threshold
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 19)); % sensitivity
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 0)); % threshold
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 8)); % sensitivity
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 107, 16)); % rim shot threshold
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 111, 3)); % both, rim shot and positional sensing
 

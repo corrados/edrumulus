@@ -69,10 +69,9 @@ protected:
   volatile SemaphoreHandle_t timer_semaphore;
   hw_timer_t*                timer = nullptr;
   static void IRAM_ATTR      on_timer();
-  void                       init_my_analogRead();
 
-  int         input_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
-  int         input_adc[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+  void init_my_analogRead ( const int total_number_inputs,
+                            int       input_pin[] );
 
   int         num_pin_pairs;
   int         adc1_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
