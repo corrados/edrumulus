@@ -53,8 +53,6 @@ public:
                const int number_inputs[],
                int       analog_pin[][MAX_NUM_PAD_INPUTS] );
 
-  uint16_t my_analogRead ( const uint8_t pin );
-
   void capture_samples ( const int number_pads,
                          const int number_inputs[],
                          int       analog_pin[][MAX_NUM_PAD_INPUTS],
@@ -70,11 +68,12 @@ protected:
   hw_timer_t*                timer = nullptr;
   static void IRAM_ATTR      on_timer();
 
-  void init_my_analogRead();
-  void my_analogRead_parallel ( const uint8_t pin_adc1,
-                                const uint8_t pin_adc2,
-                                uint16_t&     out_adc1,
-                                uint16_t&     out_adc2 );
+  void     init_my_analogRead();
+  uint16_t my_analogRead ( const uint8_t pin );
+  void     my_analogRead_parallel ( const uint8_t pin_adc1,
+                                    const uint8_t pin_adc2,
+                                    uint16_t&     out_adc1,
+                                    uint16_t&     out_adc2 );
 
   int         total_number_inputs;
   int         input_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];

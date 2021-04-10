@@ -59,20 +59,29 @@ void setup()
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
 
   // some fundamental settings which do not change during operation
-  edrumulus.set_pad_type          ( 0, Edrumulus::PD120 );
   edrumulus.set_midi_notes        ( 0, 38, 40 ); // snare
   edrumulus.set_rim_shot_is_used  ( 0, true );
   edrumulus.set_pos_sense_is_used ( 0, true );
 
   edrumulus.set_midi_notes ( 1, 36, 36 ); // kick
-  edrumulus.set_midi_notes ( 2, 26, 26 ); // hi-hat
+
+  edrumulus.set_midi_notes       ( 2, 26, 26 ); // hi-hat
+  edrumulus.set_pad_type         ( 2, Edrumulus::PD8 ); // using rim switch
+  edrumulus.set_rim_shot_is_used ( 2, true );
 
   edrumulus.set_midi_ctrl_ch ( 3, 4 ); // hi-hat-ctrl
   edrumulus.set_pad_type     ( 3, Edrumulus::FD8 );
 
-  edrumulus.set_midi_notes ( 4, 55, 49 ); // crash
+  edrumulus.set_midi_notes       ( 4, 55, 49 ); // crash
+  edrumulus.set_pad_type         ( 4, Edrumulus::PD8 ); // using rim switch
+  edrumulus.set_rim_shot_is_used ( 4, true );
+
   edrumulus.set_midi_notes ( 5, 48, 48 ); // tom 1
-  edrumulus.set_midi_notes ( 6, 51, 66 ); // ride
+
+  edrumulus.set_midi_notes       ( 6, 51, 66 ); // ride
+  edrumulus.set_pad_type         ( 6, Edrumulus::PD8 ); // using rim switch
+  edrumulus.set_rim_shot_is_used ( 6, true );
+
   edrumulus.set_midi_notes ( 7, 45, 45 ); // tom 2
   edrumulus.set_midi_notes ( 8, 41, 41 ); // tom 3
 

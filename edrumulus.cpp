@@ -28,7 +28,7 @@ Edrumulus::Edrumulus() :
 
 // TODO try to increase the sampling rate again...
 
-  Fs ( 6750 ) // this is the most fundamental system parameter: system sampling rate
+  Fs ( 6600 ) // this is the most fundamental system parameter: system sampling rate
 {
   // initializations
   overload_LED_on_time       = round ( 0.25f * Fs ); // minimum overload LED on time (e.g., 250 ms)
@@ -70,6 +70,11 @@ void Edrumulus::setup ( const int  conf_num_pads,
 
   for ( int k = 0; k < dc_offset_est_len; k++ )
   {
+    edrumulus_esp32.capture_samples ( number_pads,
+                                      number_inputs,
+                                      analog_pin,
+                                      sample_org );
+
     for ( int i = 0; i < number_pads; i++ )
     {
       for ( int j = 0; j < number_inputs[i]; j++ )
@@ -77,7 +82,7 @@ void Edrumulus::setup ( const int  conf_num_pads,
         if ( k == 0 )
         {
           // initial value
-          dc_offset_sum[i][j] = edrumulus_esp32.my_analogRead ( analog_pin[i][j] );
+          dc_offset_sum[i][j] = sample_org[i][j];
         }
         else if ( k == dc_offset_est_len - 1 )
         {
@@ -87,7 +92,7 @@ void Edrumulus::setup ( const int  conf_num_pads,
         else
         {
           // intermediate value, add to the existing value
-          dc_offset_sum[i][j] += edrumulus_esp32.my_analogRead ( analog_pin[i][j] );
+          dc_offset_sum[i][j] += sample_org[i][j];
         }
       }
     }
@@ -185,6 +190,23 @@ Serial.println ( serial_print );
     status_is_error            = ( abs ( 1.0f / ( micros() - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f - Fs ) > samplerate_max_error_Hz );
     samplerate_prev_micros_cnt = 0;
     samplerate_prev_micros     = micros();
+
+/*
+// TEST check DC offset values
+String serial_print;
+String serial_print2;
+for ( int i = 0; i < number_pads; i++ )
+{
+  for ( int j = 0; j < number_inputs[i]; j++ )
+  {
+    serial_print += String ( sample_org[i][j] ) + "\t" + String ( dc_offset[i][j] ) + "\t";
+    serial_print2 += String ( sample_org[i][j] - dc_offset[i][j] ) + "\t";
+  }
+}
+//Serial.println ( serial_print );
+Serial.println ( serial_print2 );
+*/
+
   }
   samplerate_prev_micros_cnt++;
 }
