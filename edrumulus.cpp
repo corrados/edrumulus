@@ -28,7 +28,7 @@ Edrumulus::Edrumulus() :
 
 // TODO try to increase the sampling rate again...
 
-  Fs ( 6600 ) // this is the most fundamental system parameter: system sampling rate
+  Fs ( 6800 ) // this is the most fundamental system parameter: system sampling rate
 {
   // initializations
   overload_LED_on_time       = round ( 0.25f * Fs ); // minimum overload LED on time (e.g., 250 ms)
@@ -188,6 +188,10 @@ Serial.println ( serial_print );
   {
     // set error flag if sample rate deviation is too large
     status_is_error            = ( abs ( 1.0f / ( micros() - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f - Fs ) > samplerate_max_error_Hz );
+
+// TEST check the measured sampling rate
+//Serial.println ( 1.0f / ( micros() - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f, 7 );
+
     samplerate_prev_micros_cnt = 0;
     samplerate_prev_micros     = micros();
 

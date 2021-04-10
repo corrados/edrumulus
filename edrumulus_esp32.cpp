@@ -119,7 +119,11 @@ void IRAM_ATTR Edrumulus_esp32::on_timer()
   // tell the main loop that a sample can be read by setting the semaphore
   static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
-  xSemaphoreGiveFromISR ( edrumulus_esp32_pointer->timer_semaphore, &xHigherPriorityTaskWoken );
+// TODO Why does does work? Previous code was:
+//   xSemaphoreGiveFromISR ( edrumulus_esp32_pointer->timer_semaphore, &xHigherPriorityTaskWoken );
+// which is the correct way of using a semaphore from an ISR task but it has shown that the normal
+// SemaphoreGive works and it is faster so as a quick hack we use this function call instead:
+xSemaphoreGive ( edrumulus_esp32_pointer->timer_semaphore );
 
   if ( xHigherPriorityTaskWoken == pdTRUE )
   {
