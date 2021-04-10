@@ -29,6 +29,7 @@
 
 #include "Arduino.h"
 #include "soc/sens_reg.h"
+#include "driver/dac.h"
 
 #define MAX_NUM_PADS         12   // a maximum of 12 pads are supported
 #define MAX_NUM_PAD_INPUTS   2    // a maximum of 2 sensors per pad is supported
@@ -72,6 +73,14 @@ protected:
 
   int         input_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
   int         input_adc[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+
+  int         num_pin_pairs;
+  int         adc1_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+  int         adc2_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+
+  int         num_pin_single;
+  int         single_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+
   Espikestate prev1_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   Espikestate prev2_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   Espikestate prev3_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];

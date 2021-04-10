@@ -41,54 +41,66 @@ void Edrumulus_esp32::setup ( const int conf_Fs,
   // set essential parameters
   Fs = conf_Fs;
 
+  // create linear vectors containing the pin/ADC information for each pad and pad-input
+  int  total_number_inputs = 0; // we use it as a counter, too
+  bool input_is_used[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
 
-// TODO use number_pads, number_inputs, analog_pin
-int  total_number_inputs = 0; // we use it as a counter, too
-bool input_is_used[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
-
-for ( int i = 0; i < number_pads; i++ )
-{
-  for ( int j = 0; j < number_inputs[i]; j++ )
+  for ( int i = 0; i < number_pads; i++ )
   {
-    // store pin number in vector and identify ADC number for each pin
-    input_pin[total_number_inputs]     = analog_pin[i][j];
-    input_adc[total_number_inputs]     = ( digitalPinToAnalogChannel ( analog_pin[i][j] ) >= 10 ); // channel < 10 -> ADC1, channel >= 10 -> ADC2
-    input_is_used[total_number_inputs] = false; // initialization needed for ADC pairs identification
-    total_number_inputs++;
-  }
-}
-
-
-int num_pin_pairs = 0; // we use it as a counter, too
-int adc1_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
-int adc2_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
-
-// find ADC pairs, i.e., one pin uses ADC1 and the other uses ADC2
-for ( int i = 0; i < total_number_inputs - 1; i++ )
-{
-  for ( int j = total_number_inputs - 1; j > i; j-- )
-  {
-    // check for different ADCs: 0+0=0, 1+0=1 (pair), 0+1=1 (pair), 1+1=2
-    if ( !input_is_used[j] && ( input_adc[i] + input_adc[j] == 1 ) )
+    for ( int j = 0; j < number_inputs[i]; j++ )
     {
-      if ( input_adc[i] == 0 )
-      {
-        adc1_pin[num_pin_pairs] = input_pin[i];
-        adc2_pin[num_pin_pairs] = input_pin[j];
-      }
-      else
-      {
-        adc1_pin[num_pin_pairs] = input_pin[j];
-        adc2_pin[num_pin_pairs] = input_pin[i];
-      }
-
-      num_pin_pairs++;
-      input_is_used[i] = true;
-      input_is_used[j] = true;
-      break;
+      // store pin number in vector and identify ADC number for each pin
+      input_pin[total_number_inputs]     = analog_pin[i][j];
+      input_adc[total_number_inputs]     = ( digitalPinToAnalogChannel ( analog_pin[i][j] ) >= 10 ); // channel < 10 -> ADC1, channel >= 10 -> ADC2
+      input_is_used[total_number_inputs] = false; // initialization needed for ADC pairs identification
+      total_number_inputs++;
     }
   }
-}
+
+  // find ADC pairs, i.e., one pin uses ADC1 and the other uses ADC2
+  num_pin_pairs = 0; // we use it as a counter, too
+
+  for ( int i = 0; i < total_number_inputs - 1; i++ )
+  {
+    if ( !input_is_used[i] )
+    {
+      for ( int j = total_number_inputs - 1; j > i; j-- )
+      {
+        // check for different ADCs: 0+0=0, 1+0=1 (pair), 0+1=1 (pair), 1+1=2
+        if ( !input_is_used[j] && ( input_adc[i] + input_adc[j] == 1 ) )
+        {
+          if ( input_adc[i] == 0 )
+          {
+            adc1_pin[num_pin_pairs] = input_pin[i];
+            adc2_pin[num_pin_pairs] = input_pin[j];
+          }
+          else
+          {
+            adc1_pin[num_pin_pairs] = input_pin[j];
+            adc2_pin[num_pin_pairs] = input_pin[i];
+          }
+
+          num_pin_pairs++;
+          input_is_used[i] = true;
+          input_is_used[j] = true;
+          break;
+        }
+      }
+    }
+  }
+
+  // find remaining single pins which we cannot create an ADC pair with
+  num_pin_single = 0; // we use it as a counter, too
+
+  for ( int i = 0; i < total_number_inputs; i++ )
+  {
+    if ( !input_is_used[i] )
+    {
+      single_pin[num_pin_single] = input_pin[i];
+      num_pin_single++;
+    }
+  }
+
 
 /*
 // TEST for debugging the algorithm
@@ -96,6 +108,11 @@ String serial_print = "Pairs: ";
 for ( int i = 0; i < num_pin_pairs; i++ )
 {
   serial_print += String ( i ) + ": " + String ( adc1_pin[i] ) + "/" + String ( adc2_pin[i] ) + ", ";
+}
+serial_print += "   Single inputs: ";
+for ( int i = 0; i < num_pin_single; i++ )
+{
+  serial_print += String ( i ) + ": " + String ( single_pin[i] ) + ", ";
 }
 Serial.println ( serial_print );
 */
@@ -200,6 +217,16 @@ float Edrumulus_esp32::cancel_ADC_spikes ( const float input,
 // As a workaround, we had to write our own analogRead function.
 void Edrumulus_esp32::init_my_analogRead()
 {
+  // if the GIOP 25/26 are used, we have to set the DAC to 0 to get correct DC offset estimates and reduce the number of large spikes
+  dac_i2s_enable();
+  dac_output_enable  ( DAC_CHANNEL_1 );
+  dac_output_voltage ( DAC_CHANNEL_1, 0 );
+  dac_output_disable ( DAC_CHANNEL_1 );
+  dac_output_enable  ( DAC_CHANNEL_2 );
+  dac_output_voltage ( DAC_CHANNEL_2, 0 );
+  dac_output_disable ( DAC_CHANNEL_2 );
+  dac_i2s_disable();
+
   // set attenuation of 11 dB
   WRITE_PERI_REG ( SENS_SAR_ATTEN1_REG, 0x0FFFFFFFF );
   WRITE_PERI_REG ( SENS_SAR_ATTEN2_REG, 0x0FFFFFFFF );
