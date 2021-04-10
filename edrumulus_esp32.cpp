@@ -243,8 +243,11 @@ void Edrumulus_esp32::init_my_analogRead()
   WRITE_PERI_REG ( SENS_SAR_ATTEN2_REG, 0x0FFFFFFFF );
 
   // set both ADCs to 12 bit resolution using 8 cycles and 1 sample
-  SET_PERI_REG_BITS ( SENS_SAR_READ_CTRL_REG,   SENS_SAR1_SAMPLE_CYCLE, 8, SENS_SAR1_SAMPLE_CYCLE_S ); // cycles
-  SET_PERI_REG_BITS ( SENS_SAR_READ_CTRL2_REG,  SENS_SAR2_SAMPLE_CYCLE, 8, SENS_SAR2_SAMPLE_CYCLE_S );
+// TODO Make more tests of the influence of the number of ADC cycles on the trigger performance.
+// The default number of cycles is 8 but it has shown that 6 cycles are more than enough
+// for the Edrumulus use case and this gives us some speed improvement.
+SET_PERI_REG_BITS ( SENS_SAR_READ_CTRL_REG,   SENS_SAR1_SAMPLE_CYCLE, 6, SENS_SAR1_SAMPLE_CYCLE_S ); // cycles
+SET_PERI_REG_BITS ( SENS_SAR_READ_CTRL2_REG,  SENS_SAR2_SAMPLE_CYCLE, 6, SENS_SAR2_SAMPLE_CYCLE_S );
   SET_PERI_REG_BITS ( SENS_SAR_READ_CTRL_REG,   SENS_SAR1_SAMPLE_NUM,   0, SENS_SAR1_SAMPLE_NUM_S ); // # samples
   SET_PERI_REG_BITS ( SENS_SAR_READ_CTRL2_REG,  SENS_SAR2_SAMPLE_NUM,   0, SENS_SAR2_SAMPLE_NUM_S );
   SET_PERI_REG_BITS ( SENS_SAR_READ_CTRL_REG,   SENS_SAR1_CLK_DIV,      1, SENS_SAR1_CLK_DIV_S ); // clock div
