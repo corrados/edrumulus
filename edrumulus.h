@@ -234,7 +234,7 @@ protected:
   };
 
   // constant definitions
-  const int dc_offset_est_len       = 5000;  // samples
+  const int dc_offset_est_len       = 10000; // samples (about a second at 8 kHz sampling rate)
   const int samplerate_max_cnt      = 10000; // samples
   const int samplerate_max_error_Hz = 100;   // tolerate a sample rate deviation of 100 Hz
 

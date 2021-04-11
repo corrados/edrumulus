@@ -228,7 +228,8 @@ float Edrumulus_esp32::cancel_ADC_spikes ( const float input,
 // As a workaround, we had to write our own analogRead function.
 void Edrumulus_esp32::init_my_analogRead()
 {
-  // if the GIOP 25/26 are used, we have to set the DAC to 0 to get correct DC offset estimates and reduce the number of large spikes
+  // if the GIOP 25/26 are used, we have to set the DAC to 0 to get correct DC offset
+  // estimates and reduce the number of large spikes
   dac_i2s_enable();
   dac_output_enable  ( DAC_CHANNEL_1 );
   dac_output_voltage ( DAC_CHANNEL_1, 0 );

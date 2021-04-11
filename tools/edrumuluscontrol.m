@@ -354,14 +354,14 @@ midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 9)); % sensitivity
 % hi-hat
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 2)); % pad 2
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 2)); % PD8
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 9)); % threshold
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 11)); % sensitivity
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 0)); % threshold
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 8)); % sensitivity
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 111, 1)); % enable rim shot
 
 % crash
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 4)); % pad 4
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 2)); % PD8
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 9)); % threshold
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 11)); % threshold
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 21)); % sensitivity
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 111, 1)); % enable rim shot
 

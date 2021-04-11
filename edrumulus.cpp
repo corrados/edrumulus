@@ -96,7 +96,6 @@ void Edrumulus::setup ( const int  conf_num_pads,
         }
       }
     }
-    delayMicroseconds ( 100 );
   }
 }
 
