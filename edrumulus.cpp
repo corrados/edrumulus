@@ -28,7 +28,7 @@ Edrumulus::Edrumulus() :
 
 // TODO try to increase the sampling rate again...
 
-  Fs ( 7000 ) // this is the most fundamental system parameter: system sampling rate
+  Fs ( 6800 ) // this is the most fundamental system parameter: system sampling rate
 {
   // initializations
   overload_LED_on_time       = round ( 0.25f * Fs ); // minimum overload LED on time (e.g., 250 ms)
@@ -161,7 +161,8 @@ Serial.println ( serial_print );
     }
     else
     {
-      pad[i].process_sample ( sample, peak_found[i], midi_velocity[i], midi_pos[i], is_rim_shot[i], debug );
+      pad[i].process_sample ( sample, peak_found[i], midi_velocity[i], midi_pos[i],
+                              is_rim_shot[i], is_choke_on[i], is_choke_off[i], debug );
 
       // overload detection
       for ( int j = 0; j < number_inputs[i]; j++ )
@@ -327,6 +328,7 @@ void Edrumulus::Pad::initialize()
   rim_shot_window_len      = round ( pad_settings.rim_shot_window_len_ms * 1e-3f * Fs );        // window length (e.g. 5 ms)
   rim_shot_treshold_dB     = static_cast<float> ( pad_settings.rim_shot_treshold ) / 2 - 13;    // gives us a rim shot threshold range of -13..2.5 dB
   rim_switch_treshold      = -ADC_MAX_NOISE_AMPL + 9 * ( pad_settings.rim_shot_treshold - 31 ); // rim switch linear threshold
+  rim_switch_on_cnt_thresh = round ( 10.0f * 1e-3f * Fs );                                      // number of on samples until we detect a choke
 
   // The ESP32 ADC has 12 bits resulting in a range of 20*log10(2048)=66.2 dB minus the threshold value.
   // The sensitivity parameter shall be in the range of 0..31. This range should then be mapped to the
@@ -373,6 +375,7 @@ void Edrumulus::Pad::initialize()
   rim_shot_cnt            = 0;
   rim_high_prev_x         = 0.0f;
   rim_x_high              = 0.0f;
+  rim_switch_on_cnt       = 0;
   hil_filt_max_pow        = 0.0f;
   max_hil_filt_val        = 0.0f;
   peak_found_offset       = 0;
@@ -428,6 +431,8 @@ void Edrumulus::Pad::process_sample ( const float* input,
                                       int&         midi_velocity,
                                       int&         midi_pos,
                                       bool&        is_rim_shot,
+                                      bool&        is_choke_on,
+                                      bool&        is_choke_off,
                                       float&       debug )
 {
   // initialize return parameter
@@ -435,6 +440,8 @@ void Edrumulus::Pad::process_sample ( const float* input,
   midi_velocity                = 0;
   midi_pos                     = 0;
   is_rim_shot                  = false;
+  is_choke_on                  = false;
+  is_choke_off                 = false;
   bool       first_peak_found  = false; // only used internally
   const bool pos_sense_is_used = pad_settings.pos_sense_is_used;                         // can be applied directly without calling initialize()
   const bool rim_shot_is_used  = pad_settings.rim_shot_is_used && ( number_inputs > 1 ); // can be applied directly without calling initialize()
@@ -654,13 +661,15 @@ debug = 0.0f; // TEST
   }
 
 
-  // Calculate rim shot detection -------------------------------------------------
+  // Calculate rim shot/choke detection -------------------------------------------
   if ( rim_shot_is_used )
   {
     if ( get_is_rim_switch() )
     {
+      const bool rim_switch_on = ( input[1] < rim_switch_treshold );
+
       // as a quick hack we re-use the rim_x_high memory and length parameter for the switch on detection
-      update_fifo ( input[1] < rim_switch_treshold, rim_shot_window_len, rim_x_high_hist );
+      update_fifo ( rim_switch_on, rim_shot_window_len, rim_x_high_hist );
 
       // at the end of the scan time search the history buffer for any switch on
       if ( was_peak_found )
@@ -676,6 +685,28 @@ debug = 0.0f; // TEST
         }
 
         was_rim_shot_ready = true;
+      }
+
+      // choke detection
+      if ( rim_switch_on )
+      {
+        rim_switch_on_cnt++;
+      }
+      else
+      {
+        // of choke switch on was detected, send choke off message now
+        if ( rim_switch_on_cnt > rim_switch_on_cnt_thresh )
+        {
+          is_choke_off = true;
+        }
+
+        rim_switch_on_cnt = 0;
+      }
+
+      // only send choke on message once we detected a choke (i.e. do not test for ">" threshold but for "==")
+      if ( rim_switch_on_cnt == rim_switch_on_cnt_thresh )
+      {
+        is_choke_on = true;
       }
     }
     else

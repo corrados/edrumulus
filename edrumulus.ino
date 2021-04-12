@@ -63,27 +63,27 @@ void setup()
   edrumulus.set_rim_shot_is_used  ( 0, true );
   edrumulus.set_pos_sense_is_used ( 0, true );
 
-  edrumulus.set_midi_notes ( 1, 36, 36 ); // kick
+  edrumulus.set_midi_notes        ( 1, 36, 36 ); // kick
 
-  edrumulus.set_midi_notes       ( 2, 26, 26 ); // hi-hat
-  edrumulus.set_pad_type         ( 2, Edrumulus::PD8 ); // using rim switch
-  edrumulus.set_rim_shot_is_used ( 2, true );
+  edrumulus.set_midi_notes        ( 2, 26, 26 ); // hi-hat
+  edrumulus.set_pad_type          ( 2, Edrumulus::PD8 ); // using rim switch
+  edrumulus.set_rim_shot_is_used  ( 2, true );
 
-  edrumulus.set_midi_ctrl_ch ( 3, 4 ); // hi-hat-ctrl
-  edrumulus.set_pad_type     ( 3, Edrumulus::FD8 );
+  edrumulus.set_midi_ctrl_ch      ( 3, 4 ); // hi-hat-ctrl
+  edrumulus.set_pad_type          ( 3, Edrumulus::FD8 );
 
-  edrumulus.set_midi_notes       ( 4, 55, 49 ); // crash
-  edrumulus.set_pad_type         ( 4, Edrumulus::PD8 ); // using rim switch
-  edrumulus.set_rim_shot_is_used ( 4, true );
+  edrumulus.set_midi_notes        ( 4, 55, 49 ); // crash
+  edrumulus.set_pad_type          ( 4, Edrumulus::PD8 ); // using rim switch
+  edrumulus.set_rim_shot_is_used  ( 4, true );
 
-  edrumulus.set_midi_notes ( 5, 48, 48 ); // tom 1
+  edrumulus.set_midi_notes        ( 5, 48, 48 ); // tom 1
 
-  edrumulus.set_midi_notes       ( 6, 51, 66 ); // ride
-  edrumulus.set_pad_type         ( 6, Edrumulus::PD8 ); // using rim switch
-  edrumulus.set_rim_shot_is_used ( 6, true );
+  edrumulus.set_midi_notes        ( 6, 51, 66 ); // ride
+  edrumulus.set_pad_type          ( 6, Edrumulus::PD8 ); // using rim switch
+  edrumulus.set_rim_shot_is_used  ( 6, true );
 
-  edrumulus.set_midi_notes ( 7, 45, 45 ); // tom 2
-  edrumulus.set_midi_notes ( 8, 41, 41 ); // tom 3
+  edrumulus.set_midi_notes        ( 7, 45, 45 ); // tom 2
+  edrumulus.set_midi_notes        ( 8, 41, 41 ); // tom 3
 
   // initialize GPIO port for status LED
   pinMode ( status_LED_pin, OUTPUT );
@@ -134,10 +134,23 @@ void loop()
 
     if ( edrumulus.get_control_found ( pad_idx ) )
     {
-      const int midi_ctrl_ch    = edrumulus.get_midi_ctrl_ch ( pad_idx );
+      const int midi_ctrl_ch    = edrumulus.get_midi_ctrl_ch    ( pad_idx );
       const int midi_ctrl_value = edrumulus.get_midi_ctrl_value ( pad_idx );
 
       MIDI.sendControlChange ( midi_ctrl_ch, midi_ctrl_value, midi_channel );
+    }
+
+    if ( edrumulus.get_choke_on_found ( pad_idx ) )
+    {
+      // if grabbed edge found, polyphonic aftertouch at 127 is transmitted for all notes of the pad
+      MIDI.sendAfterTouch ( edrumulus.get_midi_note_norm ( pad_idx ), 127, midi_channel );      
+      MIDI.sendAfterTouch ( edrumulus.get_midi_note_rim  ( pad_idx ), 127, midi_channel );      
+    }
+    else if ( edrumulus.get_choke_off_found ( pad_idx ) )
+    {
+      // if released edge found, polyphonic aftertouch at 0 is transmitted for all notes of the pad
+      MIDI.sendAfterTouch ( edrumulus.get_midi_note_norm ( pad_idx ), 0, midi_channel );      
+      MIDI.sendAfterTouch ( edrumulus.get_midi_note_rim  ( pad_idx ), 0, midi_channel );      
     }
   }
 
@@ -230,10 +243,10 @@ void loop()
       {
         switch ( value )
         {
-          case 0: edrumulus.set_rim_shot_is_used (selected_pad, false ); edrumulus.set_pos_sense_is_used ( selected_pad, false ); break;
-          case 1: edrumulus.set_rim_shot_is_used (selected_pad, true );  edrumulus.set_pos_sense_is_used ( selected_pad, false ); break;
-          case 2: edrumulus.set_rim_shot_is_used (selected_pad, false ); edrumulus.set_pos_sense_is_used ( selected_pad, true );  break;
-          case 3: edrumulus.set_rim_shot_is_used (selected_pad, true );  edrumulus.set_pos_sense_is_used ( selected_pad, true );  break;
+          case 0: edrumulus.set_rim_shot_is_used ( selected_pad, false ); edrumulus.set_pos_sense_is_used ( selected_pad, false ); break;
+          case 1: edrumulus.set_rim_shot_is_used ( selected_pad, true );  edrumulus.set_pos_sense_is_used ( selected_pad, false ); break;
+          case 2: edrumulus.set_rim_shot_is_used ( selected_pad, false ); edrumulus.set_pos_sense_is_used ( selected_pad, true );  break;
+          case 3: edrumulus.set_rim_shot_is_used ( selected_pad, true );  edrumulus.set_pos_sense_is_used ( selected_pad, true );  break;
         }
         is_used = true;
       }

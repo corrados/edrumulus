@@ -59,10 +59,14 @@ public:
 
   // after calling the process function, query the results for each configured pad
   bool get_peak_found      ( const int pad_idx ) { return !pad[pad_idx].get_is_control() && peak_found[pad_idx]; }
+  bool get_choke_on_found  ( const int pad_idx ) { return !pad[pad_idx].get_is_control() && is_choke_on[pad_idx]; }
+  bool get_choke_off_found ( const int pad_idx ) { return !pad[pad_idx].get_is_control() && is_choke_off[pad_idx]; }
   bool get_control_found   ( const int pad_idx ) { return pad[pad_idx].get_is_control() && control_found[pad_idx]; }
   int  get_midi_velocity   ( const int pad_idx ) { return midi_velocity[pad_idx]; }
   int  get_midi_pos        ( const int pad_idx ) { return midi_pos[pad_idx]; }
   int  get_midi_note       ( const int pad_idx ) { return is_rim_shot[pad_idx] ? pad[pad_idx].get_midi_note_rim() : pad[pad_idx].get_midi_note(); }
+  int  get_midi_note_norm  ( const int pad_idx ) { return pad[pad_idx].get_midi_note(); }
+  int  get_midi_note_rim   ( const int pad_idx ) { return pad[pad_idx].get_midi_note_rim(); }
   int  get_midi_ctrl_ch    ( const int pad_idx ) { return pad[pad_idx].get_midi_ctrl_ch(); }
   int  get_midi_ctrl_value ( const int pad_idx ) { return midi_ctrl_value[pad_idx]; }
 
@@ -101,6 +105,8 @@ protected:
                             int&         midi_velocity,
                             int&         midi_pos,
                             bool&        is_rim_shot,
+                            bool&        is_choke_on,
+                            bool&        is_choke_off,
                             float&       debug );
 
       void process_control_sample ( const int* input,
@@ -212,6 +218,8 @@ protected:
       int          rim_shot_window_len;
       float        rim_shot_treshold_dB;
       float        rim_switch_treshold;
+      int          rim_switch_on_cnt;
+      int          rim_switch_on_cnt_thresh;
       int          pos_energy_window_len;
       int          pos_sense_cnt;
       int          rim_shot_cnt;
@@ -259,6 +267,8 @@ protected:
   int             midi_pos[MAX_NUM_PADS];
   int             midi_ctrl_value[MAX_NUM_PADS];
   bool            is_rim_shot[MAX_NUM_PADS];
+  bool            is_choke_on[MAX_NUM_PADS];
+  bool            is_choke_off[MAX_NUM_PADS];
 };
 
 
