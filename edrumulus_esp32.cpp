@@ -105,12 +105,30 @@ void Edrumulus_esp32::setup ( const int conf_Fs,
   // prepare the ADC and analog GPIO inputs
   init_my_analogRead();
 
-  // prepare timer at a rate of given sampling rate
+  // create timer semaphore
   timer_semaphore = xSemaphoreCreateBinary();
-  timer           = timerBegin ( 0, 80, true ); // prescaler of 80 (i.e. below we have 1 MHz instead of 80 MHz)
-  timerAttachInterrupt ( timer, &on_timer, true );
-  timerAlarmWrite      ( timer, 1000000 / Fs, true ); // here we define the sampling rate (1 MHz / Fs)
-  timerAlarmEnable     ( timer );
+
+  // create task pinned to core 0 for creating the timer interrupt so that the
+  // timer function is not running in our working core 1
+  xTaskCreatePinnedToCore ( start_timer_core0_task, "start_timer_core0_task", 800, this, 1, NULL, 0 );
+}
+
+
+void Edrumulus_esp32::start_timer_core0_task ( void* param )
+{
+  Edrumulus_esp32* my_obj = reinterpret_cast<Edrumulus_esp32*> ( param );
+
+  // prepare timer at a rate of given sampling rate
+  my_obj->timer = timerBegin ( 0, 80, true ); // prescaler of 80 (i.e. below we have 1 MHz instead of 80 MHz)
+  timerAttachInterrupt ( my_obj->timer, &my_obj->on_timer, true );
+  timerAlarmWrite      ( my_obj->timer, 1000000 / my_obj->Fs, true ); // here we define the sampling rate (1 MHz / Fs)
+  timerAlarmEnable     ( my_obj->timer );
+
+  // tasks must not return: forever loop with delay to keep watchdog happy
+  for ( ; ; )
+  {
+    delay ( 1000 );
+  }
 }
 
 
@@ -119,11 +137,7 @@ void IRAM_ATTR Edrumulus_esp32::on_timer()
   // tell the main loop that a sample can be read by setting the semaphore
   static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
-// TODO Why does does work? Previous code was:
-//   xSemaphoreGiveFromISR ( edrumulus_esp32_pointer->timer_semaphore, &xHigherPriorityTaskWoken );
-// which is the correct way of using a semaphore from an ISR task but it has shown that the normal
-// SemaphoreGive works and it is faster so as a quick hack we use this function call instead:
-xSemaphoreGive ( edrumulus_esp32_pointer->timer_semaphore );
+  xSemaphoreGiveFromISR ( edrumulus_esp32_pointer->timer_semaphore, &xHigherPriorityTaskWoken );
 
   if ( xHigherPriorityTaskWoken == pdTRUE )
   {

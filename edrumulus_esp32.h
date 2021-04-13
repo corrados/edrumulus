@@ -67,6 +67,7 @@ protected:
   volatile SemaphoreHandle_t timer_semaphore;
   hw_timer_t*                timer = nullptr;
   static void IRAM_ATTR      on_timer();
+  static void                start_timer_core0_task ( void* param );
 
   void     init_my_analogRead();
   uint16_t my_analogRead ( const uint8_t pin );
