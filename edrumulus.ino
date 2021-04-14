@@ -65,25 +65,25 @@ void setup()
 
   edrumulus.set_midi_notes        ( 1, 36, 36 ); // kick
 
-  edrumulus.set_midi_notes        ( 2, 26, 26 ); // hi-hat
+  edrumulus.set_midi_notes        ( 2, 26 /*46*/, 26 ); // hi-hat (open hi-hat, for closed hi-hat use 42 and 22 and for pedal 44)
   edrumulus.set_pad_type          ( 2, Edrumulus::PD8 ); // using rim switch
   edrumulus.set_rim_shot_is_used  ( 2, true );
 
   edrumulus.set_midi_ctrl_ch      ( 3, 4 ); // hi-hat-ctrl
   edrumulus.set_pad_type          ( 3, Edrumulus::FD8 );
 
-  edrumulus.set_midi_notes        ( 4, 55, 49 ); // crash
+  edrumulus.set_midi_notes        ( 4, 49, 55 ); // crash
   edrumulus.set_pad_type          ( 4, Edrumulus::PD8 ); // using rim switch
   edrumulus.set_rim_shot_is_used  ( 4, true );
 
-  edrumulus.set_midi_notes        ( 5, 48, 48 ); // tom 1
+  edrumulus.set_midi_notes        ( 5, 48, 50 ); // tom 1
 
   edrumulus.set_midi_notes        ( 6, 51, 66 ); // ride
   edrumulus.set_pad_type          ( 6, Edrumulus::PD8 ); // using rim switch
   edrumulus.set_rim_shot_is_used  ( 6, true );
 
-  edrumulus.set_midi_notes        ( 7, 45, 45 ); // tom 2
-  edrumulus.set_midi_notes        ( 8, 41, 41 ); // tom 3
+  edrumulus.set_midi_notes        ( 7, 45, 47 ); // tom 2
+  edrumulus.set_midi_notes        ( 8, 43, 58 ); // tom 3
 
   // initialize GPIO port for status LED
   pinMode ( status_LED_pin, OUTPUT );
