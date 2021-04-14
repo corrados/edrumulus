@@ -198,6 +198,8 @@ protected:
       float        velocity_range_db;
       float        pos_threshold;
       float        pos_range_db;
+      float        control_threshold;
+      float        control_range;
       bool         was_above_threshold;
       float        prev_hil_filt_val;
       int          main_peak_dist;

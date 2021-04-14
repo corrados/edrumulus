@@ -26,7 +26,7 @@
 
 Edrumulus::Edrumulus() :
 
-// TODO try to increase the sampling rate again...
+// TODO try to increase the sampling rate again... the goal would be 8000
 
   Fs ( 7000 ) // this is the most fundamental system parameter: system sampling rate
 {
@@ -297,6 +297,11 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       pad_settings.decay_len3_ms         = 150.0f;
       pad_settings.decay_grad_fact3      = 120.0f;
       break;
+
+    case FD8:
+      pad_settings.velocity_threshold   = 5;
+      pad_settings.velocity_sensitivity = 0;
+      break;
   }
 
   initialize();
@@ -344,6 +349,10 @@ void Edrumulus::Pad::initialize()
   pos_threshold                = pow ( 10.0f, pos_threshold_db / 10 ); // linear power threshold
   const float max_pos_range_db = 11; // dB (found by analyzing pd120_pos_sense2.wav test signal)
   pos_range_db                 = max_pos_range_db * ( 32 - pad_settings.pos_sensitivity ) / 32;
+
+  // control MIDI assignment gives us a range of 410-2867 (FD-8: 3300-0, VH-12: 2200-1900 (press: 1770))
+  control_threshold = pad_settings.velocity_threshold / 31.0f * ( 0.6f * ADC_MAX_RANGE ) + ( 0.1f * ADC_MAX_RANGE );
+  control_range     = ( ADC_MAX_RANGE - control_threshold ) * ( 32 - pad_settings.velocity_sensitivity ) / 32;
 
   // allocate and initialize memory for vectors
   allocate_initialize ( &hil_hist,                hil_filt_len );          // memory for Hilbert filter history
@@ -694,7 +703,7 @@ debug = 0.0f; // TEST
       }
       else
       {
-        // of choke switch on was detected, send choke off message now
+        // if choke switch on was detected, send choke off message now
         if ( rim_switch_on_cnt > rim_switch_on_cnt_thresh )
         {
           is_choke_off = true;
@@ -795,41 +804,27 @@ void Edrumulus::Pad::process_control_sample ( const int* input,
                                               bool&      change_found,
                                               int&       midi_ctrl_value )
 {
-// TEST just a quick hack implementation for now -> TODO improve the implementation
+  // map the input value to the MIDI range
+  midi_ctrl_value = ( ( ADC_MAX_RANGE - input[0] - control_threshold ) / control_range * 127 );
+  midi_ctrl_value = max ( 0, min ( 127, midi_ctrl_value ) );
 
-  change_found = false;
+  // introduce hysteresis to avoid sending too many MIDI control messages
+  static const int control_midi_hysteresis = ADC_MAX_NOISE_AMPL;
+  change_found                             = false;
 
-  if ( input[0] < 500 )
+  if ( ( midi_ctrl_value > ( prev_ctrl_value + control_midi_hysteresis ) ) ||
+       ( midi_ctrl_value < ( prev_ctrl_value - control_midi_hysteresis ) ) )
   {
-    midi_ctrl_value = 127;
-  }
-  else if ( input[0] < 1000 )
-  {
-    midi_ctrl_value = 100;
-  }
-  else if ( input[0] < 1500 )
-  {
-    midi_ctrl_value = 80;
-  }
-  else if ( input[0] < 2000 )
-  {
-    midi_ctrl_value = 60;
-  }
-  else if ( input[0] < 2500 )
-  {
-    midi_ctrl_value = 40;
-  }
-  else if ( input[0] < 3000 )
-  {
-    midi_ctrl_value = 20;
-  }
-  else
-  {
-    midi_ctrl_value = 0;
-  }
+    // clip border values to max/min
+    if ( midi_ctrl_value <= control_midi_hysteresis )
+    {
+      midi_ctrl_value = 0;
+    }
+    if ( midi_ctrl_value >= 127 - control_midi_hysteresis )
+    {
+      midi_ctrl_value = 127;
+    }
 
-  if ( midi_ctrl_value != prev_ctrl_value )
-  {
     change_found    = true;
     prev_ctrl_value = midi_ctrl_value;
   }
