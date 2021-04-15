@@ -1,24 +1,18 @@
 %*******************************************************************************
 % Copyright (c) 2020-2021
-% Author: Volker Fischer
+% Author(s): Volker Fischer
 %*******************************************************************************
-% Permission is hereby granted, free of charge, to any person obtaining a copy
-% of this software and associated documentation files (the "Software"), to deal
-% in the Software without restriction, including without limitation the rights
-% to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-% copies of the Software, and to permit persons to whom the Software is
-% furnished to do so, subject to the following conditions:
-%
-% The above copyright notice and this permission notice shall be included in all
-% copies or substantial portions of the Software.
-%
-% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-% IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-% FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-% AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-% LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-% SOFTWARE.
+% This program is free software; you can redistribute it and/or modify it under
+% the terms of the GNU General Public License as published by the Free Software
+% Foundation; either version 2 of the License, or (at your option) any later
+% version.
+% This program is distributed in the hope that it will be useful, but WITHOUT
+% ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+% FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+% details.
+% You should have received a copy of the GNU General Public License along with
+% this program; if not, write to the Free Software Foundation, Inc.,
+% 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 %*******************************************************************************
 
 function edrumuluscontrol
@@ -29,7 +23,7 @@ close all;
 pkg load audio
 
 figure_handle = figure;
-slider_width  = 0.13;
+slider_width  = 0.12;
 slider_hight  = 0.7;
 value_hight   = 0.2;
 
@@ -46,7 +40,24 @@ for i = 1:length(midi_devices.output)
 end
 GUI.midi_dev = [];
 
+% default settings button
+GUI.set_but = uicontrol(figure_handle, ...
+  'style',    'pushbutton', ... 
+  'string',   'Default Settings', ...
+  'units',    'normalized', ...
+  'position', [0.7, 0.9, 0.3, 0.1], ...
+  'callback', @button_callback);
 
+% spike cancellation checkbox
+GUI.spike_chbx = uicontrol(figure_handle, ...
+  'style',    'checkbox', ...
+  'value',    1, ... % is on per default on the ESP32
+  'string',   'Spike Cancellation', ...
+  'units',    'normalized', ...
+  'position', [0.7, 0.75, 0.3, 0.1], ...
+  'callback', @checkbox_callback);
+
+% settings panel
 GUI.set_panel = uipanel(figure_handle, ...
   'Title',    'Edrumulus settings', ...
   'Position', [0 0 1 0.6]);
@@ -186,7 +197,7 @@ GUI.slider6 = uicontrol(GUI.set_panel, ...
 % seventh slider control with text
 uicontrol(GUI.set_panel, ...
   'style',    'text', ...
-  'string',   '7:Pad Select', ...
+  'string',   '7:MIDI Curve', ...
   'units',    'normalized', ...
   'position', [6 * slider_width, slider_hight + value_hight, slider_width, 0.1]);
 
@@ -200,9 +211,31 @@ GUI.slider7 = uicontrol(GUI.set_panel, ...
   'style',      'slider', ...
   'units',      'normalized', ...
   'min',        0, ...
+  'max',        4, ...
+  'SliderStep', [1 / 4, 1 / 4], ...
+  'position',   [6 * slider_width, 0, slider_width, slider_hight], ...
+  'callback',   @slider_callback);
+
+% eigth slider control with text
+uicontrol(GUI.set_panel, ...
+  'style',    'text', ...
+  'string',   '8:Pad Select', ...
+  'units',    'normalized', ...
+  'position', [7 * slider_width, slider_hight + value_hight, slider_width, 0.1]);
+
+GUI.val8 = uicontrol(GUI.set_panel, ...
+  'style',    'edit', ...
+  'units',    'normalized', ...
+  'position', [7 * slider_width, slider_hight, slider_width, 0.2], ...
+  'Enable',   'off');
+
+GUI.slider8 = uicontrol(GUI.set_panel, ...
+  'style',      'slider', ...
+  'units',      'normalized', ...
+  'min',        0, ...
   'max',        11, ...
   'SliderStep', [1 / 11, 1 / 11], ...
-  'position',   [6 * slider_width, 0, slider_width, slider_hight], ...
+  'position',   [7 * slider_width, 0, slider_width, slider_hight], ...
   'callback',   @slider_callback);
 
 reset_sliders;
@@ -226,6 +259,7 @@ set(GUI.slider3, 'value', 0); set(GUI.val3, 'string', 'Not Set');
 set(GUI.slider4, 'value', 0); set(GUI.val4, 'string', 'Not Set');
 set(GUI.slider5, 'value', 0); set(GUI.val5, 'string', 'Not Set');
 set(GUI.slider6, 'value', 0); set(GUI.val6, 'string', 'Not Set');
+set(GUI.slider7, 'value', 0); set(GUI.val7, 'string', 'Not Set');
 
 end
 
@@ -269,10 +303,95 @@ switch hObject
      set(GUI.val6, 'string', num2str(value));
      midisend(GUI.midi_dev, midimsg("controlchange", 10, 107, value));
 
-   case GUI.slider7
-     set(GUI.val7, 'string', num2str(value));
+ case GUI.slider7
+     switch value
+       case 0
+         set(GUI.val7, 'string', 'LINEAR');
+       case 1
+         set(GUI.val7, 'string', 'EXP1');
+       case 2
+         set(GUI.val7, 'string', 'EXP2');
+       case 3
+         set(GUI.val7, 'string', 'LOG1');
+       case 4
+         set(GUI.val7, 'string', 'LOG2');
+     end
+     midisend(GUI.midi_dev, midimsg("controlchange", 10, 109, value));
+
+   case GUI.slider8
+     set(GUI.val8, 'string', num2str(value));
      midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, value));
      reset_sliders; % on a pad change we do not know the current parameters
 end
 
 end
+
+
+function button_callback(hObject)
+
+global GUI;
+
+% snare
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 0)); % pad 0
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 2)); % PD8
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 0)); % threshold
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 8)); % sensitivity
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 107, 16)); % rim shot threshold
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 111, 3)); % both, rim shot and positional sensing
+
+% kick
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 1)); % pad 1
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 0)); % PD120
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 9)); % threshold
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 9)); % sensitivity
+
+% hi-hat
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 2)); % pad 2
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 2)); % PD8
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 0)); % threshold
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 8)); % sensitivity
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 111, 1)); % enable rim shot
+
+% crash
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 4)); % pad 4
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 2)); % PD8
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 11)); % threshold
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 21)); % sensitivity
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 111, 1)); % enable rim shot
+
+% tom 1
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 5)); % pad 5
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 1)); % PD80R
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 9)); % threshold
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 0)); % sensitivity
+
+% ride
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 6)); % pad 6
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 2)); % PD8
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 18)); % threshold
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 21)); % sensitivity
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 111, 1)); % enable rim shot
+
+% tom 2
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 7)); % pad 7
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 1)); % PD80R
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 18)); % threshold
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 0)); % sensitivity
+
+% cleanup GUI
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 0)); % pad 0
+reset_sliders;
+
+end
+
+
+function checkbox_callback(hObject)
+
+global GUI;
+
+% spike cancellation checkbox
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 110, get(hObject, 'value')));
+
+end
+
+

@@ -1,24 +1,18 @@
 %*******************************************************************************
 % Copyright (c) 2020-2021
-% Author: Volker Fischer
+% Author(s): Volker Fischer
 %*******************************************************************************
-% Permission is hereby granted, free of charge, to any person obtaining a copy
-% of this software and associated documentation files (the "Software"), to deal
-% in the Software without restriction, including without limitation the rights
-% to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-% copies of the Software, and to permit persons to whom the Software is
-% furnished to do so, subject to the following conditions:
-%
-% The above copyright notice and this permission notice shall be included in all
-% copies or substantial portions of the Software.
-%
-% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-% IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-% FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-% AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-% LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-% SOFTWARE.
+% This program is free software; you can redistribute it and/or modify it under
+% the terms of the GNU General Public License as published by the Free Software
+% Foundation; either version 2 of the License, or (at your option) any later
+% version.
+% This program is distributed in the hope that it will be useful, but WITHOUT
+% ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+% FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+% details.
+% You should have received a copy of the GNU General Public License along with
+% this program; if not, write to the Free Software Foundation, Inc.,
+% 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 %*******************************************************************************
 
 function drumtrigger
@@ -35,14 +29,16 @@ padtype = 'pd120'; % default
 
 % TEST process recordings
 %x = audioread("signals/esp32_pd120.wav");
+%x = audioread("signals/esp32_pd8.wav");padtype = 'pd8';
 %x = audioread("signals/pd120_pos_sense.wav");%x = x(2900:10000, :);%x = x(55400:58000, :);%
 %x = audioread("signals/pd120_pos_sense2.wav");
-%x = audioread("signals/pd120_single_hits.wav");
-x = audioread("signals/pd120_roll.wav");%x = x(292410:294749, :);%x = x(311500:317600, :);
+x = audioread("signals/pd120_single_hits.wav");
+%x = audioread("signals/pd120_roll.wav");%x = x(292410:294749, :);%x = x(311500:317600, :);
 %x = audioread("signals/pd120_middle_velocity.wav");
 %x = audioread("signals/pd120_hot_spot.wav");
 %x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
+%x = audioread("signals/pd80r.wav");padtype = 'pd80r';%x = x(52000:60000, :);
 %x = audioread("signals/pd6.wav");
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
@@ -72,6 +68,13 @@ pad.pos_iir_alpha         = 200;
 switch padtype
   case 'pd120'
     % note: the PRESET settings are from the PD120 pad
+  case 'pd80r'
+    pad.scan_time_ms          = 3;
+    pad.main_peak_dist_ms     = 2.4;
+    pad.decay_len_ms2         = 75;
+    pad.decay_grad_fact2      = 300;
+    pad.decay_len_ms3         = 250;
+    pad.decay_grad_fact3      = 100;
   case 'pd8'
     pad.scan_time_ms          = 1.3;
     pad.main_peak_dist_ms     = 0.75;

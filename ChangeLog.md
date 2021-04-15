@@ -1,5 +1,23 @@
 # Edrumulus project log
 
+- (04/10/2021) Here is what my current Edrumulus prototype looks like:
+  <br/>![Prototype 1](algorithm/images/edrumulus_prototype1.jpg)
+
+- (04/04/2021) This is how the ESP32 ADC signal looks like:
+   <br/>![ESP32 ADC Signals](algorithm/images/esp32adc.png)<br/>
+   These spikes seem to be a hardware restriction of the ESP32. I am trying to mitigate this
+   effect by implementing a spike suppression algorithm.
+
+- (04/03/2021) The Edrumulus now implements its own analogRead function so we can use
+   the newest arduino-esp32 library version (which is 1.0.6 at present time).
+
+- (04/01/2021) Some speed tests with 6 pads:
+  Everything + adc1_get_raw call: **0.368 ms**, Everything: **0.1162 ms**, Without process sample: **0.077 ms**,
+  Without analogRead: **0.0455 ms**.<br/>
+  Conclusion: The new ESP32 Arduino Library now [uses the IDF driver](https://github.com/espressif/arduino-esp32/pull/3377)
+  which is basically the adc1_get_raw function which is very slow as seen in my speed tests. My speed tests also
+  showed that the bottle neck is the analog read.
+
 - (03/24/2021) Measurements of Hi-Hat controllers:
    **VH-12 controller:** open **14 kOhm**, closed **10 kOhm**, pressed **8 kOhm**,
    **FD-8 controller:**  open **50 kOhm**, closed **0 Ohm**.
