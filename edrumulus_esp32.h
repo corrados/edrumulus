@@ -30,6 +30,8 @@
 #define ADC_MAX_RANGE        4096 // ESP32 ADC has 12 bits -> 0..4095
 #define ADC_MAX_NOISE_AMPL   8    // highest assumed ADC noise amplitude in the ADC input range unit
 
+typedef void ( *MidiCallback_t )( void );
+
 class Edrumulus_esp32
 {
 public:
@@ -56,12 +58,15 @@ public:
                             const int   pad_index,
                             const int   input_channel_index );
 
+  void register_midi_callback ( MidiCallback_t new_midi_callback_fkt ) { midi_callback_fkt = new_midi_callback_fkt; }
+
 protected:
   int                        Fs;
   volatile SemaphoreHandle_t timer_semaphore;
   hw_timer_t*                timer = nullptr;
   static void IRAM_ATTR      on_timer();
   static void                start_timer_core0_task ( void* param );
+  MidiCallback_t             midi_callback_fkt;
 
   void     init_my_analogRead();
   uint16_t my_analogRead ( const uint8_t pin );

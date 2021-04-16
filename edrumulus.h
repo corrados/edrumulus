@@ -56,6 +56,7 @@ public:
   bool get_choke_on_found  ( const int pad_idx ) { return !pad[pad_idx].get_is_control() && is_choke_on[pad_idx]; }
   bool get_choke_off_found ( const int pad_idx ) { return !pad[pad_idx].get_is_control() && is_choke_off[pad_idx]; }
   bool get_control_found   ( const int pad_idx ) { return pad[pad_idx].get_is_control() && control_found[pad_idx]; }
+
   int  get_midi_velocity   ( const int pad_idx ) { return midi_velocity[pad_idx]; }
   int  get_midi_pos        ( const int pad_idx ) { return midi_pos[pad_idx]; }
   int  get_midi_note       ( const int pad_idx ) { return is_rim_shot[pad_idx] ? pad[pad_idx].get_midi_note_rim() : pad[pad_idx].get_midi_note(); }

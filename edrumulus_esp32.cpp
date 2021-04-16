@@ -20,7 +20,7 @@
 Edrumulus_esp32* edrumulus_esp32_pointer = nullptr;
 
 
-Edrumulus_esp32::Edrumulus_esp32()
+Edrumulus_esp32::Edrumulus_esp32() : midi_callback_fkt ( nullptr )
 {
   // global pointer to this class needed for static callback function
   edrumulus_esp32_pointer = this;
@@ -121,7 +121,18 @@ void Edrumulus_esp32::start_timer_core0_task ( void* param )
   // tasks must not return: forever loop with delay to keep watchdog happy
   for ( ; ; )
   {
-    delay ( 1000 );
+    // if a MIDI callback function was registered, call it now
+    if ( my_obj->midi_callback_fkt != nullptr )
+    {
+      my_obj->midi_callback_fkt();
+    }
+
+    // Define here in which interval the MIDI callback should be called. If the delay
+    // is too short, we waste CPU, if it is too long, we introduce MIDI delay.
+    // NOTE that it seems that we cannot use, e.g., delayMicroseconds ( 500 ) since
+    // the watchdog reboots the ESP32, therefore we have to use the normal delay
+    // function which has a minimum resolution of 1 ms, unfortunately
+    delay ( 1 );
   }
 }
 
