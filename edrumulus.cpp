@@ -810,11 +810,11 @@ void Edrumulus::Pad::process_control_sample ( const int* input,
        ( midi_ctrl_value < ( prev_ctrl_value - control_midi_hysteresis ) ) )
   {
     // clip border values to max/min
-    if ( midi_ctrl_value <= control_midi_hysteresis )
+    if ( midi_ctrl_value < control_midi_hysteresis )
     {
       midi_ctrl_value = 0;
     }
-    if ( midi_ctrl_value >= 127 - control_midi_hysteresis )
+    if ( midi_ctrl_value > 127 - control_midi_hysteresis )
     {
       midi_ctrl_value = 127;
     }
