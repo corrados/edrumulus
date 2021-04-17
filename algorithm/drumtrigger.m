@@ -44,6 +44,7 @@ x = audioread("signals/pd120_single_hits.wav");
 %x = audioread("signals/cy6.wav");
 %x = audioread("signals/kd8.wav");
 %x = audioread("signals/kd7.wav");
+%x = audioread("signals/vh12.wav");
 %org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
 %org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
 
