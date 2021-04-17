@@ -1,3 +1,8 @@
+# Edrumulus specific
+tools/drumgizmo/
+tools/ttymidi/
+
+
 # Prerequisites
 *.d
 
