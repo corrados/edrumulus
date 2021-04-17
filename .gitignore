@@ -1,6 +1,6 @@
 # Edrumulus specific
 tools/drumgizmo/
-tools/ttymidi/
+tools/mod-ttymidi/
 
 
 # Prerequisites
