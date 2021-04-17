@@ -66,7 +66,7 @@ sleep 1
 mod-ttymidi/ttymidi -b 38400 &
 
 ./drumgizmo/drumgizmo/drumgizmo -s -S limit=500M -i jackmidi -I midimap=drumgizmo/DRSKit/DRSKit_midimap_edrumulus.xml -o jackaudio drumgizmo/DRSKit/DRSKit_edrumulus.xml &
-sleep 30
+sleep 80
 
 jack_connect ttymidi:MIDI_in DrumGizmo:drumgizmo_midiin
 jack_connect DrumGizmo:0-AmbL system:playback_1
