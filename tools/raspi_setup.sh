@@ -65,8 +65,8 @@ sleep 1
 # note that to get access to /dev/ttyUSB0 we need to be in group tty/dialout
 mod-ttymidi/ttymidi -b 38400 &
 
-./drumgizmo/drumgizmo/drumgizmo -i jackmidi -I midimap=drumgizmo/DRSKit/Midimap_minimal.xml -o jackaudio drumgizmo/DRSKit/DRSKit_minimal.xml &
-sleep 10
+./drumgizmo/drumgizmo/drumgizmo -i jackmidi -I midimap=drumgizmo/DRSKit/DRSKit_midimap_edrumulus.xml -o jackaudio drumgizmo/DRSKit/DRSKit_edrumulus.xml &
+sleep 30
 
 jack_connect ttymidi:MIDI_in DrumGizmo:drumgizmo_midiin
 jack_connect DrumGizmo:0-AmbL system:playback_1
