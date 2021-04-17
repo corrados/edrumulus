@@ -47,7 +47,14 @@ fi
 
 
 # TODO
-# sudo ~/edrumulus/ttymidi/ttymidi -s /dev/ttyUSB0 -b 38400 -v
+# sudo ~/edrumulus/tools/ttymidi/ttymidi -s /dev/ttyUSB0 -b 38400 -v
 
-#./tools/drumgizmo/drumgizmo --no-resampling -i alsamidi -I midimap=~/edrumulus/tools/DRSKit/Midimap_minimal.xml -o alsa -O frames=128,periods=2 ~/edrumulus/tools/DRSKit/DRSKit_minimal2.xml
+#./tools/drumgizmo/drumgizmo --no-resampling -i alsamidi -I midimap=~/edrumulus/tools/DRSKit/Midimap_minimal.xml -o alsa -O frames=128,periods=2 ~/edrumulus/tools/DRSKit/DRSKit_minimal.xml
+
+# get the MIDI channel numbers of aconnect
+#TTYMIDI_NUM=$(aconnect -l|grep "ttymidi"|cut -d' ' -f2|cut -d':' -f1)
+
+
+
+
 
