@@ -51,28 +51,26 @@ else
 fi
 
 
-# TODO download Drumgizmo drum kit
+# TODO download Drumgizmo drum kit into the drumgizmo directory, e.g., edrumulus/tools/drumgizmo/DRSKit/
 
 
+# get first USB audio sound card device
+ADEVICE=$(aplay -l|grep "USB Audio"|tail -1|cut -d' ' -f3)
+echo "Using USB audio device: ${ADEVICE}"
 
+# start the jack deamon
+jackd -R -T --silent -P70 -p16 -t2000 -d alsa -dhw:${ADEVICE} -p 128 -n 3 -r 48000 -s &>/dev/null &
+sleep 1
 
+# note that to get access to /dev/ttyUSB0 we need to be in group tty/dialout
+mod-ttymidi/ttymidi -b 38400 &
 
-# TODO
+./drumgizmo/drumgizmo/drumgizmo -i jackmidi -I midimap=drumgizmo/DRSKit/Midimap_minimal.xml -o jackaudio drumgizmo/DRSKit/DRSKit_minimal.xml &
+sleep 10
 
-# to get access to /dev/ttyUSB0 we need to be in group tty
-# TODO first check if we are already in group, otherwise add to the group
-# TODO it seems that on the raspi the user pi already has dialout rights
-#sudo usermod -a -G tty pi
-#sudo usermod -a -G dialout pi
-
-# ~/edrumulus/tools/ttymidi/ttymidi -s /dev/ttyUSB0 -b 38400 -v
-
-#./tools/drumgizmo/drumgizmo --no-resampling -i alsamidi -I midimap=~/edrumulus/tools/DRSKit/Midimap_minimal.xml -o alsa -O frames=128,periods=2 ~/edrumulus/tools/DRSKit/DRSKit_minimal.xml
-
-# get the MIDI channel numbers of aconnect
-#TTYMIDI_NUM=$(aconnect -l|grep "ttymidi"|cut -d' ' -f2|cut -d':' -f1)
-
-
+jack_connect ttymidi:MIDI_in DrumGizmo:drumgizmo_midiin
+jack_connect DrumGizmo:0-AmbL system:playback_1
+jack_connect DrumGizmo:1-AmbR system:playback_2
 
 
 
