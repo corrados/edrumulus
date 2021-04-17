@@ -1,170 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<drumkit name="DRSKit2" description="DRSKit2 full">
+<drumkit name="DRSKit2" description="DRSKit2 edrumulus">
   <channels>
     <channel name="AmbL"/>
     <channel name="AmbR"/>
-    <channel name="Kdrum_back"/>
-    <channel name="Kdrum_front"/>
-    <channel name="Hihat"/>
-    <channel name="OHL"/>
-    <channel name="OHR"/>
-    <channel name="Ride"/>
-    <channel name="Snare_bottom"/>
-    <channel name="Snare_top"/>
-    <channel name="Tom1"/>
-    <channel name="Tom2"/>
-    <channel name="Tom3"/>
   </channels>
   <instruments>
     <instrument name="Crash_left_shank" file="Crash_left_shank/Crash_left_shank.xml">
       <channelmap in="AmbL" out="AmbL" main="true"/>
       <channelmap in="AmbR" out="AmbR" main="true"/>
-      <channelmap in="Kdrum_back" out="Kdrum_back"/>
-      <channelmap in="Kdrum_front" out="Kdrum_front"/>
-      <channelmap in="Hihat" out="Hihat"/>
-      <channelmap in="OHL" out="OHL" main="true"/>
-      <channelmap in="OHR" out="OHR" main="true"/>
-      <channelmap in="Ride" out="Ride"/>
-      <channelmap in="Snare_bottom" out="Snare_bottom"/>
-      <channelmap in="Snare_top" out="Snare_top"/>
-      <channelmap in="Tom1" out="Tom1"/>
-      <channelmap in="Tom2" out="Tom2"/>
-      <channelmap in="Tom3" out="Tom3"/>
     </instrument>
     <instrument name="Hihat_closed_shank" group="hihat" file="Hihat_closed_shank/Hihat_closed_shank.xml">
       <channelmap in="AmbL" out="AmbL" main="true"/>
       <channelmap in="AmbR" out="AmbR" main="true"/>
-      <channelmap in="Kdrum_back" out="Kdrum_back"/>
-      <channelmap in="Kdrum_front" out="Kdrum_front"/>
-      <channelmap in="Hihat" out="Hihat" main="true"/>
-      <channelmap in="OHL" out="OHL" main="true"/>
-      <channelmap in="OHR" out="OHR" main="true"/>
-      <channelmap in="Ride" out="Ride"/>
-      <channelmap in="Snare_bottom" out="Snare_bottom"/>
-      <channelmap in="Snare_top" out="Snare_top"/>
-      <channelmap in="Tom1" out="Tom1"/>
-      <channelmap in="Tom2" out="Tom2"/>
-      <channelmap in="Tom3" out="Tom3"/>
     </instrument>
     <instrument name="Hihat_semi_open" group="hihat" file="Hihat_semi_open/Hihat_semi_open.xml">
       <channelmap in="AmbL" out="AmbL" main="true"/>
       <channelmap in="AmbR" out="AmbR" main="true"/>
-      <channelmap in="Kdrum_back" out="Kdrum_back"/>
-      <channelmap in="Kdrum_front" out="Kdrum_front"/>
-      <channelmap in="Hihat" out="Hihat" main="true"/>
-      <channelmap in="OHL" out="OHL" main="true"/>
-      <channelmap in="OHR" out="OHR" main="true"/>
-      <channelmap in="Ride" out="Ride"/>
-      <channelmap in="Snare_bottom" out="Snare_bottom"/>
-      <channelmap in="Snare_top" out="Snare_top"/>
-      <channelmap in="Tom1" out="Tom1"/>
-      <channelmap in="Tom2" out="Tom2"/>
-      <channelmap in="Tom3" out="Tom3"/>
     </instrument>
     <instrument name="Kdrum_with_contact" file="Kdrum_with_contact/Kdrum_with_contact.xml">
       <channelmap in="AmbL" out="AmbL"/>
       <channelmap in="AmbR" out="AmbR"/>
-      <channelmap in="Kdrum_back" out="Kdrum_back" main="true"/>
-      <channelmap in="Kdrum_front" out="Kdrum_front" main="true"/>
-      <channelmap in="Hihat" out="Hihat"/>
-      <channelmap in="OHL" out="OHL"/>
-      <channelmap in="OHR" out="OHR"/>
-      <channelmap in="Ride" out="Ride"/>
-      <channelmap in="Snare_bottom" out="Snare_bottom"/>
-      <channelmap in="Snare_top" out="Snare_top"/>
-      <channelmap in="Tom1" out="Tom1"/>
-      <channelmap in="Tom2" out="Tom2"/>
-      <channelmap in="Tom3" out="Tom3"/>
     </instrument>
     <instrument name="Ride_shank_bell" file="Ride_shank_bell/Ride_shank_bell.xml">
       <channelmap in="AmbL" out="AmbL" main="true"/>
       <channelmap in="AmbR" out="AmbR" main="true"/>
-      <channelmap in="Kdrum_back" out="Kdrum_back"/>
-      <channelmap in="Kdrum_front" out="Kdrum_front"/>
-      <channelmap in="Hihat" out="Hihat"/>
-      <channelmap in="OHL" out="OHL" main="true"/>
-      <channelmap in="OHR" out="OHR" main="true"/>
-      <channelmap in="Ride" out="Ride" main="true"/>
-      <channelmap in="Snare_bottom" out="Snare_bottom"/>
-      <channelmap in="Snare_top" out="Snare_top"/>
-      <channelmap in="Tom1" out="Tom1"/>
-      <channelmap in="Tom2" out="Tom2"/>
-      <channelmap in="Tom3" out="Tom3"/>
     </instrument>
     <instrument name="Ride_tip" file="Ride_tip/Ride_tip.xml">
       <channelmap in="AmbL" out="AmbL" main="true"/>
       <channelmap in="AmbR" out="AmbR" main="true"/>
-      <channelmap in="Kdrum_back" out="Kdrum_back"/>
-      <channelmap in="Kdrum_front" out="Kdrum_front"/>
-      <channelmap in="Hihat" out="Hihat"/>
-      <channelmap in="OHL" out="OHL" main="true"/>
-      <channelmap in="OHR" out="OHR" main="true"/>
-      <channelmap in="Ride" out="Ride" main="true"/>
-      <channelmap in="Snare_bottom" out="Snare_bottom"/>
-      <channelmap in="Snare_top" out="Snare_top"/>
-      <channelmap in="Tom1" out="Tom1"/>
-      <channelmap in="Tom2" out="Tom2"/>
-      <channelmap in="Tom3" out="Tom3"/>
     </instrument>
     <instrument name="Snare" file="Snare/Snare.xml">
       <channelmap in="AmbL" out="AmbL"/>
       <channelmap in="AmbR" out="AmbR"/>
-      <channelmap in="Kdrum_back" out="Kdrum_back"/>
-      <channelmap in="Kdrum_front" out="Kdrum_front"/>
-      <channelmap in="Hihat" out="Hihat"/>
-      <channelmap in="OHL" out="OHL"/>
-      <channelmap in="OHR" out="OHR"/>
-      <channelmap in="Ride" out="Ride"/>
-      <channelmap in="Snare_bottom" out="Snare_bottom" main="true"/>
-      <channelmap in="Snare_top" out="Snare_top" main="true"/>
-      <channelmap in="Tom1" out="Tom1"/>
-      <channelmap in="Tom2" out="Tom2"/>
-      <channelmap in="Tom3" out="Tom3"/>
     </instrument>
     <instrument name="Snare_rest" file="Snare_rest/Snare_rest.xml">
       <channelmap in="AmbL" out="AmbL"/>
       <channelmap in="AmbR" out="AmbR"/>
-      <channelmap in="Kdrum_back" out="Kdrum_back"/>
-      <channelmap in="Kdrum_front" out="Kdrum_front"/>
-      <channelmap in="Hihat" out="Hihat"/>
-      <channelmap in="OHL" out="OHL"/>
-      <channelmap in="OHR" out="OHR"/>
-      <channelmap in="Ride" out="Ride"/>
-      <channelmap in="Snare_bottom" out="Snare_bottom" main="true"/>
-      <channelmap in="Snare_top" out="Snare_top" main="true"/>
-      <channelmap in="Tom1" out="Tom1"/>
-      <channelmap in="Tom2" out="Tom2"/>
-      <channelmap in="Tom3" out="Tom3"/>
     </instrument>
     <instrument name="Tom1" file="Tom1/Tom1.xml">
       <channelmap in="AmbL" out="AmbL"/>
       <channelmap in="AmbR" out="AmbR"/>
-      <channelmap in="Kdrum_back" out="Kdrum_back"/>
-      <channelmap in="Kdrum_front" out="Kdrum_front"/>
-      <channelmap in="Hihat" out="Hihat"/>
-      <channelmap in="OHL" out="OHL"/>
-      <channelmap in="OHR" out="OHR"/>
-      <channelmap in="Ride" out="Ride"/>
-      <channelmap in="Snare_bottom" out="Snare_bottom"/>
-      <channelmap in="Snare_top" out="Snare_top"/>
-      <channelmap in="Tom1" out="Tom1" main="true"/>
-      <channelmap in="Tom2" out="Tom2"/>
-      <channelmap in="Tom3" out="Tom3"/>
     </instrument>
     <instrument name="Tom2" file="Tom2/Tom2.xml">
       <channelmap in="AmbL" out="AmbL"/>
       <channelmap in="AmbR" out="AmbR"/>
-      <channelmap in="Kdrum_back" out="Kdrum_back"/>
-      <channelmap in="Kdrum_front" out="Kdrum_front"/>
-      <channelmap in="Hihat" out="Hihat"/>
-      <channelmap in="OHL" out="OHL"/>
-      <channelmap in="OHR" out="OHR"/>
-      <channelmap in="Ride" out="Ride"/>
-      <channelmap in="Snare_bottom" out="Snare_bottom"/>
-      <channelmap in="Snare_top" out="Snare_top"/>
-      <channelmap in="Tom1" out="Tom1"/>
-      <channelmap in="Tom2" out="Tom2" main="true"/>
-      <channelmap in="Tom3" out="Tom3"/>
     </instrument>
   </instruments>
 </drumkit>
