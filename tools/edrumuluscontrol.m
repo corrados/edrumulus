@@ -35,9 +35,11 @@ GUI.midi_dev_list = uicontrol(figure_handle, ...
   'callback', @midi_sel_callback);
 
 midi_devices = mididevinfo;
+list_entries = {};
 for i = 1:length(midi_devices.output)
-  set(GUI.midi_dev_list, 'string', midi_devices.output{i}.Name);
+  list_entries = [list_entries, midi_devices.output{i}.Name];
 end
+set(GUI.midi_dev_list, 'string', list_entries);
 GUI.midi_dev = [];
 
 % default settings button
@@ -246,7 +248,8 @@ end
 function midi_sel_callback(hObject)
 
 global GUI;
-GUI.midi_dev = mididevice("output", get(hObject, 'string'));
+list_entries = get(hObject, 'string');
+GUI.midi_dev = mididevice("output", list_entries{get(hObject, 'value')});
 
 end
 
