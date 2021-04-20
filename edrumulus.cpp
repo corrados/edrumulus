@@ -750,17 +750,6 @@ debug = 0.0f; // TEST
           stored_is_rimshot         = rim_metric_db > rim_shot_treshold_dB;
           rim_shot_cnt              = 0;
           was_rim_shot_ready        = true;
-
-// TODO:
-// - positional sensing must be adjusted if a rim shot is detected (note that this must be done BEFORE the MIDI clipping!)
-// - only use one counter instead of rim_shot_cnt and pos_sense_cnt
-// - as long as counter is not finished, do check "hil_filt_new > threshold" again to see if we have a higher peak in that
-//   time window -> if yes, restart everything using the new detected peak
-if ( stored_is_rimshot )
-{
-  stored_midi_pos = 0; // as a quick hack, disable positional sensing if a rim shot is detected
-}
-
         }
         else
         {
@@ -773,6 +762,16 @@ if ( stored_is_rimshot )
         }
       }
     }
+
+// TODO:
+// - positional sensing must be adjusted if a rim shot is detected (note that this must be done BEFORE the MIDI clipping!)
+// - only use one counter instead of rim_shot_cnt and pos_sense_cnt
+// - as long as counter is not finished, do check "hil_filt_new > threshold" again to see if we have a higher peak in that
+//   time window -> if yes, restart everything using the new detected peak
+if ( stored_is_rimshot )
+{
+  stored_midi_pos = 0; // as a quick hack, disable positional sensing if a rim shot is detected
+}
   }
 
   // check for all estimations are ready and we can set the peak found flag and
