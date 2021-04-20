@@ -41,6 +41,7 @@ x = audioread("signals/pd120_single_hits.wav");
 %x = audioread("signals/pd80r.wav");padtype = 'pd80r';%x = x(52000:60000, :);
 %x = audioread("signals/pd6.wav");
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
+%x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
 %x = audioread("signals/cy6.wav");
 %x = audioread("signals/kd8.wav");
 %x = audioread("signals/kd7.wav");
