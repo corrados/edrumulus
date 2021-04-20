@@ -340,6 +340,8 @@ midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 2)); % PD8
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 0)); % threshold
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 8)); % sensitivity
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 107, 16)); % rim shot threshold
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 105, 26)); % positional sensing threshold
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 106, 11)); % positional sensing sensitivity
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 111, 3)); % both, rim shot and positional sensing
 
 % kick
