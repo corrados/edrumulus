@@ -80,8 +80,8 @@ GUI.val1 = uicontrol(GUI.set_panel, ...
 GUI.slider1 = uicontrol(GUI.set_panel, ...
   'style',      'slider', ...
   'min',        0, ...
-  'max',        2, ...
-  'SliderStep', [1 / 2, 1 / 2], ...
+  'max',        5, ...
+  'SliderStep', [1 / 5, 1 / 5], ...
   'units',      'normalized', ...
   'position',   [0, 0, slider_width, slider_hight], ...
   'callback',   @slider_callback);
@@ -282,6 +282,12 @@ switch hObject
          set(GUI.val1, 'string', 'PD80R');
        case 2
          set(GUI.val1, 'string', 'PD8');
+       case 3
+         set(GUI.val1, 'string', 'FD8');
+       case 4
+         set(GUI.val1, 'string', 'VH12');
+       case 5
+         set(GUI.val1, 'string', 'VH12CTRL');
      end
      midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, value));
      reset_sliders; % if a pad type is changed, all parameters are reset in the ESP32
@@ -337,7 +343,7 @@ global GUI;
 % snare
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 0)); % pad 0
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 2)); % PD8
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 0)); % threshold
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 3)); % threshold
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 8)); % sensitivity
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 107, 16)); % rim shot threshold
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 105, 26)); % positional sensing threshold
@@ -350,17 +356,23 @@ midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 0)); % PD120
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 9)); % threshold
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 9)); % sensitivity
 
-% hi-hat
+% Hi-Hat
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 2)); % pad 2
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 2)); % PD8
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 0)); % threshold
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 4)); % threshold
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 8)); % sensitivity
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 111, 1)); % enable rim shot
+
+% Hi-Hat control
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 3)); % pad 3
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 3)); % FD8
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 5)); % threshold
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 0)); % sensitivity
 
 % crash
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 4)); % pad 4
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 2)); % PD8
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 11)); % threshold
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 19)); % threshold
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 21)); % sensitivity
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 111, 1)); % enable rim shot
 

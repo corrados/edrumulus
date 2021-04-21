@@ -277,9 +277,10 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       break;
 
     case PD8:
+      pad_settings.velocity_sensitivity  = 8;
       pad_settings.mask_time_ms          = 7;
-      pad_settings.pos_threshold         = 29;
-      pad_settings.pos_sensitivity       = 29;
+      pad_settings.pos_threshold         = 26;
+      pad_settings.pos_sensitivity       = 11;
       pad_settings.scan_time_ms          = 1.3f;
       pad_settings.main_peak_dist_ms     = 0.75f;
       pad_settings.decay_est_delay2nd_ms = 6.0f;
@@ -296,6 +297,24 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       pad_settings.velocity_threshold   = 5;
       pad_settings.velocity_sensitivity = 0;
       break;
+
+    case VH12:
+      pad_settings.scan_time_ms          = 4.0f;
+      pad_settings.main_peak_dist_ms     = 0.75f;
+      pad_settings.decay_est_delay2nd_ms = 5.0f;
+      pad_settings.decay_fact_db         = 5.0f;
+      pad_settings.decay_len1_ms         = 4.0f;
+      pad_settings.decay_grad_fact1      = 30.0f;
+      pad_settings.decay_len2_ms         = 27.0f;
+      pad_settings.decay_grad_fact2      = 700.0f;
+      pad_settings.decay_len3_ms         = 600.0f; // must be long because of open Hi-Hat ringing
+      pad_settings.decay_grad_fact3      = 75.0f;
+      break;
+
+    case VH12CTRL:
+      pad_settings.velocity_threshold   = 19;
+      pad_settings.velocity_sensitivity = 28;
+      break;
   }
 
   initialize();
@@ -305,7 +324,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
 void Edrumulus::Pad::initialize()
 {
   // set algorithm parameters
-  const float threshold_db = 15.0f + pad_settings.velocity_threshold;           // gives us a threshold range of 15..46 dB
+  const float threshold_db = 9.0f + pad_settings.velocity_threshold;            // gives us a threshold range of 9..40 dB
   threshold                = pow   ( 10.0f, threshold_db / 10 );                // linear power threshold
   energy_window_len        = round ( pad_settings.energy_win_len_ms * 1e-3f * Fs ); // hit energy estimation time window length (e.g. 2 ms)
   scan_time                = round ( pad_settings.scan_time_ms  * 1e-3f * Fs ); // scan time from first detected peak

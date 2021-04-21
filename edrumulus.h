@@ -29,7 +29,9 @@ public:
     PD120,
     PD80R,
     PD8,
-    FD8
+    FD8, // control pedal
+    VH12,
+    VH12CTRL
   };
 
   enum Ecurvetype
@@ -124,8 +126,10 @@ protected:
       int  get_midi_note()         { return midi_note; }
       int  get_midi_note_rim()     { return midi_note_rim; }
       int  get_midi_ctrl_ch()      { return midi_ctrl_ch; }
-      bool get_is_control()        { return pad_settings.pad_type == FD8; } // TODO check if new pads must be added here
-      bool get_is_rim_switch()     { return pad_settings.pad_type == PD8; } // TODO check if new pads must be added here
+      bool get_is_control()        { return ( pad_settings.pad_type == FD8 ) ||
+                                            ( pad_settings.pad_type == VH12CTRL ); } // TODO check if new pads must be added here
+      bool get_is_rim_switch()     { return ( pad_settings.pad_type == PD8 ) ||
+                                            ( pad_settings.pad_type == VH12 ); } // TODO check if new pads must be added here
       bool get_pos_sense_is_used() { return pad_settings.pos_sense_is_used; }
 
     protected:

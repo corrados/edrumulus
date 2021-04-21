@@ -45,7 +45,7 @@ x = audioread("signals/pd120_single_hits.wav");
 %x = audioread("signals/cy6.wav");
 %x = audioread("signals/kd8.wav");
 %x = audioread("signals/kd7.wav");
-%x = audioread("signals/vh12.wav");
+%x = audioread("signals/vh12.wav");padtype = 'vh12';%x = x(900000:end, :);%x = x(376000:420000, :);%x = x(1:140000, :);
 %org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
 %org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
 
@@ -92,6 +92,18 @@ switch padtype
     pad.decay_grad_fact2      = 600;
     pad.decay_len_ms3         = 150;
     pad.decay_grad_fact3      = 120;
+case 'vh12'
+    pad.threshold_db          = 16;
+    pad.scan_time_ms          = 4;
+    pad.main_peak_dist_ms     = 0.75;
+    pad.decay_est_delay2nd_ms = 5;
+    pad.decay_fact_db         = 5;
+    pad.decay_len_ms1         = 4;
+    pad.decay_grad_fact1      = 30;
+    pad.decay_len_ms2         = 27;
+    pad.decay_grad_fact2      = 700;
+    pad.decay_len_ms3         = 600; % must be long because of open Hi-Hat ringing
+    pad.decay_grad_fact3      = 75;
 end
 
 

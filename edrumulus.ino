@@ -53,31 +53,30 @@ void setup()
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
 
   // some fundamental settings which do not change during operation
-  edrumulus.set_midi_notes        ( 0, 38, 40 ); // snare
+  edrumulus.set_midi_notes   ( 0, 38, 40 ); // snare
+  edrumulus.set_midi_notes   ( 1, 36, 36 ); // kick
+  edrumulus.set_midi_notes   ( 2, 26 /*46*/, 26 ); // Hi-Hat (open Hi-Hat, for closed Hi-Hat use 42 and 22 and for pedal 44)
+  edrumulus.set_midi_ctrl_ch ( 3, 4 ); // Hi-Hat-ctrl
+  edrumulus.set_midi_notes   ( 4, 49, 55 ); // crash
+  edrumulus.set_midi_notes   ( 5, 48, 50 ); // tom 1
+  edrumulus.set_midi_notes   ( 6, 51, 66 ); // ride
+  edrumulus.set_midi_notes   ( 7, 45, 47 ); // tom 2
+  edrumulus.set_midi_notes   ( 8, 43, 58 ); // tom 3
+
+// my prototype setup configuration...
+  edrumulus.set_pad_type          ( 0, Edrumulus::PD8 ); // snare
   edrumulus.set_rim_shot_is_used  ( 0, true );
   edrumulus.set_pos_sense_is_used ( 0, true );
-
-  edrumulus.set_midi_notes        ( 1, 36, 36 ); // kick
-
-  edrumulus.set_midi_notes        ( 2, 26 /*46*/, 26 ); // hi-hat (open hi-hat, for closed hi-hat use 42 and 22 and for pedal 44)
-  edrumulus.set_pad_type          ( 2, Edrumulus::PD8 ); // using rim switch
+//set_pad_type                    ( 1, Edrumulus::KD7 ); // kick
+  edrumulus.set_pad_type          ( 2, Edrumulus::PD8 ); // Hi-Hat, using rim switch
   edrumulus.set_rim_shot_is_used  ( 2, true );
-
-  edrumulus.set_midi_ctrl_ch      ( 3, 4 ); // hi-hat-ctrl
-  edrumulus.set_pad_type          ( 3, Edrumulus::FD8 );
-
-  edrumulus.set_midi_notes        ( 4, 49, 55 ); // crash
-  edrumulus.set_pad_type          ( 4, Edrumulus::PD8 ); // using rim switch
+  edrumulus.set_pad_type          ( 3, Edrumulus::FD8 ); // Hi-Hat-ctrl
+  edrumulus.set_pad_type          ( 4, Edrumulus::PD8 ); // crash, using rim switch
   edrumulus.set_rim_shot_is_used  ( 4, true );
-
-  edrumulus.set_midi_notes        ( 5, 48, 50 ); // tom 1
-
-  edrumulus.set_midi_notes        ( 6, 51, 66 ); // ride
-  edrumulus.set_pad_type          ( 6, Edrumulus::PD8 ); // using rim switch
+  edrumulus.set_pad_type          ( 5, Edrumulus::PD8 ); // tom 1
+  edrumulus.set_pad_type          ( 6, Edrumulus::PD8 ); // ride, using rim switch
   edrumulus.set_rim_shot_is_used  ( 6, true );
-
-  edrumulus.set_midi_notes        ( 7, 45, 47 ); // tom 2
-  edrumulus.set_midi_notes        ( 8, 43, 58 ); // tom 3
+  edrumulus.set_pad_type          ( 7, Edrumulus::PD8 ); // tom 2
 
   // initialize GPIO port for status LED
   pinMode ( status_LED_pin, OUTPUT );
@@ -162,9 +161,12 @@ void loop()
       {
         switch ( value )
         {
-          case 0: edrumulus.set_pad_type ( selected_pad, Edrumulus::PD120 ); break;
-          case 1: edrumulus.set_pad_type ( selected_pad, Edrumulus::PD80R ); break;
-          case 2: edrumulus.set_pad_type ( selected_pad, Edrumulus::PD8 );   break;
+          case 0: edrumulus.set_pad_type ( selected_pad, Edrumulus::PD120 );    break;
+          case 1: edrumulus.set_pad_type ( selected_pad, Edrumulus::PD80R );    break;
+          case 2: edrumulus.set_pad_type ( selected_pad, Edrumulus::PD8 );      break;
+          case 3: edrumulus.set_pad_type ( selected_pad, Edrumulus::FD8 );      break;
+          case 4: edrumulus.set_pad_type ( selected_pad, Edrumulus::VH12 );     break;
+          case 5: edrumulus.set_pad_type ( selected_pad, Edrumulus::VH12CTRL ); break;
         }
         is_used = true;
       }
@@ -242,6 +244,20 @@ void loop()
           case 2: edrumulus.set_rim_shot_is_used ( selected_pad, false ); edrumulus.set_pos_sense_is_used ( selected_pad, true );  break;
           case 3: edrumulus.set_rim_shot_is_used ( selected_pad, true );  edrumulus.set_pos_sense_is_used ( selected_pad, true );  break;
         }
+        is_used = true;
+      }
+
+      // controller 112: normal MIDI note
+      if ( controller == 112 )
+      {
+        edrumulus.set_midi_notes ( selected_pad, value, edrumulus.get_midi_note_rim ( selected_pad ) );
+        is_used = true;
+      }
+
+      // controller 113: MIDI note for rim
+      if ( controller == 113 )
+      {
+        edrumulus.set_midi_notes ( selected_pad, edrumulus.get_midi_note_norm ( selected_pad ), value );
         is_used = true;
       }
 
