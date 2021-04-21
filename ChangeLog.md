@@ -85,6 +85,9 @@
 
 # TODO list
 
+- If a rim shot is used, the positional sensing parameters must be adjusted to correctly estimate
+  the position.
+
 - We sometime have double-triggers on hard hits or when the rim is hit. The mask time is already
   at 10 ms. So, the decay handling should be improved to suppress these double-triggers.
 
@@ -95,8 +98,3 @@
   precise. But at the edge of the mesh head you can hear that some hits are not detected. So, it
   seems Roland has optimized their retrigger cancellation algorithm for reducing the detection
   probability of incorrect hits in favor of detecting very low level hits.
-
-- If a rim shot is used, the positional sensing parameters must be adjusted to correctly estimate
-  the position.
-
-- The algorithm is optimized for Roland PD-120 pad only. Other pad types should be supported, too.
