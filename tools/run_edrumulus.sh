@@ -14,17 +14,6 @@ if ! dpkg -s $pkgs >/dev/null 2>&1; then
 fi
 
 
-## download and compile ttymidi -------------------------------------------------
-#if [ -d "ttymidi" ]; then
-#  echo "The ttyMIDI directory is present, we assume it is compiled and ready to use. If not, delete the ttyMIDI #directory and call this script again."
-#else
-#  git clone https://github.com/cjbarnes18/ttymidi.git
-#  cd ttymidi
-#  make
-#  cd ..
-#fi
-
-
 # download and compile mod-ttymidi ---------------------------------------------
 if [ -d "mod-ttymidi" ]; then
   echo "The ttyMIDI directory is present, we assume it is compiled and ready to use. If not, delete the mod-ttymidi directory and call this script again."
