@@ -817,24 +817,28 @@ void Edrumulus::Pad::process_control_sample ( const int* input,
                                               int&       midi_ctrl_value )
 {
   // map the input value to the MIDI range
-  midi_ctrl_value = ( ( ADC_MAX_RANGE - input[0] - control_threshold ) / control_range * 127 );
-  midi_ctrl_value = max ( 0, min ( 127, midi_ctrl_value ) );
+  int cur_midi_ctrl_value = ( ( ADC_MAX_RANGE - input[0] - control_threshold ) / control_range * 127 );
+  cur_midi_ctrl_value     = max ( 0, min ( 127, cur_midi_ctrl_value ) );
 
   // introduce hysteresis to avoid sending too many MIDI control messages
   static const int control_midi_hysteresis = ADC_MAX_NOISE_AMPL;
   change_found                             = false;
 
-  if ( ( midi_ctrl_value > ( prev_ctrl_value + control_midi_hysteresis ) ) ||
-       ( midi_ctrl_value < ( prev_ctrl_value - control_midi_hysteresis ) ) )
+  if ( ( cur_midi_ctrl_value > ( prev_ctrl_value + control_midi_hysteresis ) ) ||
+       ( cur_midi_ctrl_value < ( prev_ctrl_value - control_midi_hysteresis ) ) )
   {
     // clip border values to max/min
-    if ( midi_ctrl_value < control_midi_hysteresis )
+    if ( cur_midi_ctrl_value < control_midi_hysteresis )
     {
       midi_ctrl_value = 0;
     }
-    if ( midi_ctrl_value > 127 - control_midi_hysteresis )
+    else if ( cur_midi_ctrl_value > 127 - control_midi_hysteresis )
     {
       midi_ctrl_value = 127;
+    }
+    else
+    {
+      midi_ctrl_value = cur_midi_ctrl_value;
     }
 
     change_found    = true;
