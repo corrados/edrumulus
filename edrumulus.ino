@@ -28,11 +28,13 @@ MIDI_CREATE_DEFAULT_INSTANCE();     // Hairless USB MIDI
 #endif
 
 Edrumulus edrumulus;
-const int number_pads      = 8;
-const int status_LED_pin   = 2; // internal LED used for overload indicator
-const int midi_channel     = 10; // default for edrums is 10
-bool      is_status_LED_on = false;
-int       selected_pad     = 0;
+const int number_pads       = 8;
+const int status_LED_pin    = 2; // internal LED used for overload indicator
+const int midi_channel      = 10; // default for edrums is 10
+const int hihat_pad_idx     = 2;
+const int hihatctrl_pad_idx = 3;
+bool      is_status_LED_on  = false;
+int       selected_pad      = 0;
 
 
 void setup()
@@ -55,8 +57,8 @@ void setup()
   // some fundamental settings which do not change during operation
   edrumulus.set_midi_notes   ( 0, 38, 40 ); // snare
   edrumulus.set_midi_notes   ( 1, 36, 36 ); // kick
-  edrumulus.set_midi_notes   ( 2, 26 /*46*/, 26 ); // Hi-Hat (open Hi-Hat, for closed Hi-Hat use 42 and 22 and for pedal 44)
-  edrumulus.set_midi_ctrl_ch ( 3, 4 ); // Hi-Hat-ctrl
+  edrumulus.set_midi_notes   ( hihat_pad_idx, 26 /*46*/, 26 ); // Hi-Hat (open Hi-Hat, for closed Hi-Hat use 42 and 22 and for pedal 44)
+  edrumulus.set_midi_ctrl_ch ( hihatctrl_pad_idx, 4 ); // Hi-Hat control
   edrumulus.set_midi_notes   ( 4, 49, 55 ); // crash
   edrumulus.set_midi_notes   ( 5, 48, 50 ); // tom 1
   edrumulus.set_midi_notes   ( 6, 51, 66 ); // ride
@@ -112,6 +114,14 @@ void loop()
   {
     if ( edrumulus.get_peak_found ( pad_idx ) )
     {
+      // send Hi-Hat control message right before each Hi-Hat pad hit
+      if ( pad_idx == hihat_pad_idx )
+      {
+        const int midi_ctrl_ch    = edrumulus.get_midi_ctrl_ch    ( hihatctrl_pad_idx );
+        const int midi_ctrl_value = edrumulus.get_midi_ctrl_value ( hihatctrl_pad_idx );
+        MIDI.sendControlChange ( midi_ctrl_ch, midi_ctrl_value, midi_channel );
+      }
+
       // send midi positional control message if positional sensing is enabled for the current pad
       if ( edrumulus.get_pos_sense_is_used ( pad_idx ) )
       {
@@ -129,7 +139,6 @@ void loop()
     {
       const int midi_ctrl_ch    = edrumulus.get_midi_ctrl_ch    ( pad_idx );
       const int midi_ctrl_value = edrumulus.get_midi_ctrl_value ( pad_idx );
-
       MIDI.sendControlChange ( midi_ctrl_ch, midi_ctrl_value, midi_channel );
     }
 
