@@ -23,7 +23,7 @@ pkg load statistics
 
 % prepare serial port
 try
-  a = serialport("COM7", 500000);
+  a = serialport("COM7", 500000); % note that we increased the transfer rate, now it is different from the default
 catch
 end
 flush(a);

@@ -301,6 +301,7 @@ for ( int i = 0; i < num_all_pings / 2; i++ )
   my_analogRead2 ( all_analog_pins[i], all_analog_pins[i + 6], sample_org[i], sample_org[i + 6] );
 }
 
+// TODO we have a better implementation of this in the edrumulus class
 Serial.println ( String ( sample_org[0] ) + "\t" +
                  String ( sample_org[1] ) + "\t" +
                  String ( sample_org[2] ) + "\t" +
