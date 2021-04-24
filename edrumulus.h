@@ -31,7 +31,8 @@ public:
     PD8,
     FD8, // control pedal
     VH12,
-    VH12CTRL
+    VH12CTRL,
+    KD7
   };
 
   enum Ecurvetype

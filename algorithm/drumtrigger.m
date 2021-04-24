@@ -32,7 +32,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/esp32_pd8.wav");padtype = 'pd8';
 %x = audioread("signals/pd120_pos_sense.wav");%x = x(2900:10000, :);%x = x(55400:58000, :);%
 %x = audioread("signals/pd120_pos_sense2.wav");
-x = audioread("signals/pd120_single_hits.wav");
+%x = audioread("signals/pd120_single_hits.wav");
 %x = audioread("signals/pd120_roll.wav");%x = x(292410:294749, :);%x = x(311500:317600, :);
 %x = audioread("signals/pd120_middle_velocity.wav");
 %x = audioread("signals/pd120_hot_spot.wav");
@@ -44,7 +44,7 @@ x = audioread("signals/pd120_single_hits.wav");
 %x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
 %x = audioread("signals/cy6.wav");
 %x = audioread("signals/kd8.wav");
-%x = audioread("signals/kd7.wav");
+x = audioread("signals/kd7.wav");padtype = 'kd7';
 %x = audioread("signals/vh12.wav");padtype = 'vh12';%x = x(900000:end, :);%x = x(376000:420000, :);%x = x(1:140000, :);
 %org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
 %org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
@@ -93,6 +93,7 @@ switch padtype
     pad.decay_len_ms3         = 150;
     pad.decay_grad_fact3      = 120;
 case 'vh12'
+% TODO if the Hi-Hat is open just a little bit, we get double triggers
     pad.threshold_db          = 16;
     pad.scan_time_ms          = 4;
     pad.main_peak_dist_ms     = 0.75;
@@ -104,6 +105,17 @@ case 'vh12'
     pad.decay_grad_fact2      = 700;
     pad.decay_len_ms3         = 600; % must be long because of open Hi-Hat ringing
     pad.decay_grad_fact3      = 75;
+case 'kd7'
+    pad.scan_time_ms          = 3.5;
+    pad.main_peak_dist_ms     = 2;
+    pad.decay_est_delay2nd_ms = 4;
+    pad.decay_fact_db         = 3;
+    pad.decay_len_ms1         = 4;
+    pad.decay_grad_fact1      = 30;
+    pad.decay_len_ms2         = 37;
+    pad.decay_grad_fact2      = 600;
+    pad.decay_len_ms3         = 400;
+    pad.decay_grad_fact3      = 60;
 end
 
 

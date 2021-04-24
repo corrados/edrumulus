@@ -176,6 +176,7 @@ void loop()
           case 3: edrumulus.set_pad_type ( selected_pad, Edrumulus::FD8 );      break;
           case 4: edrumulus.set_pad_type ( selected_pad, Edrumulus::VH12 );     break;
           case 5: edrumulus.set_pad_type ( selected_pad, Edrumulus::VH12CTRL ); break;
+          case 6: edrumulus.set_pad_type ( selected_pad, Edrumulus::KD7 );      break;
         }
         is_used = true;
       }
