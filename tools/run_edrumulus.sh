@@ -29,7 +29,7 @@ fi
 if [ -d "drumgizmo" ]; then
   echo "The Drumgizmo directory is present, we assume it is compiled and ready to use. If not, delete the Drumgizmo directory and call this script again."
 else
-  git clone http://cgit.drumgizmo.org/drumgizmo.git
+  git clone git://git.drumgizmo.org/drumgizmo.git
   cd drumgizmo
   git checkout develop
   git submodule update --init
