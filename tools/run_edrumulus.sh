@@ -45,7 +45,7 @@ echo We assume that you have downloaded and unzipped the DRSKit in the drumgizmo
 
 # we now assume that the DRSKit was already downloaded and unzipped and
 # we copy our special configuration files in that directory
-if [ -d "drumgizmo/DRSKit" && ! -f "drumgizmo/DRSKit/DRSKit_edrumulus.xml" && ! -f "drumgizmo/DRSKit/DRSKit_midimap_edrumulus.xml" ]; then
+if [[ -d "drumgizmo/DRSKit" && ! -f "drumgizmo/DRSKit/DRSKit_edrumulus.xml" && ! -f "drumgizmo/DRSKit/DRSKit_midimap_edrumulus.xml" ]]; then
   cp DRSKit_edrumulus.xml DRSKit_midimap_edrumulus.xml drumgizmo/DRSKit/
 fi
 
