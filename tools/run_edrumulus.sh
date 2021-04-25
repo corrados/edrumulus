@@ -41,6 +41,7 @@ fi
 
 
 # TODO download Drumgizmo drum kit into the drumgizmo directory, e.g., edrumulus/tools/drumgizmo/DRSKit/
+echo We assume that you have downloaded and unzipped the DRSKit in the drumgizmo directory.
 
 # we now assume that the DRSKit was already downloaded and unzipped and
 # we copy our special configuration files in that directory
