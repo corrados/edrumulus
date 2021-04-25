@@ -114,15 +114,15 @@ echo -n -e '\xB9\x68\x00' > /dev/ttyUSB0 # sensitivity
 ADEVICE=$(aplay -l|grep "USB Audio"|tail -1|cut -d' ' -f3)
 echo "Using USB audio device: ${ADEVICE}"
 
-# start the jack deamon
+# start the jack deamon (exit once all clients are closed with -T)
 jackd -R -T --silent -P70 -t2000 -d alsa -dhw:${ADEVICE} -p 128 -n 3 -r 48000 -s &>/dev/null &
 sleep 1
 
 # note that to get access to /dev/ttyUSB0 we need to be in group tty/dialout
 mod-ttymidi/ttymidi -b 38400 &
 
-./drumgizmo/drumgizmo/drumgizmo --async-load -s -S limit=500M -l -L max=3,rampdown=0.1 -i jackmidi -I midimap=drumgizmo/DRSKit/DRSKit_midimap_edrumulus.xml -o jackaudio drumgizmo/DRSKit/DRSKit_edrumulus.xml &
-sleep 10
+./drumgizmo/drumgizmo/drumgizmo --async-load -s -S limit=500M -l -L max=2,rampdown=0.1 -i jackmidi -I midimap=drumgizmo/DRSKit/DRSKit_midimap_edrumulus.xml -o jackaudio drumgizmo/DRSKit/DRSKit_edrumulus.xml &
+sleep 5
 
 jack_connect ttymidi:MIDI_in DrumGizmo:drumgizmo_midiin
 jack_connect DrumGizmo:0-AmbL system:playback_1
@@ -130,7 +130,6 @@ jack_connect DrumGizmo:1-AmbR system:playback_2
 
 echo "###---------- PRESS ANY KEY TO TERMINATE THE EDRUMULUS SESSION ---------###"
 read -n 1 -s -r -p ""
-killall mod-ttymidi
+killall ttymidi
 killall drumgizmo
-killall jackd
 
