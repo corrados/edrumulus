@@ -42,6 +42,12 @@ fi
 
 # TODO download Drumgizmo drum kit into the drumgizmo directory, e.g., edrumulus/tools/drumgizmo/DRSKit/
 
+# we now assume that the DRSKit was already downloaded and unzipped and
+# we copy our special configuration files in that directory
+if [ -d "drumgizmo/DRSKit" && ! -f "drumgizmo/DRSKit/DRSKit_edrumulus.xml" && ! -f "drumgizmo/DRSKit/DRSKit_midimap_edrumulus.xml" ]; then
+  cp DRSKit_edrumulus.xml DRSKit_midimap_edrumulus.xml drumgizmo/DRSKit/
+fi
+
 
 # write Edrumulus trigger configuration ----------------------------------------
 stty 38400 -F /dev/ttyUSB0
