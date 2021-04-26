@@ -69,7 +69,7 @@ void setup()
   edrumulus.set_pad_type          ( 0, Edrumulus::PD8 ); // snare
   edrumulus.set_rim_shot_is_used  ( 0, true );
   edrumulus.set_pos_sense_is_used ( 0, true );
-//set_pad_type                    ( 1, Edrumulus::KD7 ); // kick
+  edrumulus.set_pad_type          ( 1, Edrumulus::KD7 ); // kick
   edrumulus.set_pad_type          ( 2, Edrumulus::PD8 ); // Hi-Hat, using rim switch
   edrumulus.set_rim_shot_is_used  ( 2, true );
   edrumulus.set_pad_type          ( 3, Edrumulus::FD8 ); // Hi-Hat-ctrl
