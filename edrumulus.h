@@ -247,6 +247,10 @@ protected:
   const int samplerate_max_cnt      = 10000; // samples
   const int samplerate_max_error_Hz = 100;   // tolerate a sample rate deviation of 100 Hz
 
+  // update DC offset by using an IIR1 low pass filter
+  // See http://www.tsdconseil.fr/tutos/tuto-iir1-en.pdf: gamma = exp(-Ts/tau).
+  float dc_offset_est_iir_gamma = 0.999997916668837f; // with tau = 60 seconds we get exp(-(1/Fs)/60) = 0.999997916668837
+
   int             Fs;
   Edrumulus_esp32 edrumulus_esp32;
   int             number_pads;

@@ -22,7 +22,7 @@ Edrumulus::Edrumulus() :
 
 // TODO try to increase the sampling rate again... the goal would be 8000
 
-  Fs ( 7000 ) // this is the most fundamental system parameter: system sampling rate
+  Fs ( 6800 ) // this is the most fundamental system parameter: system sampling rate
 {
   // initializations
   overload_LED_on_time       = round ( 0.25f * Fs ); // minimum overload LED on time (e.g., 250 ms)
@@ -138,6 +138,9 @@ Serial.println ( serial_print );
     // prepare samples for processing
     for ( int j = 0; j < number_inputs[i]; j++ )
     {
+      // update DC offset by using an IIR1 low pass filter
+      dc_offset[i][j] = dc_offset_est_iir_gamma * dc_offset[i][j] + ( 1.0f - dc_offset_est_iir_gamma ) * sample_org_pad[j];
+
       // compensate DC offset
       sample[j] = sample_org_pad[j] - dc_offset[i][j];
 
