@@ -32,6 +32,11 @@ Edrumulus::Edrumulus() :
   samplerate_prev_micros     = micros();
   status_is_error            = false;
   spike_cancel_is_used       = true; // use spike cancellation per default (note that it increases the latency)
+
+  // calculate DC offset IIR1 low pass filter parameters, see
+  // http://www.tsdconseil.fr/tutos/tuto-iir1-en.pdf: gamma = exp(-Ts/tau)
+  dc_offset_iir_gamma           = exp ( - 1.0f / ( Fs * dc_offset_iir_tau_seconds ) );
+  dc_offset_iir_one_minus_gamma = 1.0f - dc_offset_iir_gamma;
 }
 
 
@@ -139,7 +144,7 @@ Serial.println ( serial_print );
     for ( int j = 0; j < number_inputs[i]; j++ )
     {
       // update DC offset by using an IIR1 low pass filter
-      dc_offset[i][j] = dc_offset_est_iir_gamma * dc_offset[i][j] + ( 1.0f - dc_offset_est_iir_gamma ) * sample_org_pad[j];
+      dc_offset[i][j] = dc_offset_iir_gamma * dc_offset[i][j] + dc_offset_iir_one_minus_gamma * sample_org_pad[j];
 
       // compensate DC offset
       sample[j] = sample_org_pad[j] - dc_offset[i][j];
@@ -445,10 +450,11 @@ void Edrumulus::Pad::initialize()
 
   switch ( pad_settings.curve_type )
   {
-    case EXP1: curve_param = 1.02; break;
-    case EXP2: curve_param = 1.04; break;
-    case LOG1: curve_param = 0.98; break;
-    case LOG2: curve_param = 0.96; break;
+    case EXP1: curve_param = 1.02f; break;
+    case EXP2: curve_param = 1.04f; break;
+    case LOG1: curve_param = 0.98f; break;
+    case LOG2: curve_param = 0.96f; break;
+    default:   curve_param = 1.02f; break; // in case of unknown enum: EXP1
   }
 
   for ( int i = 0; i < 128; i++ )

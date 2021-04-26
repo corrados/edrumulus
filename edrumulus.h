@@ -23,25 +23,25 @@
 class Edrumulus
 {
 public:
-  enum Epadtype
+  enum Epadtype // note that the enums need assigned integers for MIDI settings transfer
   {
 // TODO if new pads are added, check if get_is_control() and get_is_rim_switch() must be updated
-    PD120,
-    PD80R,
-    PD8,
-    FD8, // control pedal
-    VH12,
-    VH12CTRL,
-    KD7
+    PD120    = 0,
+    PD80R    = 1,
+    PD8      = 2,
+    FD8      = 3, // control pedal
+    VH12     = 4,
+    VH12CTRL = 5,
+    KD7      = 6
   };
 
-  enum Ecurvetype
+  enum Ecurvetype // note that the enums need assigned integers for MIDI settings transfer
   {
-    LINEAR,
-    EXP1,
-    EXP2,
-    LOG1,
-    LOG2
+    LINEAR = 0,
+    EXP1   = 1,
+    EXP2   = 2,
+    LOG1   = 3,
+    LOG2   = 4
   };
 
   Edrumulus();
@@ -243,13 +243,10 @@ protected:
   };
 
   // constant definitions
-  const int dc_offset_est_len       = 10000; // samples (about a second at 8 kHz sampling rate)
-  const int samplerate_max_cnt      = 10000; // samples
-  const int samplerate_max_error_Hz = 100;   // tolerate a sample rate deviation of 100 Hz
-
-  // update DC offset by using an IIR1 low pass filter
-  // See http://www.tsdconseil.fr/tutos/tuto-iir1-en.pdf: gamma = exp(-Ts/tau).
-  float dc_offset_est_iir_gamma = 0.999997916668837f; // with tau = 60 seconds we get exp(-(1/Fs)/60) = 0.999997916668837
+  const int dc_offset_est_len         = 10000; // samples (about a second at 8 kHz sampling rate)
+  const int samplerate_max_cnt        = 10000; // samples
+  const int samplerate_max_error_Hz   = 100;   // tolerate a sample rate deviation of 100 Hz
+  const int dc_offset_iir_tau_seconds = 60;    // DC offset update IIR filter tau in seconds
 
   int             Fs;
   Edrumulus_esp32 edrumulus_esp32;
@@ -258,6 +255,8 @@ protected:
   int             analog_pin[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   float           dc_offset[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   int             sample_org[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  float           dc_offset_iir_gamma;
+  float           dc_offset_iir_one_minus_gamma;
   bool            spike_cancel_is_used;
   int             overload_LED_cnt;
   int             overload_LED_on_time;

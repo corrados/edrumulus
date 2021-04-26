@@ -20,8 +20,8 @@
 #include "edrumulus.h"
 
 #ifdef USE_MIDI
-#include <MIDI.h>                   // Hairless USB MIDI
-MIDI_CREATE_DEFAULT_INSTANCE();     // Hairless USB MIDI
+#include <MIDI.h>                                // Hairless USB MIDI
+MIDI_CREATE_DEFAULT_INSTANCE();                  // Hairless USB MIDI
 //#include <BLEMIDI_Transport.h>                 // BLE MIDI
 //#include <hardware/BLEMIDI_ESP32.h>            // BLE MIDI
 //BLEMIDI_CREATE_INSTANCE ( "Edrumulus", MIDI ); // BLE MIDI
@@ -161,23 +161,14 @@ void loop()
   {
     if ( MIDI.getType() == midi::ControlChange )
     {
-      bool           is_used    = false;
-      midi::DataByte controller = MIDI.getData1();
-      midi::DataByte value      = MIDI.getData2();
+      bool                 is_used    = false;
+      const midi::DataByte controller = MIDI.getData1();
+      const midi::DataByte value      = MIDI.getData2();
 
       // controller 102: pad type
       if ( controller == 102 )
       {
-        switch ( value )
-        {
-          case 0: edrumulus.set_pad_type ( selected_pad, Edrumulus::PD120 );    break;
-          case 1: edrumulus.set_pad_type ( selected_pad, Edrumulus::PD80R );    break;
-          case 2: edrumulus.set_pad_type ( selected_pad, Edrumulus::PD8 );      break;
-          case 3: edrumulus.set_pad_type ( selected_pad, Edrumulus::FD8 );      break;
-          case 4: edrumulus.set_pad_type ( selected_pad, Edrumulus::VH12 );     break;
-          case 5: edrumulus.set_pad_type ( selected_pad, Edrumulus::VH12CTRL ); break;
-          case 6: edrumulus.set_pad_type ( selected_pad, Edrumulus::KD7 );      break;
-        }
+        edrumulus.set_pad_type ( selected_pad, static_cast<Edrumulus::Epadtype> ( value ) );
         is_used = true;
       }
 
@@ -226,14 +217,7 @@ void loop()
       // controller 109: MIDI curve type
       if ( controller == 109 )
       {
-        switch ( value )
-        {
-          case 0: edrumulus.set_curve ( selected_pad, Edrumulus::LINEAR ); break;
-          case 1: edrumulus.set_curve ( selected_pad, Edrumulus::EXP1 );   break;
-          case 2: edrumulus.set_curve ( selected_pad, Edrumulus::EXP2 );   break;
-          case 3: edrumulus.set_curve ( selected_pad, Edrumulus::LOG1 );   break;
-          case 4: edrumulus.set_curve ( selected_pad, Edrumulus::LOG2 );   break;
-        }
+        edrumulus.set_curve ( selected_pad, static_cast<Edrumulus::Ecurvetype> ( value ) );
         is_used = true;
       }
 
