@@ -22,7 +22,7 @@ Edrumulus::Edrumulus() :
 
 // TODO try to increase the sampling rate again... the goal would be 8000
 
-  Fs ( 6800 ) // this is the most fundamental system parameter: system sampling rate
+  Fs ( 7000 ) // this is the most fundamental system parameter: system sampling rate
 {
   // initializations
   overload_LED_on_time       = round ( 0.25f * Fs ); // minimum overload LED on time (e.g., 250 ms)
