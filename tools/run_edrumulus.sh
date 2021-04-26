@@ -43,10 +43,10 @@ fi
 # TODO download Drumgizmo drum kit into the drumgizmo directory, e.g., edrumulus/tools/drumgizmo/DRSKit/
 echo We assume that you have downloaded and unzipped the DRSKit in the drumgizmo directory.
 
-# we now assume that the DRSKit was already downloaded and unzipped and
-# we copy our special configuration files in that directory
-if [[ -d "drumgizmo/DRSKit" && ! -f "drumgizmo/DRSKit/DRSKit_edrumulus.xml" && ! -f "drumgizmo/DRSKit/DRSKit_midimap_edrumulus.xml" ]]; then
-  cp DRSKit_edrumulus.xml DRSKit_midimap_edrumulus.xml drumgizmo/DRSKit/
+# we now assume that the DRSKit was already downloaded and unzipped in the
+# tools directory and we copy our special configuration files in that directory
+if [[ -d "DRSKit" && ! -f "DRSKit/DRSKit_edrumulus.xml" && ! -f "DRSKit/DRSKit_midimap_edrumulus.xml" ]]; then
+  cp DRSKit_edrumulus.xml DRSKit_midimap_edrumulus.xml DRSKit/
 fi
 
 
@@ -121,7 +121,7 @@ sleep 1
 # note that to get access to /dev/ttyUSB0 we need to be in group tty/dialout
 mod-ttymidi/ttymidi -b 38400 &
 
-./drumgizmo/drumgizmo/drumgizmo --async-load -s -S limit=500M -l -L max=2,rampdown=0.1 -i jackmidi -I midimap=drumgizmo/DRSKit/DRSKit_midimap_edrumulus.xml -o jackaudio drumgizmo/DRSKit/DRSKit_edrumulus.xml &
+./drumgizmo/drumgizmo/drumgizmo --async-load -s -S limit=500M -l -L max=2,rampdown=0.1 -i jackmidi -I midimap=DRSKit/DRSKit_midimap_edrumulus.xml -o jackaudio DRSKit/DRSKit_edrumulus.xml &
 sleep 5
 
 jack_connect ttymidi:MIDI_in DrumGizmo:drumgizmo_midiin
