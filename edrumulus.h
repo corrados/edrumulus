@@ -246,7 +246,7 @@ protected:
   const int dc_offset_est_len         = 10000; // samples (about a second at 8 kHz sampling rate)
   const int samplerate_max_cnt        = 10000; // samples
   const int samplerate_max_error_Hz   = 100;   // tolerate a sample rate deviation of 100 Hz
-  const int dc_offset_iir_tau_seconds = 60;    // DC offset update IIR filter tau in seconds
+  const int dc_offset_iir_tau_seconds = 30;    // DC offset update IIR filter tau in seconds
 
   int             Fs;
   Edrumulus_esp32 edrumulus_esp32;
