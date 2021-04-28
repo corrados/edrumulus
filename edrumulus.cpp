@@ -101,6 +101,7 @@ void Edrumulus::setup ( const int  conf_num_pads,
 
 void Edrumulus::process()
 {
+  float sample[MAX_NUM_PAD_INPUTS];
   float debug;
 
 /*
@@ -135,34 +136,34 @@ Serial.println ( serial_print );
 
   for ( int i = 0; i < number_pads; i++ )
   {
-    float sample[MAX_NUM_PAD_INPUTS];
-    int*  sample_org_pad = sample_org[i];
-    peak_found[i]        = false;
-    control_found[i]     = false;
+    int* sample_org_pad = sample_org[i];
+    peak_found[i]       = false;
+    control_found[i]    = false;
 
-    // prepare samples for processing
-    for ( int j = 0; j < number_inputs[i]; j++ )
-    {
-      // update DC offset by using an IIR1 low pass filter
-      dc_offset[i][j] = dc_offset_iir_gamma * dc_offset[i][j] + dc_offset_iir_one_minus_gamma * sample_org_pad[j];
-
-      // compensate DC offset
-      sample[j] = sample_org_pad[j] - dc_offset[i][j];
-
-      // ADC spike cancellation (do not use spike cancellation for rim switches since they have short peaks)
-      if ( spike_cancel_is_used && !( pad[i].get_is_rim_switch() && ( j > 0 ) ) )
-      {
-        sample[j] = edrumulus_esp32.cancel_ADC_spikes ( sample[j], i, j );
-      }
-    }
-
-    // process sample
     if ( pad[i].get_is_control() )
     {
+      // process sample for control input
       pad[i].process_control_sample ( sample_org_pad, control_found[i], midi_ctrl_value[i] );
     }
     else
     {
+      // prepare samples for processing
+      for ( int j = 0; j < number_inputs[i]; j++ )
+      {
+        // update DC offset by using an IIR1 low pass filter
+        dc_offset[i][j] = dc_offset_iir_gamma * dc_offset[i][j] + dc_offset_iir_one_minus_gamma * sample_org_pad[j];
+
+        // compensate DC offset
+        sample[j] = sample_org_pad[j] - dc_offset[i][j];
+
+        // ADC spike cancellation (do not use spike cancellation for rim switches since they have short peaks)
+        if ( spike_cancel_is_used && !( pad[i].get_is_rim_switch() && ( j > 0 ) ) )
+        {
+          sample[j] = edrumulus_esp32.cancel_ADC_spikes ( sample[j], i, j );
+        }
+      }
+
+      // process sample
       pad[i].process_sample ( sample, peak_found[i], midi_velocity[i], midi_pos[i],
                               is_rim_shot[i], is_choke_on[i], is_choke_off[i], debug );
 
