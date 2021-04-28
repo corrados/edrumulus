@@ -44,7 +44,8 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
 %x = audioread("signals/cy6.wav");
 %x = audioread("signals/kd8.wav");
-x = audioread("signals/kd7.wav");padtype = 'kd7';
+%x = audioread("signals/kd7.wav");padtype = 'kd7';
+x = audioread("signals/tp80.wav");
 %x = audioread("signals/vh12.wav");padtype = 'vh12';%x = x(900000:end, :);%x = x(376000:420000, :);%x = x(1:140000, :);
 %org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
 %org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
