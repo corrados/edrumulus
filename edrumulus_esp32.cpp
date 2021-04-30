@@ -184,7 +184,7 @@ float Edrumulus_esp32::cancel_ADC_spikes ( const float input,
   // remove single/dual sample spikes by checking if right before and right after the
   // detected spike(s) we only have noise and no useful signal (since the ESP32 spikes
   // mostly are on just one or two sample(s))
-  const int max_peak_threshold = 100; // maximum assumed ESP32 spike amplitude
+  const int max_peak_threshold = 150; // maximum assumed ESP32 spike amplitude
 
   float       return_value = prev_input2[pad_index][input_channel_index]; // normal return value in case no spike was detected
   const float input_abs    = abs ( input );
