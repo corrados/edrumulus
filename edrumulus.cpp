@@ -267,6 +267,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.decay_grad_fact3       = 200.0f; // pad specific parameter: decay function gradient factor 3
   pad_settings.pos_energy_win_len_ms  = 2.0f;   // pad specific parameter: pos sense energy estimation time window length
   pad_settings.pos_iir_alpha          = 200.0f; // pad specific parameter: IIR low-pass alpha value for positional sensing
+  pad_settings.pos_invert             = false;  // pad specific parameter: invert the positional sensing metric
   pad_settings.rim_shot_window_len_ms = 5.0f;   // pad specific parameter: window length for rim shot detection
 
   switch ( new_pad_type )
@@ -303,6 +304,9 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       break;
 
     case TP80:
+      pad_settings.velocity_sensitivity  = 8;
+      pad_settings.pos_threshold         = 22;
+      pad_settings.pos_sensitivity       = 23;
       pad_settings.scan_time_ms          = 2.75f;
       pad_settings.main_peak_dist_ms     = 2.0f;
       pad_settings.decay_est_delay2nd_ms = 7.0f;
@@ -312,6 +316,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       pad_settings.decay_grad_fact2      = 600.0f;
       pad_settings.decay_len3_ms         = 700.0f;
       pad_settings.decay_grad_fact3      = 60.0f;
+      pad_settings.pos_invert            = true;
       break;
 
     case FD8:
@@ -494,15 +499,16 @@ void Edrumulus::Pad::process_sample ( const float* input,
                                       float&       debug )
 {
   // initialize return parameter
-  peak_found                   = false;
-  midi_velocity                = 0;
-  midi_pos                     = 0;
-  is_rim_shot                  = false;
-  is_choke_on                  = false;
-  is_choke_off                 = false;
-  bool       first_peak_found  = false; // only used internally
-  const bool pos_sense_is_used = pad_settings.pos_sense_is_used;                         // can be applied directly without calling initialize()
-  const bool rim_shot_is_used  = pad_settings.rim_shot_is_used && ( number_inputs > 1 ); // can be applied directly without calling initialize()
+  peak_found                    = false;
+  midi_velocity                 = 0;
+  midi_pos                      = 0;
+  is_rim_shot                   = false;
+  is_choke_on                   = false;
+  is_choke_off                  = false;
+  bool       first_peak_found   = false; // only used internally
+  const bool pos_sense_is_used  = pad_settings.pos_sense_is_used;                         // can be applied directly without calling initialize()
+  const bool rim_shot_is_used   = pad_settings.rim_shot_is_used && ( number_inputs > 1 ); // can be applied directly without calling initialize()
+  const bool pos_sense_inverted = pad_settings.pos_invert;                                // can be applied directly without calling initialize()
 
 debug = 0.0f; // TEST
 
@@ -699,8 +705,18 @@ debug = 0.0f; // TEST
       if ( pos_sense_cnt <= 0 )
       {
         // the buffers are filled, now calculate the metric
-        const float pos_sense_metric = peak_energy / peak_energy_low;
-        was_pos_sense_ready          = true;
+        float pos_sense_metric;
+
+        if ( pos_sense_inverted )
+        {
+          // add offset (dB) to get to similar range as non-inverted metric
+          pos_sense_metric = peak_energy_low / peak_energy * 10000.0f;
+        }
+        else
+        {
+          pos_sense_metric = peak_energy / peak_energy_low;
+        }
+        was_pos_sense_ready = true;
 
         // positional sensing MIDI mapping with clipping to allowed MIDI value range
         stored_midi_pos = static_cast<int> ( ( 10 * log10 ( pos_sense_metric / pos_threshold ) / pos_range_db ) * 127 );

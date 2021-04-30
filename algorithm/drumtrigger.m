@@ -70,6 +70,7 @@ pad.decay_grad_fact2      = 200;
 pad.decay_grad_fact3      = 200;
 pad.pos_energy_win_len_ms = 2;
 pad.pos_iir_alpha         = 200;
+pad.pos_invert            = false;
 
 switch padtype
   case 'pd120'
@@ -103,6 +104,7 @@ switch padtype
     pad.decay_grad_fact2      = 600;
     pad.decay_len_ms3         = 700;
     pad.decay_grad_fact3      = 60;
+    pad.pos_invert            = true;
   case 'vh12'
 % TODO if the Hi-Hat is open just a little bit, we get double triggers
     pad.threshold_db          = 16;
@@ -381,7 +383,12 @@ for i = 1:length(all_peaks)
 
 end
 
-pos_sense_metric = 10 * log10(peak_energy) - 10 * log10(peak_energy_low);
+if pad.pos_invert
+  % add offset to get to similar range as non-inverted metric
+  pos_sense_metric = 10 * log10(peak_energy_low) - 10 * log10(peak_energy) + 40;
+else
+  pos_sense_metric = 10 * log10(peak_energy) - 10 * log10(peak_energy_low);
+end
 
 %figure; plot(20 * log10(abs([hil, hil_low, hil_filt]))); hold on;
 %plot(win_idx_all', 20 * log10(abs(hil(win_idx_all'))), 'k.-');

@@ -159,6 +159,7 @@ protected:
         float      decay_grad_fact1, decay_grad_fact2, decay_grad_fact3;
         float      pos_energy_win_len_ms;
         float      pos_iir_alpha;
+        bool       pos_invert;
         float      rim_shot_window_len_ms;
       };
 
