@@ -61,6 +61,14 @@ if [ -d "aasimonster2" ]; then
   cp aasimonster2_edrumulus.xml aasimonster2_midimap_edrumulus.xml aasimonster2/
 fi
 
+if [ -d "artstar" ]; then
+  KITXML="artstar/artstar_edrumulus.xml"
+  KITMIDIMAPXML="artstar/artstar_midimap_edrumulus.xml"
+  KITJACKPORTLEFT=DrumGizmo:14-amb-l
+  KITJACKPORTRIGHT=DrumGizmo:13-amb-r
+  cp artstar_edrumulus.xml artstar_midimap_edrumulus.xml artstar/
+fi
+
 
 # write Edrumulus trigger configuration ----------------------------------------
 stty 38400 -F /dev/ttyUSB0
