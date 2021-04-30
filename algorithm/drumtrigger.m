@@ -44,8 +44,8 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
 %x = audioread("signals/cy6.wav");
 %x = audioread("signals/kd8.wav");
-%x = audioread("signals/kd7.wav");padtype = 'kd7';
-x = audioread("signals/tp80.wav");padtype = 'tp80';
+x = audioread("signals/kd7.wav");padtype = 'kd7';%x = x(1:170000, :);
+%x = audioread("signals/tp80.wav");padtype = 'tp80';
 %x = audioread("signals/vh12.wav");padtype = 'vh12';%x = x(900000:end, :);%x = x(376000:420000, :);%x = x(1:140000, :);
 %org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
 %org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
@@ -122,11 +122,11 @@ switch padtype
     pad.scan_time_ms          = 3.5;
     pad.main_peak_dist_ms     = 2;
     pad.decay_est_delay2nd_ms = 4;
-    pad.decay_fact_db         = 3;
+    pad.decay_fact_db         = 4;
     pad.decay_len_ms1         = 4;
     pad.decay_grad_fact1      = 30;
     pad.decay_len_ms2         = 37;
-    pad.decay_grad_fact2      = 600;
+    pad.decay_grad_fact2      = 450;
     pad.decay_len_ms3         = 400;
     pad.decay_grad_fact3      = 60;
 end

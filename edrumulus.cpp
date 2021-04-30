@@ -347,11 +347,11 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       pad_settings.scan_time_ms          = 3.5f;
       pad_settings.main_peak_dist_ms     = 2.0f;
       pad_settings.decay_est_delay2nd_ms = 4.0f;
-      pad_settings.decay_fact_db         = 3.0f;
+      pad_settings.decay_fact_db         = 4.0f;
       pad_settings.decay_len1_ms         = 4.0f;
       pad_settings.decay_grad_fact1      = 30.0f;
       pad_settings.decay_len2_ms         = 37.0f;
-      pad_settings.decay_grad_fact2      = 600.0f;
+      pad_settings.decay_grad_fact2      = 450.0f;
       pad_settings.decay_len3_ms         = 400.0f;
       pad_settings.decay_grad_fact3      = 60.0f;
       break;
