@@ -141,7 +141,7 @@ sleep 1
 # note that to get access to /dev/ttyUSB0 we need to be in group tty/dialout
 mod-ttymidi/ttymidi -b 38400 &
 
-./drumgizmo/drumgizmo/drumgizmo --async-load -s -S limit=500M -l -L max=2,rampdown=0.1 -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
+./drumgizmo/drumgizmo/drumgizmo --async-load -p close=0.9 -s -S limit=500M -l -L max=2,rampdown=0.1 -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
 sleep 5
 
 jack_connect ttymidi:MIDI_in DrumGizmo:drumgizmo_midiin
