@@ -302,6 +302,18 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       pad_settings.decay_grad_fact3      = 120.0f;
       break;
 
+    case TP80:
+      pad_settings.scan_time_ms          = 2.75f;
+      pad_settings.main_peak_dist_ms     = 2.0f;
+      pad_settings.decay_est_delay2nd_ms = 7.0f;
+      pad_settings.decay_len1_ms         = 10.0f;
+      pad_settings.decay_grad_fact1      = 30.0f;
+      pad_settings.decay_len2_ms         = 30.0f;
+      pad_settings.decay_grad_fact2      = 600.0f;
+      pad_settings.decay_len3_ms         = 700.0f;
+      pad_settings.decay_grad_fact3      = 60.0f;
+      break;
+
     case FD8:
       pad_settings.velocity_threshold   = 5;
       pad_settings.velocity_sensitivity = 0;

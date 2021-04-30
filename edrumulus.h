@@ -32,7 +32,8 @@ public:
     FD8      = 3, // control pedal
     VH12     = 4,
     VH12CTRL = 5,
-    KD7      = 6
+    KD7      = 6,
+    TP80     = 7
   };
 
   enum Ecurvetype // note that the enums need assigned integers for MIDI settings transfer
@@ -130,7 +131,8 @@ protected:
       bool get_is_control()        { return ( pad_settings.pad_type == FD8 ) ||
                                             ( pad_settings.pad_type == VH12CTRL ); } // TODO check if new pads must be added here
       bool get_is_rim_switch()     { return ( pad_settings.pad_type == PD8 ) ||
-                                            ( pad_settings.pad_type == VH12 ); } // TODO check if new pads must be added here
+                                            ( pad_settings.pad_type == VH12 ) ||
+                                            ( pad_settings.pad_type == TP80 ); } // TODO check if new pads must be added here
       bool get_pos_sense_is_used() { return pad_settings.pos_sense_is_used; }
 
     protected:
