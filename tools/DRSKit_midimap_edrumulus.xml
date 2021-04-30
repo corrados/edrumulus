@@ -7,7 +7,7 @@
 	<map note="51" instr="Ride_tip"/>
 	<map note="66" instr="Ride_shank_bell"/>
 	<map note="38" instr="Snare"/>
-	<map note="40" instr="Snare_rest"/>
+	<map note="40" instr="Snare"/>
 	<map note="48" instr="Tom1"/>
 	<map note="45" instr="Tom2"/>
 </midimap>
