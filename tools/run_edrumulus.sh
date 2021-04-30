@@ -31,7 +31,7 @@ if [ -d "drumgizmo" ]; then
 else
   git clone git://git.drumgizmo.org/drumgizmo.git
   cd drumgizmo
-  git checkout develop
+  git checkout edrumulus
   git submodule update --init
   ./autogen.sh
   ./configure --prefix=$PWD/install --with-lv2dir=$HOME/.lv2 --enable-lv2
@@ -41,12 +41,24 @@ fi
 
 
 # TODO download Drumgizmo drum kit into the drumgizmo directory, e.g., edrumulus/tools/drumgizmo/DRSKit/
-echo We assume that you have downloaded and unzipped the DRSKit in the drumgizmo directory.
+echo We assume that you have downloaded and unzipped the DRSKit or aasimonster2 in the drumgizmo directory.
 
-# we now assume that the DRSKit was already downloaded and unzipped in the
+# we now assume that the DRSKit or aasimonster2 was already downloaded and unzipped in the
 # tools directory and we copy our special configuration files in that directory
-if [[ -d "DRSKit" && ! -f "DRSKit/DRSKit_edrumulus.xml" && ! -f "DRSKit/DRSKit_midimap_edrumulus.xml" ]]; then
+if [ -d "DRSKit" ]; then
+  KITXML="DRSKit/DRSKit_edrumulus.xml"
+  KITMIDIMAPXML="DRSKit/DRSKit_midimap_edrumulus.xml"
+  KITJACKPORTLEFT=DrumGizmo:0-AmbL
+  KITJACKPORTRIGHT=DrumGizmo:1-AmbR
   cp DRSKit_edrumulus.xml DRSKit_midimap_edrumulus.xml DRSKit/
+fi
+
+if [ -d "aasimonster2" ]; then
+  KITXML="aasimonster2/aasimonster2_edrumulus.xml"
+  KITMIDIMAPXML="aasimonster2/aasimonster2_midimap_edrumulus.xml"
+  KITJACKPORTLEFT=DrumGizmo:14-AmbL
+  KITJACKPORTRIGHT=DrumGizmo:15-AmbR
+  cp aasimonster2_edrumulus.xml aasimonster2_midimap_edrumulus.xml aasimonster2/
 fi
 
 
@@ -121,12 +133,12 @@ sleep 1
 # note that to get access to /dev/ttyUSB0 we need to be in group tty/dialout
 mod-ttymidi/ttymidi -b 38400 &
 
-./drumgizmo/drumgizmo/drumgizmo --async-load -s -S limit=500M -l -L max=2,rampdown=0.1 -i jackmidi -I midimap=DRSKit/DRSKit_midimap_edrumulus.xml -o jackaudio DRSKit/DRSKit_edrumulus.xml &
+./drumgizmo/drumgizmo/drumgizmo --async-load -s -S limit=500M -l -L max=2,rampdown=0.1 -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
 sleep 5
 
 jack_connect ttymidi:MIDI_in DrumGizmo:drumgizmo_midiin
-jack_connect DrumGizmo:0-AmbL system:playback_1
-jack_connect DrumGizmo:1-AmbR system:playback_2
+jack_connect $KITJACKPORTLEFT system:playback_1
+jack_connect $KITJACKPORTRIGHT system:playback_2
 
 echo "###---------- PRESS ANY KEY TO TERMINATE THE EDRUMULUS SESSION ---------###"
 read -n 1 -s -r -p ""
