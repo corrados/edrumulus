@@ -55,15 +55,16 @@ void setup()
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
 
   // some fundamental settings which do not change during operation
-  edrumulus.set_midi_notes   ( 0, 38, 40 ); // snare
-  edrumulus.set_midi_notes   ( 1, 36, 36 ); // kick
-  edrumulus.set_midi_notes   ( hihat_pad_idx, 26 /*46*/, 26 ); // Hi-Hat (open Hi-Hat, for closed Hi-Hat use 42 and 22 and for pedal 44)
-  edrumulus.set_midi_ctrl_ch ( hihatctrl_pad_idx, 4 ); // Hi-Hat control
-  edrumulus.set_midi_notes   ( 4, 49, 55 ); // crash
-  edrumulus.set_midi_notes   ( 5, 48, 50 ); // tom 1
-  edrumulus.set_midi_notes   ( 6, 51, 66 ); // ride
-  edrumulus.set_midi_notes   ( 7, 45, 47 ); // tom 2
-  edrumulus.set_midi_notes   ( 8, 43, 58 ); // tom 3
+  edrumulus.set_midi_notes      ( 0, 38, 40 ); // snare
+  edrumulus.set_midi_notes      ( 1, 36, 36 ); // kick
+  edrumulus.set_midi_notes      ( hihat_pad_idx, 22 /*42*/, 22 );
+  edrumulus.set_midi_notes_open ( hihat_pad_idx, 26 /*46*/, 26 );
+  edrumulus.set_midi_ctrl_ch    ( hihatctrl_pad_idx, 4 ); // Hi-Hat control
+  edrumulus.set_midi_notes      ( 4, 49, 55 ); // crash
+  edrumulus.set_midi_notes      ( 5, 48, 50 ); // tom 1
+  edrumulus.set_midi_notes      ( 6, 51, 66 ); // ride
+  edrumulus.set_midi_notes      ( 7, 45, 47 ); // tom 2
+  edrumulus.set_midi_notes      ( 8, 43, 58 ); // tom 3
 
 // my prototype setup configuration...
   edrumulus.set_pad_type          ( 0, Edrumulus::PD8 ); // snare
@@ -114,13 +115,9 @@ void loop()
   {
     if ( edrumulus.get_peak_found ( pad_idx ) )
     {
-      // send Hi-Hat control message right before each Hi-Hat pad hit
-      if ( pad_idx == hihat_pad_idx )
-      {
-        const int midi_ctrl_ch    = edrumulus.get_midi_ctrl_ch    ( hihatctrl_pad_idx );
-        const int midi_ctrl_value = edrumulus.get_midi_ctrl_value ( hihatctrl_pad_idx );
-        MIDI.sendControlChange ( midi_ctrl_ch, midi_ctrl_value, midi_channel );
-      }
+      // get current MIDI note and velocity (maybe note will be overwritten later on)
+      const int midi_velocity = edrumulus.get_midi_velocity ( pad_idx );
+      int       midi_note     = edrumulus.get_midi_note     ( pad_idx );
 
       // send midi positional control message if positional sensing is enabled for the current pad
       if ( edrumulus.get_pos_sense_is_used ( pad_idx ) )
@@ -129,8 +126,21 @@ void loop()
         MIDI.sendControlChange ( 16, midi_pos, midi_channel ); // positional sensing
       }
 
-      const int midi_velocity = edrumulus.get_midi_velocity ( pad_idx );
-      const int midi_note     = edrumulus.get_midi_note     ( pad_idx );
+      // send Hi-Hat control message right before each Hi-Hat pad hit
+      if ( pad_idx == hihat_pad_idx )
+      {
+        const int midi_ctrl_ch    = edrumulus.get_midi_ctrl_ch    ( hihatctrl_pad_idx );
+        const int midi_ctrl_value = edrumulus.get_midi_ctrl_value ( hihatctrl_pad_idx );
+        MIDI.sendControlChange ( midi_ctrl_ch, midi_ctrl_value, midi_channel );
+
+        // if Hi-Hat is open, overwrite MIDI note
+// TODO define the threshold somewhere else, maybe inside of the Edrumulus class
+        if ( midi_ctrl_value < 100 )
+        {
+          midi_note = edrumulus.get_midi_note_open ( pad_idx );
+        }
+      }
+
       MIDI.sendNoteOn  ( midi_note, midi_velocity, midi_channel ); // (note, velocity, channel)
       MIDI.sendNoteOff ( midi_note, 0,             midi_channel ); // we need a note off
     }
@@ -145,14 +155,26 @@ void loop()
     if ( edrumulus.get_choke_on_found ( pad_idx ) )
     {
       // if grabbed edge found, polyphonic aftertouch at 127 is transmitted for all notes of the pad
-      MIDI.sendAfterTouch ( edrumulus.get_midi_note_norm ( pad_idx ), 127, midi_channel );      
-      MIDI.sendAfterTouch ( edrumulus.get_midi_note_rim  ( pad_idx ), 127, midi_channel );      
+      MIDI.sendAfterTouch ( edrumulus.get_midi_note_norm ( pad_idx ), 127, midi_channel );
+      MIDI.sendAfterTouch ( edrumulus.get_midi_note_rim  ( pad_idx ), 127, midi_channel );
+
+      if ( pad_idx == hihat_pad_idx )
+      {
+        MIDI.sendAfterTouch ( edrumulus.get_midi_note_open_norm ( pad_idx ), 127, midi_channel );
+        MIDI.sendAfterTouch ( edrumulus.get_midi_note_open_rim  ( pad_idx ), 127, midi_channel );
+      }
     }
     else if ( edrumulus.get_choke_off_found ( pad_idx ) )
     {
       // if released edge found, polyphonic aftertouch at 0 is transmitted for all notes of the pad
-      MIDI.sendAfterTouch ( edrumulus.get_midi_note_norm ( pad_idx ), 0, midi_channel );      
-      MIDI.sendAfterTouch ( edrumulus.get_midi_note_rim  ( pad_idx ), 0, midi_channel );      
+      MIDI.sendAfterTouch ( edrumulus.get_midi_note_norm ( pad_idx ), 0, midi_channel );
+      MIDI.sendAfterTouch ( edrumulus.get_midi_note_rim  ( pad_idx ), 0, midi_channel );
+
+      if ( pad_idx == hihat_pad_idx )
+      {
+        MIDI.sendAfterTouch ( edrumulus.get_midi_note_open_norm ( pad_idx ), 0, midi_channel );
+        MIDI.sendAfterTouch ( edrumulus.get_midi_note_open_rim  ( pad_idx ), 0, midi_channel );
+      }
     }
   }
 

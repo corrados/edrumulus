@@ -231,9 +231,11 @@ void Edrumulus::Pad::setup ( const int conf_Fs,
 
   // initialize with default pad type and other defaults
   set_pad_type ( PD120 );
-  midi_note     = 38;
-  midi_note_rim = 40;
-  midi_ctrl_ch  = 4; // CC4, usually used for hi-hat
+  midi_note          = 38;
+  midi_note_rim      = 40;
+  midi_note_open     = 46;
+  midi_note_open_rim = 26;
+  midi_ctrl_ch       = 4; // CC4, usually used for hi-hat
 }
 
 
