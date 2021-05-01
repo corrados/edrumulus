@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <midimap>
 	<map note="49" instr="Crash_left_shank"/>
-	<map note="26" instr="Hihat_closed_shank"/>
-	<map note="46" instr="Hihat_semi_open"/>
+	<map note="22" instr="Hihat_closed_shank"/>
+	<map note="26" instr="Hihat_semi_open"/>
 	<map note="36" instr="Kdrum_with_contact"/>
 	<map note="51" instr="Ride_tip"/>
 	<map note="66" instr="Ride_shank_bell"/>

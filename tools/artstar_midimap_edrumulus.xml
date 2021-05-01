@@ -5,8 +5,8 @@
 	<map note="40" instr="snare"/>
 	<map note="48" instr="tom2"/>
 	<map note="45" instr="tom1"/>
-	<map note="26" instr="hihat-closed"/>
-	<map note="46" instr="hihat-open"/>
+	<map note="22" instr="hihat-closed"/>
+	<map note="26" instr="hihat-open"/>
 	<map note="51" instr="ride"/>
 	<map note="66" instr="ride-bell"/>
 	<map note="49" instr="crash-litian-16inch"/>
