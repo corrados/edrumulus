@@ -53,20 +53,20 @@ if [ -d "DRSKit" ]; then
   cp DRSKit_edrumulus.xml DRSKit_midimap_edrumulus.xml DRSKit/
 fi
 
-if [ -d "aasimonster2" ]; then
-  KITXML="aasimonster2/aasimonster2_edrumulus.xml"
-  KITMIDIMAPXML="aasimonster2/aasimonster2_midimap_edrumulus.xml"
-  KITJACKPORTLEFT=DrumGizmo:14-AmbL
-  KITJACKPORTRIGHT=DrumGizmo:15-AmbR
-  cp aasimonster2_edrumulus.xml aasimonster2_midimap_edrumulus.xml aasimonster2/
-fi
-
 if [ -d "artstar" ]; then
   KITXML="artstar/artstar_edrumulus.xml"
   KITMIDIMAPXML="artstar/artstar_midimap_edrumulus.xml"
   KITJACKPORTLEFT=DrumGizmo:14-amb-l
   KITJACKPORTRIGHT=DrumGizmo:13-amb-r
   cp artstar_edrumulus.xml artstar_midimap_edrumulus.xml artstar/
+fi
+
+if [ -d "aasimonster2" ]; then
+  KITXML="aasimonster2/aasimonster2_edrumulus.xml"
+  KITMIDIMAPXML="aasimonster2/aasimonster2_midimap_edrumulus.xml"
+  KITJACKPORTLEFT=DrumGizmo:14-AmbL
+  KITJACKPORTRIGHT=DrumGizmo:15-AmbR
+  cp aasimonster2_edrumulus.xml aasimonster2_midimap_edrumulus.xml aasimonster2/
 fi
 
 
