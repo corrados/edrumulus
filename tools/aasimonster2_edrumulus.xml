@@ -137,14 +137,6 @@
       <channelmap in="Tom3" out="Tom3" />
       <channelmap in="Tom4" out="Tom4" />
     </instrument>
-
-<!--
-    <instrument name="snare_on_center" file="snare-position/snare-position.xml">
-      <channelmap in="oh-l" out="AmbL" />
-      <channelmap in="oh-r" out="AmbR" />
-    </instrument>
--->
-
     <instrument name="snare_on_center" file="snare_on_center/snare_on_center.xml">
       <channelmap in="OH L" out="AmbL" />
       <channelmap in="OH R" out="AmbR" />
@@ -169,6 +161,13 @@
 -->
     </instrument>
 
+<!-- if the snare-position is available, uncomment the following lines -->
+<!--
+<instrument name="snare_on_center" file="snare-position/snare-position.xml">
+  <channelmap in="oh-l" out="AmbL" />
+  <channelmap in="oh-r" out="AmbR" />
+</instrument>
+-->
 
     <instrument name="snare_rim_shot" file="snare_rim_shot/snare_rim_shot.xml">
       <channelmap in="OH L" out="AmbL" />
