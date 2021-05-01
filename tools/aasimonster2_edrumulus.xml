@@ -38,6 +38,10 @@
       <channelmap in="Tom4" out="Tom4" />
     </instrument>
     <instrument name="hihat_closed1" group="hihat" file="hihat_closed1/hihat_closed1.xml">
+      <channelmap in="OH L" out="AmbL" main="true" />
+      <channelmap in="OH R" out="AmbR" main="true" />
+
+<!--
       <channelmap in="Alesis" out="Trigger" />
       <channelmap in="Amb L" out="AmbL" main="true" />
       <channelmap in="Amb R" out="AmbR" main="true" />
@@ -54,8 +58,13 @@
       <channelmap in="Tom2" out="Tom2" />
       <channelmap in="Tom3" out="Tom3" />
       <channelmap in="Tom4" out="Tom4" />
+-->
     </instrument>
     <instrument name="hihat_open" group="hihat" file="hihat_open/hihat_open.xml">
+      <channelmap in="OH L" out="AmbL" main="true" />
+      <channelmap in="OH R" out="AmbR" main="true" />
+
+<!--
       <channelmap in="Alesis" out="Trigger" />
       <channelmap in="Amb L" out="AmbL" main="true" />
       <channelmap in="Amb R" out="AmbR" main="true" />
@@ -72,6 +81,7 @@
       <channelmap in="Tom2" out="Tom2" />
       <channelmap in="Tom3" out="Tom3" />
       <channelmap in="Tom4" out="Tom4" />
+-->
     </instrument>
     <instrument name="kick_l" file="kick_l/kick_l.xml">
       <channelmap in="Alesis" out="Trigger" main="true" />
@@ -127,25 +137,19 @@
       <channelmap in="Tom3" out="Tom3" />
       <channelmap in="Tom4" out="Tom4" />
     </instrument>
-    <instrument name="snare_on_center" file="snare_on_center/snare_on_center.xml">
-      <channelmap in="Alesis" out="Trigger" />
-      <channelmap in="Amb L" out="AmbL" />
-      <channelmap in="Amb R" out="AmbR" />
-      <channelmap in="Hihat" out="Hihat" />
-      <channelmap in="Kick L" out="KdrumL" />
-      <channelmap in="Kick R" out="KdrumR" />
-      <channelmap in="OH L" out="OHL" />
-      <channelmap in="OH R" out="OHR" />
-      <channelmap in="Ride" out="Ride" />
-      <channelmap in="Snare bottom" out="Snare_bottom" main="true" />
-      <channelmap in="Snare top" out="Snare_top" main="true" />
-      <channelmap in="Snare trigger" out="Snare_trigger" main="true" />
-      <channelmap in="Tom1" out="Tom1" />
-      <channelmap in="Tom2" out="Tom2" />
-      <channelmap in="Tom3" out="Tom3" />
-      <channelmap in="Tom4" out="Tom4" />
+
+<!--
+    <instrument name="snare_on_center" file="snare-position/snare-position.xml">
+      <channelmap in="oh-l" out="AmbL" />
+      <channelmap in="oh-r" out="AmbR" />
     </instrument>
-    <instrument name="snare_rim_shot" file="snare_rim_shot/snare_rim_shot.xml">
+-->
+
+    <instrument name="snare_on_center" file="snare_on_center/snare_on_center.xml">
+      <channelmap in="OH L" out="AmbL" />
+      <channelmap in="OH R" out="AmbR" />
+
+<!--
       <channelmap in="Alesis" out="Trigger" />
       <channelmap in="Amb L" out="AmbL" />
       <channelmap in="Amb R" out="AmbR" />
@@ -162,6 +166,32 @@
       <channelmap in="Tom2" out="Tom2" />
       <channelmap in="Tom3" out="Tom3" />
       <channelmap in="Tom4" out="Tom4" />
+-->
+    </instrument>
+
+
+    <instrument name="snare_rim_shot" file="snare_rim_shot/snare_rim_shot.xml">
+      <channelmap in="OH L" out="AmbL" />
+      <channelmap in="OH R" out="AmbR" />
+
+<!--
+      <channelmap in="Alesis" out="Trigger" />
+      <channelmap in="Amb L" out="AmbL" />
+      <channelmap in="Amb R" out="AmbR" />
+      <channelmap in="Hihat" out="Hihat" />
+      <channelmap in="Kick L" out="KdrumL" />
+      <channelmap in="Kick R" out="KdrumR" />
+      <channelmap in="OH L" out="OHL" />
+      <channelmap in="OH R" out="OHR" />
+      <channelmap in="Ride" out="Ride" />
+      <channelmap in="Snare bottom" out="Snare_bottom" main="true" />
+      <channelmap in="Snare top" out="Snare_top" main="true" />
+      <channelmap in="Snare trigger" out="Snare_trigger" main="true" />
+      <channelmap in="Tom1" out="Tom1" />
+      <channelmap in="Tom2" out="Tom2" />
+      <channelmap in="Tom3" out="Tom3" />
+      <channelmap in="Tom4" out="Tom4" />
+-->
     </instrument>
     <instrument name="tom_1" file="tom_1/tom_1.xml">
       <channelmap in="Alesis" out="Trigger" />
