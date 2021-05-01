@@ -1,5 +1,9 @@
 # Edrumulus project log
 
+- (05/01/2021) There is another Edrumulus prototype which is a minimal
+  drumset with kick/snare/hi-hat:
+  <br/>![Prototype 1 minimal](algorithm/images/edrumulus_prototype1_minimaldrumset.jpg)
+
 - (04/10/2021) Here is what my current Edrumulus prototype looks like:
   <br/>![Prototype 1](algorithm/images/edrumulus_prototype1.jpg)
 
