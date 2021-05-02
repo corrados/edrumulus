@@ -1,5 +1,10 @@
 # Edrumulus project log
 
+- (05/02/2021) Here is link to a Youtube video of the new Prototype 1 in action: https://youtu.be/UKeuFm_DDTk
+  <br/>I was running [Drumgizmo](https://drumgizmo.org) under Linux on my Laptop with the
+  [The Aasimonster](https://drumgizmo.org/wiki/doku.php?id=kits:the_aasimonster) drum kit where the
+  snare samples were replaced by Tama Artstar snare samples which support positional sensing.
+
 - (05/01/2021) There is another Edrumulus prototype which is a minimal
   drumset with kick/snare/hi-hat:
   <br/>![Prototype 1 minimal](algorithm/images/edrumulus_prototype1_minimaldrumset.jpg)
