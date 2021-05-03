@@ -18,7 +18,9 @@
 #pragma once
 
 #include "Arduino.h"
-#include "edrumulus_esp32.h"
+#ifdef ESP_PLATFORM
+# include "edrumulus_esp32.h"
+#endif
 
 class Edrumulus
 {
