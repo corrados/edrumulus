@@ -22,6 +22,7 @@
 #include "Arduino.h"
 #include <ADC.h>
 
+#define BOARD_LED_PIN        13   // pin number of the LED on the Teensy 4.0 board
 #define MAX_NUM_PADS         12   // a maximum of 12 pads are supported
 #define MAX_NUM_PAD_INPUTS   2    // a maximum of 2 sensors per pad is supported
 #define ADC_MAX_RANGE        4096 // Teensy 4.0 ADC has 12 bits -> 0..4095
