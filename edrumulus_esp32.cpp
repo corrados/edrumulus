@@ -17,6 +17,8 @@
 
 #include "edrumulus_esp32.h"
 
+#ifdef ESP_PLATFORM
+
 Edrumulus_esp32* edrumulus_esp32_pointer = nullptr;
 
 
@@ -338,3 +340,5 @@ void Edrumulus_esp32::my_analogRead_parallel ( const uint8_t pin_adc1,
   while ( GET_PERI_REG_MASK ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DONE_SAR ) == 0 );
   out_adc2 = GET_PERI_REG_BITS2 ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DATA_SAR, SENS_MEAS2_DATA_SAR_S );
 }
+
+#endif

@@ -20,6 +20,11 @@
 #include "Arduino.h"
 #ifdef ESP_PLATFORM
 # include "edrumulus_esp32.h"
+typedef Edrumulus_esp32 Edrumulus_hardware;
+#endif
+#ifdef CORE_TEENSY
+# include "edrumulus_teensy.h"
+typedef Edrumulus_teensy Edrumulus_hardware;
 #endif
 
 class Edrumulus
@@ -262,31 +267,31 @@ protected:
   const int samplerate_max_error_Hz   = 100;   // tolerate a sample rate deviation of 100 Hz
   const int dc_offset_iir_tau_seconds = 30;    // DC offset update IIR filter tau in seconds
 
-  int             Fs;
-  Edrumulus_esp32 edrumulus_esp32;
-  int             number_pads;
-  int             number_inputs[MAX_NUM_PADS];
-  int             analog_pin[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  float           dc_offset[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  int             sample_org[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  float           dc_offset_iir_gamma;
-  float           dc_offset_iir_one_minus_gamma;
-  bool            spike_cancel_is_used;
-  int             overload_LED_cnt;
-  int             overload_LED_on_time;
-  bool            status_is_overload;
-  bool            status_is_error;
-  int             samplerate_prev_micros_cnt;
-  unsigned long   samplerate_prev_micros;
-  Pad             pad[MAX_NUM_PADS];
-  bool            peak_found[MAX_NUM_PADS];
-  bool            control_found[MAX_NUM_PADS];
-  int             midi_velocity[MAX_NUM_PADS];
-  int             midi_pos[MAX_NUM_PADS];
-  int             midi_ctrl_value[MAX_NUM_PADS];
-  bool            is_rim_shot[MAX_NUM_PADS];
-  bool            is_choke_on[MAX_NUM_PADS];
-  bool            is_choke_off[MAX_NUM_PADS];
+  int                Fs;
+  Edrumulus_hardware edrumulus_hardware;
+  int                number_pads;
+  int                number_inputs[MAX_NUM_PADS];
+  int                analog_pin[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  float              dc_offset[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  int                sample_org[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  float              dc_offset_iir_gamma;
+  float              dc_offset_iir_one_minus_gamma;
+  bool               spike_cancel_is_used;
+  int                overload_LED_cnt;
+  int                overload_LED_on_time;
+  bool               status_is_overload;
+  bool               status_is_error;
+  int                samplerate_prev_micros_cnt;
+  unsigned long      samplerate_prev_micros;
+  Pad                pad[MAX_NUM_PADS];
+  bool               peak_found[MAX_NUM_PADS];
+  bool               control_found[MAX_NUM_PADS];
+  int                midi_velocity[MAX_NUM_PADS];
+  int                midi_pos[MAX_NUM_PADS];
+  int                midi_ctrl_value[MAX_NUM_PADS];
+  bool               is_rim_shot[MAX_NUM_PADS];
+  bool               is_choke_on[MAX_NUM_PADS];
+  bool               is_choke_off[MAX_NUM_PADS];
 };
 
 

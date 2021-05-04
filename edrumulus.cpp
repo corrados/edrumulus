@@ -59,20 +59,20 @@ void Edrumulus::setup ( const int  conf_num_pads,
 
   // setup the ESP32 specific object, this has to be done after assigning the analog
   // pin numbers and before using the analog read function (as in the DC offset estimator)
-  edrumulus_esp32.setup ( Fs,
-                          number_pads,
-                          number_inputs,
-                          analog_pin );
+  edrumulus_hardware.setup ( Fs,
+                             number_pads,
+                             number_inputs,
+                             analog_pin );
 
   // estimate the DC offset for all inputs
   float dc_offset_sum[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
 
   for ( int k = 0; k < dc_offset_est_len; k++ )
   {
-    edrumulus_esp32.capture_samples ( number_pads,
-                                      number_inputs,
-                                      analog_pin,
-                                      sample_org );
+    edrumulus_hardware.capture_samples ( number_pads,
+                                         number_inputs,
+                                         analog_pin,
+                                         sample_org );
 
     for ( int i = 0; i < number_pads; i++ )
     {
@@ -116,10 +116,10 @@ return;
 */
 
   // note that this is a blocking function
-  edrumulus_esp32.capture_samples ( number_pads,
-                                    number_inputs,
-                                    analog_pin,
-                                    sample_org );
+  edrumulus_hardware.capture_samples ( number_pads,
+                                       number_inputs,
+                                       analog_pin,
+                                       sample_org );
 
 /*
 // TEST for plotting all captures samples in the serial plotter (but with low sampling rate)
@@ -159,7 +159,7 @@ Serial.println ( serial_print );
         // ADC spike cancellation (do not use spike cancellation for rim switches since they have short peaks)
         if ( spike_cancel_is_used && !( pad[i].get_is_rim_switch() && ( j > 0 ) ) )
         {
-          sample[j] = edrumulus_esp32.cancel_ADC_spikes ( sample[j], i, j );
+          sample[j] = edrumulus_hardware.cancel_ADC_spikes ( sample[j], i, j );
         }
       }
 
