@@ -22,7 +22,7 @@
 # include "edrumulus_esp32.h"
 typedef Edrumulus_esp32 Edrumulus_hardware;
 #endif
-#ifdef CORE_TEENSY
+#ifdef TEENSYDUINO
 # include "edrumulus_teensy.h"
 typedef Edrumulus_teensy Edrumulus_hardware;
 #endif

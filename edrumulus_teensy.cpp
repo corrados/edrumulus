@@ -17,7 +17,7 @@
 
 #include "edrumulus_teensy.h"
 
-#ifdef CORE_TEENSY
+#ifdef TEENSYDUINO
 
 Edrumulus_teensy* edrumulus_teensy_pointer = nullptr;
 

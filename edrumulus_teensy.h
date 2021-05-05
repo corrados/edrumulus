@@ -17,7 +17,7 @@
 
 #pragma once
 
-#ifdef CORE_TEENSY
+#ifdef TEENSYDUINO
 
 #include "Arduino.h"
 #include <ADC.h>
