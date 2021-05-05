@@ -38,7 +38,6 @@ void Edrumulus_teensy::setup ( const int conf_Fs,
   Fs = conf_Fs;
 
   // create linear vectors containing the pin information for each pad and pad-input
-  int  input_adc[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
   total_number_inputs = 0; // we use it as a counter, too
 
   for ( int i = 0; i < number_pads; i++ )
@@ -52,42 +51,42 @@ void Edrumulus_teensy::setup ( const int conf_Fs,
   }
 
   // create timer semaphore
-  timer_semaphore = xSemaphoreCreateBinary();
+  //timer_semaphore = xSemaphoreCreateBinary();
 
   // prepare timer at a rate of given sampling rate
-  my_obj->timer = timerBegin ( 0, 80, true ); // prescaler of 80 (i.e. below we have 1 MHz instead of 80 MHz)
-  timerAttachInterrupt ( timer, &on_timer, true );
-  timerAlarmWrite      ( timer, 1000000 / Fs, true ); // here we define the sampling rate (1 MHz / Fs)
-  timerAlarmEnable     ( timer );
+  //my_obj->timer = timerBegin ( 0, 80, true ); // prescaler of 80 (i.e. below we have 1 MHz instead of 80 MHz)
+  //timerAttachInterrupt ( timer, &on_timer, true );
+  //timerAlarmWrite      ( timer, 1000000 / Fs, true ); // here we define the sampling rate (1 MHz / Fs)
+  //timerAlarmEnable     ( timer );
 }
 
 
-void IRAM_ATTR Edrumulus_teensy::on_timer()
-{
+//void IRAM_ATTR Edrumulus_teensy::on_timer()
+//{
   // tell the main loop that a sample can be read by setting the semaphore
-  static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+  //static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
-  xSemaphoreGiveFromISR ( edrumulus_teensy_pointer->timer_semaphore, &xHigherPriorityTaskWoken );
+  //xSemaphoreGiveFromISR ( edrumulus_teensy_pointer->timer_semaphore, &xHigherPriorityTaskWoken );
 
-  if ( xHigherPriorityTaskWoken == pdTRUE )
-  {
-    portYIELD_FROM_ISR();
-  }
-}
+  //if ( xHigherPriorityTaskWoken == pdTRUE )
+  //{
+  //  portYIELD_FROM_ISR();
+  //}
+//}
 
 
 void Edrumulus_teensy::capture_samples ( const int number_pads,
-                                        const int number_inputs[],
-                                        int       analog_pin[][MAX_NUM_PAD_INPUTS],
-                                        int       sample_org[][MAX_NUM_PAD_INPUTS] )
+                                         const int number_inputs[],
+                                         int       analog_pin[][MAX_NUM_PAD_INPUTS],
+                                         int       sample_org[][MAX_NUM_PAD_INPUTS] )
 {
   // wait for the timer to get the correct sampling rate when reading the analog value
-  if ( xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
+  if ( true)//xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
   {
     // read the ADC samples
     for ( int i = 0; i < total_number_inputs; i++ )
     {
-      input_sample[i] = my_analogRead ( input_pin[i] );
+      input_sample[i] = analogRead ( input_pin[i] );
     }
 
     // copy captured samples in pad buffer

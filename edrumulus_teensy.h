@@ -21,6 +21,7 @@
 
 #include "Arduino.h"
 #include <ADC.h>
+#include <TeensyThreads.h>
 
 #define BOARD_LED_PIN        13   // pin number of the LED on the Teensy 4.0 board
 #define MAX_NUM_PADS         12   // a maximum of 12 pads are supported
@@ -48,14 +49,14 @@ public:
                             const int ) { return input; } // no ADC spike cancellation needed for the Teensy
 
 protected:
-  int                        Fs;
+  int Fs;
 //  volatile SemaphoreHandle_t timer_semaphore;
 //  hw_timer_t*                timer = nullptr;
 //  static void IRAM_ATTR      on_timer();
 
-  int         total_number_inputs;
-  int         input_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
-  uint16_t    input_sample[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+  int      total_number_inputs;
+  int      input_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+  uint16_t input_sample[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
 };
 
 #endif
