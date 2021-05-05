@@ -21,7 +21,7 @@
 
 #include "Arduino.h"
 #include <ADC.h>
-#include <TeensyThreads.h>
+//#include <TeensyThreads.h>
 
 #define BOARD_LED_PIN        13   // pin number of the LED on the Teensy 4.0 board
 #define MAX_NUM_PADS         12   // a maximum of 12 pads are supported
