@@ -20,11 +20,19 @@
 #include "edrumulus.h"
 
 #ifdef USE_MIDI
-#include <MIDI.h>                                // Hairless USB MIDI
+#ifdef ESP_PLATFORM
+# include <MIDI.h>                               // Hairless USB MIDI
 MIDI_CREATE_DEFAULT_INSTANCE();                  // Hairless USB MIDI
 //#include <BLEMIDI_Transport.h>                 // BLE MIDI
 //#include <hardware/BLEMIDI_ESP32.h>            // BLE MIDI
 //BLEMIDI_CREATE_INSTANCE ( "Edrumulus", MIDI ); // BLE MIDI
+# define MYMIDI                     MIDI
+# define MIDI_CONTROL_CHANGE_TYPE   midi::ControlChange
+#endif
+#ifdef TEENSYDUINO
+# define MYMIDI                     usbMIDI
+# define MIDI_CONTROL_CHANGE_TYPE   usbMIDI.ControlChange
+#endif
 #endif
 
 Edrumulus edrumulus;
@@ -40,7 +48,7 @@ int       selected_pad      = 0;
 void setup()
 {
 #ifdef USE_MIDI
-  MIDI.begin();
+  MYMIDI.begin();
   Serial.begin ( 38400 );
 #else
   Serial.begin ( 115200 );
@@ -123,7 +131,7 @@ void loop()
       if ( edrumulus.get_pos_sense_is_used ( pad_idx ) )
       {
         const int midi_pos = edrumulus.get_midi_pos ( pad_idx );
-        MIDI.sendControlChange ( 16, midi_pos, midi_channel ); // positional sensing
+        MYMIDI.sendControlChange ( 16, midi_pos, midi_channel ); // positional sensing
       }
 
       // send Hi-Hat control message right before each Hi-Hat pad hit
@@ -131,7 +139,7 @@ void loop()
       {
         const int midi_ctrl_ch    = edrumulus.get_midi_ctrl_ch    ( hihatctrl_pad_idx );
         const int midi_ctrl_value = edrumulus.get_midi_ctrl_value ( hihatctrl_pad_idx );
-        MIDI.sendControlChange ( midi_ctrl_ch, midi_ctrl_value, midi_channel );
+        MYMIDI.sendControlChange ( midi_ctrl_ch, midi_ctrl_value, midi_channel );
 
         // if Hi-Hat is open, overwrite MIDI note
 // TODO define the threshold somewhere else, maybe inside of the Edrumulus class
@@ -141,51 +149,51 @@ void loop()
         }
       }
 
-      MIDI.sendNoteOn  ( midi_note, midi_velocity, midi_channel ); // (note, velocity, channel)
-      MIDI.sendNoteOff ( midi_note, 0,             midi_channel ); // we need a note off
+      MYMIDI.sendNoteOn  ( midi_note, midi_velocity, midi_channel ); // (note, velocity, channel)
+      MYMIDI.sendNoteOff ( midi_note, 0,             midi_channel ); // we need a note off
     }
 
     if ( edrumulus.get_control_found ( pad_idx ) )
     {
       const int midi_ctrl_ch    = edrumulus.get_midi_ctrl_ch    ( pad_idx );
       const int midi_ctrl_value = edrumulus.get_midi_ctrl_value ( pad_idx );
-      MIDI.sendControlChange ( midi_ctrl_ch, midi_ctrl_value, midi_channel );
+      MYMIDI.sendControlChange ( midi_ctrl_ch, midi_ctrl_value, midi_channel );
     }
 
     if ( edrumulus.get_choke_on_found ( pad_idx ) )
     {
       // if grabbed edge found, polyphonic aftertouch at 127 is transmitted for all notes of the pad
-      MIDI.sendAfterTouch ( edrumulus.get_midi_note_norm ( pad_idx ), 127, midi_channel );
-      MIDI.sendAfterTouch ( edrumulus.get_midi_note_rim  ( pad_idx ), 127, midi_channel );
+      MYMIDI.sendAfterTouch ( edrumulus.get_midi_note_norm ( pad_idx ), 127, midi_channel );
+      MYMIDI.sendAfterTouch ( edrumulus.get_midi_note_rim  ( pad_idx ), 127, midi_channel );
 
       if ( pad_idx == hihat_pad_idx )
       {
-        MIDI.sendAfterTouch ( edrumulus.get_midi_note_open_norm ( pad_idx ), 127, midi_channel );
-        MIDI.sendAfterTouch ( edrumulus.get_midi_note_open_rim  ( pad_idx ), 127, midi_channel );
+        MYMIDI.sendAfterTouch ( edrumulus.get_midi_note_open_norm ( pad_idx ), 127, midi_channel );
+        MYMIDI.sendAfterTouch ( edrumulus.get_midi_note_open_rim  ( pad_idx ), 127, midi_channel );
       }
     }
     else if ( edrumulus.get_choke_off_found ( pad_idx ) )
     {
       // if released edge found, polyphonic aftertouch at 0 is transmitted for all notes of the pad
-      MIDI.sendAfterTouch ( edrumulus.get_midi_note_norm ( pad_idx ), 0, midi_channel );
-      MIDI.sendAfterTouch ( edrumulus.get_midi_note_rim  ( pad_idx ), 0, midi_channel );
+      MYMIDI.sendAfterTouch ( edrumulus.get_midi_note_norm ( pad_idx ), 0, midi_channel );
+      MYMIDI.sendAfterTouch ( edrumulus.get_midi_note_rim  ( pad_idx ), 0, midi_channel );
 
       if ( pad_idx == hihat_pad_idx )
       {
-        MIDI.sendAfterTouch ( edrumulus.get_midi_note_open_norm ( pad_idx ), 0, midi_channel );
-        MIDI.sendAfterTouch ( edrumulus.get_midi_note_open_rim  ( pad_idx ), 0, midi_channel );
+        MYMIDI.sendAfterTouch ( edrumulus.get_midi_note_open_norm ( pad_idx ), 0, midi_channel );
+        MYMIDI.sendAfterTouch ( edrumulus.get_midi_note_open_rim  ( pad_idx ), 0, midi_channel );
       }
     }
   }
 
   // receiving MIDI messages to change the pad settings: edrumuluscontrol.m -> loopMIDI -> Hairless MIDI
-  if ( MIDI.read ( midi_channel ) )
+  if ( MYMIDI.read ( midi_channel ) )
   {
-    if ( MIDI.getType() == midi::ControlChange )
+    if ( MYMIDI.getType() == MIDI_CONTROL_CHANGE_TYPE )
     {
-      bool                 is_used    = false;
-      const midi::DataByte controller = MIDI.getData1();
-      const midi::DataByte value      = MIDI.getData2();
+      bool      is_used    = false;
+      const int controller = MYMIDI.getData1();
+      const int value      = MYMIDI.getData2();
 
       // controller 102: pad type
       if ( controller == 102 )
@@ -280,7 +288,7 @@ void loop()
       // give some feedback that the setting was correctly received
       if ( is_used )
       {
-        MIDI.sendNoteOff ( controller, value, 1 ); // can be checked, e.g., in the log file
+        MYMIDI.sendNoteOff ( controller, value, 1 ); // can be checked, e.g., in the log file
       }
     }
   }
