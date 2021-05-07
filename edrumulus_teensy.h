@@ -43,9 +43,9 @@ public:
                          int       analog_pin[][MAX_NUM_PAD_INPUTS],
                          int       sample_org[][MAX_NUM_PAD_INPUTS] );
 
-  float cancel_ADC_spikes ( const float input,
-                            const int,
-                            const int ) { return input; } // no ADC spike cancellation needed for the Teensy
+  inline float cancel_ADC_spikes ( const float input,
+                                   const int,
+                                   const int ) { return input; } // no ADC spike cancellation needed for the Teensy
 
 protected:
   int           Fs;
