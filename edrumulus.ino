@@ -21,11 +21,8 @@
 
 #ifdef USE_MIDI
 #ifdef ESP_PLATFORM
-# include <MIDI.h>                               // Hairless USB MIDI
-MIDI_CREATE_DEFAULT_INSTANCE();                  // Hairless USB MIDI
-//#include <BLEMIDI_Transport.h>                 // BLE MIDI
-//#include <hardware/BLEMIDI_ESP32.h>            // BLE MIDI
-//BLEMIDI_CREATE_INSTANCE ( "Edrumulus", MIDI ); // BLE MIDI
+# include <MIDI.h>
+MIDI_CREATE_DEFAULT_INSTANCE();
 # define MYMIDI                     MIDI
 # define MIDI_CONTROL_CHANGE_TYPE   midi::ControlChange
 #endif
