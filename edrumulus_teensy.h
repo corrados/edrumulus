@@ -49,10 +49,10 @@ public:
                             const int ) { return input; } // no ADC spike cancellation needed for the Teensy
 
 protected:
-  int Fs;
-//  volatile SemaphoreHandle_t timer_semaphore;
-//  hw_timer_t*                timer = nullptr;
-//  static void IRAM_ATTR      on_timer();
+  int           Fs;
+  IntervalTimer myTimer;
+  static void   on_timer();
+  volatile bool timer_ready;
 
   int      total_number_inputs;
   int      input_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];

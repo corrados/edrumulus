@@ -50,29 +50,19 @@ void Edrumulus_teensy::setup ( const int conf_Fs,
     }
   }
 
-  // create timer semaphore
-  //timer_semaphore = xSemaphoreCreateBinary();
+  // initialize timer flag (semaphore)
+  timer_ready = false;
 
   // prepare timer at a rate of given sampling rate
-  //my_obj->timer = timerBegin ( 0, 80, true ); // prescaler of 80 (i.e. below we have 1 MHz instead of 80 MHz)
-  //timerAttachInterrupt ( timer, &on_timer, true );
-  //timerAlarmWrite      ( timer, 1000000 / Fs, true ); // here we define the sampling rate (1 MHz / Fs)
-  //timerAlarmEnable     ( timer );
+  myTimer.begin ( on_timer, 1000000 / Fs ); // here we define the sampling rate (1 MHz / Fs)
 }
 
 
-//void IRAM_ATTR Edrumulus_teensy::on_timer()
-//{
-  // tell the main loop that a sample can be read by setting the semaphore
-  //static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-
-  //xSemaphoreGiveFromISR ( edrumulus_teensy_pointer->timer_semaphore, &xHigherPriorityTaskWoken );
-
-  //if ( xHigherPriorityTaskWoken == pdTRUE )
-  //{
-  //  portYIELD_FROM_ISR();
-  //}
-//}
+void Edrumulus_teensy::on_timer()
+{
+  // tell the main loop that a sample can be read by setting the flag (semaphore)
+  edrumulus_teensy_pointer->timer_ready = true;
+}
 
 
 void Edrumulus_teensy::capture_samples ( const int number_pads,
@@ -81,23 +71,23 @@ void Edrumulus_teensy::capture_samples ( const int number_pads,
                                          int       sample_org[][MAX_NUM_PAD_INPUTS] )
 {
   // wait for the timer to get the correct sampling rate when reading the analog value
-  if ( true)//xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
+  while ( !timer_ready ) delayMicroseconds ( 5 );
+  timer_ready = false; // it is important to reset the flag here
+
+  // read the ADC samples
+  for ( int i = 0; i < total_number_inputs; i++ )
   {
-    // read the ADC samples
-    for ( int i = 0; i < total_number_inputs; i++ )
-    {
-      input_sample[i] = analogRead ( input_pin[i] );
-    }
+    input_sample[i] = analogRead ( input_pin[i] );
+  }
 
-    // copy captured samples in pad buffer
-    int input_cnt = 0;
+  // copy captured samples in pad buffer
+  int input_cnt = 0;
 
-    for ( int i = 0; i < number_pads; i++ )
+  for ( int i = 0; i < number_pads; i++ )
+  {
+    for ( int j = 0; j < number_inputs[i]; j++ )
     {
-      for ( int j = 0; j < number_inputs[i]; j++ )
-      {
-        sample_org[i][j] = input_sample[input_cnt++];
-      }
+      sample_org[i][j] = input_sample[input_cnt++];
     }
   }
 }
