@@ -54,11 +54,18 @@ void setup()
   Serial.begin ( 115200 );
 #endif
 
-  // NOTE: avoid GPIO 25/26 for piezo inputs since they are DAC pins which cause an incorrect DC offset
+#ifdef ESP_PLATFORM
+  // NOTE: avoid ESP32 GPIO 25/26 for piezo inputs since they are DAC pins which cause an incorrect DC offset
   //       estimation and DC offset drift which makes the spike cancellation algorithm not working correctly
   // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
   const int analog_pins[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    15 };
   const int analog_pins_rimshot[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1 };
+#endif
+#ifdef TEENSYDUINO
+  // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
+  const int analog_pins[]         = { 0,      2,     3,         5,          6,      8,     9,    11,    12 };
+  const int analog_pins_rimshot[] = { 1,     -1,     4,        -1,          7,     -1,    10,    -1,    -1 };
+#endif
 
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
 
