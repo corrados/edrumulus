@@ -59,9 +59,9 @@ void setup()
   const int analog_pins_rimshot[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1 };
 #endif
 #ifdef TEENSYDUINO
-  // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
-  const int analog_pins[]         = { 0,      2,     3,         5,          6,      8,     9,    11,    12 };
-  const int analog_pins_rimshot[] = { 1,     -1,     4,        -1,          7,     -1,    10,    -1,    -1 };
+  // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2
+  const int analog_pins[]         = { 10,    11,    12,        13,          1,      6,     4,     5 };
+  const int analog_pins_rimshot[] = {  9,    -1,     0,        -1,          3,      8,     2,     7 };
 #endif
 
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );

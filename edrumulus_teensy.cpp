@@ -56,6 +56,11 @@ void Edrumulus_teensy::setup ( const int conf_Fs,
   adc_obj.adc0->setConversionSpeed ( ADC_CONVERSION_SPEED::LOW_SPEED );    // to reduce spikes
   adc_obj.adc0->setSamplingSpeed   ( ADC_SAMPLING_SPEED::VERY_LOW_SPEED ); // to reduce spikes
 
+  adc_obj.adc1->setResolution      ( 12 ); // we want to get the full ADC resultion of the Teensy 4.0
+  adc_obj.adc1->setAveraging       ( 1 );  // no averaging
+  adc_obj.adc1->setConversionSpeed ( ADC_CONVERSION_SPEED::LOW_SPEED );    // to reduce spikes
+  adc_obj.adc1->setSamplingSpeed   ( ADC_SAMPLING_SPEED::VERY_LOW_SPEED ); // to reduce spikes
+
   // initialize timer flag (semaphore)
   timer_ready = false;
 
@@ -83,7 +88,15 @@ void Edrumulus_teensy::capture_samples ( const int number_pads,
   // read the ADC samples
   for ( int i = 0; i < total_number_inputs; i++ )
   {
-    input_sample[i] = adc_obj.adc0->analogRead ( input_pin[i] );
+// TEST
+if ( ( input_pin[i] == 12 ) || ( input_pin[i] == 13 ) )
+{
+  input_sample[i] = adc_obj.adc1->analogRead ( input_pin[i] );
+}
+else
+{
+  input_sample[i] = adc_obj.adc0->analogRead ( input_pin[i] );
+}
   }
 
   // copy captured samples in pad buffer
