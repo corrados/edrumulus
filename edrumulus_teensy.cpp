@@ -50,6 +50,9 @@ void Edrumulus_teensy::setup ( const int conf_Fs,
     }
   }
 
+  // we want to get the full ADC resultion of the Teensy 4.0
+  analogReadResolution ( 12 );
+
   // initialize timer flag (semaphore)
   timer_ready = false;
 
