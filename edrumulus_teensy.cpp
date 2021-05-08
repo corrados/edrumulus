@@ -47,6 +47,11 @@ void Edrumulus_teensy::setup ( const int conf_Fs,
       // store pin number in vector
       input_pin[total_number_inputs] = analog_pin[i][j];
       total_number_inputs++;
+
+// TEST try to disable keepers, see https://github.com/PaulStoffregen/cores/pull/451/files
+//      seems not to work...
+pinMode ( analog_pin[i][j], INPUT_DISABLE );
+
     }
   }
 
