@@ -52,6 +52,7 @@ protected:
   IntervalTimer myTimer;
   static void   on_timer();
   volatile bool timer_ready;
+  ADC           adc_obj;
 
   int      total_number_inputs;
   int      input_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];

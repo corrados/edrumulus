@@ -50,8 +50,11 @@ void Edrumulus_teensy::setup ( const int conf_Fs,
     }
   }
 
-  // we want to get the full ADC resultion of the Teensy 4.0
-  analogReadResolution ( 12 );
+  // set the ADC properties
+  adc_obj.adc0->setResolution      ( 12 ); // we want to get the full ADC resultion of the Teensy 4.0
+  adc_obj.adc0->setAveraging       ( 1 );  // no averaging
+  adc_obj.adc0->setConversionSpeed ( ADC_CONVERSION_SPEED::LOW_SPEED );    // to reduce spikes
+  adc_obj.adc0->setSamplingSpeed   ( ADC_SAMPLING_SPEED::VERY_LOW_SPEED ); // to reduce spikes
 
   // initialize timer flag (semaphore)
   timer_ready = false;
@@ -80,7 +83,7 @@ void Edrumulus_teensy::capture_samples ( const int number_pads,
   // read the ADC samples
   for ( int i = 0; i < total_number_inputs; i++ )
   {
-    input_sample[i] = analogRead ( input_pin[i] );
+    input_sample[i] = adc_obj.adc0->analogRead ( input_pin[i] );
   }
 
   // copy captured samples in pad buffer
