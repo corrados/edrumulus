@@ -3,8 +3,18 @@
 echo "This script prepares a Raspberry Pi for Edrumulus usage"
 
 
+# get environment --------------------------------------------------------------
+NCORES=$(nproc)
+
+# check of Teensy USB MIDI
+if aconnect -l|grep -q Edrumulus; then
+  echo "Edrumulus with Teensy hardware detected"
+  is_teensy=true
+fi
+
+
 # install required packages ----------------------------------------------------
-pkgs='git htop alsamixergui build-essential libasound2-dev jackd2 cmake libglib2.0-dev autoconf automake libtool lv2-dev xorg-dev libsndfile1-dev libjack-jackd2-dev libsmf-dev gettext'
+pkgs='git htop alsamixergui build-essential libasound2-dev jackd2 cmake libglib2.0-dev autoconf automake libtool lv2-dev xorg-dev libsndfile1-dev libjack-jackd2-dev libsmf-dev gettext a2jmidid'
 if ! dpkg -s $pkgs >/dev/null 2>&1; then
   read -p "Do you want to install missing packages? " -n 1 -r
   echo
@@ -35,13 +45,13 @@ else
   git submodule update --init
   ./autogen.sh
   ./configure --prefix=$PWD/install --with-lv2dir=$HOME/.lv2 --enable-lv2
-  make -j4
+  make -j${NCORES}
   cd ..
 fi
 
 
 # TODO download Drumgizmo drum kit into the drumgizmo directory, e.g., edrumulus/tools/drumgizmo/DRSKit/
-echo We assume that you have downloaded and unzipped the DRSKit or aasimonster2 in the drumgizmo directory.
+echo We assume that you have downloaded and unzipped the DRSKit or aasimonster2 in the tools directory.
 
 # we now assume that the DRSKit or aasimonster2 was already downloaded and unzipped in the
 # tools directory and we copy our special configuration files in that directory
@@ -71,62 +81,77 @@ fi
 
 
 # write Edrumulus trigger configuration ----------------------------------------
-stty 38400 -F /dev/ttyUSB0
+if [[ -v is_teensy ]]; then
+  # connect ALSA MIDI to Jack Audio MIDI
+  a2jmidid -e &
+  sleep 1
 
-# snare
-echo -n -e '\xB9\x6C\x00' > /dev/ttyUSB0 # select pad: 0
-echo -n -e '\xB9\x66\x02' > /dev/ttyUSB0 # pad type: PD8
-echo -n -e '\xB9\x67\x03' > /dev/ttyUSB0 # threshold
-echo -n -e '\xB9\x68\x08' > /dev/ttyUSB0 # sensitivity
-echo -n -e '\xB9\x6B\x10' > /dev/ttyUSB0 # rim shot threshold
-echo -n -e '\xB9\x69\x1A' > /dev/ttyUSB0 # positional sensing threshold
-echo -n -e '\xB9\x6A\x0B' > /dev/ttyUSB0 # positional sensing sensitivity
-echo -n -e '\xB9\x6F\x03' > /dev/ttyUSB0 # rim/pos: both, rim shot and positional sensing
+  # get Edrumulus MIDI name
+  MIDIJACKPORT=$(jack_lsp|grep "(capture): Edrumulus MIDI")
+else
+  # prepare serial output interface for sending MIDI configuration messages
+  stty 38400 -F /dev/ttyUSB0
 
-# kick
-echo -n -e '\xB9\x6C\x01' > /dev/ttyUSB0 # select pad: 1
-echo -n -e '\xB9\x66\x06' > /dev/ttyUSB0 # pad type: KD7
-echo -n -e '\xB9\x67\x09' > /dev/ttyUSB0 # threshold
-echo -n -e '\xB9\x68\x09' > /dev/ttyUSB0 # sensitivity
+  # snare
+  echo -n -e '\xB9\x6C\x00' > /dev/ttyUSB0 # select pad: 0
+  echo -n -e '\xB9\x66\x02' > /dev/ttyUSB0 # pad type: PD8
+  echo -n -e '\xB9\x67\x03' > /dev/ttyUSB0 # threshold
+  echo -n -e '\xB9\x68\x08' > /dev/ttyUSB0 # sensitivity
+  echo -n -e '\xB9\x6B\x10' > /dev/ttyUSB0 # rim shot threshold
+  echo -n -e '\xB9\x69\x1A' > /dev/ttyUSB0 # positional sensing threshold
+  echo -n -e '\xB9\x6A\x0B' > /dev/ttyUSB0 # positional sensing sensitivity
+  echo -n -e '\xB9\x6F\x03' > /dev/ttyUSB0 # rim/pos: both, rim shot and positional sensing
 
-# Hi-Hat
-echo -n -e '\xB9\x6C\x02' > /dev/ttyUSB0 # select pad: 2
-echo -n -e '\xB9\x66\x02' > /dev/ttyUSB0 # pad type: PD8
-echo -n -e '\xB9\x67\x04' > /dev/ttyUSB0 # threshold
-echo -n -e '\xB9\x68\x08' > /dev/ttyUSB0 # sensitivity
-echo -n -e '\xB9\x6F\x01' > /dev/ttyUSB0 # rim/pos: enable rim shot
+  # kick
+  echo -n -e '\xB9\x6C\x01' > /dev/ttyUSB0 # select pad: 1
+  echo -n -e '\xB9\x66\x06' > /dev/ttyUSB0 # pad type: KD7
+  echo -n -e '\xB9\x67\x09' > /dev/ttyUSB0 # threshold
+  echo -n -e '\xB9\x68\x09' > /dev/ttyUSB0 # sensitivity
 
-# Hi-Hat control
-echo -n -e '\xB9\x6C\x03' > /dev/ttyUSB0 # select pad: 3
-echo -n -e '\xB9\x66\x03' > /dev/ttyUSB0 # pad type: FD8
-echo -n -e '\xB9\x67\x05' > /dev/ttyUSB0 # threshold
-echo -n -e '\xB9\x68\x00' > /dev/ttyUSB0 # sensitivity
+  # Hi-Hat
+  echo -n -e '\xB9\x6C\x02' > /dev/ttyUSB0 # select pad: 2
+  echo -n -e '\xB9\x66\x02' > /dev/ttyUSB0 # pad type: PD8
+  echo -n -e '\xB9\x67\x04' > /dev/ttyUSB0 # threshold
+  echo -n -e '\xB9\x68\x08' > /dev/ttyUSB0 # sensitivity
+  echo -n -e '\xB9\x6F\x01' > /dev/ttyUSB0 # rim/pos: enable rim shot
 
-# crash
-echo -n -e '\xB9\x6C\x04' > /dev/ttyUSB0 # select pad: 4
-echo -n -e '\xB9\x66\x02' > /dev/ttyUSB0 # pad type: PD8
-echo -n -e '\xB9\x67\x13' > /dev/ttyUSB0 # threshold
-echo -n -e '\xB9\x68\x15' > /dev/ttyUSB0 # sensitivity
-echo -n -e '\xB9\x6F\x01' > /dev/ttyUSB0 # rim/pos: enable rim shot
+  # Hi-Hat control
+  echo -n -e '\xB9\x6C\x03' > /dev/ttyUSB0 # select pad: 3
+  echo -n -e '\xB9\x66\x03' > /dev/ttyUSB0 # pad type: FD8
+  echo -n -e '\xB9\x67\x05' > /dev/ttyUSB0 # threshold
+  echo -n -e '\xB9\x68\x00' > /dev/ttyUSB0 # sensitivity
 
-# tom 1
-echo -n -e '\xB9\x6C\x05' > /dev/ttyUSB0 # select pad: 5
-echo -n -e '\xB9\x66\x01' > /dev/ttyUSB0 # pad type: PD80R
-echo -n -e '\xB9\x67\x09' > /dev/ttyUSB0 # threshold
-echo -n -e '\xB9\x68\x00' > /dev/ttyUSB0 # sensitivity
+  # crash
+  echo -n -e '\xB9\x6C\x04' > /dev/ttyUSB0 # select pad: 4
+  echo -n -e '\xB9\x66\x02' > /dev/ttyUSB0 # pad type: PD8
+  echo -n -e '\xB9\x67\x13' > /dev/ttyUSB0 # threshold
+  echo -n -e '\xB9\x68\x15' > /dev/ttyUSB0 # sensitivity
+  echo -n -e '\xB9\x6F\x01' > /dev/ttyUSB0 # rim/pos: enable rim shot
 
-# ride
-echo -n -e '\xB9\x6C\x06' > /dev/ttyUSB0 # select pad: 6
-echo -n -e '\xB9\x66\x02' > /dev/ttyUSB0 # pad type: PD8
-echo -n -e '\xB9\x67\x12' > /dev/ttyUSB0 # threshold
-echo -n -e '\xB9\x68\x15' > /dev/ttyUSB0 # sensitivity
-echo -n -e '\xB9\x6F\x01' > /dev/ttyUSB0 # rim/pos: enable rim shot
+  # tom 1
+  echo -n -e '\xB9\x6C\x05' > /dev/ttyUSB0 # select pad: 5
+  echo -n -e '\xB9\x66\x01' > /dev/ttyUSB0 # pad type: PD80R
+  echo -n -e '\xB9\x67\x09' > /dev/ttyUSB0 # threshold
+  echo -n -e '\xB9\x68\x00' > /dev/ttyUSB0 # sensitivity
 
-# tom 2
-echo -n -e '\xB9\x6C\x07' > /dev/ttyUSB0 # select pad: 7
-echo -n -e '\xB9\x66\x01' > /dev/ttyUSB0 # pad type: PD80R
-echo -n -e '\xB9\x67\x12' > /dev/ttyUSB0 # threshold
-echo -n -e '\xB9\x68\x00' > /dev/ttyUSB0 # sensitivity
+  # ride
+  echo -n -e '\xB9\x6C\x06' > /dev/ttyUSB0 # select pad: 6
+  echo -n -e '\xB9\x66\x02' > /dev/ttyUSB0 # pad type: PD8
+  echo -n -e '\xB9\x67\x12' > /dev/ttyUSB0 # threshold
+  echo -n -e '\xB9\x68\x15' > /dev/ttyUSB0 # sensitivity
+  echo -n -e '\xB9\x6F\x01' > /dev/ttyUSB0 # rim/pos: enable rim shot
+
+  # tom 2
+  echo -n -e '\xB9\x6C\x07' > /dev/ttyUSB0 # select pad: 7
+  echo -n -e '\xB9\x66\x01' > /dev/ttyUSB0 # pad type: PD80R
+  echo -n -e '\xB9\x67\x12' > /dev/ttyUSB0 # threshold
+  echo -n -e '\xB9\x68\x00' > /dev/ttyUSB0 # sensitivity
+
+  # start MIDI tool to convert serial MIDI to Jack Audio MIDI
+  # note that to get access to /dev/ttyUSB0 we need to be in group tty/dialout
+  mod-ttymidi/ttymidi -b 38400 &
+  MIDIJACKPORT=ttymidi:MIDI_in
+fi
 
 
 # run Edrumulus ----------------------------------------------------------------
@@ -138,18 +163,21 @@ echo "Using USB audio device: ${ADEVICE}"
 jackd -R -T --silent -P70 -t2000 -d alsa -dhw:${ADEVICE} -p 128 -n 3 -r 48000 -s &>/dev/null &
 sleep 1
 
-# note that to get access to /dev/ttyUSB0 we need to be in group tty/dialout
-mod-ttymidi/ttymidi -b 38400 &
-
 ./drumgizmo/drumgizmo/drumgizmo --async-load -p close=0.9 -s -S limit=500M -l -L max=2,rampdown=0.1 -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
 sleep 5
 
-jack_connect ttymidi:MIDI_in DrumGizmo:drumgizmo_midiin
+jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
 jack_connect $KITJACKPORTLEFT system:playback_1
 jack_connect $KITJACKPORTRIGHT system:playback_2
 
+
 echo "###---------- PRESS ANY KEY TO TERMINATE THE EDRUMULUS SESSION ---------###"
 read -n 1 -s -r -p ""
-killall ttymidi
 killall drumgizmo
+
+if [[ -v is_teensy ]]; then
+  killall a2jmidid
+else
+  killall ttymidi
+fi
 
