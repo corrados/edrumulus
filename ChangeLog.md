@@ -2,6 +2,16 @@
 
 - (05/09/2021) There is a new prototype, now using a Teensy 4.0 developer board:
   <br/>![Teensy Prototype](algorithm/images/teensy_prototype.jpg)<br/>
+  Difference between ESP32 and Teensy 4.0 with regard to Edrumulus:
+  Feature | ESP32 | Teensy 4.0
+  --- | --- | ---
+  #ADC inputs | 18 | 14
+  FPU | yes | yes (better performance than ESP32)
+  Speed | 240 MHz dual core | 600 MHz single core
+  ADC | 2 ADCs, a lot of spikes | 2 ADCs, less spikes (but still some smaller spikes visible)
+  USB MIDI | over serial, needs Hairless MIDI or ttyMidi | shows up as USB MIDI device
+  Debugging | either serial debugging or MIDI | MIDI and debugging can be done in parallel
+  Cost | ~10 € | ~20 €
 
 - (05/02/2021) Here is link to a Youtube video of the new Prototype 1 in action: https://youtu.be/UKeuFm_DDTk
   <br/>I was running [Drumgizmo](https://drumgizmo.org) under Linux on my Laptop with the
