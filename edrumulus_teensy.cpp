@@ -19,20 +19,20 @@
 
 #ifdef TEENSYDUINO
 
-Edrumulus_teensy* edrumulus_teensy_pointer = nullptr;
+Edrumulus_hardware* edrumulus_hardware_pointer = nullptr;
 
 
-Edrumulus_teensy::Edrumulus_teensy()
+Edrumulus_hardware::Edrumulus_hardware()
 {
   // global pointer to this class needed for static callback function
-  edrumulus_teensy_pointer = this;
+  edrumulus_hardware_pointer = this;
 }
 
 
-void Edrumulus_teensy::setup ( const int conf_Fs,
-                               const int number_pads,
-                               const int number_inputs[],
-                               int       analog_pin[][MAX_NUM_PAD_INPUTS] )
+void Edrumulus_hardware::setup ( const int conf_Fs,
+                                 const int number_pads,
+                                 const int number_inputs[],
+                                 int       analog_pin[][MAX_NUM_PAD_INPUTS] )
 {
   // set essential parameters
   Fs = conf_Fs;
@@ -85,17 +85,17 @@ void Edrumulus_teensy::setup ( const int conf_Fs,
 }
 
 
-void Edrumulus_teensy::on_timer()
+void Edrumulus_hardware::on_timer()
 {
   // tell the main loop that a sample can be read by setting the flag (semaphore)
-  edrumulus_teensy_pointer->timer_ready = true;
+  edrumulus_hardware_pointer->timer_ready = true;
 }
 
 
-void Edrumulus_teensy::capture_samples ( const int number_pads,
-                                         const int number_inputs[],
-                                         int       analog_pin[][MAX_NUM_PAD_INPUTS],
-                                         int       sample_org[][MAX_NUM_PAD_INPUTS] )
+void Edrumulus_hardware::capture_samples ( const int number_pads,
+                                           const int number_inputs[],
+                                           int       analog_pin[][MAX_NUM_PAD_INPUTS],
+                                           int       sample_org[][MAX_NUM_PAD_INPUTS] )
 {
   // wait for the timer to get the correct sampling rate when reading the analog value
   while ( !timer_ready ) delayMicroseconds ( 5 );

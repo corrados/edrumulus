@@ -29,7 +29,7 @@
 #define ADC_MAX_RANGE        4096 // ESP32 ADC has 12 bits -> 0..4095
 #define ADC_MAX_NOISE_AMPL   8    // highest assumed ADC noise amplitude in the ADC input range unit (measured)
 
-class Edrumulus_esp32
+class Edrumulus_hardware
 {
 public:
   enum Espikestate
@@ -39,7 +39,7 @@ public:
     ST_OTHER
   };
 
-  Edrumulus_esp32();
+  Edrumulus_hardware();
 
   void setup ( const int conf_Fs,
                const int number_pads,

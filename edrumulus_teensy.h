@@ -28,10 +28,10 @@
 #define ADC_MAX_RANGE        4096 // Teensy 4.0 ADC has 12 bits -> 0..4095
 #define ADC_MAX_NOISE_AMPL   8    // highest assumed ADC noise amplitude in the ADC input range unit (measured)
 
-class Edrumulus_teensy
+class Edrumulus_hardware
 {
 public:
-  Edrumulus_teensy();
+  Edrumulus_hardware();
 
   void setup ( const int conf_Fs,
                const int number_pads,

@@ -18,14 +18,8 @@
 #pragma once
 
 #include "Arduino.h"
-#ifdef ESP_PLATFORM
-# include "edrumulus_esp32.h"
-typedef Edrumulus_esp32 Edrumulus_hardware;
-#endif
-#ifdef TEENSYDUINO
-# include "edrumulus_teensy.h"
-typedef Edrumulus_teensy Edrumulus_hardware;
-#endif
+#include "edrumulus_esp32.h"
+#include "edrumulus_teensy.h"
 
 class Edrumulus
 {

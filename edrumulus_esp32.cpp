@@ -19,20 +19,20 @@
 
 #ifdef ESP_PLATFORM
 
-Edrumulus_esp32* edrumulus_esp32_pointer = nullptr;
+Edrumulus_hardware* edrumulus_hardware_pointer = nullptr;
 
 
-Edrumulus_esp32::Edrumulus_esp32()
+Edrumulus_hardware::Edrumulus_hardware()
 {
   // global pointer to this class needed for static callback function
-  edrumulus_esp32_pointer = this;
+  edrumulus_hardware_pointer = this;
 }
 
 
-void Edrumulus_esp32::setup ( const int conf_Fs,
-                              const int number_pads,
-                              const int number_inputs[],
-                              int       analog_pin[][MAX_NUM_PAD_INPUTS] )
+void Edrumulus_hardware::setup ( const int conf_Fs,
+                                 const int number_pads,
+                                 const int number_inputs[],
+                                 int       analog_pin[][MAX_NUM_PAD_INPUTS] )
 {
   // set essential parameters
   Fs = conf_Fs;
@@ -110,9 +110,9 @@ void Edrumulus_esp32::setup ( const int conf_Fs,
 }
 
 
-void Edrumulus_esp32::start_timer_core0_task ( void* param )
+void Edrumulus_hardware::start_timer_core0_task ( void* param )
 {
-  Edrumulus_esp32* my_obj = reinterpret_cast<Edrumulus_esp32*> ( param );
+  Edrumulus_hardware* my_obj = reinterpret_cast<Edrumulus_hardware*> ( param );
 
   // prepare timer at a rate of given sampling rate
   my_obj->timer = timerBegin ( 0, 80, true ); // prescaler of 80 (i.e. below we have 1 MHz instead of 80 MHz)
@@ -128,12 +128,12 @@ void Edrumulus_esp32::start_timer_core0_task ( void* param )
 }
 
 
-void IRAM_ATTR Edrumulus_esp32::on_timer()
+void IRAM_ATTR Edrumulus_hardware::on_timer()
 {
   // tell the main loop that a sample can be read by setting the semaphore
   static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
-  xSemaphoreGiveFromISR ( edrumulus_esp32_pointer->timer_semaphore, &xHigherPriorityTaskWoken );
+  xSemaphoreGiveFromISR ( edrumulus_hardware_pointer->timer_semaphore, &xHigherPriorityTaskWoken );
 
   if ( xHigherPriorityTaskWoken == pdTRUE )
   {
@@ -142,10 +142,10 @@ void IRAM_ATTR Edrumulus_esp32::on_timer()
 }
 
 
-void Edrumulus_esp32::capture_samples ( const int number_pads,
-                                        const int number_inputs[],
-                                        int       analog_pin[][MAX_NUM_PAD_INPUTS],
-                                        int       sample_org[][MAX_NUM_PAD_INPUTS] )
+void Edrumulus_hardware::capture_samples ( const int number_pads,
+                                           const int number_inputs[],
+                                           int       analog_pin[][MAX_NUM_PAD_INPUTS],
+                                           int       sample_org[][MAX_NUM_PAD_INPUTS] )
 {
   // wait for the timer to get the correct sampling rate when reading the analog value
   if ( xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
@@ -179,9 +179,9 @@ void Edrumulus_esp32::capture_samples ( const int number_pads,
 }
 
 
-float Edrumulus_esp32::cancel_ADC_spikes ( const float input,
-                                           const int   pad_index,
-                                           const int   input_channel_index )
+float Edrumulus_hardware::cancel_ADC_spikes ( const float input,
+                                              const int   pad_index,
+                                              const int   input_channel_index )
 {
   // remove single/dual sample spikes by checking if right before and right after the
   // detected spike(s) we only have noise and no useful signal (since the ESP32 spikes
@@ -235,7 +235,7 @@ float Edrumulus_esp32::cancel_ADC_spikes ( const float input,
 // which made the analogRead function so slow that we cannot use that anymore for Edrumulus:
 // https://github.com/espressif/arduino-esp32/issues/4973, https://github.com/espressif/arduino-esp32/pull/3377
 // As a workaround, we had to write our own analogRead function.
-void Edrumulus_esp32::init_my_analogRead()
+void Edrumulus_hardware::init_my_analogRead()
 {
   // if the GIOP 25/26 are used, we have to set the DAC to 0 to get correct DC offset
   // estimates and reduce the number of large spikes
@@ -290,7 +290,7 @@ SET_PERI_REG_BITS ( SENS_SAR_READ_CTRL2_REG,  SENS_SAR2_SAMPLE_CYCLE, 6, SENS_SA
 }
 
 
-uint16_t Edrumulus_esp32::my_analogRead ( const uint8_t pin )
+uint16_t Edrumulus_hardware::my_analogRead ( const uint8_t pin )
 {
   const int8_t channel = digitalPinToAnalogChannel ( pin );
 
@@ -314,10 +314,10 @@ uint16_t Edrumulus_esp32::my_analogRead ( const uint8_t pin )
 }
 
 
-void Edrumulus_esp32::my_analogRead_parallel ( const uint8_t pin_adc1,
-                                               const uint8_t pin_adc2,
-                                               uint16_t&     out_adc1,
-                                               uint16_t&     out_adc2 )
+void Edrumulus_hardware::my_analogRead_parallel ( const uint8_t pin_adc1,
+                                                  const uint8_t pin_adc2,
+                                                  uint16_t&     out_adc1,
+                                                  uint16_t&     out_adc2 )
 {
   const int8_t channel_adc1 = digitalPinToAnalogChannel ( pin_adc1 );
   const int8_t channel_adc2 = digitalPinToAnalogChannel ( pin_adc2 ) - 10;
