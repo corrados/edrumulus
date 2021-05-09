@@ -1,5 +1,8 @@
 # Edrumulus project log
 
+- (05/09/2021) There is a new prototype, now using a Teensy 4.0 developer board:
+  <br/>![Teensy Prototype](algorithm/images/teensy_prototype1.jpg)<br/>
+
 - (05/02/2021) Here is link to a Youtube video of the new Prototype 1 in action: https://youtu.be/UKeuFm_DDTk
   <br/>I was running [Drumgizmo](https://drumgizmo.org) under Linux on my Laptop with the
   [The Aasimonster](https://drumgizmo.org/wiki/doku.php?id=kits:the_aasimonster) drum kit where the
