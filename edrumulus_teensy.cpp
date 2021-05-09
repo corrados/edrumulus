@@ -62,20 +62,20 @@ void Edrumulus_teensy::setup ( const int conf_Fs,
   adc_obj.adc1->setSamplingSpeed   ( ADC_SAMPLING_SPEED::VERY_LOW_SPEED ); // to reduce spikes
 
   // disable MIMXRT1062DVL6A "keeper" on all possible Teensy ADC input pins
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_02 &= ~( 1 << 12 ); // A0
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_03 &= ~( 1 << 12 ); // A1
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_07 &= ~( 1 << 12 ); // A2
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_06 &= ~( 1 << 12 ); // A3
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_01 &= ~( 1 << 12 ); // A4
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_00 &= ~( 1 << 12 ); // A5
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_10 &= ~( 1 << 12 ); // A6
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_11 &= ~( 1 << 12 ); // A7
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_08 &= ~( 1 << 12 ); // A8
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_09 &= ~( 1 << 12 ); // A9
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_02 &= ~( 1 << 12 ); // A0
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_03 &= ~( 1 << 12 ); // A1
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_07 &= ~( 1 << 12 ); // A2
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_06 &= ~( 1 << 12 ); // A3
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_01 &= ~( 1 << 12 ); // A4
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_00 &= ~( 1 << 12 ); // A5
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_10 &= ~( 1 << 12 ); // A6
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_11 &= ~( 1 << 12 ); // A7
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_08 &= ~( 1 << 12 ); // A8
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_09 &= ~( 1 << 12 ); // A9
   IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_12 &= ~( 1 << 12 ); // A10
   IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_13 &= ~( 1 << 12 ); // A11
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_14 &= ~( 1 << 12 ); // A12
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_15 &= ~( 1 << 12 ); // A13
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_14 &= ~( 1 << 12 ); // A12
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_15 &= ~( 1 << 12 ); // A13
 
   // initialize timer flag (semaphore)
   timer_ready = false;
