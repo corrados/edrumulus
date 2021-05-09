@@ -47,11 +47,6 @@ void Edrumulus_teensy::setup ( const int conf_Fs,
       // store pin number in vector
       input_pin[total_number_inputs] = analog_pin[i][j];
       total_number_inputs++;
-
-// TEST try to disable keepers, see https://github.com/PaulStoffregen/cores/pull/451/files
-//      seems not to work...
-pinMode ( analog_pin[i][j], INPUT_DISABLE );
-
     }
   }
 
@@ -65,6 +60,22 @@ pinMode ( analog_pin[i][j], INPUT_DISABLE );
   adc_obj.adc1->setAveraging       ( 1 );  // no averaging
   adc_obj.adc1->setConversionSpeed ( ADC_CONVERSION_SPEED::LOW_SPEED );    // to reduce spikes
   adc_obj.adc1->setSamplingSpeed   ( ADC_SAMPLING_SPEED::VERY_LOW_SPEED ); // to reduce spikes
+
+  // disable MIMXRT1062DVL6A "keeper" on all possible Teensy ADC input pins
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_02 &= ~( 1 << 12 ); // A0
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_03 &= ~( 1 << 12 ); // A1
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_07 &= ~( 1 << 12 ); // A2
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_06 &= ~( 1 << 12 ); // A3
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_01 &= ~( 1 << 12 ); // A4
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_00 &= ~( 1 << 12 ); // A5
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_10 &= ~( 1 << 12 ); // A6
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_11 &= ~( 1 << 12 ); // A7
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_08 &= ~( 1 << 12 ); // A8
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_09 &= ~( 1 << 12 ); // A9
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_12 &= ~( 1 << 12 ); // A10
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_13 &= ~( 1 << 12 ); // A11
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_14 &= ~( 1 << 12 ); // A12
+  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_15 &= ~( 1 << 12 ); // A13
 
   // initialize timer flag (semaphore)
   timer_ready = false;
