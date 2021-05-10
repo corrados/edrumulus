@@ -50,16 +50,16 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
     }
   }
 
-  // set the ADC properties
+  // set the ADC properties: averaging 8 samples with high speed sampling gives
+  // us the best compromise between ADC speed and spike protection
   adc_obj.adc0->setResolution      ( 12 ); // we want to get the full ADC resultion of the Teensy 4.0
-  adc_obj.adc0->setAveraging       ( 1 );  // no averaging
-  adc_obj.adc0->setConversionSpeed ( ADC_CONVERSION_SPEED::LOW_SPEED );    // to reduce spikes
-  adc_obj.adc0->setSamplingSpeed   ( ADC_SAMPLING_SPEED::VERY_LOW_SPEED ); // to reduce spikes
-
+  adc_obj.adc0->setAveraging       ( 8 );
+  adc_obj.adc0->setConversionSpeed ( ADC_CONVERSION_SPEED::HIGH_SPEED );
+  adc_obj.adc0->setSamplingSpeed   ( ADC_SAMPLING_SPEED::HIGH_SPEED );
   adc_obj.adc1->setResolution      ( 12 ); // we want to get the full ADC resultion of the Teensy 4.0
-  adc_obj.adc1->setAveraging       ( 1 );  // no averaging
-  adc_obj.adc1->setConversionSpeed ( ADC_CONVERSION_SPEED::LOW_SPEED );    // to reduce spikes
-  adc_obj.adc1->setSamplingSpeed   ( ADC_SAMPLING_SPEED::VERY_LOW_SPEED ); // to reduce spikes
+  adc_obj.adc1->setAveraging       ( 8 );
+  adc_obj.adc1->setConversionSpeed ( ADC_CONVERSION_SPEED::HIGH_SPEED );
+  adc_obj.adc1->setSamplingSpeed   ( ADC_SAMPLING_SPEED::HIGH_SPEED );
 
   // disable MIMXRT1062DVL6A "keeper" on all possible Teensy ADC input pins
   IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_02 &= ~( 1 << 12 ); // A0
@@ -104,15 +104,15 @@ void Edrumulus_hardware::capture_samples ( const int number_pads,
   // read the ADC samples
   for ( int i = 0; i < total_number_inputs; i++ )
   {
-// TEST
-if ( ( input_pin[i] == 12 ) || ( input_pin[i] == 13 ) )
-{
-  input_sample[i] = adc_obj.adc1->analogRead ( input_pin[i] );
-}
-else
-{
-  input_sample[i] = adc_obj.adc0->analogRead ( input_pin[i] );
-}
+    // pins 12 and 13 are ADC1 only, pins 10 and 11 are ADC0 only
+    if ( ( input_pin[i] == 12 ) || ( input_pin[i] == 13 ) )
+    {
+      input_sample[i] = adc_obj.adc1->analogRead ( input_pin[i] );
+    }
+    else
+    {
+      input_sample[i] = adc_obj.adc0->analogRead ( input_pin[i] );
+    }
   }
 
   // copy captured samples in pad buffer
