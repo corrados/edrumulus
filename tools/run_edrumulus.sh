@@ -35,6 +35,19 @@ else
 fi
 
 
+# download and compile SendMIDI ------------------------------------------------
+if [ -d "SendMIDI" ]; then
+  echo "The SendMIDI directory is present, we assume it is compiled and ready to use. If not, delete the SendMIDI directory and call this script again."
+else
+  git clone https://github.com/gbevin/SendMIDI.git
+  cd SendMIDI
+  git checkout 1.0.15
+  cd Builds/LinuxMakefile
+  make
+  cd ../../..
+fi
+
+
 # download and compile Drumgizmo -----------------------------------------------
 if [ -d "drumgizmo" ]; then
   echo "The Drumgizmo directory is present, we assume it is compiled and ready to use. If not, delete the Drumgizmo directory and call this script again."
@@ -80,8 +93,75 @@ if [ -d "aasimonster2" ]; then
 fi
 
 
+# jack deamon ------------------------------------------------------------------
+# get first USB audio sound card device
+ADEVICE=$(aplay -l|grep "USB Audio"|tail -1|cut -d' ' -f3)
+echo "Using USB audio device: ${ADEVICE}"
+
+# start the jack deamon (exit once all clients are closed with -T)
+jackd -R -T --silent -P70 -t2000 -d alsa -dhw:${ADEVICE} -p 128 -n 3 -r 48000 -s &>/dev/null &
+sleep 1
+
+
 # write Edrumulus trigger configuration ----------------------------------------
 if [[ -v is_teensy ]]; then
+  # snare
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 108 0 # pad 0
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 102 2 # PD8
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 3 # threshold
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 8 # sensitivity
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 107 16 # rim shot threshold
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 105 26 # positional sensing threshold
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 106 11 # positional sensing sensitivity
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 111 3 # both, rim shot and positional sensing
+
+  # kick
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 108 1 # pad 1
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 102 6 # KD7
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 9 # threshold
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 9 # sensitivity
+
+  # Hi-Hat
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 108 2 # pad 2
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 102 2 # PD8
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 4 # threshold
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 8 # sensitivity
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 111 1 # enable rim shot
+
+  # Hi-Hat control
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 108 3 # pad 3
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 102 3 # FD8
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 5 # threshold
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 0 # sensitivity
+
+  # crash
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 108 4 # pad 4
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 102 2 # PD8
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 19 # threshold
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 21 # sensitivity
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 111 1 # enable rim shot
+
+  # tom 1
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 108 5 # pad 5
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 102 1 # PD80R
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 9 # threshold
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 0 # sensitivity
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 111 1 # enable rim shot
+
+  # ride
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 108 6 # pad 6
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 102 2 # PD8
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 18 # threshold
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 21 # sensitivity
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 111 1 # enable rim shot
+
+  # tom 2
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 108 7 # pad 7
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 102 1 # PD80R
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 18 # threshold
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 0 # sensitivity
+  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 111 1 # enable rim shot
+
   # connect ALSA MIDI to Jack Audio MIDI
   a2jmidid -e &
   sleep 1
@@ -155,14 +235,6 @@ fi
 
 
 # run Edrumulus ----------------------------------------------------------------
-# get first USB audio sound card device
-ADEVICE=$(aplay -l|grep "USB Audio"|tail -1|cut -d' ' -f3)
-echo "Using USB audio device: ${ADEVICE}"
-
-# start the jack deamon (exit once all clients are closed with -T)
-jackd -R -T --silent -P70 -t2000 -d alsa -dhw:${ADEVICE} -p 128 -n 3 -r 48000 -s &>/dev/null &
-sleep 1
-
 ./drumgizmo/drumgizmo/drumgizmo --async-load -p close=0.9 -s -S limit=500M -l -L max=2,rampdown=0.1 -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
 sleep 5
 
