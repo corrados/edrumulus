@@ -105,7 +105,8 @@ void Edrumulus_hardware::capture_samples ( const int number_pads,
   for ( int i = 0; i < total_number_inputs; i++ )
   {
     // pins 12 and 13 are ADC1 only, pins 10 and 11 are ADC0 only
-    if ( ( input_pin[i] == 12 ) || ( input_pin[i] == 13 ) )
+    // note that pin 8 gave large spikes on ADC0 but seems to work ok with ADC1
+    if ( ( input_pin[i] == 8 ) || ( input_pin[i] == 12 ) || ( input_pin[i] == 13 ) )
     {
       input_sample[i] = adc_obj.adc1->analogRead ( input_pin[i] );
     }
