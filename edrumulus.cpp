@@ -128,9 +128,12 @@ return;
 String serial_print;
 for ( int i = 0; i < number_pads; i++ )
 {
-  for ( int j = 0; j < number_inputs[i]; j++ )
+  //if ( !pad[i].get_is_control() )
   {
-    serial_print += String ( sample_org[i][j] ) + "\t";
+    for ( int j = 0; j < number_inputs[i]; j++ )
+    {
+      serial_print += String ( sample_org[i][j] ) + "\t";
+    }
   }
 }
 Serial.println ( serial_print );
@@ -206,10 +209,13 @@ String serial_print;
 String serial_print2;
 for ( int i = 0; i < number_pads; i++ )
 {
-  for ( int j = 0; j < number_inputs[i]; j++ )
+  if ( !pad[i].get_is_control() )
   {
-    serial_print += String ( sample_org[i][j] ) + "\t" + String ( dc_offset[i][j] ) + "\t";
-    serial_print2 += String ( sample_org[i][j] - dc_offset[i][j] ) + "\t";
+    for ( int j = 0; j < number_inputs[i]; j++ )
+    {
+      serial_print += String ( sample_org[i][j] ) + "\t" + String ( dc_offset[i][j] ) + "\t";
+      serial_print2 += String ( sample_org[i][j] - dc_offset[i][j] ) + "\t";
+    }
   }
 }
 //Serial.println ( serial_print );
