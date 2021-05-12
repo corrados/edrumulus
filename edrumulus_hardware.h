@@ -17,9 +17,75 @@
 
 #pragma once
 
-#ifdef ESP_PLATFORM
+#include "Arduino.h"
+
+enum Espikestate
+{
+  ST_NOISE,
+  ST_SPIKE,
+  ST_OTHER
+};
+
+
+// -----------------------------------------------------------------------------
+// Teensy 4.0 ------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+#ifdef TEENSYDUINO
 
 #include "Arduino.h"
+#include <ADC.h>
+
+#define BOARD_LED_PIN        13   // pin number of the LED on the Teensy 4.0 board
+#define MAX_NUM_PADS         12   // a maximum of 12 pads are supported
+#define MAX_NUM_PAD_INPUTS   2    // a maximum of 2 sensors per pad is supported
+#define ADC_MAX_RANGE        4096 // Teensy 4.0 ADC has 12 bits -> 0..4095
+#define ADC_MAX_NOISE_AMPL   8    // highest assumed ADC noise amplitude in the ADC input range unit (measured)
+
+class Edrumulus_hardware
+{
+public:
+  Edrumulus_hardware();
+
+  void setup ( const int conf_Fs,
+               const int number_pads,
+               const int number_inputs[],
+               int       analog_pin[][MAX_NUM_PAD_INPUTS] );
+
+  void capture_samples ( const int number_pads,
+                         const int number_inputs[],
+                         int       analog_pin[][MAX_NUM_PAD_INPUTS],
+                         int       sample_org[][MAX_NUM_PAD_INPUTS] );
+
+  float cancel_ADC_spikes ( const float input,
+                            const int   pad_index,
+                            const int   input_channel_index );
+
+protected:
+  int           Fs;
+  IntervalTimer myTimer;
+  static void   on_timer();
+  volatile bool timer_ready;
+  ADC           adc_obj;
+
+  int      total_number_inputs;
+  int      input_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+  uint16_t input_sample[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+
+  Espikestate prev1_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  Espikestate prev2_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  Espikestate prev3_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  float       prev_input1[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  float       prev_input2[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+};
+
+#endif
+
+
+// -----------------------------------------------------------------------------
+// ESP32 Dual Core -------------------------------------------------------------
+// -----------------------------------------------------------------------------
+#ifdef ESP_PLATFORM
+
 #include "soc/sens_reg.h"
 #include "driver/dac.h"
 
@@ -32,13 +98,6 @@
 class Edrumulus_hardware
 {
 public:
-  enum Espikestate
-  {
-    ST_NOISE,
-    ST_SPIKE,
-    ST_OTHER
-  };
-
   Edrumulus_hardware();
 
   void setup ( const int conf_Fs,

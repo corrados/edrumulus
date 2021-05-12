@@ -18,8 +18,7 @@
 #pragma once
 
 #include "Arduino.h"
-#include "edrumulus_esp32.h"
-#include "edrumulus_teensy.h"
+#include "edrumulus_hardware.h"
 
 class Edrumulus
 {
