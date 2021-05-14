@@ -21,7 +21,7 @@
 Edrumulus::Edrumulus() :
 #ifdef ESP_PLATFORM
 // TODO try to increase the sampling rate again... the goal would be 8000
-  Fs ( 7000 ) // this is the most fundamental system parameter: system sampling rate
+  Fs ( 6000 ) // this is the most fundamental system parameter: system sampling rate
 #else
   Fs ( 8000 ) // this is the most fundamental system parameter: system sampling rate
 #endif
