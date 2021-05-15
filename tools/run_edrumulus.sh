@@ -178,7 +178,7 @@ else
   # snare
   echo -n -e '\xB9\x6C\x00' > /dev/ttyUSB0 # select pad: 0
   echo -n -e '\xB9\x66\x02' > /dev/ttyUSB0 # pad type: PD8
-  echo -n -e '\xB9\x67\x03' > /dev/ttyUSB0 # threshold
+  echo -n -e '\xB9\x67\x05' > /dev/ttyUSB0 # threshold
   echo -n -e '\xB9\x68\x08' > /dev/ttyUSB0 # sensitivity
   echo -n -e '\xB9\x6B\x10' > /dev/ttyUSB0 # rim shot threshold
   echo -n -e '\xB9\x69\x1A' > /dev/ttyUSB0 # positional sensing threshold
@@ -188,13 +188,13 @@ else
   # kick
   echo -n -e '\xB9\x6C\x01' > /dev/ttyUSB0 # select pad: 1
   echo -n -e '\xB9\x66\x06' > /dev/ttyUSB0 # pad type: KD7
-  echo -n -e '\xB9\x67\x09' > /dev/ttyUSB0 # threshold
+  echo -n -e '\xB9\x67\x0A' > /dev/ttyUSB0 # threshold
   echo -n -e '\xB9\x68\x09' > /dev/ttyUSB0 # sensitivity
 
   # Hi-Hat
   echo -n -e '\xB9\x6C\x02' > /dev/ttyUSB0 # select pad: 2
   echo -n -e '\xB9\x66\x02' > /dev/ttyUSB0 # pad type: PD8
-  echo -n -e '\xB9\x67\x04' > /dev/ttyUSB0 # threshold
+  echo -n -e '\xB9\x67\x05' > /dev/ttyUSB0 # threshold
   echo -n -e '\xB9\x68\x08' > /dev/ttyUSB0 # sensitivity
   echo -n -e '\xB9\x6F\x01' > /dev/ttyUSB0 # rim/pos: enable rim shot
 
