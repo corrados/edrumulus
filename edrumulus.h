@@ -265,7 +265,7 @@ protected:
   int             number_pads;
   int             number_inputs[MAX_NUM_PADS];
   int             analog_pin[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  float           dc_offset[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  double          dc_offset[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS]; // must be double type for IIR filter
   int             sample_org[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   float           dc_offset_iir_gamma;
   float           dc_offset_iir_one_minus_gamma;
