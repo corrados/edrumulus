@@ -19,12 +19,7 @@
 
 
 Edrumulus::Edrumulus() :
-#ifdef ESP_PLATFORM
-// TODO try to increase the sampling rate again... the goal would be 8000
-  Fs ( 6200 ) // this is the most fundamental system parameter: system sampling rate
-#else
   Fs ( 8000 ) // this is the most fundamental system parameter: system sampling rate
-#endif
 {
   // initializations
   overload_LED_on_time       = round ( 0.25f * Fs ); // minimum overload LED on time (e.g., 250 ms)

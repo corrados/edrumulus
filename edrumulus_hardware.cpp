@@ -298,7 +298,24 @@ void Edrumulus_hardware::start_timer_core0_task ( void* param )
 
 void IRAM_ATTR Edrumulus_hardware::on_timer()
 {
-  // tell the main loop that a sample can be read by setting the semaphore
+  // first read the ADC pairs samples
+  for ( int i = 0; i < edrumulus_hardware_pointer->num_pin_pairs; i++ )
+  {
+    edrumulus_hardware_pointer->my_analogRead_parallel (
+      edrumulus_hardware_pointer->channel_adc1_bitval[i],
+      edrumulus_hardware_pointer->channel_adc2_bitval[i],
+      edrumulus_hardware_pointer->input_sample[edrumulus_hardware_pointer->adc1_index[i]],
+      edrumulus_hardware_pointer->input_sample[edrumulus_hardware_pointer->adc2_index[i]] );
+  }
+
+  // second read the single ADC samples
+  for ( int i = 0; i < edrumulus_hardware_pointer->num_pin_single; i++ )
+  {
+    edrumulus_hardware_pointer->input_sample[edrumulus_hardware_pointer->single_index[i]] =
+      edrumulus_hardware_pointer->my_analogRead ( edrumulus_hardware_pointer->input_pin[edrumulus_hardware_pointer->single_index[i]] );
+  }
+
+  // tell the main loop that a sample can be processed by setting the semaphore
   static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
   xSemaphoreGiveFromISR ( edrumulus_hardware_pointer->timer_semaphore, &xHigherPriorityTaskWoken );
@@ -318,21 +335,6 @@ void Edrumulus_hardware::capture_samples ( const int number_pads,
   // wait for the timer to get the correct sampling rate when reading the analog value
   if ( xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
   {
-    // first read the ADC pairs samples
-    for ( int i = 0; i < num_pin_pairs; i++ )
-    {
-      my_analogRead_parallel ( channel_adc1_bitval[i],
-                               channel_adc2_bitval[i],
-                               input_sample[adc1_index[i]],
-                               input_sample[adc2_index[i]] );
-    }
-
-    // second read the single ADC samples
-    for ( int i = 0; i < num_pin_single; i++ )
-    {
-      input_sample[single_index[i]] = my_analogRead ( input_pin[single_index[i]] );
-    }
-
     // copy captured samples in pad buffer
     int input_cnt = 0;
 
