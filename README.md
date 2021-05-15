@@ -7,14 +7,18 @@ The aim of the Edrumulus project is to create a high quality Open Source e-drum 
 
 ## Project specifications
 
-- The trigger performance shall be similar or better than the Roland TDW-20.
+- The trigger performance shall be similar to the Roland TD-27.
 
-- Overall latency should be as small as possible. The goal is to get a latency < 10 ms.
+- Overall latency should be as small as possible. The goal is to achieve a latency < 10 ms.
 
 - Positional sensing shall be supported.
 
-- An ESP32 micro processor shall be used similar to the [open e-drums](https://open-e-drums.com)
-  project. It has shown that the ESP32 is powerful enough to fulfill the task of a drum trigger module.
+- A ESP32 micro processor development board (similar to the [open e-drums](https://open-e-drums.com)
+  project) or a Teensy 4.0 development board shall be used. It has shown that both boards are
+  powerful enough to fulfill the task of a drum trigger module.
+
+- The required analog front end design shall be as simple as possible using the fewest number of
+  parts possible.
 
   Many open drum trigger implementations only use one half of the signal (i.e., only the positive
   wave) or use a bridge rectifier to capture the analog signal. Since we want to implement more

@@ -1,5 +1,16 @@
 # Edrumulus project log
 
+- (05/15/2021) After a lot of tweaking, both boards (ESP32 and Teensy) perform good enough now
+  so that I can concentrate on the algorithm development again. On the Teensy, I had to disable
+  the "keeper" and average multiple ADC samples to get correct and spike free readings. Since
+  the ARM core is so fast, there were no problems running the algorithms in real time.<br/>
+  For the ESP32 the situation is different. The CPU speed was the limiting factor for a long time.
+  Fortunately, I found out that it is possible to run the ADC processing on one CPU core and
+  do the signal processing on a different CPU core. That solved the speed issue. I did not find
+  a way to suppress the ADC spikes on the ESP32 but I solved the problem in software with a spike
+  cancellation algorithm. This solution is not ideal (especially for low velocity hits the
+  performance is degraded) but still good enough.
+
 - (05/09/2021) There is a new prototype, now using a Teensy 4.0 developer board:
   <br/>![Teensy Prototype](algorithm/images/teensy_prototype.jpg)<br/>
   Difference between ESP32 and Teensy 4.0 with regard to Edrumulus:
