@@ -239,6 +239,12 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
             adc2_index[num_pin_pairs] = i;
           }
 
+          // create the mask bit needed for SENS_SAR1_EN_PAD and SENS_SAR2_EN_PAD
+          const int8_t channel_adc1          = digitalPinToAnalogChannel ( input_pin[adc1_index[num_pin_pairs]] );
+          const int8_t channel_adc2          = digitalPinToAnalogChannel ( input_pin[adc2_index[num_pin_pairs]] ) - 10;
+          channel_adc1_bitval[num_pin_pairs] = ( 1 << channel_adc1 );
+          channel_adc2_bitval[num_pin_pairs] = ( 1 << channel_adc2 );
+
           num_pin_pairs++;
           input_is_used[i] = true;
           input_is_used[j] = true;
@@ -315,8 +321,8 @@ void Edrumulus_hardware::capture_samples ( const int number_pads,
     // first read the ADC pairs samples
     for ( int i = 0; i < num_pin_pairs; i++ )
     {
-      my_analogRead_parallel ( input_pin[adc1_index[i]],
-                               input_pin[adc2_index[i]],
+      my_analogRead_parallel ( channel_adc1_bitval[i],
+                               channel_adc2_bitval[i],
                                input_sample[adc1_index[i]],
                                input_sample[adc2_index[i]] );
     }
@@ -424,22 +430,19 @@ uint16_t Edrumulus_hardware::my_analogRead ( const uint8_t pin )
 }
 
 
-void Edrumulus_hardware::my_analogRead_parallel ( const uint8_t pin_adc1,
-                                                  const uint8_t pin_adc2,
-                                                  uint16_t&     out_adc1,
-                                                  uint16_t&     out_adc2 )
+void Edrumulus_hardware::my_analogRead_parallel ( const uint32_t channel_adc1_bitval,
+                                                  const uint32_t channel_adc2_bitval,
+                                                  uint16_t&      out_adc1,
+                                                  uint16_t&      out_adc2 )
 {
-  const int8_t channel_adc1 = digitalPinToAnalogChannel ( pin_adc1 );
-  const int8_t channel_adc2 = digitalPinToAnalogChannel ( pin_adc2 ) - 10;
-
   // start ADC1
   CLEAR_PERI_REG_MASK ( SENS_SAR_MEAS_START1_REG, SENS_MEAS1_START_SAR_M );
-  SET_PERI_REG_BITS   ( SENS_SAR_MEAS_START1_REG, SENS_SAR1_EN_PAD, ( 1 << channel_adc1 ), SENS_SAR1_EN_PAD_S );
+  SET_PERI_REG_BITS   ( SENS_SAR_MEAS_START1_REG, SENS_SAR1_EN_PAD, channel_adc1_bitval, SENS_SAR1_EN_PAD_S );
   SET_PERI_REG_MASK   ( SENS_SAR_MEAS_START1_REG, SENS_MEAS1_START_SAR_M );
 
   // start ADC2
   CLEAR_PERI_REG_MASK ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_START_SAR_M );
-  SET_PERI_REG_BITS   ( SENS_SAR_MEAS_START2_REG, SENS_SAR2_EN_PAD, ( 1 << channel_adc2 ), SENS_SAR2_EN_PAD_S );
+  SET_PERI_REG_BITS   ( SENS_SAR_MEAS_START2_REG, SENS_SAR2_EN_PAD, channel_adc2_bitval, SENS_SAR2_EN_PAD_S );
   SET_PERI_REG_MASK   ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_START_SAR_M );
 
   // wait for ADC1 and read value
