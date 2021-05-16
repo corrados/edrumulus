@@ -80,8 +80,8 @@ GUI.val1 = uicontrol(GUI.set_panel, ...
 GUI.slider1 = uicontrol(GUI.set_panel, ...
   'style',      'slider', ...
   'min',        0, ...
-  'max',        7, ...              % change value here if new pad type was added
-  'SliderStep', [1 / 7, 1 / 7], ... % change value here if new pad type was added
+  'max',        8, ...              % change value here if new pad type was added
+  'SliderStep', [1 / 8, 1 / 8], ... % change value here if new pad type was added
   'units',      'normalized', ...
   'position',   [0, 0, slider_width, slider_hight], ...
   'callback',   @slider_callback);
@@ -292,6 +292,8 @@ switch hObject
          set(GUI.val1, 'string', 'KD7');
        case 7
          set(GUI.val1, 'string', 'TP80');
+       case 8
+         set(GUI.val1, 'string', 'CY6');
      end
      midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, value));
      reset_sliders; % if a pad type is changed, all parameters are reset in the ESP32
@@ -375,7 +377,7 @@ midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 0)); % sensitivity
 
 % crash
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 4)); % pad 4
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 2)); % PD8
+midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 8)); % CY6
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 19)); % threshold
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 21)); % sensitivity
 midisend(GUI.midi_dev, midimsg("controlchange", 10, 111, 1)); % enable rim shot
