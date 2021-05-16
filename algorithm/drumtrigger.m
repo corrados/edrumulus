@@ -38,13 +38,13 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd120_hot_spot.wav");
 %x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
-%x = audioread("signals/pd80r.wav");padtype = 'pd80r';%x = x(52000:60000, :);
+x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);
 %x = audioread("signals/pd6.wav");
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
 %x = audioread("signals/cy6.wav");
 %x = audioread("signals/kd8.wav");
-x = audioread("signals/kd7.wav");padtype = 'kd7';%x = x(1:170000, :);
+%x = audioread("signals/kd7.wav");padtype = 'kd7';%x = x(1:170000, :);
 %x = audioread("signals/tp80.wav");padtype = 'tp80';
 %x = audioread("signals/vh12.wav");padtype = 'vh12';%x = x(900000:end, :);%x = x(376000:420000, :);%x = x(1:140000, :);
 %org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
@@ -456,8 +456,9 @@ pos_sense_metric             = calc_pos_sense_metric(hil, hil_filt, Fs, all_firs
 % plot results
 figure
 plot(10 * log10([abs(x(:, 1)) .^ 2, hil_filt])); grid on; hold on;
+plot(all_first_peaks, 10 * log10(hil_filt(all_first_peaks)), 'y*');
 plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'g*');
-plot(all_peaks, pos_sense_metric + 40, 'k*');
+plot(all_first_peaks, pos_sense_metric + 40, 'k*');
 title('Green marker: level; Black marker: position');
 xlabel('samples'); ylabel('dB');
 ylim([-10, 90]);
