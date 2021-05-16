@@ -699,7 +699,7 @@ debug = 0.0f; // TEST
     {
       // a peak was found, we now have to start the delay process to fill up the
       // required buffer length for our metric
-      pos_sense_cnt = energy_window_len / 2 - 1;
+      pos_sense_cnt = pos_energy_window_len / 2 - 1;
     }
   
     if ( pos_sense_cnt > 0 )
