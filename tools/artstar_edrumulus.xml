@@ -19,6 +19,10 @@
   </channels>
   <instruments>
     <instrument name="snare" file="snare-position/snare-position.xml">
+			<channelmap in="oh-l" out="amb-l"/>
+			<channelmap in="oh-r" out="amb-r"/>
+
+<!--
 			<channelmap in="amb-l" out="amb-l"/>
 			<channelmap in="amb-r" out="amb-r"/>
 			<channelmap in="hihat" out="hihat"/>
@@ -34,8 +38,13 @@
 			<channelmap in="tom2" out="tom2"/>
 			<channelmap in="tom3" out="tom3"/>
 			<channelmap in="tom4" out="tom4"/>
+-->
 		</instrument>
     <instrument name="hihat-closed" group="hihat" file="hihat-closed/hihat-closed.xml">
+			<channelmap in="oh-l-3" out="amb-l"/>
+			<channelmap in="oh-r-3" out="amb-r"/>
+
+<!--
 			<channelmap in="amb-l-3" out="amb-l"/>
 			<channelmap in="amb-r-3" out="amb-r"/>
 			<channelmap in="hihat-3" out="hihat"/>
@@ -51,8 +60,13 @@
 			<channelmap in="tom2-3" out="tom2"/>
 			<channelmap in="tom3-3" out="tom3"/>
 			<channelmap in="tom4-3" out="tom4"/>
+-->
 		</instrument>
     <instrument name="hihat-open" group="hihat" file="hihat-open/hihat-open.xml">
+			<channelmap in="oh-l-7" out="amb-l"/>
+			<channelmap in="oh-r-7" out="amb-r"/>
+
+<!--
 			<channelmap in="amb-l-7" out="amb-l"/>
 			<channelmap in="amb-r-7" out="amb-r"/>
 			<channelmap in="hihat-7" out="hihat"/>
@@ -68,6 +82,7 @@
 			<channelmap in="tom2-7" out="tom2"/>
 			<channelmap in="tom3-7" out="tom3"/>
 			<channelmap in="tom4-7" out="tom4"/>
+-->
 		</instrument>
     <instrument name="crash-litian-16inch" group="crash-litian-16inch" file="crash-litian-16inch/crash-litian-16inch.xml">
 			<channelmap in="amb-l-11" out="amb-l"/>
