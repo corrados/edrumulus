@@ -206,9 +206,9 @@ else
 
   # crash
   echo -n -e '\xB9\x6C\x04' > /dev/ttyUSB0 # select pad: 4
-  echo -n -e '\xB9\x66\x02' > /dev/ttyUSB0 # pad type: PD8
-  echo -n -e '\xB9\x67\x13' > /dev/ttyUSB0 # threshold
-  echo -n -e '\xB9\x68\x15' > /dev/ttyUSB0 # sensitivity
+  echo -n -e '\xB9\x66\x08' > /dev/ttyUSB0 # pad type: CY6
+  echo -n -e '\xB9\x67\x09' > /dev/ttyUSB0 # threshold
+  echo -n -e '\xB9\x68\x0B' > /dev/ttyUSB0 # sensitivity
   echo -n -e '\xB9\x6F\x01' > /dev/ttyUSB0 # rim/pos: enable rim shot
 
   # tom 1
