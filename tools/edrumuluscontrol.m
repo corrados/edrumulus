@@ -80,8 +80,8 @@ GUI.val1 = uicontrol(GUI.set_panel, ...
 GUI.slider1 = uicontrol(GUI.set_panel, ...
   'style',      'slider', ...
   'min',        0, ...
-  'max',        8, ...              % change value here if new pad type was added
-  'SliderStep', [1 / 8, 1 / 8], ... % change value here if new pad type was added
+  'max',        9, ...              % change value here if new pad type was added
+  'SliderStep', [1 / 9, 1 / 9], ... % change value here if new pad type was added
   'units',      'normalized', ...
   'position',   [0, 0, slider_width, slider_hight], ...
   'callback',   @slider_callback);
@@ -294,6 +294,8 @@ switch hObject
          set(GUI.val1, 'string', 'TP80');
        case 8
          set(GUI.val1, 'string', 'CY6');
+       case 9
+         set(GUI.val1, 'string', 'CY8');
      end
      midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, value));
      reset_sliders; % if a pad type is changed, all parameters are reset in the ESP32

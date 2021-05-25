@@ -22,7 +22,6 @@ global pad;
 
 close all;
 pkg load signal
-pkg load audio
 
 Fs      = 8000; % Hz
 padtype = 'pd120'; % default
@@ -43,7 +42,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
 %x = audioread("signals/cy6.wav");padtype = 'cy6';x = x(480000:590000, :);%x = x(250000:450000, :);%x = x(1:150000, :);
-x = audioread("signals/cy8.wav");
+x = audioread("signals/cy8.wav");padtype = 'cy8';%x = x(1:200000, :);
 %x = audioread("signals/kd8.wav");
 %x = audioread("signals/kd7.wav");padtype = 'kd7';%x = x(1:170000, :);
 %x = audioread("signals/tp80.wav");padtype = 'tp80';
@@ -137,6 +136,16 @@ switch padtype
     pad.decay_len_ms1         = 20;
     pad.decay_grad_fact1      = 400;
     pad.decay_len_ms2         = 150;
+    pad.decay_grad_fact2      = 120;
+    pad.decay_len_ms3         = 450;
+    pad.decay_grad_fact3      = 30;
+  case 'cy8'
+    pad.scan_time_ms          = 6;
+    pad.main_peak_dist_ms     = 2;
+    pad.decay_fact_db         = 7;
+    pad.decay_len_ms1         = 40;
+    pad.decay_grad_fact1      = 10;
+    pad.decay_len_ms2         = 100;
     pad.decay_grad_fact2      = 120;
     pad.decay_len_ms3         = 450;
     pad.decay_grad_fact3      = 30;

@@ -34,7 +34,8 @@ public:
     VH12CTRL = 5,
     KD7      = 6,
     TP80     = 7,
-    CY6      = 8
+    CY6      = 8,
+    CY8      = 9
   };
 
   enum Ecurvetype // note that the enums need assigned integers for MIDI settings transfer
@@ -141,7 +142,8 @@ protected:
       bool get_is_rim_switch()     { return ( pad_settings.pad_type == PD8 ) ||
                                             ( pad_settings.pad_type == VH12 ) ||
                                             ( pad_settings.pad_type == TP80 ) ||
-                                            ( pad_settings.pad_type == CY6 ); } // TODO check if new pads must be added here
+                                            ( pad_settings.pad_type == CY6 ) ||
+                                            ( pad_settings.pad_type == CY8 ); } // TODO check if new pads must be added here
       bool get_pos_sense_is_used() { return pad_settings.pos_sense_is_used; }
 
     protected:
