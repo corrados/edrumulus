@@ -248,7 +248,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.pad_type = new_pad_type;
 
   // apply PRESET settings (might be overwritten by pad-specific properties)
-  pad_settings.velocity_threshold     = 9;  // 0..31
+  pad_settings.velocity_threshold     = 5;  // 0..31
   pad_settings.velocity_sensitivity   = 1;  // 0..31
   pad_settings.mask_time_ms           = 6;  // 0..31 (ms)
   pad_settings.pos_threshold          = 9;  // 0..31
@@ -292,7 +292,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       break;
 
     case PD8:
-      pad_settings.velocity_sensitivity  = 8;
+      pad_settings.velocity_sensitivity  = 7;
       pad_settings.mask_time_ms          = 7;
       pad_settings.pos_threshold         = 26;
       pad_settings.pos_sensitivity       = 11;
@@ -371,6 +371,19 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       pad_settings.decay_grad_fact2  = 120.0f;
       pad_settings.decay_len3_ms     = 450.0f;
       pad_settings.decay_grad_fact3  = 30.0f;
+      break;
+
+    case CY8:
+      pad_settings.velocity_sensitivity = 14;
+      pad_settings.scan_time_ms         = 6.0f;
+      pad_settings.main_peak_dist_ms    = 2.0f;
+      pad_settings.decay_fact_db        = 7.0f;
+      pad_settings.decay_len1_ms        = 40.0f;
+      pad_settings.decay_grad_fact1     = 10.0f;
+      pad_settings.decay_len2_ms        = 100.0f;
+      pad_settings.decay_grad_fact2     = 120.0f;
+      pad_settings.decay_len3_ms        = 450.0f;
+      pad_settings.decay_grad_fact3     = 30.0f;
       break;
   }
 
