@@ -111,38 +111,38 @@ if [[ -v is_teensy ]]; then
   # snare
   SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 108 0 # pad 0
   SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 102 2 # PD8
-  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 1 # threshold
-  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 8 # sensitivity
-  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 107 16 # rim shot threshold
-  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 105 26 # positional sensing threshold
-  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 106 11 # positional sensing sensitivity
-  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 111 3 # both, rim shot and positional sensing
+  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 1 # threshold
+  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 8 # sensitivity
+  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 107 16 # rim shot threshold
+  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 105 26 # positional sensing threshold
+  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 106 11 # positional sensing sensitivity
+  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 111 3 # both, rim shot and positional sensing
 
   # kick
   SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 108 1 # pad 1
   SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 102 6 # KD7
-  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 9 # threshold
-  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 9 # sensitivity
+  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 9 # threshold
+  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 9 # sensitivity
 
   # Hi-Hat
   SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 108 2 # pad 2
   SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 102 2 # PD8
-  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 2 # threshold
-  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 8 # sensitivity
-  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 111 1 # enable rim shot
+  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 2 # threshold
+  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 8 # sensitivity
+  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 111 1 # enable rim shot
 
   # Hi-Hat control
   SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 108 3 # pad 3
   SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 102 3 # FD8
-  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 5 # threshold
-  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 0 # sensitivity
+  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 5 # threshold
+  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 0 # sensitivity
 
   # crash
   SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 108 4 # pad 4
   SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 102 2 # PD8
-  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 19 # threshold
-  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 21 # sensitivity
-  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 111 1 # enable rim shot
+  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 19 # threshold
+  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 21 # sensitivity
+  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 111 1 # enable rim shot
 
   # tom 1
   SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 108 5 # pad 5
@@ -178,38 +178,38 @@ else
   # snare
   echo -n -e '\xB9\x6C\x00' > /dev/ttyUSB0 # select pad: 0
   echo -n -e '\xB9\x66\x02' > /dev/ttyUSB0 # pad type: PD8
-  echo -n -e '\xB9\x67\x05' > /dev/ttyUSB0 # threshold
-  echo -n -e '\xB9\x68\x08' > /dev/ttyUSB0 # sensitivity
-  echo -n -e '\xB9\x6B\x10' > /dev/ttyUSB0 # rim shot threshold
-  echo -n -e '\xB9\x69\x1A' > /dev/ttyUSB0 # positional sensing threshold
-  echo -n -e '\xB9\x6A\x0B' > /dev/ttyUSB0 # positional sensing sensitivity
-  echo -n -e '\xB9\x6F\x03' > /dev/ttyUSB0 # rim/pos: both, rim shot and positional sensing
+  #echo -n -e '\xB9\x67\x05' > /dev/ttyUSB0 # threshold
+  #echo -n -e '\xB9\x68\x08' > /dev/ttyUSB0 # sensitivity
+  #echo -n -e '\xB9\x6B\x10' > /dev/ttyUSB0 # rim shot threshold
+  #echo -n -e '\xB9\x69\x1A' > /dev/ttyUSB0 # positional sensing threshold
+  #echo -n -e '\xB9\x6A\x0B' > /dev/ttyUSB0 # positional sensing sensitivity
+  #echo -n -e '\xB9\x6F\x03' > /dev/ttyUSB0 # rim/pos: both, rim shot and positional sensing
 
   # kick
   echo -n -e '\xB9\x6C\x01' > /dev/ttyUSB0 # select pad: 1
   echo -n -e '\xB9\x66\x06' > /dev/ttyUSB0 # pad type: KD7
-  echo -n -e '\xB9\x67\x0A' > /dev/ttyUSB0 # threshold
-  echo -n -e '\xB9\x68\x09' > /dev/ttyUSB0 # sensitivity
+  #echo -n -e '\xB9\x67\x0A' > /dev/ttyUSB0 # threshold
+  #echo -n -e '\xB9\x68\x09' > /dev/ttyUSB0 # sensitivity
 
   # Hi-Hat
   echo -n -e '\xB9\x6C\x02' > /dev/ttyUSB0 # select pad: 2
   echo -n -e '\xB9\x66\x02' > /dev/ttyUSB0 # pad type: PD8
-  echo -n -e '\xB9\x67\x05' > /dev/ttyUSB0 # threshold
-  echo -n -e '\xB9\x68\x08' > /dev/ttyUSB0 # sensitivity
-  echo -n -e '\xB9\x6F\x01' > /dev/ttyUSB0 # rim/pos: enable rim shot
+  #echo -n -e '\xB9\x67\x05' > /dev/ttyUSB0 # threshold
+  #echo -n -e '\xB9\x68\x08' > /dev/ttyUSB0 # sensitivity
+  #echo -n -e '\xB9\x6F\x01' > /dev/ttyUSB0 # rim/pos: enable rim shot
 
   # Hi-Hat control
   echo -n -e '\xB9\x6C\x03' > /dev/ttyUSB0 # select pad: 3
   echo -n -e '\xB9\x66\x03' > /dev/ttyUSB0 # pad type: FD8
-  echo -n -e '\xB9\x67\x05' > /dev/ttyUSB0 # threshold
-  echo -n -e '\xB9\x68\x00' > /dev/ttyUSB0 # sensitivity
+  #echo -n -e '\xB9\x67\x05' > /dev/ttyUSB0 # threshold
+  #echo -n -e '\xB9\x68\x00' > /dev/ttyUSB0 # sensitivity
 
   # crash
   echo -n -e '\xB9\x6C\x04' > /dev/ttyUSB0 # select pad: 4
   echo -n -e '\xB9\x66\x08' > /dev/ttyUSB0 # pad type: CY6
-  echo -n -e '\xB9\x67\x09' > /dev/ttyUSB0 # threshold
-  echo -n -e '\xB9\x68\x0B' > /dev/ttyUSB0 # sensitivity
-  echo -n -e '\xB9\x6F\x01' > /dev/ttyUSB0 # rim/pos: enable rim shot
+  #echo -n -e '\xB9\x67\x09' > /dev/ttyUSB0 # threshold
+  #echo -n -e '\xB9\x68\x0B' > /dev/ttyUSB0 # sensitivity
+  #echo -n -e '\xB9\x6F\x01' > /dev/ttyUSB0 # rim/pos: enable rim shot
 
   # tom 1
   echo -n -e '\xB9\x6C\x05' > /dev/ttyUSB0 # select pad: 5
