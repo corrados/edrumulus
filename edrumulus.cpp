@@ -248,7 +248,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.pad_type = new_pad_type;
 
   // apply PRESET settings (might be overwritten by pad-specific properties)
-  pad_settings.velocity_threshold     = 1;  // 0..31
+  pad_settings.velocity_threshold     = 2;  // 0..31
   pad_settings.velocity_sensitivity   = 1;  // 0..31
   pad_settings.mask_time_ms           = 6;  // 0..31 (ms)
   pad_settings.pos_threshold          = 9;  // 0..31
