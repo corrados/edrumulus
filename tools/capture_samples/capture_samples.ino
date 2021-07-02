@@ -18,14 +18,15 @@
 #include "soc/sens_reg.h"
 #include "driver/dac.h"
 
-#define DO_MULT_INPUT_CAPTURE_TEST
+//#define DO_MULT_INPUT_CAPTURE_TEST
 //#define DO_SAMPLE_RATE_TEST
 //#define DO_INPUT_CAPTURE
+#define DO_INPUT_BUFFER_CAPTURE
 
 const int                  analog_pin                     = 35;//25;
-const int                  num_all_pings                  = 12;//15;
+const int                  num_all_pins                  = 12;//15;
 //                                                    ADC:    1   1   1   1   1   1   2   2   2   2   2   2   2  2  2
-const int                  all_analog_pins[num_all_pings] = { 36, 39, 34, 35, 32, 33, 25, 26, 27, 14, 12, 13};//, 4, 2, 15 };
+const int                  all_analog_pins[num_all_pins] = { 36, 39, 34, 35, 32, 33, 25, 26, 27, 14, 12, 13};//, 4, 2, 15 };
 const int                  Fs                             = 8000;
 const int                  samplerate_max_cnt             = 1000; // samples
 int                        samplerate_prev_micros_cnt     = 0;
@@ -50,6 +51,17 @@ void IRAM_ATTR on_timer()
 // As a workaround, we had to write our own analogRead function.
 void my_init_analogRead()
 {
+  // if the GIOP 25/26 are used, we have to set the DAC to 0 to get correct DC offset
+  // estimates and reduce the number of large spikes
+  dac_i2s_enable();
+  dac_output_enable  ( DAC_CHANNEL_1 );
+  dac_output_voltage ( DAC_CHANNEL_1, 0 );
+  dac_output_disable ( DAC_CHANNEL_1 );
+  dac_output_enable  ( DAC_CHANNEL_2 );
+  dac_output_voltage ( DAC_CHANNEL_2, 0 );
+  dac_output_disable ( DAC_CHANNEL_2 );
+  dac_i2s_disable();
+
   // set attenuation of 11 dB
   WRITE_PERI_REG ( SENS_SAR_ATTEN1_REG, 0x0FFFFFFFF );
   WRITE_PERI_REG ( SENS_SAR_ATTEN2_REG, 0x0FFFFFFFF );
@@ -179,7 +191,7 @@ void my_analogRead2 ( uint8_t pin1, uint8_t pin2, uint16_t& out1, uint16_t& out2
 
 void setup()
 {
-#if defined ( DO_MULT_INPUT_CAPTURE_TEST ) || defined ( DO_SAMPLE_RATE_TEST )
+#if defined ( DO_MULT_INPUT_CAPTURE_TEST ) || defined ( DO_SAMPLE_RATE_TEST ) || defined ( DO_INPUT_BUFFER_CAPTURE )
   Serial.begin ( 115200 );
 #else
   Serial.begin ( 500000 );
@@ -197,18 +209,7 @@ void setup()
   }
 
 // TEST
-// if the GIOP 25/26 are used, we have to set the DAC to 0 to get correct DC offset estimates
-dac_i2s_enable();
-dac_output_enable  ( DAC_CHANNEL_1 );
-dac_output_voltage ( DAC_CHANNEL_1, 0 );
-dac_output_disable ( DAC_CHANNEL_1 );
-dac_output_enable  ( DAC_CHANNEL_2 );
-dac_output_voltage ( DAC_CHANNEL_2, 0 );
-dac_output_disable ( DAC_CHANNEL_2 );
-dac_i2s_disable();
-
-// TEST
-for ( int i = 0; i < num_all_pings / 2; i++ )
+for ( int i = 0; i < num_all_pins / 2; i++ )
 {
   pinMode ( all_analog_pins[i], ANALOG );
   pinMode ( all_analog_pins[i + 6], ANALOG );
@@ -227,21 +228,21 @@ for ( int i = 0; i < num_all_pings / 2; i++ )
 void loop()
 {
   // wait for the timer to get the correct sampling rate when reading the analog value
-  if ( true)//xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
+  if ( xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
   {
 
 #ifdef DO_SAMPLE_RATE_TEST
 /*
 // TEST
-int sample_org[num_all_pings];
-for ( int i = 0; i < num_all_pings; i++ )
+int sample_org[num_all_pins];
+for ( int i = 0; i < num_all_pins; i++ )
 {
   sample_org[i] = my_analogRead ( all_analog_pins[i] );
 }
 */
 
-uint16_t sample_org2[num_all_pings];
-for ( int i = 0; i < num_all_pings / 2; i++ )
+uint16_t sample_org2[num_all_pins];
+for ( int i = 0; i < num_all_pins / 2; i++ )
 {
   my_analogRead2 ( all_analog_pins[i], all_analog_pins[i + 6], sample_org2[i], sample_org2[i + 6] );
 }
@@ -261,42 +262,10 @@ for ( int i = 0; i < num_all_pings / 2; i++ )
 
 #ifdef DO_MULT_INPUT_CAPTURE_TEST
     // capture from all analog inputs
-/*
-    int sample_org[num_all_pings];
-
-    for ( int i = 0; i < num_all_pings; i++ )
-    {
-      sample_org[i] = my_analogRead ( all_analog_pins[i] );
-    }
-
-    Serial.println ( String ( sample_org[0] ) + "\t" +
-                     String ( sample_org[1] ) + "\t" +
-                     String ( sample_org[2] ) + "\t" +
-                     String ( sample_org[3] ) + "\t" +
-                     String ( sample_org[4] ) + "\t" +
-                     String ( sample_org[5] ) + "\t" +
-                     String ( sample_org[6] ) + "\t" +
-                     String ( sample_org[7] ) + "\t" +
-                     String ( sample_org[8] ) + "\t" +
-                     String ( sample_org[9] ) + "\t" +
-                     String ( sample_org[10] ) + "\t" +
-                     String ( sample_org[11] ) + "\t" +
-                     String ( sample_org[12] ) + "\t" +
-                     String ( sample_org[13] ) + "\t" +
-                     String ( sample_org[14] ) );
-*/
-
-/*
-int sample_org[num_all_pings];
-for ( int i = 0; i < num_all_pings; i++ )
-{
-  sample_org[i] = my_analogRead ( all_analog_pins[i] );
-}
-*/
 
 // TEST
-uint16_t sample_org[num_all_pings];
-for ( int i = 0; i < num_all_pings / 2; i++ )
+uint16_t sample_org[num_all_pins];
+for ( int i = 0; i < num_all_pins / 2; i++ )
 {
   my_analogRead2 ( all_analog_pins[i], all_analog_pins[i + 6], sample_org[i], sample_org[i + 6] );
 }
@@ -322,27 +291,6 @@ Serial.println ( String ( sample_org[0] ) + "\t" +
 
 // TEST
 int sample = sample_raw; // TEST
-/*
-// remove single spikes
-const int noise_threshold    = 8;
-const int max_peak_threshold = 100;
-
-const int sample_abs_no_dc = abs ( sample_raw - static_cast<int> ( dc_offset ) );
-
-const bool remove_spike = ( prvious_sample2 < noise_threshold ) &&
-                          ( ( prvious_sample1 > noise_threshold ) && ( prvious_sample1 < max_peak_threshold ) ) &&
-                          ( sample_abs_no_dc < noise_threshold );
-
-int sample = dc_offset;
-if ( !remove_spike )
-{
-  sample = prvious_sample1_out;
-}
-
-prvious_sample2     = prvious_sample1;
-prvious_sample1     = sample_abs_no_dc;
-prvious_sample1_out = sample_raw;
-*/
 
     // for debugging: send samples to Octave with binary format via serial interface
     byte send_buf[4];
@@ -351,6 +299,53 @@ prvious_sample1_out = sample_raw;
     send_buf[2] = sample >> 8;   // high byte
     send_buf[3] = sample & 0xFF; // low byte
     Serial.write ( send_buf, 4 );
+#endif
+
+#ifdef DO_INPUT_BUFFER_CAPTURE
+
+  // capture one block of samples
+  const int number_samples = 200;
+  uint16_t  sample_org[number_samples][num_all_pins];
+
+  for ( int j = 0; j < number_samples; j++ )
+  {
+    for ( int i = 0; i < num_all_pins / 2; i++ )
+    {
+      my_analogRead2 ( all_analog_pins[i], all_analog_pins[i + 6], sample_org[j][i], sample_org[j][i + 6] );
+    }
+  }
+  
+  // first, transfer marker
+  Serial.println ( String ( 0 ) + "\t" +
+                   String ( 0 ) + "\t" +
+                   String ( 0 ) + "\t" +
+                   String ( 0 ) + "\t" +
+                   String ( 0 ) + "\t" +
+                   String ( 0 ) + "\t" +
+                   String ( 0 ) + "\t" +
+                   String ( 0 ) + "\t" +
+                   String ( 0 ) + "\t" +
+                   String ( 0 ) + "\t" +
+                   String ( 0 ) + "\t" +
+                   String ( 0 ) );
+
+  // transfer complete buffer
+  for ( int j = 0; j < number_samples; j++ )
+  {
+    Serial.println ( String ( sample_org[j][0] ) + "\t" +
+                     String ( sample_org[j][1] ) + "\t" +
+                     String ( sample_org[j][2] ) + "\t" +
+                     String ( sample_org[j][3] ) + "\t" +
+                     String ( sample_org[j][4] ) + "\t" +
+                     String ( sample_org[j][5] ) + "\t" +
+                     String ( sample_org[j][6] ) + "\t" +
+                     String ( sample_org[j][7] ) + "\t" +
+                     String ( sample_org[j][8] ) + "\t" +
+                     String ( sample_org[j][9] ) + "\t" +
+                     String ( sample_org[j][10] ) + "\t" +
+                     String ( sample_org[j][11] ) );
+  }
+
 #endif
   }
 }
