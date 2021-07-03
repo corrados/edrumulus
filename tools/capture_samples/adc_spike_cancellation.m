@@ -17,11 +17,14 @@
 
 % setup and load test signal
 close all;
-load win_recording1.txt
-x = win_recording1;
+%load win_recording1.txt
+%x = win_recording1;
 
 %load win_recording_long1.txt
 %x = win_recording_long1;
+
+load win_recording_problematic.txt
+x = win_recording_problematic;
 
 
 % extract individual processing blocks marked with all zeros
@@ -37,7 +40,20 @@ end
 % select block to analyze
 % interesting blocks: 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 23, 24
 % interesting blocks long: 20, 22, 106, 170, 194, 201, 202, 239
-block_index_range = 13:15;%6:200;%
+%block_index_range = 13:15;%[20, 22, 106, 170, 194, 201, 202, 239];%1:3;%6:200;%
+block_index_range = 1;%1:length(z);
+
+
+% % TEST store block data in original format (assuming a block size of 200)
+%out = zeros(200 * length(block_index_range) + length(block_index_range) + 1, size(x, 2));
+%cnt = 1;
+%for block_index = block_index_range
+%  out(1 + (cnt - 1) + (cnt - 1) * 200 + (1:200), :) = z{block_index};
+%  cnt = cnt + 1;
+%end
+%save -ascii 'recording.txt' out
+%return;
+
 
 for block_index = block_index_range
 
