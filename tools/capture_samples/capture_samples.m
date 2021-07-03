@@ -68,11 +68,13 @@ else
   catch
   end
 
+% Windows: Enable the flush once and then disable it to get correct results:
+%flush(a);
 
 % TEST
-number_samples = 500;
+number_samples = 500;%50000;
 
-  out = zeros(12, number_samples);
+  out = zeros(number_samples, 12);
 
   for i = 1:number_samples
 
@@ -104,13 +106,15 @@ test = [test;x];
     end_try_catch
 
     for j = 1:length(y)
-      out(j, i) = str2double(y{j});
+      out(i, j) = str2double(y{j});
     end
 
   end
 
-  figure; plot(out.', '.-')
+  figure; plot(out, '.-')
   %disp(out)
+
+  save -ascii 'recording.txt' out
 
 end
 

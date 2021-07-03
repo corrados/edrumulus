@@ -311,7 +311,11 @@ int sample = sample_raw; // TEST
   {
     for ( int i = 0; i < num_all_pins / 2; i++ )
     {
-      my_analogRead2 ( all_analog_pins[i], all_analog_pins[i + 6], sample_org[j][i], sample_org[j][i + 6] );
+      // read with given sampling rate
+      if ( xSemaphoreTake ( timer_semaphore, portMAX_DELAY ) == pdTRUE )
+      {
+        my_analogRead2 ( all_analog_pins[i], all_analog_pins[i + 6], sample_org[j][i], sample_org[j][i + 6] );
+      }
     }
   }
   
