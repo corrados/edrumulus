@@ -68,6 +68,7 @@ for block_index = block_index_range
 %% TEST for testing we select just one signal
 %x = x(:, 1);
 
+  out = zeros(size(x));
 
   for j = 1:size(x, 2)
 
@@ -130,19 +131,20 @@ for block_index = block_index_range
       prev2_input_state = prev1_input_state;
       prev1_input_state = input_state;
       prev_input2       = prev_input1;
-      prev_input1       = x(i);
+      prev_input1       = input(i);
 
-      x(i, j) = return_value;
+      out(i, j) = return_value;
 
     end
 
   end
 
   % cut out algorithm settling time
-  x = x(3:end, :);
+  out = out(3:end, :);
 
   % plot results
-  plot(x); title(num2str(block_index));
+  subplot(2, 1, 1), plot(out); title(num2str(block_index));
+  subplot(2, 1, 2), plot(x); title('original');
 
 
 % TEST
