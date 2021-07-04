@@ -1,5 +1,8 @@
 # Edrumulus project log
 
+- (07/04/2021) Still too many false detections on the ESP32. The ADC spike detection algorithm
+  must be improved. A new algorithm development file "adc_spike_cancellation.m" was created.
+
 - (05/15/2021) After a lot of tweaking, both boards (ESP32 and Teensy) perform good enough now
   so that I can concentrate on the algorithm development again. On the Teensy, I had to disable
   the "keeper" and average multiple ADC samples to get correct and spike free readings. Since
