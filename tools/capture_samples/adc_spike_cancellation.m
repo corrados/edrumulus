@@ -41,7 +41,7 @@ end
 % interesting blocks: 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 23, 24
 % interesting blocks long: 20, 22, 106, 170, 194, 201, 202, 239
 %block_index_range = 13:15;%[20, 22, 106, 170, 194, 201, 202, 239];%1:3;%6:200;%
-block_index_range = 5;%1:length(z);
+block_index_range = 8;%1:length(z);
 
 
 % % TEST store block data in original format (assuming a block size of 200)
@@ -87,9 +87,11 @@ for block_index = block_index_range
 
     prev_input1       = 0;
     prev_input2       = 0;
+    prev_input3       = 0;
     prev1_input_state = 0;
     prev2_input_state = 0;
     prev3_input_state = 0;
+    prev4_input_state = 0;
 
     % remove single/dual sample spikes by checking if right before and right after the
     % detected spike(s) we only have noise and no useful signal (since the ESP32 spikes
@@ -98,7 +100,7 @@ for block_index = block_index_range
 
     for i = 1:length(input)
 
-      return_value = prev_input2; % normal return value in case no spike was detected
+      return_value = prev_input3; % normal return value in case no spike was detected
       cur_input    = input(i);
       input_abs    = abs(input(i));
       input_state  = ST_OTHER; % initialization value, might be overwritten
@@ -115,20 +117,20 @@ do_original_algorithm = false;%true;
         end
 
         % check for single spike sample case
-        if (prev3_input_state == ST_NOISE) && ...
-           (prev2_input_state == ST_SPIKE) && ...
-           (prev1_input_state == ST_NOISE)
+        if (prev4_input_state == ST_NOISE) && ...
+           (prev3_input_state == ST_SPIKE) && ...
+           (prev2_input_state == ST_NOISE)
 
           return_value = 0; % remove single spike
         end
 
         % check for two sample spike case
-        if (prev3_input_state == ST_NOISE) && ...
+        if (prev4_input_state == ST_NOISE) && ...
+           (prev3_input_state == ST_SPIKE) && ...
            (prev2_input_state == ST_SPIKE) && ...
-           (prev1_input_state == ST_SPIKE) && ...
-           (input_state       == ST_NOISE)
+           (prev1_input_state == ST_NOISE)
 
-          prev_input1  = 0; % remove two sample spike
+          prev_input2  = 0; % remove two sample spike
           return_value = 0; % remove two sample spike
 
         end
@@ -145,40 +147,68 @@ do_original_algorithm = false;%true;
         end
 
         % check for single high spike sample case
-        if ((prev3_input_state == ST_NOISE) || (prev3_input_state == ST_SPIKE_LOW)) && ...
-           (prev2_input_state == ST_SPIKE_HIGH) && ...
-           ((prev1_input_state == ST_NOISE) || (prev1_input_state == ST_SPIKE_LOW))
+        if ((prev4_input_state == ST_NOISE) || (prev4_input_state == ST_SPIKE_LOW)) && ...
+           (prev3_input_state == ST_SPIKE_HIGH) && ...
+           ((prev2_input_state == ST_NOISE) || (prev2_input_state == ST_SPIKE_LOW))
 
           return_value = 0; % remove single spike
+
         end
 
         % check for single low spike sample case
-        if ((prev3_input_state == ST_NOISE) || (prev3_input_state == ST_SPIKE_HIGH)) && ...
-           (prev2_input_state == ST_SPIKE_LOW) && ...
-           ((prev1_input_state == ST_NOISE) || (prev1_input_state == ST_SPIKE_HIGH))
+        if ((prev4_input_state == ST_NOISE) || (prev4_input_state == ST_SPIKE_HIGH)) && ...
+           (prev3_input_state == ST_SPIKE_LOW) && ...
+           ((prev2_input_state == ST_NOISE) || (prev2_input_state == ST_SPIKE_HIGH))
 
           return_value = 0; % remove single spike
+
         end
 
         % check for two sample high spike case
-        if ((prev3_input_state == ST_NOISE) || (prev3_input_state == ST_SPIKE_LOW)) && ...
+        if ((prev4_input_state == ST_NOISE) || (prev4_input_state == ST_SPIKE_LOW)) && ...
+           (prev3_input_state == ST_SPIKE_HIGH) && ...
            (prev2_input_state == ST_SPIKE_HIGH) && ...
-           (prev1_input_state == ST_SPIKE_HIGH) && ...
-           ((input_state       == ST_NOISE) || (input_state == ST_SPIKE_LOW))
+           ((prev1_input_state == ST_NOISE) || (prev1_input_state == ST_SPIKE_LOW))
 
-          prev_input1  = 0; % remove two sample spike
+          prev_input2  = 0; % remove two sample spike
           return_value = 0; % remove two sample spike
 
         end
 
         % check for two sample low spike case
-        if ((prev3_input_state == ST_NOISE) || (prev3_input_state == ST_SPIKE_HIGH)) && ...
+        if ((prev4_input_state == ST_NOISE) || (prev4_input_state == ST_SPIKE_HIGH)) && ...
+           (prev3_input_state == ST_SPIKE_LOW) && ...
+           (prev2_input_state == ST_SPIKE_LOW) && ...
+           ((prev1_input_state == ST_NOISE) || (prev1_input_state == ST_SPIKE_HIGH))
+
+          prev_input2  = 0; % remove two sample spike
+          return_value = 0; % remove two sample spike
+
+        end
+
+        % check for three sample high spike case
+        if ((prev4_input_state == ST_NOISE) || (prev4_input_state == ST_SPIKE_LOW)) && ...
+           (prev3_input_state == ST_SPIKE_HIGH) && ...
+           (prev2_input_state == ST_SPIKE_HIGH) && ...
+           (prev1_input_state == ST_SPIKE_HIGH) && ...
+           ((input_state == ST_NOISE) || (input_state == ST_SPIKE_LOW))
+
+          prev_input2  = 0; % remove three sample spike
+          prev_input1  = 0; % remove three sample spike
+          return_value = 0; % remove three sample spike
+
+        end
+
+        % check for three sample low spike case
+        if ((prev4_input_state == ST_NOISE) || (prev4_input_state == ST_SPIKE_HIGH)) && ...
+           (prev3_input_state == ST_SPIKE_LOW) && ...
            (prev2_input_state == ST_SPIKE_LOW) && ...
            (prev1_input_state == ST_SPIKE_LOW) && ...
-           ((input_state       == ST_NOISE) || (input_state == ST_SPIKE_HIGH))
+           ((input_state == ST_NOISE) || (input_state == ST_SPIKE_HIGH))
 
-          prev_input1  = 0; % remove two sample spike
-          return_value = 0; % remove two sample spike
+          prev_input2  = 0; % remove three sample spike
+          prev_input1  = 0; % remove three sample spike
+          return_value = 0; % remove three sample spike
 
         end
 
@@ -186,9 +216,11 @@ do_original_algorithm = false;%true;
 
       % update three-step input signal memory where we store the last three states of
       % the input signal and two previous untouched input samples
+      prev4_input_state = prev3_input_state;
       prev3_input_state = prev2_input_state;
       prev2_input_state = prev1_input_state;
       prev1_input_state = input_state;
+      prev_input3       = prev_input2;
       prev_input2       = prev_input1;
       prev_input1       = input(i);
 
@@ -199,7 +231,7 @@ do_original_algorithm = false;%true;
   end
 
   % cut out algorithm settling time
-  out = out(3:end, :);
+  out = out(4:end, :);
 
   % plot results
   subplot(2, 1, 1), plot(out); title(num2str(block_index));
