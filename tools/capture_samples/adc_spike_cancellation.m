@@ -41,7 +41,7 @@ end
 % interesting blocks: 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 23, 24
 % interesting blocks long: 20, 22, 106, 170, 194, 201, 202, 239
 %block_index_range = 13:15;%[20, 22, 106, 170, 194, 201, 202, 239];%1:3;%6:200;%
-block_index_range = 8;%1:length(z);
+block_index_range = 2;%1:length(z);
 
 
 % % TEST store block data in original format (assuming a block size of 200)
@@ -79,11 +79,93 @@ for block_index = block_index_range
     ADC_MAX_RANGE      = 4096; % Teensy 4.0 ADC has 12 bits -> 0..4095
     ADC_MAX_NOISE_AMPL = 8;    % highest assumed ADC noise amplitude in the ADC input range unit (measured)
 
+    % remove single/dual sample spikes by checking if right before and right after the
+    % detected spike(s) we only have noise and no useful signal (since the ESP32 spikes
+    % mostly are on just one or two sample(s))
+    max_peak_threshold = 150; % maximum assumed ESP32 spike amplitude
+
     ST_OTHER      = 0;
     ST_NOISE      = 1;
     ST_SPIKE      = 2;
     ST_SPIKE_HIGH = 3;
     ST_SPIKE_LOW  = 4;
+
+
+
+
+
+%% TODO create more generic algorithm where we can freely adjust the number of
+%%      samples allowed for one spike
+%max_spike_len = 3;
+%
+%input_mem       = zeros(max_spike_len, 1);
+%input_state_mem = zeros(max_spike_len + 1, 1);
+%
+%for i = 1:length(input)
+%
+%  return_value       = input_mem(max_spike_len); % normal return value in case no spike was detected
+%  cur_input          = input(i);
+%  input_state_mem(1) = ST_OTHER; % initialization value, might be overwritten
+%
+%  % get the input sample state
+%  if abs(cur_input) < ADC_MAX_NOISE_AMPL
+%    input_state_mem(1) = ST_NOISE;
+%  elseif (cur_input < max_peak_threshold) && (cur_input > 0)
+%    input_state_mem(1) = ST_SPIKE_HIGH;
+%  elseif (cur_input > -max_peak_threshold) && (cur_input < 0)
+%    input_state_mem(1) = ST_SPIKE_LOW;
+%  end
+%
+%  last_input_state_low  = (input_state_mem(max_spike_len + 1) == ST_NOISE) || ...
+%                          (input_state_mem(max_spike_len + 1) == ST_SPIKE_LOW);
+%
+%  last_input_state_high = (input_state_mem(max_spike_len + 1) == ST_NOISE) || ...
+%                          (input_state_mem(max_spike_len + 1) == ST_SPIKE_HIGH);
+%
+%  for j = 1:max_spike_len
+%
+%    % check for high spike case
+%    all_spike_high = input_state_mem(max_spike_len) == ST_SPIKE_HIGH;
+%
+%    for k = 1:max_spike_len - 1
+%      all_spike_high = all_spike_high && (input_state_mem(max_spike_len - k) == ST_SPIKE_HIGH);
+%    end
+%
+%    if last_input_state_low && all_spike_high && ...
+%        ((input_state_mem(1) == ST_NOISE) || (input_state_mem(1) == ST_SPIKE_LOW))
+%
+%      % remove spike samples
+%      for l = 1:j
+%        input_mem(l) = 0;
+%      end
+%
+%    end
+%
+%    % check for low spike case
+%    all_spike_low = input_state_mem(max_spike_len) == ST_SPIKE_LOW;
+%
+%    for k = 1:max_spike_len - 1
+%      all_spike_low = all_spike_low && (input_state_mem(max_spike_len - k) == ST_SPIKE_LOW);
+%    end
+%
+%    if last_input_state_high && all_spike_low && ...
+%        ((input_state_mem(1) == ST_NOISE) || (input_state_mem(1) == ST_SPIKE_HIGH))
+%
+%      % remove spike samples
+%      for l = 1:j
+%        input_mem(l) = 0;
+%      end
+%
+%    end
+%
+%  end
+%
+%% TODO
+%
+%end
+
+
+
 
     prev_input1       = 0;
     prev_input2       = 0;
@@ -92,11 +174,6 @@ for block_index = block_index_range
     prev2_input_state = 0;
     prev3_input_state = 0;
     prev4_input_state = 0;
-
-    % remove single/dual sample spikes by checking if right before and right after the
-    % detected spike(s) we only have noise and no useful signal (since the ESP32 spikes
-    % mostly are on just one or two sample(s))
-    max_peak_threshold = 150; % maximum assumed ESP32 spike amplitude
 
     for i = 1:length(input)
 
