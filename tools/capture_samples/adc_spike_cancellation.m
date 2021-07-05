@@ -93,77 +93,90 @@ for block_index = block_index_range
 
 
 
+if 1
+% TODO create more generic algorithm where we can freely adjust the number of
+%      samples allowed for one spike
+max_spike_len = 3;
 
-%% TODO create more generic algorithm where we can freely adjust the number of
-%%      samples allowed for one spike
-%max_spike_len = 3;
-%
-%input_mem       = zeros(max_spike_len, 1);
-%input_state_mem = zeros(max_spike_len + 1, 1);
-%
-%for i = 1:length(input)
-%
-%  return_value       = input_mem(max_spike_len); % normal return value in case no spike was detected
-%  cur_input          = input(i);
-%  input_state_mem(1) = ST_OTHER; % initialization value, might be overwritten
-%
-%  % get the input sample state
-%  if abs(cur_input) < ADC_MAX_NOISE_AMPL
-%    input_state_mem(1) = ST_NOISE;
-%  elseif (cur_input < max_peak_threshold) && (cur_input > 0)
-%    input_state_mem(1) = ST_SPIKE_HIGH;
-%  elseif (cur_input > -max_peak_threshold) && (cur_input < 0)
-%    input_state_mem(1) = ST_SPIKE_LOW;
-%  end
-%
-%  last_input_state_low  = (input_state_mem(max_spike_len + 1) == ST_NOISE) || ...
-%                          (input_state_mem(max_spike_len + 1) == ST_SPIKE_LOW);
-%
-%  last_input_state_high = (input_state_mem(max_spike_len + 1) == ST_NOISE) || ...
-%                          (input_state_mem(max_spike_len + 1) == ST_SPIKE_HIGH);
-%
-%  for j = 1:max_spike_len
-%
-%    % check for high spike case
-%    all_spike_high = input_state_mem(max_spike_len) == ST_SPIKE_HIGH;
-%
-%    for k = 1:max_spike_len - 1
-%      all_spike_high = all_spike_high && (input_state_mem(max_spike_len - k) == ST_SPIKE_HIGH);
-%    end
-%
-%    if last_input_state_low && all_spike_high && ...
-%        ((input_state_mem(1) == ST_NOISE) || (input_state_mem(1) == ST_SPIKE_LOW))
-%
-%      % remove spike samples
-%      for l = 1:j
-%        input_mem(l) = 0;
-%      end
-%
-%    end
-%
-%    % check for low spike case
-%    all_spike_low = input_state_mem(max_spike_len) == ST_SPIKE_LOW;
-%
-%    for k = 1:max_spike_len - 1
-%      all_spike_low = all_spike_low && (input_state_mem(max_spike_len - k) == ST_SPIKE_LOW);
-%    end
-%
-%    if last_input_state_high && all_spike_low && ...
-%        ((input_state_mem(1) == ST_NOISE) || (input_state_mem(1) == ST_SPIKE_HIGH))
-%
-%      % remove spike samples
-%      for l = 1:j
-%        input_mem(l) = 0;
-%      end
-%
-%    end
-%
-%  end
-%
-%% TODO
-%
-%end
+input_mem       = zeros(max_spike_len, 1);
+input_state_mem = zeros(max_spike_len + 1, 1);
 
+for i = 1:length(input)
+
+  cur_input                          = input(i);
+  input_mem(max_spike_len)           = cur_input;
+  input_state_mem(max_spike_len + 1) = ST_OTHER; % initialization value, might be overwritten
+
+  % get the input sample state
+  if abs(cur_input) < ADC_MAX_NOISE_AMPL
+    input_state_mem(1) = ST_NOISE;
+  elseif (cur_input < max_peak_threshold) && (cur_input > 0)
+    input_state_mem(1) = ST_SPIKE_HIGH;
+  elseif (cur_input > -max_peak_threshold) && (cur_input < 0)
+    input_state_mem(1) = ST_SPIKE_LOW;
+  end
+
+  last_input_state_low  = (input_state_mem(max_spike_len + 1) == ST_NOISE) || ...
+                          (input_state_mem(max_spike_len + 1) == ST_SPIKE_LOW);
+
+  last_input_state_high = (input_state_mem(max_spike_len + 1) == ST_NOISE) || ...
+                          (input_state_mem(max_spike_len + 1) == ST_SPIKE_HIGH);
+
+  for j = 1:max_spike_len
+
+    % check for high spike case
+    all_spike_high = input_state_mem(max_spike_len) == ST_SPIKE_HIGH;
+
+    for k = 1:max_spike_len - 1
+      all_spike_high = all_spike_high && (input_state_mem(max_spike_len - k) == ST_SPIKE_HIGH);
+    end
+
+    if last_input_state_low && all_spike_high && ...
+        ((input_state_mem(1) == ST_NOISE) || (input_state_mem(1) == ST_SPIKE_LOW))
+
+      % remove spike samples
+      for m = 1:j
+        input_mem(m) = 0;
+      end
+
+    end
+
+    % check for low spike case
+    all_spike_low = input_state_mem(max_spike_len) == ST_SPIKE_LOW;
+
+    for k = 1:max_spike_len - 1
+      all_spike_low = all_spike_low && (input_state_mem(max_spike_len - k) == ST_SPIKE_LOW);
+    end
+
+    if last_input_state_high && all_spike_low && ...
+        ((input_state_mem(1) == ST_NOISE) || (input_state_mem(1) == ST_SPIKE_HIGH))
+
+      % remove spike samples
+      for m = 1:j
+        input_mem(m) = 0;
+      end
+
+    end
+
+  end
+
+  % store current processed output value
+  out(i, j) = input_mem(1);
+
+  % move all values in the history one step back
+  input_mem(1:max_spike_len - 1)   = input_mem(2:max_spike_len);           % update_fifo()
+  input_state_mem(1:max_spike_len) = input_state_mem(2:max_spike_len + 1); % update_fifo()
+
+end
+
+% cut out algorithm settling time
+out = out(max_spike_len:end, :);
+
+% plot results
+subplot(2, 1, 1), plot(out); title(num2str(block_index));
+subplot(2, 1, 2), plot(x); title('original');
+return;
+end
 
 
 
