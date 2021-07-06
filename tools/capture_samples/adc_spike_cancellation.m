@@ -324,7 +324,6 @@ do_original_algorithm = false;%true;
            (prev4_input_state == ST_SPIKE_LOW) && ...
            (prev3_input_state == ST_SPIKE_LOW) && ...
            (prev2_input_state == ST_SPIKE_LOW) && ...
-           (prev2_input_state == ST_SPIKE_LOW) && ...
            (prev1_input_state == ST_SPIKE_LOW) && ...
            ((input_state == ST_NOISE) || (input_state == ST_SPIKE_HIGH))
 
@@ -337,8 +336,8 @@ do_original_algorithm = false;%true;
 
       end
 
-      % update three-step input signal memory where we store the last three states of
-      % the input signal and two previous untouched input samples
+      % update five-step input signal memory where we store the last five states of
+      % the input signal and four previous untouched input samples
       prev5_input_state = prev4_input_state;
       prev4_input_state = prev3_input_state;
       prev3_input_state = prev2_input_state;

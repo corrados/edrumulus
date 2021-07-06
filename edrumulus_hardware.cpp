@@ -35,7 +35,7 @@ float Edrumulus_hardware::cancel_ADC_spikes ( const float input,
   // mostly are on just one or two sample(s))
   const int max_peak_threshold = 150; // maximum assumed ESP32 spike amplitude
 
-  float       return_value = prev_input2[pad_index][input_channel_index]; // normal return value in case no spike was detected
+  float       return_value = prev_input4[pad_index][input_channel_index]; // normal return value in case no spike was detected
   const float input_abs    = abs ( input );
   Espikestate input_state  = ST_OTHER; // initialization value, might be overwritten
 
@@ -43,34 +43,112 @@ float Edrumulus_hardware::cancel_ADC_spikes ( const float input,
   {
     input_state = ST_NOISE;
   }
-  else if ( input_abs < max_peak_threshold )
+  else if ( ( input < max_peak_threshold ) && ( input > 0 ) )
   {
-    input_state = ST_SPIKE;
+    input_state = ST_SPIKE_HIGH;
+  }
+  else if ( ( input > -max_peak_threshold ) && ( input < 0 ) )
+  {
+    input_state = ST_SPIKE_LOW;
   }
 
-  // check for single spike sample case
-  if ( ( prev3_input_state[pad_index][input_channel_index] == ST_NOISE ) &&
-       ( prev2_input_state[pad_index][input_channel_index] == ST_SPIKE ) &&
-       ( prev1_input_state[pad_index][input_channel_index] == ST_NOISE ) )
+  // check for single high spike sample case
+  if ( ( ( prev5_input_state[pad_index][input_channel_index] == ST_NOISE ) || ( prev5_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW ) ) &&
+       ( prev4_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH ) &&
+       ( ( prev3_input_state[pad_index][input_channel_index] == ST_NOISE ) || ( prev3_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW ) ) )
+  {
+    return_value = 0.0f; // remove single spike
+  }
+
+  // check for single low spike sample case
+  if ( ( ( prev5_input_state[pad_index][input_channel_index] == ST_NOISE ) || ( prev5_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH ) ) &&
+       ( prev4_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW ) &&
+       ( ( prev3_input_state[pad_index][input_channel_index] == ST_NOISE ) || ( prev3_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH ) ) )
   {
     return_value = 0.0f; // remove single spike
   }
 
   // check for two sample spike case
-  if ( ( prev3_input_state[pad_index][input_channel_index] == ST_NOISE ) &&
-       ( prev2_input_state[pad_index][input_channel_index] == ST_SPIKE ) &&
-       ( prev1_input_state[pad_index][input_channel_index] == ST_SPIKE ) &&
-       ( input_state                                       == ST_NOISE ) )
+  if ( ( ( prev5_input_state[pad_index][input_channel_index] == ST_NOISE ) || ( prev5_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW ) ) &&
+       ( prev4_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH ) &&
+       ( prev3_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH ) &&
+       ( ( prev2_input_state[pad_index][input_channel_index] == ST_NOISE ) || ( prev2_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW ) ) )
   {
-    prev_input1[pad_index][input_channel_index] = 0.0f; // remove two sample spike
     return_value                                = 0.0f; // remove two sample spike
+    prev_input3[pad_index][input_channel_index] = 0.0f; // remove two sample spike
   }
 
-  // update three-step input signal memory where we store the last three states of
-  // the input signal and two previous untouched input samples
+  // check for two sample low spike case
+  if ( ( ( prev5_input_state[pad_index][input_channel_index] == ST_NOISE ) || ( prev5_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH ) ) &&
+       ( prev4_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW ) &&
+       ( prev3_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW ) &&
+       ( ( prev2_input_state[pad_index][input_channel_index] == ST_NOISE ) || ( prev2_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH ) ) )
+  {
+    return_value                                = 0.0f; // remove two sample spike
+    prev_input3[pad_index][input_channel_index] = 0.0f; // remove two sample spike
+  }
+
+  // check for three sample high spike case
+  if ( ( ( prev5_input_state[pad_index][input_channel_index] == ST_NOISE ) || ( prev5_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW ) ) &&
+       ( prev4_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH ) &&
+       ( prev3_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH ) &&
+       ( prev2_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH ) &&
+       ( ( prev1_input_state[pad_index][input_channel_index] == ST_NOISE ) || ( prev1_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW ) ) )
+  {
+    return_value                                = 0.0f; // remove three sample spike
+    prev_input3[pad_index][input_channel_index] = 0.0f; // remove three sample spike
+    prev_input2[pad_index][input_channel_index] = 0.0f; // remove three sample spike
+  }
+
+  // check for three sample low spike case
+  if ( ( ( prev5_input_state[pad_index][input_channel_index] == ST_NOISE ) || ( prev5_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH ) ) &&
+       ( prev4_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW ) &&
+       ( prev3_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW ) &&
+       ( prev2_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW ) &&
+       ( ( prev1_input_state[pad_index][input_channel_index] == ST_NOISE ) || ( prev1_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH ) ) )
+  {
+    return_value                                = 0.0f; // remove three sample spike
+    prev_input3[pad_index][input_channel_index] = 0.0f; // remove three sample spike
+    prev_input2[pad_index][input_channel_index] = 0.0f; // remove three sample spike
+  }
+
+  // check for four sample high spike case
+  if ( ( ( prev5_input_state[pad_index][input_channel_index] == ST_NOISE ) || ( prev5_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW ) ) &&
+       ( prev4_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH ) &&
+       ( prev3_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH ) &&
+       ( prev2_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH ) &&
+       ( prev1_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH ) &&
+       ( ( input_state == ST_NOISE ) || ( input_state == ST_SPIKE_LOW ) ) )
+  {
+    return_value                                = 0.0f; // remove four sample spike
+    prev_input3[pad_index][input_channel_index] = 0.0f; // remove four sample spike
+    prev_input2[pad_index][input_channel_index] = 0.0f; // remove four sample spike
+    prev_input1[pad_index][input_channel_index] = 0.0f; // remove four sample spike
+  }
+
+  // check for four sample low spike case
+  if ( ( ( prev5_input_state[pad_index][input_channel_index] == ST_NOISE ) || ( prev5_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH ) ) &&
+       ( prev4_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW ) &&
+       ( prev3_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW ) &&
+       ( prev2_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW ) &&
+       ( prev1_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW ) &&
+       ( ( input_state == ST_NOISE ) || ( input_state == ST_SPIKE_HIGH ) ) )
+  {
+    return_value                                = 0.0f; // remove four sample spike
+    prev_input3[pad_index][input_channel_index] = 0.0f; // remove four sample spike
+    prev_input2[pad_index][input_channel_index] = 0.0f; // remove four sample spike
+    prev_input1[pad_index][input_channel_index] = 0.0f; // remove four sample spike
+  }
+
+  // update five-step input signal memory where we store the last five states of
+  // the input signal and four previous untouched input samples
+  prev5_input_state[pad_index][input_channel_index] = prev4_input_state[pad_index][input_channel_index];
+  prev4_input_state[pad_index][input_channel_index] = prev3_input_state[pad_index][input_channel_index];
   prev3_input_state[pad_index][input_channel_index] = prev2_input_state[pad_index][input_channel_index];
   prev2_input_state[pad_index][input_channel_index] = prev1_input_state[pad_index][input_channel_index];
   prev1_input_state[pad_index][input_channel_index] = input_state;
+  prev_input4[pad_index][input_channel_index]       = prev_input3[pad_index][input_channel_index];
+  prev_input3[pad_index][input_channel_index]       = prev_input2[pad_index][input_channel_index];
   prev_input2[pad_index][input_channel_index]       = prev_input1[pad_index][input_channel_index];
   prev_input1[pad_index][input_channel_index]       = input;
 
