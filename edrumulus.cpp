@@ -427,7 +427,31 @@ void Edrumulus::Pad::initialize()
   // maximum possible dynamic where sensitivity of 31 means that we have no dynamic at all and 0 means
   // that we use the full possible ADC range.
   const float max_velocity_range_db = 20 * log10 ( ADC_MAX_RANGE / 2 ) - threshold_db;
-  velocity_range_db                 = max_velocity_range_db * ( 32 - pad_settings.velocity_sensitivity ) / 32;
+  const float velocity_range_db     = max_velocity_range_db * ( 32 - pad_settings.velocity_sensitivity ) / 32;
+
+  // Consider MIDI curve (taken from RyoKosaka HelloDrum-arduino-Library: int HelloDrum::curve() function)
+  // by calculating three parameters: velocity_factor * x ^ velocity_exponent + velocity_offset.
+  // The approach is to use the original power-to-MIDI conversion function:
+  // ( 10 * log10 ( prev_hil_filt_val / threshold ) / velocity_range_db ) * 127
+  // and apply the MIDI curve:
+  // ( 126 / ( pow ( curve_param, 126 ) - 1 ) ) * ( pow ( curve_param, i - 1 ) - 1 ) + 1.
+  // After applying some calculations, we get the following parameters:
+  float curve_param;
+
+  switch ( pad_settings.curve_type )
+  {
+    case EXP1:            curve_param = 1.03f;  break;
+    case EXP2:            curve_param = 1.04f;  break;
+    case LOG1:            curve_param = 1.015f; break;
+    case LOG2:            curve_param = 1.01f;  break;
+    default: /* LINEAR */ curve_param = 1.02f;  break; // this curve parameter comes close to what Roland is doing for "linear"
+  }
+
+  velocity_factor = 126.0f / ( ( pow ( curve_param, 126.0f ) - 1 ) * curve_param *
+    pow ( threshold, 1270.0f / velocity_range_db * log10 ( curve_param ) ) );
+
+  velocity_exponent = 1270.0f / velocity_range_db * log10 ( curve_param );
+  velocity_offset   = 1.0f - 126.0f / ( pow ( curve_param, 126.0f ) - 1 );
 
   // The positional sensing MIDI assignment parameters are dependent on, e.g., the filter design
   // parameters and cannot easily be derived from the ADC properties as is done for the velocity.
@@ -452,7 +476,6 @@ void Edrumulus::Pad::initialize()
   allocate_initialize ( &hil_low_hist_re,         pos_energy_window_len ); // real part of memory for moving average of low-pass filtered Hilbert signal
   allocate_initialize ( &hil_low_hist_im,         pos_energy_window_len ); // imaginary part of memory for moving average of low-pass filtered Hilbert signal
   allocate_initialize ( &rim_x_high_hist,         rim_shot_window_len );   // memory for rim shot detection
-  allocate_initialize ( &midi_curve,              128 );                   // memory for MIDI curve
 
   mask_back_cnt           = 0;
   was_above_threshold     = false;
@@ -495,30 +518,6 @@ void Edrumulus::Pad::initialize()
   for ( int i = 0; i < decay_len3; i++ )
   {
     decay[decay_len1 + decay_len2 + i] = decay_fact2 * pow ( 10.0f, -i / 10.0f * decay_grad3 );
-  }
-
-  // calculate MIDI curve (taken from RyoKosaka HelloDrum-arduino-Library: int HelloDrum::curve() function)
-  float curve_param;
-
-  switch ( pad_settings.curve_type )
-  {
-    case EXP1: curve_param = 1.02f; break;
-    case EXP2: curve_param = 1.04f; break;
-    case LOG1: curve_param = 0.98f; break;
-    case LOG2: curve_param = 0.96f; break;
-    default:   curve_param = 1.02f; break; // in case of unknown enum: EXP1
-  }
-
-  for ( int i = 0; i < 128; i++ )
-  {
-    if ( pad_settings.curve_type == LINEAR )
-    {
-      midi_curve[i] = i;
-    }
-    else
-    {
-      midi_curve[i] = round ( ( 126 / ( pow ( curve_param, 126 ) - 1 ) ) * ( pow ( curve_param, i - 1 ) - 1 ) + 1 );
-    }
   }
 }
 
@@ -628,8 +627,8 @@ debug = 0.0f; // TEST
       if ( scan_time_cnt <= 0 )
       {
         // calculate the MIDI velocity value with clipping to allowed MIDI value range
-        stored_midi_velocity = static_cast<int> ( ( 10 * log10 ( prev_hil_filt_val / threshold ) / velocity_range_db ) * 127 );
-        stored_midi_velocity = midi_curve[max ( 1, min ( 127, stored_midi_velocity ) )];
+        stored_midi_velocity = velocity_factor * pow ( prev_hil_filt_val, velocity_exponent ) + velocity_offset;
+        stored_midi_velocity = max ( 1, min ( 127, stored_midi_velocity ) );
 
         // scan time expired
         prev_hil_filt_val   = 0.0f;

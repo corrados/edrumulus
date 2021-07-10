@@ -197,7 +197,6 @@ protected:
       float* hil_low_hist_re         = nullptr;
       float* hil_low_hist_im         = nullptr;
       float* rim_x_high_hist         = nullptr;
-      float* midi_curve              = nullptr;
 
       int          Fs;
       int          number_inputs;
@@ -208,7 +207,9 @@ protected:
       int          mask_time;
       int          mask_back_cnt;
       float        threshold;
-      float        velocity_range_db;
+      float        velocity_factor;
+      float        velocity_exponent;
+      float        velocity_offset;
       float        pos_threshold;
       float        pos_range_db;
       float        control_threshold;
