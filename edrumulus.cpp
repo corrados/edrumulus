@@ -429,6 +429,14 @@ void Edrumulus::Pad::initialize()
   const float max_velocity_range_db = 20 * log10 ( ADC_MAX_RANGE / 2 ) - threshold_db;
   velocity_range_db                 = max_velocity_range_db * ( 32 - pad_settings.velocity_sensitivity ) / 32;
 
+
+// TEST use a linear power MIDI assignment
+const float x_1              = threshold * pow ( 10.0f, velocity_range_db / 1270 );
+const float x_127            = threshold * pow ( 10.0f, velocity_range_db / 10 );
+linear_velocity_map_gradient = 126.0f / ( x_127 - x_1 );
+linear_velocity_map_offset   = 1.0f - 126 * x_1 / ( x_127 - x_1 );
+
+
   // The positional sensing MIDI assignment parameters are dependent on, e.g., the filter design
   // parameters and cannot easily be derived from the ADC properties as is done for the velocity.
   // Based on the measurement results with the PD120 pad, we tryed to derive some meaningful parameter ranges.
@@ -628,7 +636,11 @@ debug = 0.0f; // TEST
       if ( scan_time_cnt <= 0 )
       {
         // calculate the MIDI velocity value with clipping to allowed MIDI value range
-        stored_midi_velocity = static_cast<int> ( ( 10 * log10 ( prev_hil_filt_val / threshold ) / velocity_range_db ) * 127 );
+//        stored_midi_velocity = static_cast<int> ( ( 10 * log10 ( prev_hil_filt_val / threshold ) / velocity_range_db ) * 127 );
+
+// TEST use a linear power MIDI assignment
+stored_midi_velocity = linear_velocity_map_gradient * prev_hil_filt_val + linear_velocity_map_offset;
+
         stored_midi_velocity = midi_curve[max ( 1, min ( 127, stored_midi_velocity ) )];
 
         // scan time expired

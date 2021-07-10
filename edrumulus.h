@@ -209,6 +209,11 @@ protected:
       int          mask_back_cnt;
       float        threshold;
       float        velocity_range_db;
+
+// TEST use a linear power MIDI assignment
+float linear_velocity_map_gradient;
+float linear_velocity_map_offset;
+
       float        pos_threshold;
       float        pos_range_db;
       float        control_threshold;
