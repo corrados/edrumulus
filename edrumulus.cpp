@@ -29,6 +29,9 @@ Edrumulus::Edrumulus() :
   samplerate_prev_micros     = micros();
   status_is_error            = false;
   spike_cancel_is_used       = true; // use spike cancellation per default (note that it increases the latency)
+  cancel_num_samples         = ( cancel_time_ms * Fs ) / 1000;
+  cancel_cnt                 = 0;
+  cancel_MIDI_velocity       = 1;
 
   // calculate DC offset IIR1 low pass filter parameters, see
   // http://www.tsdconseil.fr/tutos/tuto-iir1-en.pdf: gamma = exp(-Ts/tau)
@@ -179,6 +182,32 @@ Serial.println ( serial_print );
     }
   }
 
+
+
+// TEST
+for ( int i = 0; i < number_pads; i++ )
+{
+  if ( peak_found[i] )
+  {
+    // reset cancellation count if conditions are met
+    if ( ( cancel_cnt == 0 ) || ( ( cancel_cnt > 0 ) && ( midi_velocity[i] > cancel_MIDI_velocity ) ) )
+    {
+      cancel_cnt           = cancel_num_samples;
+      cancel_MIDI_velocity = midi_velocity[i];
+    }
+    else if ( cancel_cnt > 0 )
+    {
+      // check if pad is cancelled
+
+// TODO
+
+      cancel_cnt--;
+    }
+  }
+}
+
+
+
   // overload detection: keep LED on for a while
   if ( overload_LED_cnt > 0 )
   {
@@ -254,6 +283,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.pos_threshold          = 9;  // 0..31
   pad_settings.pos_sensitivity        = 14; // 0..31
   pad_settings.rim_shot_treshold      = 11; // 0..31
+  pad_settings.cancellation           = 0;  // 0..31
   pad_settings.curve_type             = LINEAR;
   pad_settings.pos_sense_is_used      = false; // must be explicitely enabled if it shall be used
   pad_settings.rim_shot_is_used       = false; // must be explicitely enabled if it shall be used

@@ -82,6 +82,7 @@ public:
   void set_mask_time            ( const int pad_idx, const int        new_time )      { pad[pad_idx].set_mask_time ( new_time ); }
   void set_rim_shot_treshold    ( const int pad_idx, const int        new_threshold ) { pad[pad_idx].set_rim_shot_treshold ( new_threshold ); }
   void set_curve                ( const int pad_idx, const Ecurvetype new_curve )     { pad[pad_idx].set_curve ( new_curve ); }
+  void set_cancellation         ( const int pad_idx, const int        new_cancel )    { pad[pad_idx].set_cancellation ( new_cancel ); }
 
   void set_midi_notes           ( const int pad_idx, const int new_midi_note, const int new_midi_note_rim ) { pad[pad_idx].set_midi_notes ( new_midi_note, new_midi_note_rim ); }
   void set_midi_notes_open      ( const int pad_idx, const int new_midi_note, const int new_midi_note_rim ) { pad[pad_idx].set_midi_notes_open ( new_midi_note, new_midi_note_rim ); }
@@ -131,6 +132,7 @@ protected:
       void set_mask_time            ( const int        new_time_ms )   { pad_settings.mask_time_ms         = new_time_ms;   initialize(); }
       void set_rim_shot_treshold    ( const int        new_threshold ) { pad_settings.rim_shot_treshold    = new_threshold; initialize(); }
       void set_curve                ( const Ecurvetype new_curve )     { pad_settings.curve_type           = new_curve;     initialize(); }
+      void set_cancellation         ( const int        new_cancel )    { pad_settings.cancellation         = new_cancel;    initialize(); }
 
       int  get_midi_note()          { return midi_note; }
       int  get_midi_note_rim()      { return midi_note_rim; }
@@ -156,6 +158,7 @@ protected:
         int        pos_threshold;        // 0..31
         int        pos_sensitivity;      // 0..31, high values give higher sensitivity
         int        rim_shot_treshold;    // 0..31
+        int        cancellation;         // 0..31
         bool       pos_sense_is_used;    // switches positional sensing support on or off
         bool       rim_shot_is_used;     // switches rim shot detection on or off
         Ecurvetype curve_type;
@@ -264,6 +267,7 @@ protected:
   const int samplerate_max_cnt        = 10000; // samples
   const int samplerate_max_error_Hz   = 100;   // tolerate a sample rate deviation of 100 Hz
   const int dc_offset_iir_tau_seconds = 30;    // DC offset update IIR filter tau in seconds
+  const int cancel_time_ms            = 20;    // on same stand approx. 10 ms + some margin (10 ms)
 
   int                Fs;
   Edrumulus_hardware edrumulus_hardware;
@@ -290,6 +294,9 @@ protected:
   bool               is_rim_shot[MAX_NUM_PADS];
   bool               is_choke_on[MAX_NUM_PADS];
   bool               is_choke_off[MAX_NUM_PADS];
+  int                cancel_num_samples;
+  int                cancel_cnt;
+  int                cancel_MIDI_velocity;
 };
 
 
