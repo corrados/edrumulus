@@ -477,7 +477,7 @@ void Edrumulus::Pad::initialize()
   // ( 10 * log10 ( prev_hil_filt_val / threshold ) / velocity_range_db ) * 127
   // and apply the MIDI curve:
   // ( 126 / ( pow ( curve_param, 126 ) - 1 ) ) * ( pow ( curve_param, i - 1 ) - 1 ) + 1.
-  // After applying some calculations, we get the following parameters:
+  // After applying some calculations (see calc_midi_curve_parameters.pdf), we get the following parameters:
   float curve_param;
 
   switch ( pad_settings.curve_type )
