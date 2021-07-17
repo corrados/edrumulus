@@ -1,5 +1,8 @@
 # Edrumulus project log
 
+- (07/17/2021) Now an experimental pad cross talk cancellation algorithm is supported in
+  Edrumulus. This is useful if pads are attached on the same stand and trigger each other.
+
 - (07/04/2021) Still too many false detections on the ESP32. The ADC spike detection algorithm
   must be improved. A new algorithm development file "adc_spike_cancellation.m" was created.
 
