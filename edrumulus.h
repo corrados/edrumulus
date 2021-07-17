@@ -134,19 +134,20 @@ protected:
       void set_curve                ( const Ecurvetype new_curve )     { pad_settings.curve_type           = new_curve;     initialize(); }
       void set_cancellation         ( const int        new_cancel )    { pad_settings.cancellation         = new_cancel;    initialize(); }
 
-      int  get_midi_note()          { return midi_note; }
-      int  get_midi_note_rim()      { return midi_note_rim; }
-      int  get_midi_note_open()     { return midi_note_open; }
-      int  get_midi_note_open_rim() { return midi_note_open_rim; }
-      int  get_midi_ctrl_ch()      { return midi_ctrl_ch; }
-      bool get_is_control()        { return ( pad_settings.pad_type == FD8 ) ||
-                                            ( pad_settings.pad_type == VH12CTRL ); } // TODO check if new pads must be added here
-      bool get_is_rim_switch()     { return ( pad_settings.pad_type == PD8 ) ||
-                                            ( pad_settings.pad_type == VH12 ) ||
-                                            ( pad_settings.pad_type == TP80 ) ||
-                                            ( pad_settings.pad_type == CY6 ) ||
-                                            ( pad_settings.pad_type == CY8 ); } // TODO check if new pads must be added here
-      bool get_pos_sense_is_used() { return pad_settings.pos_sense_is_used; }
+      int   get_midi_note()           { return midi_note; }
+      int   get_midi_note_rim()       { return midi_note_rim; }
+      int   get_midi_note_open()      { return midi_note_open; }
+      int   get_midi_note_open_rim()  { return midi_note_open_rim; }
+      int   get_midi_ctrl_ch()        { return midi_ctrl_ch; }
+      float get_cancellation_factor() { return cancellation_factor; }
+      bool  get_is_control()          { return ( pad_settings.pad_type == FD8 ) ||
+                                               ( pad_settings.pad_type == VH12CTRL ); } // TODO check if new pads must be added here
+      bool  get_is_rim_switch()       { return ( pad_settings.pad_type == PD8 ) ||
+                                               ( pad_settings.pad_type == VH12 ) ||
+                                               ( pad_settings.pad_type == TP80 ) ||
+                                               ( pad_settings.pad_type == CY6 ) ||
+                                               ( pad_settings.pad_type == CY8 ); } // TODO check if new pads must be added here
+      bool  get_pos_sense_is_used()   { return pad_settings.pos_sense_is_used; }
 
     protected:
       struct Epadsettings
@@ -260,6 +261,7 @@ protected:
       int          midi_note_open_rim;
       int          midi_ctrl_ch;
       int          prev_ctrl_value;
+      float        cancellation_factor;
   };
 
   // constant definitions

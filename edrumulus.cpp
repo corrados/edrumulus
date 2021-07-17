@@ -182,31 +182,29 @@ Serial.println ( serial_print );
     }
   }
 
-
-
-// TEST
-for ( int i = 0; i < number_pads; i++ )
-{
-  if ( peak_found[i] )
+  // cross talk cancellation
+  for ( int i = 0; i < number_pads; i++ )
   {
-    // reset cancellation count if conditions are met
-    if ( ( cancel_cnt == 0 ) || ( ( cancel_cnt > 0 ) && ( midi_velocity[i] > cancel_MIDI_velocity ) ) )
+    if ( peak_found[i] )
     {
-      cancel_cnt           = cancel_num_samples;
-      cancel_MIDI_velocity = midi_velocity[i];
-    }
-    else if ( cancel_cnt > 0 )
-    {
-      // check if pad is cancelled
+      // reset cancellation count if conditions are met
+      if ( ( cancel_cnt == 0 ) || ( ( cancel_cnt > 0 ) && ( midi_velocity[i] > cancel_MIDI_velocity ) ) )
+      {
+        cancel_cnt           = cancel_num_samples;
+        cancel_MIDI_velocity = midi_velocity[i];
+      }
+      else if ( cancel_cnt > 0 )
+      {
+        // check if current pad is to be cancelled
+        if ( cancel_MIDI_velocity * pad[i].get_cancellation_factor() > midi_velocity[i] )
+        {
+          peak_found[i] = false;
+        }
 
-// TODO
-
-      cancel_cnt--;
+        cancel_cnt--;
+      }
     }
   }
-}
-
-
 
   // overload detection: keep LED on for a while
   if ( overload_LED_cnt > 0 )
@@ -451,6 +449,7 @@ void Edrumulus::Pad::initialize()
   rim_shot_treshold_dB     = static_cast<float> ( pad_settings.rim_shot_treshold ) / 2 - 13;    // gives us a rim shot threshold range of -13..2.5 dB
   rim_switch_treshold      = -ADC_MAX_NOISE_AMPL + 9 * ( pad_settings.rim_shot_treshold - 31 ); // rim switch linear threshold
   rim_switch_on_cnt_thresh = round ( 10.0f * 1e-3f * Fs );                                      // number of on samples until we detect a choke
+  cancellation_factor      = static_cast<float> ( pad_settings.cancellation ) / 31.0f;          // cancellation factor: range of 0.0..1.0
 
   // The ESP32 ADC has 12 bits resulting in a range of 20*log10(2048)=66.2 dB minus the threshold value.
   // The sensitivity parameter shall be in the range of 0..31. This range should then be mapped to the
