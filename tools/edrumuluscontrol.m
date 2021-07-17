@@ -23,7 +23,7 @@ close all;
 pkg load audio
 
 figure_handle = figure;
-slider_width  = 0.12;
+slider_width  = 0.1;
 slider_hight  = 0.7;
 value_hight   = 0.2;
 
@@ -240,6 +240,28 @@ GUI.slider8 = uicontrol(GUI.set_panel, ...
   'position',   [7 * slider_width, 0, slider_width, slider_hight], ...
   'callback',   @slider_callback);
 
+% ninth slider control with text
+uicontrol(GUI.set_panel, ...
+  'style',    'text', ...
+  'string',   '9:Crosstalk Cancel', ...
+  'units',    'normalized', ...
+  'position', [8 * slider_width, slider_hight + value_hight, slider_width, 0.1]);
+
+GUI.val9 = uicontrol(GUI.set_panel, ...
+  'style',    'edit', ...
+  'units',    'normalized', ...
+  'position', [8 * slider_width, slider_hight, slider_width, 0.2], ...
+  'Enable',   'off');
+
+GUI.slider9 = uicontrol(GUI.set_panel, ...
+  'style',      'slider', ...
+  'units',      'normalized', ...
+  'min',        0, ...
+  'max',        31, ...
+  'SliderStep', [1 / 31, 1 / 31], ...
+  'position',   [8 * slider_width, 0, slider_width, slider_hight], ...
+  'callback',   @slider_callback);
+
 reset_sliders;
 
 end
@@ -263,6 +285,8 @@ set(GUI.slider4, 'value', 0); set(GUI.val4, 'string', 'Not Set');
 set(GUI.slider5, 'value', 0); set(GUI.val5, 'string', 'Not Set');
 set(GUI.slider6, 'value', 0); set(GUI.val6, 'string', 'Not Set');
 set(GUI.slider7, 'value', 0); set(GUI.val7, 'string', 'Not Set');
+set(GUI.slider8, 'value', 0); set(GUI.val8, 'string', 'Not Set');
+set(GUI.slider9, 'value', 0); set(GUI.val9, 'string', 'Not Set');
 
 end
 
@@ -320,7 +344,7 @@ switch hObject
      set(GUI.val6, 'string', num2str(value));
      midisend(GUI.midi_dev, midimsg("controlchange", 10, 107, value));
 
- case GUI.slider7
+   case GUI.slider7
      switch value
        case 0
          set(GUI.val7, 'string', 'LINEAR');
@@ -339,6 +363,10 @@ switch hObject
      set(GUI.val8, 'string', num2str(value));
      midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, value));
      reset_sliders; % on a pad change we do not know the current parameters
+
+   case GUI.slider9
+     set(GUI.val9, 'string', num2str(value));
+     midisend(GUI.midi_dev, midimsg("controlchange", 10, 114, value));
 end
 
 end

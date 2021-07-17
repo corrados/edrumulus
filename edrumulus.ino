@@ -289,6 +289,13 @@ void loop()
         is_used = true;
       }
 
+      // controller 114: cross talk cancellation
+      if ( controller == 114 )
+      {
+        edrumulus.set_cancellation ( selected_pad, value );
+        is_used = true;
+      }
+
       // give some feedback that the setting was correctly received
       if ( is_used )
       {
