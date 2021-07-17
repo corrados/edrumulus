@@ -299,6 +299,7 @@ protected:
   int                cancel_num_samples;
   int                cancel_cnt;
   int                cancel_MIDI_velocity;
+  int                cancel_pad_index;
 };
 
 

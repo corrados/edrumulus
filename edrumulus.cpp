@@ -32,6 +32,7 @@ Edrumulus::Edrumulus() :
   cancel_num_samples         = ( cancel_time_ms * Fs ) / 1000;
   cancel_cnt                 = 0;
   cancel_MIDI_velocity       = 1;
+  cancel_pad_index           = 0;
 
   // calculate DC offset IIR1 low pass filter parameters, see
   // http://www.tsdconseil.fr/tutos/tuto-iir1-en.pdf: gamma = exp(-Ts/tau)
@@ -115,6 +116,8 @@ if ( Serial.available() > 0 )
 return;
 */
 
+
+  // Query samples -------------------------------------------------------------
   // note that this is a blocking function
   edrumulus_hardware.capture_samples ( number_pads,
                                        number_inputs,
@@ -137,6 +140,8 @@ for ( int i = 0; i < number_pads; i++ )
 Serial.println ( serial_print );
 */
 
+
+  // Process samples -----------------------------------------------------------
   for ( int i = 0; i < number_pads; i++ )
   {
     int* sample_org_pad = sample_org[i];
@@ -182,7 +187,8 @@ Serial.println ( serial_print );
     }
   }
 
-  // cross talk cancellation
+
+  // Cross talk cancellation ---------------------------------------------------
   for ( int i = 0; i < number_pads; i++ )
   {
     if ( peak_found[i] )
@@ -192,28 +198,35 @@ Serial.println ( serial_print );
       {
         cancel_cnt           = cancel_num_samples;
         cancel_MIDI_velocity = midi_velocity[i];
+        cancel_pad_index     = i;
       }
-      else if ( cancel_cnt > 0 )
+      else if ( ( cancel_cnt > 0 ) && ( cancel_pad_index != i ) )
       {
         // check if current pad is to be cancelled
         if ( cancel_MIDI_velocity * pad[i].get_cancellation_factor() > midi_velocity[i] )
         {
           peak_found[i] = false;
         }
-
-        cancel_cnt--;
       }
     }
   }
 
-  // overload detection: keep LED on for a while
+  if ( cancel_cnt > 0 )
+  {
+    cancel_cnt--;
+  }
+
+
+  // Overload detection: keep LED on for a while -------------------------------
   if ( overload_LED_cnt > 0 )
   {
     overload_LED_cnt--;
     status_is_overload = ( overload_LED_cnt > 0 );
   }
 
-  // sampling rate check (i.e. if CPU is overloaded, the sample rate will drop which is bad)
+
+  // Sampling rate check -------------------------------------------------------
+  // (i.e. if CPU is overloaded, the sample rate will drop which is bad)
   if ( samplerate_prev_micros_cnt >= samplerate_max_cnt )
   {
     // set error flag if sample rate deviation is too large
