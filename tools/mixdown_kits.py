@@ -15,6 +15,7 @@ ardour = udp_client.SimpleUDPClient("127.0.0.1", 3819) # Ardour default port num
 
 
 # not yet working: import wav file
-#ardour.send_message("/Common/addExistingAudioFiles", "~/edrumulus/tools/DRSKit/Snare_circle_whisker/samples/4-Snare_circle_whisker.wav")
+#ardour.send_message("/access_action/Common/addExistingAudioFiles", "~/edrumulus/tools/DRSKit/Snare_circle_whisker/samples/4-Snare_circle_whisker.wav")
 
+ardour.send_message("/access_action/Common/addExistingAudioFiles", "key_pressed")
 
