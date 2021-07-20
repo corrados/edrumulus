@@ -1,15 +1,15 @@
 
-
 -- TEST convert Drumgizmo drum kits to Edrumulus usage by mixdown all the audio channels
 -- using Ardour with lua scripting
+-- see also: https://github.com/Ardour/ardour/blob/master/gtk2_ardour/luainstance.cc
 
 ardour { ["type"] = "Snippet", name = "Mixdown Drumgizmo kits for Edrumulus" }
 
-function factory (params) return function ()
+function factory ( params ) return function()
 
 	local files = C.StringVector();
 
-	files:push_back("/home/corrados/edrumulus/tools/DRSKit/Snare_circle_whisker/samples/1-Snare_circle_whisker.wav")
+	files:push_back ( "/home/corrados/edrumulus/tools/DRSKit/Tom1_whisker/samples/11-Tom1_whisker.wav" )
 
 	Editor:do_import (
 		files,
@@ -20,6 +20,11 @@ function factory (params) return function ()
 		ARDOUR.MidiTempoMapDisposition.SMFTempoIgnore,
 		-1,
 		ARDOUR.PluginInfo() )
+
+
+-- TODO how to export a stereo audio file...
+	Editor:export_audio()
+
 
 end end
 
