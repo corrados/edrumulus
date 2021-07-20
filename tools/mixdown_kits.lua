@@ -1,21 +1,25 @@
 
 
-# TEST convert Drumgizmo drum kits to Edrumulus usage by mixdown all the audio channels
-# using Ardour remote controlled by Open Sound Control (OSC)
+-- TEST convert Drumgizmo drum kits to Edrumulus usage by mixdown all the audio channels
+-- using Ardour with lua scripting
 
-# NOTE you need to activate OSC in Ardour in Edit->Preferences->Controller
+ardour { ["type"] = "Snippet", name = "Mixdown Drumgizmo kits for Edrumulus" }
 
-from pythonosc import udp_client
+function factory (params) return function ()
 
-ardour = udp_client.SimpleUDPClient("127.0.0.1", 3819) # Ardour default port number
+	local files = C.StringVector();
 
+	files:push_back("/home/corrados/edrumulus/tools/DRSKit/Snare_circle_whisker/samples/1-Snare_circle_whisker.wav")
 
+	Editor:do_import (
+		files,
+		Editing.ImportDistinctChannels,
+		Editing.ImportAsTrack,
+		ARDOUR.SrcQuality.SrcBest,
+		ARDOUR.MidiTrackNameSource.SMFTrackName,
+		ARDOUR.MidiTempoMapDisposition.SMFTempoIgnore,
+		-1,
+		ARDOUR.PluginInfo() )
 
-#ardour.send_message("/strip/fader", [2, 0.5])
-
-
-# not yet working: import wav file
-#ardour.send_message("/access_action/Common/addExistingAudioFiles", "~/edrumulus/tools/DRSKit/Snare_circle_whisker/samples/4-Snare_circle_whisker.wav")
-
-ardour.send_message("/access_action/Common/addExistingAudioFiles", "key_pressed")
+end end
 
