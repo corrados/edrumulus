@@ -17,13 +17,38 @@
 
 pkg load signal
 
-% load wave file
+% sampling rate depends on the kit
+sampling_rate = 44100;
+
+% paths
 kit_path  = '/home/corrados/edrumulus/tools/DRSKit/';
-file_name = [kit_path 'Tom1_whisker/samples/11-Tom1_whisker.wav'];
-x_all     = audioread(file_name);
+file_path = [kit_path 'Tom1_whisker/samples/'];
+file_name = '11-Tom1_whisker';
+
+% load kit XML
+file_id           = fopen([kit_path 'DRSKit_edrumulus.xml'], 'r');
+end_of_file_found = false;
+cnt               = 1;
+xml_file          = {};
+
+while ~end_of_file_found
+  xml_file{cnt} = fgetl(file_id);
+
+  if xml_file{cnt} < 0
+    xml_file = xml_file(1:end - 1);
+    end_of_file_found = true;
+  end
+
+  cnt = cnt + 1;
+end
+
+fclose(file_id);
+
+% load wave file
+x_all = audioread([file_path file_name '.wav']);
 
 % select one channel
-x = x_all(:, 3);
+x = x_all(:, 1:2);
 
 % filter one channel
 b = firls(255, [0 0.15 0.2 1], [1 1 0.8 0.8]);
@@ -32,5 +57,8 @@ freqz(b, a);
 x = filter(b, a, x);
 
 % play the resulting wave form
-player = audioplayer(x, 44100, 16);
+player = audioplayer(x, sampling_rate, 16);
 play(player);
+
+% store the resulting wave file
+audiowrite([file_path 'mixed_' file_name '.wav'], x, sampling_rate);
