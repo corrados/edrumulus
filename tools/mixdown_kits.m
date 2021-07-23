@@ -21,10 +21,14 @@ pkg load signal
 sampling_rate = 44100;
 
 % base paths
-kit_path     = '/home/corrados/edrumulus/tools/DRSKit/';
 out_kit_path = '/home/corrados/edrumulus/tools/EdrumulusKit/';
 samples_path = 'samples/';
+mixed_prefix = 'mixed_';
+kit_path     = '/home/corrados/edrumulus/tools/DRSKit/';
 
+% channel names of the microphone signals
+channel_names = {'AmbL', 'AmbR', 'Hihat', 'Kdrum_back', 'Kdrum_front', 'OHL', ...
+  'OHR', 'Ride', 'Snare_bottom', 'Snare_top', 'Tom1', 'Tom2', 'Tom3'};
 
 % TODO loop over all instruments of a kit
 
@@ -42,7 +46,7 @@ instr_samples_dir = dir([kit_path file_path samples_path]);
 % initialization
 mkdir(out_kit_path);
 
-% load instrument XML
+% load and modify instrument XML
 file_id           = fopen([kit_path file_path xml_file_name '.xml'], 'r');
 end_of_file_found = false;
 cnt               = 1;
@@ -52,16 +56,48 @@ while ~end_of_file_found
   xml_file{cnt} = fgetl(file_id);
 
   if xml_file{cnt} < 0
-    xml_file = xml_file(1:end - 1);
+    xml_file          = xml_file(1:end - 1); % cut invalid line
     end_of_file_found = true;
-  end
+  else
 
-  cnt = cnt + 1;
+    % add prefix for mixed signal to the sample name
+    if strfind(xml_file{cnt}, 'sample name="')
+      insert_position = strfind(xml_file{cnt}, 'sample name="') + length('sample name="') - 1;
+      xml_file{cnt}   = [xml_file{cnt}(1:insert_position) mixed_prefix xml_file{cnt}(insert_position + 1:end)];
+    end
+
+% TEST
+%if strfind(xml_file{cnt}, 'name=')
+%  disp(xml_file{cnt});
+%end
+
+%if strfind(xml_file{cnt}, ['channel="' channel_names{4}])
+%  disp(xml_file{cnt});
+%end
+
+%if strfind(xml_file{cnt}, ['name="' 'Tom1_whisker-11'])
+%  xml_file{cnt} = strrep(xml_file{cnt}, 'Tom1_whisker-11', [mixed_prefix 'Tom1_whisker-11']);
+%  disp(xml_file{cnt});
+%end
+
+    cnt = cnt + 1;
+
+  end
 end
 
 fclose(file_id);
 
-for sample_index = 1:length(instr_samples_dir)
+% write modified instrument XML file
+file_id = fopen([out_kit_path file_path xml_file_name '.xml'], 'w');
+for line_index = 1:length(xml_file)
+  fwrite(file_id, xml_file{line_index});
+  fwrite(file_id, 10);
+end
+fclose(file_id);
+
+
+
+for sample_index = 1%:length(instr_samples_dir)
 
   if ~instr_samples_dir(sample_index).isdir
 
@@ -71,14 +107,17 @@ for sample_index = 1:length(instr_samples_dir)
     % load wave file
     x_all = audioread([kit_path file_path samples_path file_name '.wav']);
 
-    % select one channel
-    x = x_all(:, 1:2);
 
-    % filter one channel
-    b = firls(255, [0 0.15 0.2 1], [1 1 0.8 0.8]);
-    a = 1;
-    freqz(b, a);
-    x = filter(b, a, x);
+% TEST
+% select two channels (stereo)
+x = x_all(:, 1:2);
+
+% filter one channel
+b = firls(255, [0 0.15 0.2 1], [1 1 0.8 0.8]);
+a = 1;
+freqz(b, a);
+x = filter(b, a, x);
+
 
     % play the resulting wave form
     player = audioplayer(x, sampling_rate, 16);
@@ -86,7 +125,7 @@ for sample_index = 1:length(instr_samples_dir)
 
     % store the resulting wave file
     mkdir([out_kit_path file_path samples_path]);
-    audiowrite([out_kit_path file_path samples_path 'mixed_' file_name '.wav'], x, sampling_rate);
+    audiowrite([out_kit_path file_path samples_path mixed_prefix file_name '.wav'], x, sampling_rate);
 
   end
 
