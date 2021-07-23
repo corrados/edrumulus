@@ -30,6 +30,21 @@ kit_path     = '/home/corrados/edrumulus/tools/DRSKit/';
 channel_names = {'AmbL', 'AmbR', 'Hihat', 'Kdrum_back', 'Kdrum_front', 'OHL', ...
   'OHR', 'Ride', 'Snare_bottom', 'Snare_top', 'Tom1', 'Tom2', 'Tom3'};
 
+% audio mix matrix (left/right channels output gain for each channel)
+mix_matrix = [1, 0; ...
+              0, 1; ...
+              1, 1; ...
+              0, 0; ...
+              1, 1; ...
+              1, 0; ...
+              0, 1; ...
+              1, 1; ...
+              0, 0; ...
+              1, 1; ...
+              1, 1; ...
+              1, 1; ...
+              1, 1];
+
 % TODO loop over all instruments of a kit
 
 % current instrument path
@@ -107,16 +122,18 @@ for sample_index = 1:length(instr_samples_dir)
     % load wave file
     x_all = audioread([kit_path file_path samples_path file_name '.wav']);
 
+    % mix channels
+    x_left  = x_all * mix_matrix(:, 1);
+    x_right = x_all * mix_matrix(:, 2);
+    x       = [x_left, x_right];
+
 
 % TEST
-% select two channels (stereo)
-x = x_all(:, 1:2);
-
-% filter one channel
-b = firls(255, [0 0.15 0.2 1], [1 1 0.8 0.8]);
-a = 1;
-freqz(b, a);
-x = filter(b, a, x);
+%% filter one channel
+%b = firls(255, [0 0.15 0.2 1], [1 1 0.8 0.8]);
+%a = 1;
+%freqz(b, a);
+%x = filter(b, a, x);
 
 
     % play the resulting wave form
