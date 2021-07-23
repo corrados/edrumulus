@@ -21,10 +21,14 @@ pkg load signal
 sampling_rate = 44100;
 
 % base paths
-out_kit_path = '/home/corrados/edrumulus/tools/EdrumulusKit/';
+out_kit_name = 'edrumuluskit';
+out_kit_path = ['/home/corrados/edrumulus/tools/' out_kit_name '/'];
 samples_path = 'samples/';
 mixed_prefix = 'mixed_';
 kit_path     = '/home/corrados/edrumulus/tools/DRSKit/';
+
+% optional: instrument select (only process this instrument)
+instrument_select = [];%'Snare';% % use "[]" for mixing all instruments
 
 % channel names of the microphone signals
 channel_names = {'AmbL', 'AmbR', 'Hihat', 'Kdrum_back', 'Kdrum_front', 'OHL', ...
@@ -48,12 +52,85 @@ mix_matrix = [1, 0; ...
 % initialization
 mkdir(out_kit_path);
 
-% get instrument directory names
+% get XML file and instrument directory names
 instr_dir = dir(kit_path);
 
+% identify "full" kit description (biggest file is assumed to be the "full" one)
+xml_file_name_index = find(~[instr_dir.isdir]);
+file_size           = zeros(length(instr_dir), 1);
+for instrument_index = xml_file_name_index
+  file_size(instrument_index) = instr_dir(instrument_index).statinfo.size;
+end
+[~, biggest_file_index] = max(file_size);
+
+% load and modify kit XML
+file_id           = fopen([kit_path instr_dir(biggest_file_index).name], 'r');
+end_of_file_found = false;
+cnt               = 1;
+xml_file          = {};
+
+while ~end_of_file_found
+  xml_file{cnt} = fgetl(file_id);
+
+  if xml_file{cnt} < 0
+    xml_file          = xml_file(1:end - 1); % cut invalid line
+    end_of_file_found = true;
+  else
+
+    % exchange names of first two channels (left/right channel)
+    if strfind(xml_file{cnt}, ['channel name="' channel_names{1}])
+      xml_file{cnt} = strrep(xml_file{cnt}, ['channel name="' channel_names{1}], ['channel name="left_channel']);
+    end
+    if strfind(xml_file{cnt}, ['channel name="' channel_names{2}])
+      xml_file{cnt} = strrep(xml_file{cnt}, ['channel name="' channel_names{2}], ['channel name="right_channel']);
+    end
+    if strfind(xml_file{cnt}, ['channelmap in="' channel_names{1}])
+      xml_file{cnt} = strrep(xml_file{cnt}, ['channelmap in="' channel_names{1}], ['channelmap in="left_channel']);
+    end
+    if strfind(xml_file{cnt}, ['channelmap in="' channel_names{2}])
+      xml_file{cnt} = strrep(xml_file{cnt}, ['channelmap in="' channel_names{2}], ['channelmap in="right_channel']);
+    end
+    if strfind(xml_file{cnt}, ['" out="' channel_names{1}])
+      xml_file{cnt} = strrep(xml_file{cnt}, ['" out="' channel_names{1}], ['" out="left_channel']);
+    end
+    if strfind(xml_file{cnt}, ['" out="' channel_names{2}])
+      xml_file{cnt} = strrep(xml_file{cnt}, ['" out="' channel_names{2}], ['" out="right_channel']);
+    end
+
+    % remove all other channels
+    for channel_names_index = 3:length(channel_names)
+      if strfind(xml_file{cnt}, ['hannel name="' channel_names{channel_names_index}])
+        cnt = cnt - 1;
+      end
+    end
+    for channel_names_index = 3:length(channel_names)
+      if strfind(xml_file{cnt}, ['channelmap in="' channel_names{channel_names_index}])
+        cnt = cnt - 1;
+      end
+    end
+
+    cnt = cnt + 1;
+
+  end
+end
+
+fclose(file_id);
+
+% write modified kit XML file
+file_id = fopen([out_kit_path out_kit_name '.xml'], 'w');
+for line_index = 1:length(xml_file)
+  fwrite(file_id, xml_file{line_index});
+  fwrite(file_id, 10);
+end
+fclose(file_id);
+
+% loop over all instruments
 for instrument_index = 1:length(instr_dir)
 
-  if instr_dir(instrument_index).isdir && (length(instr_dir(instrument_index).name) > 2)
+  is_valid_instrument = instr_dir(instrument_index).isdir && (length(instr_dir(instrument_index).name) > 2);
+  is_instrument_used  = isempty(instrument_select) || strcmp(instr_dir(instrument_index).name, instrument_select);
+
+  if is_valid_instrument && is_instrument_used
 
     disp(['Current instrument: ' instr_dir(instrument_index).name]);
 
@@ -90,10 +167,14 @@ for instrument_index = 1:length(instr_dir)
 
         % exchange names of first two channels (left/right channel)
         if strfind(xml_file{cnt}, ['audiofile channel="' channel_names{1}])
-          xml_file{cnt} = strrep(xml_file{cnt}, ['audiofile channel="' channel_names{1}], ['audiofile channel="left_channel']);
+          xml_file{cnt}   = strrep(xml_file{cnt}, ['audiofile channel="' channel_names{1}], ['audiofile channel="left_channel']);
+          insert_position = strfind(xml_file{cnt}, ['file="' samples_path]) + length(['file="' samples_path]) - 1;
+          xml_file{cnt}   = [xml_file{cnt}(1:insert_position) mixed_prefix xml_file{cnt}(insert_position + 1:end)];
         end
         if strfind(xml_file{cnt}, ['audiofile channel="' channel_names{2}])
-          xml_file{cnt} = strrep(xml_file{cnt}, ['audiofile channel="' channel_names{2}], ['audiofile channel="right_channel']);
+          xml_file{cnt}   = strrep(xml_file{cnt}, ['audiofile channel="' channel_names{2}], ['audiofile channel="right_channel']);
+          insert_position = strfind(xml_file{cnt}, ['file="' samples_path]) + length(['file="' samples_path]) - 1;
+          xml_file{cnt}   = [xml_file{cnt}(1:insert_position) mixed_prefix xml_file{cnt}(insert_position + 1:end)];
         end
 
         % remove all other channels
