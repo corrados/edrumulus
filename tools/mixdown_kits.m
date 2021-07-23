@@ -20,13 +20,30 @@ pkg load signal
 % sampling rate depends on the kit
 sampling_rate = 44100;
 
-% paths
-kit_path  = '/home/corrados/edrumulus/tools/DRSKit/';
-file_path = [kit_path 'Tom1_whisker/samples/'];
-file_name = '11-Tom1_whisker';
+% base paths
+kit_path     = '/home/corrados/edrumulus/tools/DRSKit/';
+out_kit_path = '/home/corrados/edrumulus/tools/EdrumulusKit/';
+samples_path = 'samples/';
 
-% load kit XML
-file_id           = fopen([kit_path 'DRSKit_edrumulus.xml'], 'r');
+
+% TODO loop over all instruments of a kit
+
+% current instrument path
+file_path = 'Tom1_whisker/';
+
+% get instrument XML file name
+instr_root_dir      = dir([kit_path file_path]);
+xml_file_name_index = find(~[instr_root_dir.isdir]);
+[~, xml_file_name]  = fileparts(instr_root_dir(xml_file_name_index).name);
+
+% get instrument samples file names
+instr_samples_dir = dir([kit_path file_path samples_path]);
+
+% initialization
+mkdir(out_kit_path);
+
+% load instrument XML
+file_id           = fopen([kit_path file_path xml_file_name '.xml'], 'r');
 end_of_file_found = false;
 cnt               = 1;
 xml_file          = {};
@@ -44,21 +61,33 @@ end
 
 fclose(file_id);
 
-% load wave file
-x_all = audioread([file_path file_name '.wav']);
+for sample_index = 1:length(instr_samples_dir)
 
-% select one channel
-x = x_all(:, 1:2);
+  if ~instr_samples_dir(sample_index).isdir
 
-% filter one channel
-b = firls(255, [0 0.15 0.2 1], [1 1 0.8 0.8]);
-a = 1;
-freqz(b, a);
-x = filter(b, a, x);
+    % get current sample file name
+    [~, file_name] = fileparts(instr_samples_dir(sample_index).name);
 
-% play the resulting wave form
-player = audioplayer(x, sampling_rate, 16);
-play(player);
+    % load wave file
+    x_all = audioread([kit_path file_path samples_path file_name '.wav']);
 
-% store the resulting wave file
-audiowrite([file_path 'mixed_' file_name '.wav'], x, sampling_rate);
+    % select one channel
+    x = x_all(:, 1:2);
+
+    % filter one channel
+    b = firls(255, [0 0.15 0.2 1], [1 1 0.8 0.8]);
+    a = 1;
+    freqz(b, a);
+    x = filter(b, a, x);
+
+    % play the resulting wave form
+    player = audioplayer(x, sampling_rate, 16);
+    play(player);
+
+    % store the resulting wave file
+    mkdir([out_kit_path file_path samples_path]);
+    audiowrite([out_kit_path file_path samples_path 'mixed_' file_name '.wav'], x, sampling_rate);
+
+  end
+
+end
