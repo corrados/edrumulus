@@ -66,19 +66,20 @@ while ~end_of_file_found
       xml_file{cnt}   = [xml_file{cnt}(1:insert_position) mixed_prefix xml_file{cnt}(insert_position + 1:end)];
     end
 
-% TEST
-%if strfind(xml_file{cnt}, 'name=')
-%  disp(xml_file{cnt});
-%end
+    % exchange names of first two channels (left/right channel)
+    if strfind(xml_file{cnt}, ['audiofile channel="' channel_names{1}])
+      xml_file{cnt} = strrep(xml_file{cnt}, ['audiofile channel="' channel_names{1}], ['audiofile channel="left_channel']);
+    end
+    if strfind(xml_file{cnt}, ['audiofile channel="' channel_names{2}])
+      xml_file{cnt} = strrep(xml_file{cnt}, ['audiofile channel="' channel_names{2}], ['audiofile channel="right_channel']);
+    end
 
-%if strfind(xml_file{cnt}, ['channel="' channel_names{4}])
-%  disp(xml_file{cnt});
-%end
-
-%if strfind(xml_file{cnt}, ['name="' 'Tom1_whisker-11'])
-%  xml_file{cnt} = strrep(xml_file{cnt}, 'Tom1_whisker-11', [mixed_prefix 'Tom1_whisker-11']);
-%  disp(xml_file{cnt});
-%end
+    % remove all other channels
+    for channel_names_index = 3:length(channel_names)
+      if strfind(xml_file{cnt}, ['audiofile channel="' channel_names{channel_names_index}])
+        cnt = cnt - 1;
+      end
+    end
 
     cnt = cnt + 1;
 
@@ -95,9 +96,8 @@ for line_index = 1:length(xml_file)
 end
 fclose(file_id);
 
-
-
-for sample_index = 1%:length(instr_samples_dir)
+% mix and process instrument samples
+for sample_index = 1:length(instr_samples_dir)
 
   if ~instr_samples_dir(sample_index).isdir
 
