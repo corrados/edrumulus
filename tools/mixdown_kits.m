@@ -207,6 +207,9 @@ for instrument_index = 1:length(instr_dir)
   % exclude invalid directories
   is_instrument_used = is_instrument_used && ~strcmp(instr_dir(instrument_index).name, '_pictures');
 
+  % only use instruments which are defined in the MIDI map
+  is_instrument_used = is_instrument_used && any(strcmp(midi_map(:, 1), instr_dir(instrument_index).name));
+
 
 % TEST exclude the snare-position test instrument for now
 is_instrument_used = is_instrument_used && ~strcmp(instr_dir(instrument_index).name, 'snare-position');
