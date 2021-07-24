@@ -3,8 +3,8 @@
 	<map note="36" instr="kick_l"/>
 	<map note="38" instr="snare_on_center"/>
 	<map note="40" instr="snare_rim_shot"/>
-	<map note="48" instr="tom_2"/>
-	<map note="45" instr="tom_1"/>
+	<map note="45" instr="tom_2"/>
+	<map note="48" instr="tom_1"/>
 	<map note="22" instr="hihat_closed1"/>
 	<map note="26" instr="hihat_open"/>
 	<map note="51" instr="ride"/>

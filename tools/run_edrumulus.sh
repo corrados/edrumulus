@@ -92,6 +92,13 @@ if [ -d "aasimonster2" ]; then
   cp aasimonster2_edrumulus.xml aasimonster2_midimap_edrumulus.xml aasimonster2/
 fi
 
+if [ -d "edrumuluskit" ]; then
+  KITXML="edrumuluskit/edrumuluskit.xml"
+  KITMIDIMAPXML="edrumuluskit/edrumuluskit_midimap.xml"
+  KITJACKPORTLEFT=DrumGizmo:0-left_channel
+  KITJACKPORTRIGHT=DrumGizmo:1-right_channel
+fi
+
 
 # jack deamon ------------------------------------------------------------------
 # get first USB audio sound card device
