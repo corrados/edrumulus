@@ -28,7 +28,7 @@ mixed_prefix  = 'mixed_';
 midi_map_name = [out_kit_name '_midimap'];
 
 % optional: instrument select (only process this instrument)
-instrument_select = [];%'Snare';% % use "[]" for mixing all instruments
+instrument_select = [];% 'Snare';% % use "[]" for mixing all instruments
 
 % kit properties, where, e.g., channel names and audio mix matrix are
 % defined (left/right channels output gain for each channel)
@@ -120,75 +120,26 @@ mkdir(out_kit_path);
 % get XML file and instrument directory names
 instr_dir = dir(kit_path);
 
-% identify "full" kit description (biggest file is assumed to be the "full" one)
-xml_file_name_index = find(~[instr_dir.isdir]);
-file_size           = zeros(length(instr_dir), 1);
-for instrument_index = xml_file_name_index
-  file_size(instrument_index) = instr_dir(instrument_index).statinfo.size;
-end
-[~, biggest_file_index] = max(file_size);
-
-% load and modify kit XML
-file_id           = fopen([kit_path instr_dir(biggest_file_index).name], 'r');
-end_of_file_found = false;
-cnt               = 1;
-xml_file          = {};
-
-while ~end_of_file_found
-  xml_file{cnt} = fgetl(file_id);
-
-  if xml_file{cnt} < 0
-    xml_file          = xml_file(1:end - 1); % cut invalid line
-    end_of_file_found = true;
-  else
-
-    % exchange names of first two channels (left/right channel)
-    if strfind(xml_file{cnt}, ['channel name="' channel_properties{1, 2}])
-      xml_file{cnt} = strrep(xml_file{cnt}, ['channel name="' channel_properties{1, 2}], ['channel name="left_channel']);
-    end
-    if strfind(xml_file{cnt}, ['channel name="' channel_properties{2, 2}])
-      xml_file{cnt} = strrep(xml_file{cnt}, ['channel name="' channel_properties{2, 2}], ['channel name="right_channel']);
-    end
-    if strfind(xml_file{cnt}, ['channelmap in="' channel_properties{1, 1}])
-      xml_file{cnt} = strrep(xml_file{cnt}, ['channelmap in="' channel_properties{1, 1}], ['channelmap in="left_channel']);
-    end
-    if strfind(xml_file{cnt}, ['channelmap in="' channel_properties{2, 1}])
-      xml_file{cnt} = strrep(xml_file{cnt}, ['channelmap in="' channel_properties{2, 1}], ['channelmap in="right_channel']);
-    end
-    if strfind(xml_file{cnt}, ['" out="' channel_properties{1, 2}])
-      xml_file{cnt} = strrep(xml_file{cnt}, ['" out="' channel_properties{1, 2}], ['" out="left_channel']);
-    end
-    if strfind(xml_file{cnt}, ['" out="' channel_properties{2, 2}])
-      xml_file{cnt} = strrep(xml_file{cnt}, ['" out="' channel_properties{2, 2}], ['" out="right_channel']);
-    end
-
-    % remove all other channels
-    for channel_properties_index = 3:size(channel_properties, 1)
-      if strfind(xml_file{cnt}, ['channel name="' channel_properties{channel_properties_index, 2}])
-        cnt = cnt - 1;
-      end
-    end
-    for channel_properties_index = 3:size(channel_properties, 1)
-      if strfind(xml_file{cnt}, ['channelmap in="' channel_properties{channel_properties_index, 1}])
-        cnt = cnt - 1;
-      end
-    end
-
-    cnt = cnt + 1;
-
-  end
-end
-
-fclose(file_id);
-
-% write modified kit XML file
+% create kit XML file (only use instruments which are defined in the MIDI map)
 file_id = fopen([out_kit_path out_kit_name '.xml'], 'w');
-for line_index = 1:length(xml_file)
-  fwrite(file_id, [xml_file{line_index} char(10)]);
+fwrite(file_id, ['<?xml version="1.0" encoding="UTF-8"?>' char(10)]);
+fwrite(file_id, ['<drumkit name="' out_kit_name '" description="Mixed Drumgizmo drum kit">' char(10)]);
+fwrite(file_id, ['  <channels>' char(10)]);
+fwrite(file_id, ['      <channel name="left_channel"/>' char(10)]);
+fwrite(file_id, ['      <channel name="right_channel"/>' char(10)]);
+fwrite(file_id, ['    </channels>' char(10)]);
+fwrite(file_id, ['    <instruments>' char(10)]);
+for midi_map_index = 1:size(midi_map, 1)
+  fwrite(file_id, ['    <instrument name="' midi_map{midi_map_index, 1} '" file="' midi_map{midi_map_index, 1} '/' midi_map{midi_map_index, 1} '.xml">' char(10)]);
+  fwrite(file_id, ['      <channelmap in="left_channel" out="left_channel" main="true"/>' char(10)]);
+  fwrite(file_id, ['      <channelmap in="right_channel" out="right_channel" main="true"/>' char(10)]);
+  fwrite(file_id, ['    </instrument>' char(10)]);
 end
+fwrite(file_id, ['  </instruments>' char(10)]);
+fwrite(file_id, ['</drumkit>' char(10)]);
 fclose(file_id);
 
-% write MIDI map
+% create MIDI map XML file
 file_id = fopen([out_kit_path midi_map_name '.xml'], 'w');
 fwrite(file_id, ['<?xml version="1.0" encoding="UTF-8"?>' char(10)]);
 fwrite(file_id, ['<midimap>' char(10)]);
