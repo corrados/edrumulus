@@ -184,7 +184,11 @@ fwrite(file_id, ['      <channel name="right_channel"/>' char(10)]);
 fwrite(file_id, ['    </channels>' char(10)]);
 fwrite(file_id, ['    <instruments>' char(10)]);
 for midi_map_index = 1:size(midi_map, 1)
-  fwrite(file_id, ['    <instrument name="' midi_map{midi_map_index, 1} '" file="' midi_map{midi_map_index, 1} '/' midi_map{midi_map_index, 1} '.xml">' char(10)]);
+  if strfind(toupper(midi_map{midi_map_index, 1}), 'HIHAT')
+    fwrite(file_id, ['    <instrument name="' midi_map{midi_map_index, 1} '" group="hihat" file="' midi_map{midi_map_index, 1} '/' midi_map{midi_map_index, 1} '.xml">' char(10)]);
+  else
+    fwrite(file_id, ['    <instrument name="' midi_map{midi_map_index, 1} '" file="' midi_map{midi_map_index, 1} '/' midi_map{midi_map_index, 1} '.xml">' char(10)]);
+  end
   fwrite(file_id, ['      <channelmap in="left_channel" out="left_channel" main="true"/>' char(10)]);
   fwrite(file_id, ['      <channelmap in="right_channel" out="right_channel" main="true"/>' char(10)]);
   fwrite(file_id, ['    </instrument>' char(10)]);
