@@ -249,7 +249,7 @@ fi
 
 
 # run Edrumulus ----------------------------------------------------------------
-./drumgizmo/drumgizmo/drumgizmo --async-load -p close=0.9 -s -S limit=500M -l -L max=2,rampdown=0.1 -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
+./drumgizmo/drumgizmo/drumgizmo -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
 sleep 5
 
 jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
