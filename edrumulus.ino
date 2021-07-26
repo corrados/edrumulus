@@ -79,7 +79,7 @@ void setup()
   edrumulus.set_midi_notes      ( 8, 43, 58 ); // tom 3
 
 // my prototype setup configuration...
-  edrumulus.set_pad_type          ( 0, Edrumulus::PD8 ); // snare
+  edrumulus.set_pad_type          ( 0, Edrumulus::PD80R ); // snare
   edrumulus.set_rim_shot_is_used  ( 0, true );
   edrumulus.set_pos_sense_is_used ( 0, true );
   edrumulus.set_pad_type          ( 1, Edrumulus::KD7 ); // kick

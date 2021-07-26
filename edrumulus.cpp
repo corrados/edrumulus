@@ -323,7 +323,8 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       break;
 
     case PD80R:
-      pad_settings.velocity_sensitivity = 4;
+      pad_settings.velocity_sensitivity = 0;
+      pad_settings.pos_threshold        = 13;
       pad_settings.scan_time_ms         = 3.0f;
       pad_settings.main_peak_dist_ms    = 2.4f;
       pad_settings.decay_len2_ms        = 75.0f;

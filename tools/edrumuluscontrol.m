@@ -285,7 +285,6 @@ set(GUI.slider4, 'value', 0); set(GUI.val4, 'string', 'Not Set');
 set(GUI.slider5, 'value', 0); set(GUI.val5, 'string', 'Not Set');
 set(GUI.slider6, 'value', 0); set(GUI.val6, 'string', 'Not Set');
 set(GUI.slider7, 'value', 0); set(GUI.val7, 'string', 'Not Set');
-set(GUI.slider8, 'value', 0); set(GUI.val8, 'string', 'Not Set');
 set(GUI.slider9, 'value', 0); set(GUI.val9, 'string', 'Not Set');
 
 end
