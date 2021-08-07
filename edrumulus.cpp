@@ -323,7 +323,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       break;
 
     case PD80R:
-      pad_settings.velocity_sensitivity = 0;
+      pad_settings.velocity_sensitivity = 5;
       pad_settings.pos_threshold        = 13;
       pad_settings.scan_time_ms         = 3.0f;
       pad_settings.main_peak_dist_ms    = 2.4f;
@@ -465,11 +465,11 @@ void Edrumulus::Pad::initialize()
   rim_switch_on_cnt_thresh = round ( 10.0f * 1e-3f * Fs );                                      // number of on samples until we detect a choke
   cancellation_factor      = static_cast<float> ( pad_settings.cancellation ) / 31.0f;          // cancellation factor: range of 0.0..1.0
 
-  // The ESP32 ADC has 12 bits resulting in a range of 20*log10(2048)=66.2 dB minus the threshold value.
+  // The ESP32 ADC has 12 bits resulting in a range of 20*log10(2048)=66.2 dB.
   // The sensitivity parameter shall be in the range of 0..31. This range should then be mapped to the
   // maximum possible dynamic where sensitivity of 31 means that we have no dynamic at all and 0 means
   // that we use the full possible ADC range.
-  const float max_velocity_range_db = 20 * log10 ( ADC_MAX_RANGE / 2 ) - threshold_db;
+  const float max_velocity_range_db = 20 * log10 ( ADC_MAX_RANGE / 2 );
   const float velocity_range_db     = max_velocity_range_db * ( 32 - pad_settings.velocity_sensitivity ) / 32;
 
   // Consider MIDI curve (taken from RyoKosaka HelloDrum-arduino-Library: int HelloDrum::curve() function)
