@@ -483,11 +483,11 @@ void Edrumulus::Pad::initialize()
 
   switch ( pad_settings.curve_type )
   {
-    case EXP1:            curve_param = 1.03f;  break;
-    case EXP2:            curve_param = 1.04f;  break;
-    case LOG1:            curve_param = 1.015f; break;
-    case LOG2:            curve_param = 1.01f;  break;
-    default: /* LINEAR */ curve_param = 1.02f;  break; // this curve parameter comes close to what Roland is doing for "linear"
+    case EXP1:            curve_param = 1.04f; break;
+    case EXP2:            curve_param = 1.05f; break;
+    case LOG1:            curve_param = 1.02f; break;
+    case LOG2:            curve_param = 1.01f; break;
+    default: /* LINEAR */ curve_param = 1.03f; break; // this curve parameter comes close to what Roland is doing for "linear"
   }
 
   velocity_factor = 126.0f / ( ( pow ( curve_param, 126.0f ) - 1 ) * curve_param *
