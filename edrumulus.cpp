@@ -324,6 +324,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
 
     case PD80R:
       pad_settings.velocity_sensitivity = 5;
+      pad_settings.rim_shot_treshold    = 8;
       pad_settings.pos_threshold        = 13;
       pad_settings.scan_time_ms         = 3.0f;
       pad_settings.main_peak_dist_ms    = 2.4f;
@@ -334,7 +335,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       break;
 
     case PD8:
-      pad_settings.velocity_sensitivity  = 8;
+      pad_settings.velocity_sensitivity  = 12;
       pad_settings.pos_threshold         = 26;
       pad_settings.pos_sensitivity       = 11;
       pad_settings.rim_shot_treshold     = 16;
@@ -393,7 +394,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
 
     case KD7:
       pad_settings.velocity_threshold    = 9;
-      pad_settings.velocity_sensitivity  = 6;
+      pad_settings.velocity_sensitivity  = 14;
       pad_settings.scan_time_ms          = 3.5f;
       pad_settings.main_peak_dist_ms     = 2.0f;
       pad_settings.decay_est_delay2nd_ms = 4.0f;
@@ -421,6 +422,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
     case CY8:
       pad_settings.velocity_sensitivity = 14;
       pad_settings.rim_shot_treshold    = 30;
+      pad_settings.curve_type           = LOG2;
       pad_settings.scan_time_ms         = 6.0f;
       pad_settings.main_peak_dist_ms    = 2.0f;
       pad_settings.decay_fact_db        = 7.0f;
