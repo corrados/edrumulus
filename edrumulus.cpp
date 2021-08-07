@@ -323,7 +323,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       break;
 
     case PD80R:
-      pad_settings.velocity_sensitivity = 5;
+      pad_settings.velocity_sensitivity = 6;
       pad_settings.rim_shot_treshold    = 8;
       pad_settings.pos_threshold        = 13;
       pad_settings.scan_time_ms         = 3.0f;
@@ -353,7 +353,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       break;
 
     case TP80:
-      pad_settings.velocity_sensitivity  = 8;
+      pad_settings.velocity_sensitivity  = 13;
       pad_settings.pos_threshold         = 22;
       pad_settings.pos_sensitivity       = 23;
       pad_settings.scan_time_ms          = 2.75f;
@@ -420,7 +420,8 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       break;
 
     case CY8:
-      pad_settings.velocity_sensitivity = 14;
+      pad_settings.velocity_threshold   = 11;
+      pad_settings.velocity_sensitivity = 17;
       pad_settings.rim_shot_treshold    = 30;
       pad_settings.curve_type           = LOG2;
       pad_settings.scan_time_ms         = 6.0f;
