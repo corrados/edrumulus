@@ -274,7 +274,7 @@ protected:
   // for ESP we have a coupling of ADC inputs so that a hi-hat control pedal movement may
   // influence the DC offset of some pad inputs, therefore we need to adapt faster to
   // compensate for this
-  const int dc_offset_iir_tau_seconds = 10; // DC offset update IIR filter tau in seconds
+  const int dc_offset_iir_tau_seconds = 5;  // DC offset update IIR filter tau in seconds
 #else
   const int dc_offset_iir_tau_seconds = 30; // DC offset update IIR filter tau in seconds
 #endif
