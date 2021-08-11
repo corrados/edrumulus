@@ -952,7 +952,7 @@ void Edrumulus::Pad::process_control_sample ( const int* input,
   cur_midi_ctrl_value     = max ( 0, min ( 127, cur_midi_ctrl_value ) );
 
   // introduce hysteresis to avoid sending too many MIDI control messages
-  static const int control_midi_hysteresis = ADC_MAX_NOISE_AMPL;
+  static const int control_midi_hysteresis = ADC_MAX_NOISE_AMPL / 2;
   change_found                             = false;
 
   if ( ( cur_midi_ctrl_value > ( prev_ctrl_value + control_midi_hysteresis ) ) ||
