@@ -179,9 +179,6 @@ midi_map           = midi_map{kit_select};
 % initialization
 mkdir(out_kit_path);
 
-% get XML file and instrument directory names
-instr_dir = dir(kit_path);
-
 % create kit XML file (only use instruments which are defined in the MIDI map)
 file_id = fopen([out_kit_path out_kit_name '.xml'], 'w');
 fwrite(file_id, ['<?xml version="1.0" encoding="UTF-8"?>' char(10)]);
