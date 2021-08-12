@@ -222,28 +222,14 @@ fwrite(file_id, ['</midimap>' char(10)]);
 fclose(file_id);
 
 % loop over all instruments
-for instrument_index = 1:length(instr_dir)
+for instrument_index = 1:length(midi_map)
 
-  is_valid_instrument = instr_dir(instrument_index).isdir && (length(instr_dir(instrument_index).name) > 2);
-  is_instrument_used  = isempty(instrument_select) || strcmp(instr_dir(instrument_index).name, instrument_select);
+  if isempty(instrument_select) || strcmp(midi_map{instrument_index, 1}, instrument_select)
 
-  % exclude invalid directories
-  is_instrument_used = is_instrument_used && ~strcmp(instr_dir(instrument_index).name, '_pictures');
-
-  % only use instruments which are defined in the MIDI map
-  is_instrument_used = is_instrument_used && any(strcmp(midi_map(:, 1), instr_dir(instrument_index).name));
-
-
-% TEST exclude the snare-position test instrument for now
-is_instrument_used = is_instrument_used && ~strcmp(instr_dir(instrument_index).name, 'snare-position');
-
-
-  if is_valid_instrument && is_instrument_used
-
-    disp(['Current instrument: ' instr_dir(instrument_index).name]);
+    disp(['Current instrument: ' midi_map{instrument_index, 1}]);
 
     % get current instrument path
-    file_path = [instr_dir(instrument_index).name '/'];
+    file_path = [midi_map{instrument_index, 1} '/'];
 
     % get instrument XML file name
     instr_root_dir      = dir([kit_path file_path]);
