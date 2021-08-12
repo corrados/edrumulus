@@ -75,8 +75,12 @@ protected:
   Espikestate prev1_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   Espikestate prev2_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   Espikestate prev3_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  Espikestate prev4_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  Espikestate prev5_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   float       prev_input1[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   float       prev_input2[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  float       prev_input3[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  float       prev_input4[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
 };
 
 #endif
