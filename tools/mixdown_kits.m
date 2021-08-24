@@ -28,17 +28,17 @@ mixed_prefix  = 'mixed_';
 midi_map_name = [out_kit_name '_midimap'];
 
 % kit select or optional instrument select
-kit_select        = [];%3; % if [], the instrument_select is used otherwise the entire seleected kit number
-instrument_select = {2, 'snare_rim_shot'; ...
-                     3, 'CrashL'; ...
-                     3, 'HihatClosed'; ...
-                     3, 'HihatOpen'; ...
-                     3, 'KDrumL'; ...
-                     3, 'RideR'; ...
-                     3, 'RideRBell'; ...
-                     3, 'Snare'; ...
-                     3, 'Tom1'; ...
-                     3, 'Tom2'};
+kit_select        = [];%3; % if [], the instrument_select is used otherwise the entire selected kit number
+instrument_select = {2, 'snare_rim_shot', 1.5; ... % gain boost of rim shot
+                     3, 'CrashL',           0; ...
+                     3, 'HihatClosed',      0; ...
+                     3, 'HihatOpen',        0; ...
+                     3, 'KDrumL',           0; ...
+                     3, 'RideR',            0; ...
+                     3, 'RideRBell',        0; ...
+                     3, 'Snare',            0; ...
+                     3, 'Tom1',             0; ...
+                     3, 'Tom2',             0};
 
 % kit properties, where, e.g., channel names and audio mix matrix are
 % defined (left/right channels output gain for each channel)
@@ -185,12 +185,10 @@ kit_midi_map{3} = {'CrashL',       {55, 49}; ...
 if ~isempty(kit_select)
   midi_map = kit_midi_map{kit_select};
 else
-  if ~isempty(instrument_select)
-    for instrument_index = 1:size(instrument_select, 1)
-      current_kit_idx                = instrument_select{instrument_index, 1};
-      current_kit_instrument_log_idx = strcmp(kit_midi_map{current_kit_idx}(:, 1), instrument_select(instrument_index, 2));
-      midi_map(instrument_index, :)  = kit_midi_map{current_kit_idx}(current_kit_instrument_log_idx, :);
-    end
+  for instrument_index = 1:size(instrument_select, 1)
+    current_kit_idx                = instrument_select{instrument_index, 1};
+    current_kit_instrument_log_idx = strcmp(kit_midi_map{current_kit_idx}(:, 1), instrument_select(instrument_index, 2));
+    midi_map(instrument_index, :)  = kit_midi_map{current_kit_idx}(current_kit_instrument_log_idx, :);
   end
 end
 
@@ -246,12 +244,14 @@ for instrument_index = 1:length(midi_map)
 
     current_kit_path   = kit_path{kit_select};
     channel_properties = kit_channel_properties{kit_select};
+    instrument_gain    = 1; % no gain modification for using an entire kit
 
   else
 
     current_kit_idx    = instrument_select{instrument_index, 1};
     current_kit_path   = kit_path{current_kit_idx};
     channel_properties = kit_channel_properties{current_kit_idx};
+    instrument_gain    = 10 .^ (instrument_select{instrument_index, 3} / 20);
 
   end
 
@@ -375,7 +375,7 @@ end
       mix_matrix = 10 .^ (cell2mat(channel_properties(:, 3:4)) / 20);
       x_left     = x_all * mix_matrix(:, 1);
       x_right    = x_all * mix_matrix(:, 2);
-      x          = [x_left, x_right];
+      x          = [x_left, x_right] * instrument_gain;
 
 
 % TEST
