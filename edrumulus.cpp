@@ -28,7 +28,11 @@ Edrumulus::Edrumulus() :
   samplerate_prev_micros_cnt = 0;
   samplerate_prev_micros     = micros();
   status_is_error            = false;
-  spike_cancel_is_used       = true; // use spike cancellation per default (note that it increases the latency)
+#ifdef ESP_PLATFORM
+  spike_cancel_is_used       = true; // use spike cancellation on the ESP32 per default (note that it increases the latency)
+#else
+  spike_cancel_is_used       = false; // default
+#endif
   cancel_num_samples         = ( cancel_time_ms * Fs ) / 1000;
   cancel_cnt                 = 0;
   cancel_MIDI_velocity       = 1;
