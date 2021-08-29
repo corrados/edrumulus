@@ -268,7 +268,7 @@ protected:
   const int dc_offset_est_len         = 10000; // samples (about a second at 8 kHz sampling rate)
   const int samplerate_max_cnt        = 10000; // samples
   const int samplerate_max_error_Hz   = 100;   // tolerate a sample rate deviation of 100 Hz
-  const int cancel_time_ms            = 20;    // on same stand approx. 10 ms + some margin (10 ms)
+  const int cancel_time_ms            = 30;    // on same stand approx. 10 ms + some margin (20 ms)
 
 #ifdef ESP_PLATFORM
   // for ESP we have a coupling of ADC inputs so that a hi-hat control pedal movement may
