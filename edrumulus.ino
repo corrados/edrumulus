@@ -25,10 +25,12 @@
 MIDI_CREATE_DEFAULT_INSTANCE();
 # define MYMIDI                     MIDI
 # define MIDI_CONTROL_CHANGE_TYPE   midi::ControlChange
+# define MIDI_SEND_AFTER_TOUCH      sendAfterTouch
 #endif
 #ifdef TEENSYDUINO
 # define MYMIDI                     usbMIDI
 # define MIDI_CONTROL_CHANGE_TYPE   usbMIDI.ControlChange
+# define MIDI_SEND_AFTER_TOUCH      sendAfterTouchPoly
 #endif
 #endif
 
@@ -168,25 +170,25 @@ void loop()
     if ( edrumulus.get_choke_on_found ( pad_idx ) )
     {
       // if grabbed edge found, polyphonic aftertouch at 127 is transmitted for all notes of the pad
-      MYMIDI.sendAfterTouch ( edrumulus.get_midi_note_norm ( pad_idx ), 127, midi_channel );
-      MYMIDI.sendAfterTouch ( edrumulus.get_midi_note_rim  ( pad_idx ), 127, midi_channel );
+      MYMIDI.MIDI_SEND_AFTER_TOUCH ( edrumulus.get_midi_note_norm ( pad_idx ), 127, midi_channel );
+      MYMIDI.MIDI_SEND_AFTER_TOUCH ( edrumulus.get_midi_note_rim  ( pad_idx ), 127, midi_channel );
 
       if ( pad_idx == hihat_pad_idx )
       {
-        MYMIDI.sendAfterTouch ( edrumulus.get_midi_note_open_norm ( pad_idx ), 127, midi_channel );
-        MYMIDI.sendAfterTouch ( edrumulus.get_midi_note_open_rim  ( pad_idx ), 127, midi_channel );
+        MYMIDI.MIDI_SEND_AFTER_TOUCH ( edrumulus.get_midi_note_open_norm ( pad_idx ), 127, midi_channel );
+        MYMIDI.MIDI_SEND_AFTER_TOUCH ( edrumulus.get_midi_note_open_rim  ( pad_idx ), 127, midi_channel );
       }
     }
     else if ( edrumulus.get_choke_off_found ( pad_idx ) )
     {
       // if released edge found, polyphonic aftertouch at 0 is transmitted for all notes of the pad
-      MYMIDI.sendAfterTouch ( edrumulus.get_midi_note_norm ( pad_idx ), 0, midi_channel );
-      MYMIDI.sendAfterTouch ( edrumulus.get_midi_note_rim  ( pad_idx ), 0, midi_channel );
+      MYMIDI.MIDI_SEND_AFTER_TOUCH ( edrumulus.get_midi_note_norm ( pad_idx ), 0, midi_channel );
+      MYMIDI.MIDI_SEND_AFTER_TOUCH ( edrumulus.get_midi_note_rim  ( pad_idx ), 0, midi_channel );
 
       if ( pad_idx == hihat_pad_idx )
       {
-        MYMIDI.sendAfterTouch ( edrumulus.get_midi_note_open_norm ( pad_idx ), 0, midi_channel );
-        MYMIDI.sendAfterTouch ( edrumulus.get_midi_note_open_rim  ( pad_idx ), 0, midi_channel );
+        MYMIDI.MIDI_SEND_AFTER_TOUCH ( edrumulus.get_midi_note_open_norm ( pad_idx ), 0, midi_channel );
+        MYMIDI.MIDI_SEND_AFTER_TOUCH ( edrumulus.get_midi_note_open_rim  ( pad_idx ), 0, midi_channel );
       }
     }
   }
