@@ -85,12 +85,13 @@ void setup()
   edrumulus.set_rim_shot_is_used  ( 0, true );
   edrumulus.set_pos_sense_is_used ( 0, true );
   edrumulus.set_pad_type          ( 1, Edrumulus::KD7 ); // kick
+  edrumulus.set_curve             ( 1, Edrumulus::LOG1 ); // less dynamic on kick (similar to other drum modules)
   edrumulus.set_pad_type          ( 2, Edrumulus::PD8 ); // Hi-Hat, using rim switch
   edrumulus.set_rim_shot_is_used  ( 2, true );
   edrumulus.set_pad_type          ( 3, Edrumulus::FD8 ); // Hi-Hat-ctrl
   edrumulus.set_pad_type          ( 4, Edrumulus::CY8 ); // crash, using rim switch
   edrumulus.set_rim_shot_is_used  ( 4, true );
-  edrumulus.set_cancellation      ( 4, 10 );
+  edrumulus.set_cancellation      ( 4, 4 );
   edrumulus.set_pad_type          ( 5, Edrumulus::TP80 ); // tom 1
   edrumulus.set_pad_type          ( 6, Edrumulus::PD8 ); // ride, using rim switch
   edrumulus.set_rim_shot_is_used  ( 6, true );
