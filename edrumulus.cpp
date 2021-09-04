@@ -472,6 +472,9 @@ void Edrumulus::Pad::initialize()
   rim_switch_treshold      = -ADC_MAX_NOISE_AMPL + 9 * ( pad_settings.rim_shot_treshold - 31 ); // rim switch linear threshold
   rim_switch_on_cnt_thresh = round ( 10.0f * 1e-3f * Fs );                                      // number of on samples until we detect a choke
   cancellation_factor      = static_cast<float> ( pad_settings.cancellation ) / 31.0f;          // cancellation factor: range of 0.0..1.0
+  ctrl_history_len         = 10;    // (MUST BE AN EVEN VALUE) control history length, use a fixed value
+  ctrl_velocity_range_fact = 2.0f;  // use a fixed value (TODO make it adjustable)
+  ctrl_velocity_threshold  = 10.0f; // use a fixed value (TODO make it adjustable)
 
   // The ESP32 ADC has 12 bits resulting in a range of 20*log10(2048)=66.2 dB.
   // The sensitivity parameter shall be in the range of 0..31. This range should then be mapped to the
@@ -527,6 +530,7 @@ void Edrumulus::Pad::initialize()
   allocate_initialize ( &hil_low_hist_re,         pos_energy_window_len ); // real part of memory for moving average of low-pass filtered Hilbert signal
   allocate_initialize ( &hil_low_hist_im,         pos_energy_window_len ); // imaginary part of memory for moving average of low-pass filtered Hilbert signal
   allocate_initialize ( &rim_x_high_hist,         rim_shot_window_len );   // memory for rim shot detection
+  allocate_initialize ( &ctrl_hist,               ctrl_history_len );      // memory for Hi-Hat control pad hit detection
 
   mask_back_cnt           = 0;
   was_above_threshold     = false;
@@ -958,22 +962,36 @@ void Edrumulus::Pad::process_control_sample ( const int* input,
   int cur_midi_ctrl_value = ( ( ADC_MAX_RANGE - input[0] - control_threshold ) / control_range * 127 );
   cur_midi_ctrl_value     = max ( 0, min ( 127, cur_midi_ctrl_value ) );
 
-//  // detect pedal hit
-//
-//// TODO access to hi_hat_is_open_MIDI_threshold
-//  if ( ( prev_ctrl_value < 100/*hi_hat_is_open_MIDI_threshold*/ ) &&
-//       ( cur_midi_ctrl_value >= 100/*hi_hat_is_open_MIDI_threshold*/ ) )
-//  {
-//
-//// TODO detect velocity of pedal hit and set MIDI velocity accordingly
-//midi_velocity = 100; // TEST
-//
-//    peak_found = true;
-//  }
+  // detect pedal hit
+  update_fifo ( cur_midi_ctrl_value, ctrl_history_len, ctrl_hist );
+
+  float prev_ctrl_average = 0;
+  float cur_ctrl_average  = 0;
+  for ( int i = 0; i < ctrl_history_len / 2; i++ )
+  {
+    prev_ctrl_average += ctrl_hist[i];                        // use first half for previous value
+    cur_ctrl_average  += ctrl_hist[i + ctrl_history_len / 2]; // use second half for current value
+  }
+  prev_ctrl_average /= ctrl_history_len / 2;
+  cur_ctrl_average  /= ctrl_history_len / 2;
+
+  if ( ( prev_ctrl_average < hi_hat_is_open_MIDI_threshold ) &&
+       ( cur_ctrl_average >= hi_hat_is_open_MIDI_threshold ) &&
+       ( cur_ctrl_average - prev_ctrl_average > ctrl_velocity_threshold ) )
+  {
+    // map curve difference (gradient) to velocity
+    midi_velocity = min ( 127, static_cast<int> ( ( cur_ctrl_average - prev_ctrl_average - ctrl_velocity_threshold ) * ctrl_velocity_range_fact ) );
+    peak_found    = true;
+
+    // reset the history after a detection to suppress multiple detections
+    for ( int i = 0; i < ctrl_history_len; i++ )
+    {
+      ctrl_hist[i] = hi_hat_is_open_MIDI_threshold;
+    }
+  }
 
   // introduce hysteresis to avoid sending too many MIDI control messages
-  static const int control_midi_hysteresis = ADC_MAX_NOISE_AMPL / 2;
-  change_found                             = false;
+  change_found = false;
 
   if ( ( cur_midi_ctrl_value > ( prev_ctrl_value + control_midi_hysteresis ) ) ||
        ( cur_midi_ctrl_value < ( prev_ctrl_value - control_midi_hysteresis ) ) )
