@@ -8,7 +8,7 @@
 	<map note="22" instr="hihat-closed"/>
 	<map note="26" instr="hihat-open"/>
 	<map note="51" instr="ride"/>
-	<map note="66" instr="ride-bell"/>
+	<map note="53" instr="ride-bell"/>
 	<map note="55" instr="crash-litian-16inch"/>
 </midimap>
 

@@ -73,10 +73,11 @@ void setup()
   edrumulus.set_midi_notes      ( 1, 36, 36 ); // kick
   edrumulus.set_midi_notes      ( hihat_pad_idx, 22 /*42*/, 22 );
   edrumulus.set_midi_notes_open ( hihat_pad_idx, 26 /*46*/, 26 );
+  // pedal: 44
   edrumulus.set_midi_ctrl_ch    ( hihatctrl_pad_idx, 4 ); // Hi-Hat control
   edrumulus.set_midi_notes      ( 4, 49, 55 ); // crash
   edrumulus.set_midi_notes      ( 5, 48, 50 ); // tom 1
-  edrumulus.set_midi_notes      ( 6, 51, 66 ); // ride
+  edrumulus.set_midi_notes      ( 6, 51, 53 /*59*/ ); // ride (edge: 59, bell: 53)
   edrumulus.set_midi_notes      ( 7, 45, 47 ); // tom 2
   edrumulus.set_midi_notes      ( 8, 43, 58 ); // tom 3
 
@@ -91,7 +92,7 @@ void setup()
   edrumulus.set_pad_type          ( 3, Edrumulus::FD8 ); // Hi-Hat-ctrl
   edrumulus.set_pad_type          ( 4, Edrumulus::CY8 ); // crash, using rim switch
   edrumulus.set_rim_shot_is_used  ( 4, true );
-  edrumulus.set_cancellation      ( 4, 4 );
+  edrumulus.set_cancellation      ( 4, 4 ); // avoid that kick triggers crash
   edrumulus.set_pad_type          ( 5, Edrumulus::TP80 ); // tom 1
   edrumulus.set_pad_type          ( 6, Edrumulus::PD8 ); // ride, using rim switch
   edrumulus.set_rim_shot_is_used  ( 6, true );

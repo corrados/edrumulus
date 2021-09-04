@@ -8,6 +8,6 @@
 	<map note="22" instr="hihat_closed1"/>
 	<map note="26" instr="hihat_open"/>
 	<map note="51" instr="ride"/>
-	<map note="66" instr="ride_bell1"/>
+	<map note="53" instr="ride_bell1"/>
 	<map note="55" instr="crash1"/>
 </midimap>
