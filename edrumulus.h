@@ -58,7 +58,7 @@ public:
   void process();
 
   // after calling the process function, query the results for each configured pad
-  bool get_peak_found          ( const int pad_idx ) { return !pad[pad_idx].get_is_control() && peak_found[pad_idx]; }
+  bool get_peak_found          ( const int pad_idx ) { return peak_found[pad_idx]; }
   bool get_choke_on_found      ( const int pad_idx ) { return !pad[pad_idx].get_is_control() && is_choke_on[pad_idx]; }
   bool get_choke_off_found     ( const int pad_idx ) { return !pad[pad_idx].get_is_control() && is_choke_off[pad_idx]; }
   bool get_control_found       ( const int pad_idx ) { return pad[pad_idx].get_is_control() && control_found[pad_idx]; }
@@ -117,7 +117,9 @@ protected:
 
       void process_control_sample ( const int* input,
                                     bool&      change_found,
-                                    int&       midi_ctrl_value );
+                                    int&       midi_ctrl_value,
+                                    bool&      peak_found,
+                                    int&       midi_velocity );
 
       void set_pad_type          ( const Epadtype new_pad_type );
       void set_midi_notes        ( const int new_midi_note, const int new_midi_note_rim ) { midi_note = new_midi_note; midi_note_rim = new_midi_note_rim; }

@@ -155,7 +155,8 @@ Serial.println ( serial_print );
     if ( pad[i].get_is_control() )
     {
       // process sample for control input
-      pad[i].process_control_sample ( sample_org_pad, control_found[i], midi_ctrl_value[i] );
+      pad[i].process_control_sample ( sample_org_pad, control_found[i], midi_ctrl_value[i],
+                                      peak_found[i], midi_velocity[i] );
     }
     else
     {
@@ -949,11 +950,26 @@ debug = hil_low_re;
 
 void Edrumulus::Pad::process_control_sample ( const int* input,
                                               bool&      change_found,
-                                              int&       midi_ctrl_value )
+                                              int&       midi_ctrl_value,
+                                              bool&      peak_found,
+                                              int&       midi_velocity )
 {
   // map the input value to the MIDI range
   int cur_midi_ctrl_value = ( ( ADC_MAX_RANGE - input[0] - control_threshold ) / control_range * 127 );
   cur_midi_ctrl_value     = max ( 0, min ( 127, cur_midi_ctrl_value ) );
+
+//  // detect pedal hit
+//
+//// TODO access to hi_hat_is_open_MIDI_threshold
+//  if ( ( prev_ctrl_value < 100/*hi_hat_is_open_MIDI_threshold*/ ) &&
+//       ( cur_midi_ctrl_value >= 100/*hi_hat_is_open_MIDI_threshold*/ ) )
+//  {
+//
+//// TODO detect velocity of pedal hit and set MIDI velocity accordingly
+//midi_velocity = 100; // TEST
+//
+//    peak_found = true;
+//  }
 
   // introduce hysteresis to avoid sending too many MIDI control messages
   static const int control_midi_hysteresis = ADC_MAX_NOISE_AMPL / 2;

@@ -73,7 +73,7 @@ void setup()
   edrumulus.set_midi_notes      ( 1, 36, 36 ); // kick
   edrumulus.set_midi_notes      ( hihat_pad_idx, 22 /*42*/, 22 );
   edrumulus.set_midi_notes_open ( hihat_pad_idx, 26 /*46*/, 26 );
-  // pedal: 44
+  edrumulus.set_midi_notes      ( hihatctrl_pad_idx, 44, 44 ); // Hi-Hat pedal hit
   edrumulus.set_midi_ctrl_ch    ( hihatctrl_pad_idx, 4 ); // Hi-Hat control
   edrumulus.set_midi_notes      ( 4, 49, 55 ); // crash
   edrumulus.set_midi_notes      ( 5, 48, 50 ); // tom 1
