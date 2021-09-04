@@ -72,6 +72,7 @@ public:
   int  get_midi_note_open_rim  ( const int pad_idx ) { return pad[pad_idx].get_midi_note_open_rim(); }
   int  get_midi_ctrl_ch        ( const int pad_idx ) { return pad[pad_idx].get_midi_ctrl_ch(); }
   int  get_midi_ctrl_value     ( const int pad_idx ) { return midi_ctrl_value[pad_idx]; }
+  bool get_midi_ctrl_is_open   ( const int pad_idx ) { return midi_ctrl_value[pad_idx] < hi_hat_is_open_MIDI_threshold; }
 
   // configure the pads
   void set_pad_type             ( const int pad_idx, const Epadtype   new_pad_type )  { pad[pad_idx].set_pad_type ( new_pad_type ); }
@@ -265,10 +266,11 @@ protected:
   };
 
   // constant definitions
-  const int dc_offset_est_len         = 10000; // samples (about a second at 8 kHz sampling rate)
-  const int samplerate_max_cnt        = 10000; // samples
-  const int samplerate_max_error_Hz   = 100;   // tolerate a sample rate deviation of 100 Hz
-  const int cancel_time_ms            = 30;    // on same stand approx. 10 ms + some margin (20 ms)
+  const int dc_offset_est_len             = 10000; // samples (about a second at 8 kHz sampling rate)
+  const int samplerate_max_cnt            = 10000; // samples
+  const int samplerate_max_error_Hz       = 100;   // tolerate a sample rate deviation of 100 Hz
+  const int cancel_time_ms                = 30;    // on same stand approx. 10 ms + some margin (20 ms)
+  const int hi_hat_is_open_MIDI_threshold = 100;   // MIDI values smaller than the limit value are "open hi-hat"
 
 #ifdef ESP_PLATFORM
   // for ESP we have a coupling of ADC inputs so that a hi-hat control pedal movement may

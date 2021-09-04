@@ -145,13 +145,13 @@ void loop()
       // send Hi-Hat control message right before each Hi-Hat pad hit
       if ( pad_idx == hihat_pad_idx )
       {
-        const int midi_ctrl_ch    = edrumulus.get_midi_ctrl_ch    ( hihatctrl_pad_idx );
-        const int midi_ctrl_value = edrumulus.get_midi_ctrl_value ( hihatctrl_pad_idx );
+        const int  midi_ctrl_ch    = edrumulus.get_midi_ctrl_ch      ( hihatctrl_pad_idx );
+        const int  midi_ctrl_value = edrumulus.get_midi_ctrl_value   ( hihatctrl_pad_idx );
+        const bool hi_hat_is_open  = edrumulus.get_midi_ctrl_is_open ( hihatctrl_pad_idx );
         MYMIDI.sendControlChange ( midi_ctrl_ch, midi_ctrl_value, midi_channel );
 
         // if Hi-Hat is open, overwrite MIDI note
-// TODO define the threshold somewhere else, maybe inside of the Edrumulus class
-        if ( midi_ctrl_value < 100 )
+        if ( hi_hat_is_open )
         {
           midi_note = edrumulus.get_midi_note_open ( pad_idx );
         }
