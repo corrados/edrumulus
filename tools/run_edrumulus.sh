@@ -63,34 +63,8 @@ else
 fi
 
 
-# TODO download Drumgizmo drum kit into the drumgizmo directory, e.g., edrumulus/tools/drumgizmo/DRSKit/
-echo We assume that you have downloaded and unzipped the DRSKit or aasimonster2 in the tools directory.
-
-# we now assume that the DRSKit or aasimonster2 was already downloaded and unzipped in the
-# tools directory and we copy our special configuration files in that directory
-if [ -d "DRSKit" ]; then
-  KITXML="DRSKit/DRSKit_edrumulus.xml"
-  KITMIDIMAPXML="DRSKit/DRSKit_midimap_edrumulus.xml"
-  KITJACKPORTLEFT=DrumGizmo:0-AmbL
-  KITJACKPORTRIGHT=DrumGizmo:1-AmbR
-  cp DRSKit_edrumulus.xml DRSKit_midimap_edrumulus.xml DRSKit/
-fi
-
-if [ -d "artstar" ]; then
-  KITXML="artstar/artstar_edrumulus.xml"
-  KITMIDIMAPXML="artstar/artstar_midimap_edrumulus.xml"
-  KITJACKPORTLEFT=DrumGizmo:14-amb-l
-  KITJACKPORTRIGHT=DrumGizmo:13-amb-r
-  cp artstar_edrumulus.xml artstar_midimap_edrumulus.xml artstar/
-fi
-
-if [ -d "aasimonster2" ]; then
-  KITXML="aasimonster2/aasimonster2_edrumulus.xml"
-  KITMIDIMAPXML="aasimonster2/aasimonster2_midimap_edrumulus.xml"
-  KITJACKPORTLEFT=DrumGizmo:14-AmbL
-  KITJACKPORTRIGHT=DrumGizmo:15-AmbR
-  cp aasimonster2_edrumulus.xml aasimonster2_midimap_edrumulus.xml aasimonster2/
-fi
+# TODO automate the creation of the kit: download source kits and call mixdown_kits.m
+echo We assume that you have created the edrumuluskit with edrumulus/tools/mixdown_kits.m
 
 if [ -d "edrumuluskit" ]; then
   KITXML="edrumuluskit/edrumuluskit.xml"
