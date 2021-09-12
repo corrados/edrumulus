@@ -29,7 +29,7 @@ midi_map_name = [out_kit_name '_midimap'];
 
 % kit select or optional instrument select
 kit_select        = [];%3; % if [], the instrument_select is used otherwise the entire selected kit number
-instrument_select = {5, 'snare_rim_shot',    0; ... % 2, 'snare_rim_shot',  3.0; ... % 
+instrument_select = {5, 'snare_rim_shot',  3.0; ... % 2, 'snare_rim_shot',  3.0; ... % 
                      3, 'CrashL',            0; ...
                      3, 'HihatClosed',       0; ...
                      3, 'HihatOpen',         0; ...
@@ -44,6 +44,7 @@ instrument_select = {5, 'snare_rim_shot',    0; ... % 2, 'snare_rim_shot',  3.0;
 %instrument_select = {3, 'Snare', 0};
 %instrument_select = {2, 'snare_rim_shot', 0};
 %instrument_select = {4, 'snare-position', 0};
+%instrument_select = {5, 'snare', 0};
 
 % kit properties, where, e.g., channel names and audio mix matrix are
 % defined (left/right channels output gain for each channel)
@@ -206,8 +207,8 @@ kit_channel_properties{4} = {'amb-l',     'amb-l',     -1, -90,   0,  10000,  0.
 kit_midi_map{4} = {'snare-position', 38};
 
 kit_path{5} = 'mapex_mars/'; % Mapex Mars --------------------------------------
-kit_channel_properties{5} = {'snare_bottom', 'snare_bottom',  0,   0,   0,  10000,  0.5,  10,  10000, 0.5; ...
-                             'snare_top',    'snare_top',     0,   0,   6,    150,  0.1,  18,  11000, 0.3};
+kit_channel_properties{5} = {'snare_bottom', 'snare_bottom', -10, -10,   0,  10000,  0.5,  0,  10000, 0.5; ...
+                             'snare_top',    'snare_top',      0,   0, -20,   4000,  0.4, -5,  11000, 0.6};
 kit_midi_map{5} = {'snare',          38; ...
                    'snare_rim_shot', 40};
 
