@@ -37,14 +37,15 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd120_hot_spot.wav");
 %x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
-%x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);
+%x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
+x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);
 %x = audioread("signals/pd6.wav");
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
 %x = audioread("signals/cy6.wav");padtype = 'cy6';x = x(480000:590000, :);%x = x(250000:450000, :);%x = x(1:150000, :);
 %x = audioread("signals/cy8.wav");padtype = 'cy8';%x = x(1:200000, :);
 %x = audioread("signals/kd8.wav");
-x = audioread("signals/kd7.wav");padtype = 'kd7';%x = x(1:170000, :);
+%x = audioread("signals/kd7.wav");padtype = 'kd7';%x = x(1:170000, :);
 %x = audioread("signals/tp80.wav");padtype = 'tp80';
 %x = audioread("signals/vh12.wav");padtype = 'vh12';%x = x(900000:end, :);%x = x(376000:420000, :);%x = x(1:140000, :);
 %org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
@@ -82,6 +83,10 @@ switch padtype
     pad.decay_grad_fact2      = 300;
     pad.decay_len_ms3         = 300;
     pad.decay_grad_fact3      = 100;
+
+% TEST
+%pad.pos_energy_win_len_ms = 6;%8;
+
   case 'pd8'
     pad.scan_time_ms          = 1.3;
     pad.main_peak_dist_ms     = 0.75;
@@ -256,12 +261,16 @@ while ~no_more_peak
   if ~isempty(max_idx)
     peak_idx = peak_idx + max_idx(1) - 1;
   end
+% ########## TEST USE DIFFERENT PEAKS FOR POSITIONAL SENSING ##########
   all_first_peaks = [all_first_peaks; peak_idx];
 
   % search in a pre-defined scan time for the highest peak
   scan_time    = round(pad.scan_time_ms * 1e-3 * Fs); % scan time from first detected peak
   [~, max_idx] = max(hil_filt(peak_idx:min(1 + peak_idx + scan_time - 1, length(hil_filt))));
   peak_idx     = peak_idx + max_idx - 1;
+
+% ########## TEST USE DIFFERENT PEAKS FOR POSITIONAL SENSING ##########
+%all_first_peaks = [all_first_peaks; peak_idx];
 
   % calculate power left/right of detected peak for second main peak position detection
   first_peak_idx = peak_idx; % initialization
@@ -285,6 +294,9 @@ while ~no_more_peak
     end
 
   end
+
+% ########## TEST USE DIFFERENT PEAKS FOR POSITIONAL SENSING ##########
+%all_first_peaks = [all_first_peaks; first_peak_idx];
 
   % estimate current decay power
   decay_factor = hil_filt(peak_idx);
@@ -326,9 +338,9 @@ while ~no_more_peak
 
 end
 
-figure; plot(10 * log10([hil_filt, hil_filt_decay, decay_all, decay_est_rng])); hold on;
-plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'k*');
-plot(all_sec_peaks, 10 * log10(hil_filt(all_sec_peaks)), 'y*');
+%figure; plot(10 * log10([hil_filt, hil_filt_decay, decay_all, decay_est_rng])); hold on;
+%plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'k*');
+%plot(all_sec_peaks, 10 * log10(hil_filt(all_sec_peaks)), 'y*');
 
 % TODO What is this zoom area for?
 %axis([2.835616531556589e+05   2.856098468655325e+05  -1.994749771562022e+01   4.962270061651073e+01]);
@@ -409,6 +421,18 @@ if pad.pos_invert
 else
   pos_sense_metric = 10 * log10(peak_energy) - 10 * log10(peak_energy_low);
 end
+
+
+% TODO only show peaks
+%x_peaks = [];
+%for i = 1:length(all_peaks)
+%  x_peaks = [x_peaks, all_peaks(i) - 20:all_peaks(i) + 60];
+%end
+%x_peaks_inv = find(x_peaks);
+%figure
+%plot(10 * log10([abs(hil(x_peaks)) .^ 2, abs(hil_low(x_peaks)) .^ 2])); grid on; hold on;
+%%plot(21:80:length(all_peaks) * 80, 20 * log10(abs(hil(all_peaks))), 'y*');
+
 
 %figure; plot(20 * log10(abs([hil, hil_low, hil_filt]))); hold on;
 %plot(win_idx_all', 20 * log10(abs(hil(win_idx_all'))), 'k.-');
