@@ -1,5 +1,19 @@
 # Edrumulus project log
 
+
+- (09/19/2021) Some project logs:
+  - One outstanding serious issue is false triggering in case no pad is played. This may be caused
+    by electromagnetic interference like if someone switches a light on or it is caused by the
+    microcontroller and its ADC itself.
+  - In Edrumulus the start of the Scan Time is defined at the first detected peak. Usually, the
+    scan time is defined from the point in time when the input signal crosses the trigger threshold.
+    It has shown that if, e.g., the trigger is hit directly, we might get strange effects before the
+    main peak so that the signal goes above the threshold earlier than for normal pad hits and as
+    a consequence, the scan time would not cover the same amount of the regular peaks as with the
+    normal pad hits.
+  - For the PD80R, the positional sensing must be improved since sometimes a false first peak is
+    detected if the piezo is hit directly with the stick (hot spot).
+
 - (07/17/2021) Now an experimental pad cross talk cancellation algorithm is supported in
   Edrumulus. This is useful if pads are attached on the same stand and trigger each other.
 
