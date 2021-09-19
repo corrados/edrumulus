@@ -252,10 +252,12 @@ while ~no_more_peak
   if isempty(peak_start)
     no_more_peak = true;
     continue;
+  else
+    peak_start = peak_start(1);
   end
 
   % climb to the maximum of the first peak
-  peak_idx = peak_start(1);
+  peak_idx = peak_start;
   max_idx  = find(hil_filt(1 + peak_idx:end) - hil_filt(peak_idx:end - 1) < 0);
 
   if ~isempty(max_idx)
@@ -265,9 +267,9 @@ while ~no_more_peak
   all_first_peaks = [all_first_peaks; peak_idx];
 
   % search in a pre-defined scan time for the highest peak
-  scan_time    = round(pad.scan_time_ms * 1e-3 * Fs); % scan time from first detected peak
-  [~, max_idx] = max(hil_filt(peak_idx:min(1 + peak_idx + scan_time - 1, length(hil_filt))));
-  peak_idx     = peak_idx + max_idx - 1;
+  scan_time    = round(pad.scan_time_ms * 1e-3 * Fs);
+  [~, max_idx] = max(hil_filt(peak_start:min(1 + peak_start + scan_time - 1, length(hil_filt))));
+  peak_idx     = peak_start + max_idx - 1;
 
 % ########## TEST USE DIFFERENT PEAKS FOR POSITIONAL SENSING ##########
 %all_first_peaks = [all_first_peaks; peak_idx];
