@@ -83,9 +83,7 @@ switch padtype
     pad.decay_grad_fact2      = 300;
     pad.decay_len_ms3         = 300;
     pad.decay_grad_fact3      = 100;
-
-% TEST
-%pad.pos_energy_win_len_ms = 6;%8;
+    pad.pos_energy_win_len_ms = 6;
 
   case 'pd8'
     pad.scan_time_ms          = 1.3;
@@ -209,10 +207,14 @@ hil_filt = abs(filter(ones(energy_window_len, 1) / energy_window_len, 1, hil)) .
 end
 
 
-function [all_peaks, all_first_peaks] = calc_peak_detection(hil_filt, Fs)
+function [all_peaks, all_first_peaks, scan_region] = calc_peak_detection(hil_filt, Fs)
 global pad;
 
-mask_time = round(pad.mask_time_ms * 1e-3 * Fs); % mask time (e.g. 10 ms)
+scan_region = nan(size(hil_filt));
+
+first_peak_diff_thresh = 10 ^ (20 / 10); % 20 dB difference allowed
+mask_time              = round(pad.mask_time_ms * 1e-3 * Fs); % mask time (e.g. 10 ms)
+scan_time              = round(pad.scan_time_ms * 1e-3 * Fs); % scan time from first detected peak
 
 % the following settings are trigger pad-specific
 decay_len1         = round(pad.decay_len_ms1 * 1e-3 * Fs); % decay time (e.g. 250 ms)
@@ -261,16 +263,27 @@ while ~no_more_peak
   if ~isempty(max_idx)
     peak_idx = peak_idx + max_idx(1) - 1;
   end
-% ########## TEST USE DIFFERENT PEAKS FOR POSITIONAL SENSING ##########
+
+  % find all peaks after the initial peak
+  peak_idx_after_initial = find((hil_filt(2 + peak_idx:end) < hil_filt(1 + peak_idx:end - 1)) & ...
+    (hil_filt(1 + peak_idx:end - 1) > hil_filt(peak_idx:end - 2)));
+
+  scan_peaks_idx = peak_idx + peak_idx_after_initial(peak_idx_after_initial <= scan_time);
+
+  % if a peak in the scan time is much higher than the initial peak, use that one
+  much_higher_peaks = find(hil_filt(peak_idx) * first_peak_diff_thresh < hil_filt(scan_peaks_idx));
+
+  if ~isempty(much_higher_peaks)
+    peak_idx = scan_peaks_idx(much_higher_peaks(1));
+  end
+
   all_first_peaks = [all_first_peaks; peak_idx];
 
   % search in a pre-defined scan time for the highest peak
-  scan_time    = round(pad.scan_time_ms * 1e-3 * Fs); % scan time from first detected peak
-  [~, max_idx] = max(hil_filt(peak_idx:min(1 + peak_idx + scan_time - 1, length(hil_filt))));
-  peak_idx     = peak_idx + max_idx - 1;
-
-% ########## TEST USE DIFFERENT PEAKS FOR POSITIONAL SENSING ##########
-%all_first_peaks = [all_first_peaks; peak_idx];
+  scan_indexes              = peak_idx:min(1 + peak_idx + scan_time - 1, length(hil_filt));
+  [~, max_idx]              = max(hil_filt(scan_indexes));
+  peak_idx                  = peak_idx + max_idx - 1;
+  scan_region(scan_indexes) = hil_filt(peak_idx); % mark scan time region
 
   % calculate power left/right of detected peak for second main peak position detection
   first_peak_idx = peak_idx; % initialization
@@ -294,9 +307,6 @@ while ~no_more_peak
     end
 
   end
-
-% ########## TEST USE DIFFERENT PEAKS FOR POSITIONAL SENSING ##########
-%all_first_peaks = [all_first_peaks; first_peak_idx];
 
   % estimate current decay power
   decay_factor = hil_filt(peak_idx);
@@ -491,15 +501,15 @@ end
 function processing(x, Fs)
 
 % calculate peak detection and positional sensing
-[hil, hil_filt]              = filter_input_signal(x(:, 1), Fs);
-[all_peaks, all_first_peaks] = calc_peak_detection(hil_filt, Fs);
-is_rim_shot                  = detect_rim_shot(x, hil_filt, all_first_peaks, Fs);
-pos_sense_metric             = calc_pos_sense_metric(hil, hil_filt, Fs, all_first_peaks);
+[hil, hil_filt]                           = filter_input_signal(x(:, 1), Fs);
+[all_peaks, all_first_peaks, scan_region] = calc_peak_detection(hil_filt, Fs);
+is_rim_shot                               = detect_rim_shot(x, hil_filt, all_first_peaks, Fs);
+pos_sense_metric                          = calc_pos_sense_metric(hil, hil_filt, Fs, all_first_peaks);
 
 
 % plot results
 figure
-plot(10 * log10([abs(x(:, 1)) .^ 2, hil_filt])); grid on; hold on;
+plot(10 * log10([abs(x(:, 1)) .^ 2, hil_filt, scan_region])); grid on; hold on;
 plot(all_first_peaks, 10 * log10(hil_filt(all_first_peaks)), 'y*');
 plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'g*');
 plot(all_first_peaks, pos_sense_metric + 40, 'k*');
