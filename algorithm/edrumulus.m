@@ -27,10 +27,11 @@ close all
 % load test data
 x = audioread("signals/pd120_roll.wav");x = x(292410:294749, :);
 %x = audioread("signals/pd120_single_hits.wav");
-% x = audioread("signals/pd120_pos_sense.wav");x = x(2900:10000, :);%x = x(55400:58000, :);%
-% x = audioread("signals/pd120_pos_sense2.wav");
+%x = audioread("signals/pd120_pos_sense.wav");x = x(2900:10000, :);%x = x(55400:58000, :);%
+%x = audioread("signals/pd120_pos_sense2.wav");
 %x = audioread("signals/pd120_rimshot.wav");x = x(168000:171000, :);%x = x(1:8000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
+%x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(57500:59000, :);%x = x(1:265000, :);%
 
 
 % match the signal level of the ESP32
@@ -184,7 +185,9 @@ global mov_av_hist_re mov_av_hist_im;
 global mask_time;
 global mask_back_cnt;
 global threshold;
+global first_peak_diff_thresh;
 global was_above_threshold;
+global first_peak_val;
 global prev_hil_filt_val;
 global main_peak_dist;
 global hist_main_peak_pow_left;
@@ -238,7 +241,9 @@ mov_av_hist_im          = zeros(energy_window_len, 1); % imaginary part memory f
 mask_time               = round(6e-3 * Fs); % mask time (e.g. 10 ms)
 mask_back_cnt           = 0;
 threshold               = power(10, 23 / 10); % 23 dB threshold
+first_peak_diff_thresh  = 10 ^ (20 / 10); % 20 dB difference allowed between first peak and later peak in scan time
 was_above_threshold     = false;
+first_peak_val          = 0;
 prev_hil_filt_val       = 0;
 main_peak_dist          = round(2.25e-3 * Fs);
 hist_main_peak_pow_left = zeros(main_peak_dist, 1); % memory for left main peak power
@@ -337,7 +342,9 @@ global mov_av_hist_re mov_av_hist_im;
 global mask_time;
 global mask_back_cnt;
 global threshold;
+global first_peak_diff_thresh;
 global was_above_threshold;
+global first_peak_val;
 global prev_hil_filt_val;
 global main_peak_dist;
 global hist_main_peak_pow_left;
@@ -422,19 +429,32 @@ if ((hil_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
   was_above_threshold = true;
 
   % climb to the maximum of the first peak
-  if (prev_hil_filt_val < hil_filt) && (scan_time_cnt == 0)
-    prev_hil_filt_val = hil_filt;
+  if (first_peak_val < hil_filt) && (scan_time_cnt == 0)
+    first_peak_val = hil_filt;
   else
+
+    % check if there is a much larger first peak
+    if (prev_hil_filt_val > hil_filt) && (first_peak_val * first_peak_diff_thresh < prev_hil_filt_val)
+
+      % reset first peak detection and restart scan time
+      first_peak_val = prev_hil_filt_val;
+      scan_time_cnt  = 0;
+
+    end
 
     % start condition of scan time
     if scan_time_cnt == 0
 
       % search in a pre-defined scan time for the highest peak
-      scan_time_cnt     = scan_time;                  % initialize scan time counter
-      max_hil_filt_val  = prev_hil_filt_val;          % initialize maximum value with first peak
-      peak_found_offset = scan_time;                  % position of first peak after scan time expired
-      power_hypo_left   = hist_main_peak_pow_left(1); % for left/right main peak detection
-      first_peak_found  = true;
+      scan_time_cnt       = scan_time;                  % initialize scan time counter
+      max_hil_filt_val    = first_peak_val;             % initialize maximum value with first peak
+      peak_found_offset   = scan_time;                  % position of first peak after scan time expired (no "-1" because peak is previous sample)
+      power_hypo_left     = hist_main_peak_pow_left(1); % for left/right main peak detection
+      first_peak_found    = true;
+      pos_sense_cnt       = 0;                          % needed if we reset the first peak
+      was_pos_sense_ready = false;                      % needed if we reset the first peak
+      rim_shot_cnt        = 0;                          % needed if we reset the first peak
+      was_rim_shot_ready  = false;                      % needed if we reset the first peak
 
     end
 
@@ -442,23 +462,25 @@ if ((hil_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
     if hil_filt > max_hil_filt_val
 
       max_hil_filt_val  = hil_filt;                   % we need to store the origianl Hilbert filtered signal for the decay
-      peak_found_offset = scan_time_cnt - 1;          % update position of detected peak
+      peak_found_offset = scan_time_cnt - 1;          % update position of detected peak ("-1" because peak is current sample not previous)
       power_hypo_left   = hist_main_peak_pow_left(1); % for left/right main peak detection
 
     end
 
-    scan_time_cnt = scan_time_cnt - 1;
+    scan_time_cnt     = scan_time_cnt - 1;
+    prev_hil_filt_val = hil_filt;
 
     % end condition of scan time
     if scan_time_cnt <= 0
 
       % scan time expired
-      prev_hil_filt_val    = 0;
-      was_above_threshold  = false;
-      decay_scaling        = max_hil_filt_val * decay_fact;
-      decay_back_cnt       = decay_len - peak_found_offset;
-      mask_back_cnt        = mask_time - peak_found_offset;
-      was_peak_found       = true;
+      first_peak_val      = 0;
+      prev_hil_filt_val   = 0;
+      was_above_threshold = false;
+      decay_scaling       = max_hil_filt_val * decay_fact;
+      decay_back_cnt      = decay_len - peak_found_offset;
+      mask_back_cnt       = mask_time - peak_found_offset;
+      was_peak_found      = true;
 
       % for left/right main peak detection (note that we have to add one because
       % we first decrement and then we check for end condition)
