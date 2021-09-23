@@ -226,6 +226,8 @@ protected:
       float        pos_range_db;
       float        control_threshold;
       float        control_range;
+      float        first_peak_diff_thresh;
+      float        first_peak_val;
       bool         was_above_threshold;
       float        prev_hil_filt_val;
       int          main_peak_dist;

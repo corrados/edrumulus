@@ -328,16 +328,17 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       break;
 
     case PD80R:
-      pad_settings.velocity_sensitivity = 6;
-      pad_settings.rim_shot_treshold    = 8;
-      pad_settings.pos_threshold        = 15;
-      pad_settings.pos_sensitivity      = 20;
-      pad_settings.scan_time_ms         = 3.0f;
-      pad_settings.main_peak_dist_ms    = 2.4f;
-      pad_settings.decay_len2_ms        = 75.0f;
-      pad_settings.decay_grad_fact2     = 300.0f;
-      pad_settings.decay_len3_ms        = 300.0f;
-      pad_settings.decay_grad_fact3     = 100.0f;
+      pad_settings.velocity_sensitivity  = 6;
+      pad_settings.rim_shot_treshold     = 8;
+      pad_settings.pos_threshold         = 15;
+      pad_settings.pos_sensitivity       = 20;
+      pad_settings.scan_time_ms          = 3.0f;
+      pad_settings.main_peak_dist_ms     = 2.4f;
+      pad_settings.decay_len2_ms         = 75.0f;
+      pad_settings.decay_grad_fact2      = 300.0f;
+      pad_settings.decay_len3_ms         = 300.0f;
+      pad_settings.decay_grad_fact3      = 100.0f;
+      pad_settings.pos_energy_win_len_ms = 6.0f;
       break;
 
     case PD8:
@@ -451,6 +452,7 @@ void Edrumulus::Pad::initialize()
   // set algorithm parameters
   const float threshold_db = 9.0f + pad_settings.velocity_threshold;            // gives us a threshold range of 9..40 dB
   threshold                = pow   ( 10.0f, threshold_db / 10 );                // linear power threshold
+  first_peak_diff_thresh   = pow   ( 10.0f, 20.0f / 10 );                       // 20 dB difference allowed between first peak and later peak in scan time
   energy_window_len        = round ( pad_settings.energy_win_len_ms * 1e-3f * Fs ); // hit energy estimation time window length (e.g. 2 ms)
   scan_time                = round ( pad_settings.scan_time_ms  * 1e-3f * Fs ); // scan time from first detected peak
   mask_time                = round ( pad_settings.mask_time_ms  * 1e-3f * Fs ); // mask time (e.g. 10 ms)
@@ -535,6 +537,7 @@ void Edrumulus::Pad::initialize()
 
   mask_back_cnt           = 0;
   was_above_threshold     = false;
+  first_peak_val          = 0.0f;
   prev_hil_filt_val       = 0.0f;
   decay_back_cnt          = 0;
   decay_scaling           = 1.0f;
@@ -652,32 +655,45 @@ debug = 0.0f; // TEST
     was_above_threshold = true;
 
     // climb to the maximum of the first peak
-    if ( ( prev_hil_filt_val < hil_filt ) && ( scan_time_cnt == 0 ) )
+    if ( ( first_peak_val < hil_filt ) && ( scan_time_cnt == 0 ) )
     {
-      prev_hil_filt_val = hil_filt;
+      first_peak_val = hil_filt;
     }
     else
     {
+      // check if there is a much larger first peak
+      if ( ( prev_hil_filt_val > hil_filt ) && ( first_peak_val * first_peak_diff_thresh < prev_hil_filt_val ) )
+      {
+        // reset first peak detection and restart scan time
+        first_peak_val = prev_hil_filt_val;
+        scan_time_cnt  = 0;
+      }
+
       // start condition of scan time
       if ( scan_time_cnt == 0 )
       {
         // search in a pre-defined scan time for the highest peak
-        scan_time_cnt     = scan_time;                  // initialize scan time counter
-        max_hil_filt_val  = prev_hil_filt_val;          // initialize maximum value with first peak
-        peak_found_offset = scan_time;                  // position of first peak after scan time expired
-        power_hypo_left   = hist_main_peak_pow_left[0]; // for left/right main peak detection
-        first_peak_found  = true;
+        scan_time_cnt       = scan_time;                  // initialize scan time counter
+        max_hil_filt_val    = first_peak_val;             // initialize maximum value with first peak
+        peak_found_offset   = scan_time;                  // position of first peak after scan time expired (no "-1" because peak is previous sample)
+        power_hypo_left     = hist_main_peak_pow_left[0]; // for left/right main peak detection
+        first_peak_found    = true;
+        pos_sense_cnt       = 0;                          // needed if we reset the first peak
+        was_pos_sense_ready = false;                      // needed if we reset the first peak
+        rim_shot_cnt        = 0;                          // needed if we reset the first peak
+        was_rim_shot_ready  = false;                      // needed if we reset the first peak
       }
 
       // search for a maximum in the scan time interval
       if ( hil_filt > max_hil_filt_val )
       {
         max_hil_filt_val  = hil_filt;                   // we need to store the origianl Hilbert filtered signal for the decay
-        peak_found_offset = scan_time_cnt - 1;          // update position of detected peak
+        peak_found_offset = scan_time_cnt - 1;          // update position of detected peak ("-1" because peak is current sample not previous)
         power_hypo_left   = hist_main_peak_pow_left[0]; // for left/right main peak detection
       }
 
       scan_time_cnt--;
+      prev_hil_filt_val = hil_filt;
 
       // end condition of scan time
       if ( scan_time_cnt <= 0 )
@@ -687,6 +703,7 @@ debug = 0.0f; // TEST
         stored_midi_velocity = max ( 1, min ( 127, stored_midi_velocity ) );
 
         // scan time expired
+        first_peak_val      = 0.0f;
         prev_hil_filt_val   = 0.0f;
         was_above_threshold = false;
         decay_scaling       = max_hil_filt_val * decay_fact;
