@@ -683,7 +683,7 @@ debug = 0.0f; // TEST
       if ( scan_time_cnt <= 0 )
       {
         // calculate the MIDI velocity value with clipping to allowed MIDI value range
-        stored_midi_velocity = velocity_factor * pow ( prev_hil_filt_val, velocity_exponent ) + velocity_offset;
+        stored_midi_velocity = velocity_factor * pow ( max_hil_filt_val, velocity_exponent ) + velocity_offset;
         stored_midi_velocity = max ( 1, min ( 127, stored_midi_velocity ) );
 
         // scan time expired
