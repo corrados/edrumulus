@@ -25,9 +25,9 @@ global rim_shot_window_len;
 close all
 
 % load test data
-x = audioread("signals/pd120_roll.wav");x = x(292410:294749, :);
+%x = audioread("signals/pd120_roll.wav");x = x(292410:294749, :);
 %x = audioread("signals/pd120_single_hits.wav");
-%x = audioread("signals/pd120_pos_sense.wav");x = x(2900:10000, :);%x = x(55400:58000, :);%
+x = audioread("signals/pd120_pos_sense.wav");x = x(2900:10000, :);%x = x(55400:58000, :);%
 %x = audioread("signals/pd120_pos_sense2.wav");
 %x = audioread("signals/pd120_rimshot.wav");x = x(168000:171000, :);%x = x(1:8000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
@@ -40,17 +40,20 @@ x = x * 25000;
 Setup();
 
 % loop
-hil_debug            = zeros(size(x, 1), 1);
-hil_filt             = zeros(size(x, 1), 1);
-hil_filt_decay_debug = zeros(size(x, 1), 1);
-cur_decay_debug      = zeros(size(x, 1), 1);
-rim_max_pow_debug    = zeros(size(x, 1), 1);
-x_rim_high_debug     = zeros(size(x, 1), 1);
-peak_found           = false(size(x, 1), 1);
-peak_found_offset    = zeros(size(x, 1), 1);
-pos_sense_metric     = zeros(size(x, 1), 1);
-is_rim_shot          = false(size(x, 1), 1);
-is_left_main_peak    = false(size(x, 1), 1);
+hil_debug                 = zeros(size(x, 1), 1);
+hil_filt                  = zeros(size(x, 1), 1);
+hil_filt_decay_debug      = zeros(size(x, 1), 1);
+cur_decay_debug           = zeros(size(x, 1), 1);
+rim_max_pow_debug         = zeros(size(x, 1), 1);
+x_rim_high_debug          = zeros(size(x, 1), 1);
+peak_found                = false(size(x, 1), 1);
+peak_found_offset         = zeros(size(x, 1), 1);
+pos_sense_peak_energy     = zeros(size(x, 1), 1);
+pos_sense_peak_energy_low = zeros(size(x, 1), 1);
+was_pos_sense_ready       = false(size(x, 1), 1);
+pos_sense_metric          = zeros(size(x, 1), 1);
+is_rim_shot               = false(size(x, 1), 1);
+is_left_main_peak         = false(size(x, 1), 1);
 
 for i = 1:size(x, 1)
 
@@ -62,6 +65,9 @@ for i = 1:size(x, 1)
    x_rim_high_debug(i), ...
    peak_found(i), ...
    peak_found_offset(i), ...
+   pos_sense_peak_energy(i), ...
+   pos_sense_peak_energy_low(i), ...
+   was_pos_sense_ready(i), ...
    pos_sense_metric(i), ...
    is_rim_shot(i), ...
    is_left_main_peak(i)] = process_sample(x(i, :));
@@ -76,6 +82,10 @@ is_rim_shot_idx                        = find(is_rim_shot) - peak_found_offset(i
 is_rim_shot_corrected                  = false(size(is_rim_shot));
 is_rim_shot_corrected(is_rim_shot_idx) = true;
 
+figure; plot(10 * log10([pos_sense_peak_energy, pos_sense_peak_energy_low * 100])); hold on; grid on;
+        plot(find(was_pos_sense_ready), 10 * log10(pos_sense_peak_energy(was_pos_sense_ready)), 'k*');
+        ylim([0, 90]); title('checking pos sense high/low signals for metric');
+
 figure; plot(10 * log10(abs([hil_filt, hil_filt_decay_debug, cur_decay_debug, x_rim_high_debug]))); hold on; grid on;
         plot(10 * log10(rim_max_pow_debug), 'y*');
         plot(find(peak_found_corrected),  10 * log10(hil_filt(peak_found_corrected)), 'g*');
@@ -83,6 +93,7 @@ figure; plot(10 * log10(abs([hil_filt, hil_filt_decay_debug, cur_decay_debug, x_
         plot(find(peak_found_corrected),  10 * log10(pos_sense_metric(peak_found)) + 40, 'k*');
         plot(find(is_left_main_peak),     10 * log10(hil_filt(is_left_main_peak)), 'y*');
         ylim([-10, 90]);
+
 % figure; plot(20 * log10(abs([x, hil_debug, hil_filt])));
 
 return;
@@ -323,6 +334,9 @@ function [hil_debug, ...
           x_rim_high_debug, ...
           peak_found, ...
           peak_found_offset, ...
+          peak_energy, ...
+          peak_energy_low, ...
+          was_pos_sense_ready, ...
           pos_sense_metric, ...
           is_rim_shot, ...
           is_left_main_peak] = process_sample(x)
