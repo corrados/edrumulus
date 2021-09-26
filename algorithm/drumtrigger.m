@@ -83,7 +83,7 @@ switch padtype
     pad.decay_grad_fact2      = 300;
     pad.decay_len_ms3         = 300;
     pad.decay_grad_fact3      = 100;
-    pad.pos_energy_win_len_ms = 6;
+    pad.pos_energy_win_len_ms = 0.5;
 
   case 'pd8'
     pad.scan_time_ms          = 1.3;
