@@ -475,9 +475,9 @@ void Edrumulus::Pad::initialize()
   rim_switch_treshold      = -ADC_MAX_NOISE_AMPL + 9 * ( pad_settings.rim_shot_treshold - 31 ); // rim switch linear threshold
   rim_switch_on_cnt_thresh = round ( 10.0f * 1e-3f * Fs );                                      // number of on samples until we detect a choke
   cancellation_factor      = static_cast<float> ( pad_settings.cancellation ) / 31.0f;          // cancellation factor: range of 0.0..1.0
-  ctrl_history_len         = 10;    // (MUST BE AN EVEN VALUE) control history length, use a fixed value
-  ctrl_velocity_range_fact = 2.0f;  // use a fixed value (TODO make it adjustable)
-  ctrl_velocity_threshold  = 10.0f; // use a fixed value (TODO make it adjustable)
+  ctrl_history_len         = 10;   // (MUST BE AN EVEN VALUE) control history length, use a fixed value
+  ctrl_velocity_range_fact = 4.0f; // use a fixed value (TODO make it adjustable)
+  ctrl_velocity_threshold  = 5.0f; // use a fixed value (TODO make it adjustable)
 
   // The ESP32 ADC has 12 bits resulting in a range of 20*log10(2048)=66.2 dB.
   // The sensitivity parameter shall be in the range of 0..31. This range should then be mapped to the
