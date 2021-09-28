@@ -1,5 +1,11 @@
 # Edrumulus project log
 
+- (09/28/2021) It turned out that the positional sensing algorithm does not work at all for the
+  Roland PD-8 rubber pad. Interestingly, it works quite good for the Yamaha TP-80 rubber pad.
+  More investigations are needed to find out the cause of the problem.<br/>
+  A detailed view of the curcuit board for the jack sockets which are based on the patchbay is
+  shown in the following picture:
+  <br/>![Jack board](algorithm/images/jackboard.jpg)
 
 - (09/19/2021) Some project logs:
   - One outstanding serious issue is false triggering in case no pad is played. This may be caused
@@ -57,12 +63,12 @@
   <br/>![Prototype 1](algorithm/images/edrumulus_prototype1.jpg)
 
 - (04/04/2021) This is how the ESP32 ADC signal looks like:
-   <br/>![ESP32 ADC Signals](algorithm/images/esp32adc.png)<br/>
-   These spikes seem to be a hardware restriction of the ESP32. I am trying to mitigate this
-   effect by implementing a spike suppression algorithm.
+  <br/>![ESP32 ADC Signals](algorithm/images/esp32adc.png)<br/>
+  These spikes seem to be a hardware restriction of the ESP32. I am trying to mitigate this
+  effect by implementing a spike suppression algorithm.
 
 - (04/03/2021) The Edrumulus now implements its own analogRead function so we can use
-   the newest arduino-esp32 library version (which is 1.0.6 at present time).
+  the newest arduino-esp32 library version (which is 1.0.6 at present time).
 
 - (04/01/2021) Some speed tests with 6 pads:
   Everything + adc1_get_raw call: **0.368 ms**, Everything: **0.1162 ms**, Without process sample: **0.077 ms**,
@@ -72,8 +78,8 @@
   showed that the bottle neck is the analog read.
 
 - (03/24/2021) Measurements of Hi-Hat controllers:
-   **VH-12 controller:** open **14 kOhm**, closed **10 kOhm**, pressed **8 kOhm**,
-   **FD-8 controller:**  open **50 kOhm**, closed **0 Ohm**.
+  **VH-12 controller:** open **14 kOhm**, closed **10 kOhm**, pressed **8 kOhm**,
+  **FD-8 controller:**  open **50 kOhm**, closed **0 Ohm**.
 
 - (03/23/2021) I just updated the Ardunio board manager "ESP32 by Espressif Systems" to Version
   1.0.5 and now the code runs much slower on the ESP32 module so that I cannot even run just one
