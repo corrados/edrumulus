@@ -18,8 +18,9 @@
 pkg load audio
 
 midi_channel_filter   = 10;
-midi_note_filter      = 38; % snare
+midi_note_filter      = [38, 40, 48, 50]; % snare/tom1
 midi_pos_sense_filter = 16;
+midi_device_name      = 'Edrumulus';% 'MidiLink Mini';% 
 
 
 % Get Edrumulus input device ---------------------------------------------------
@@ -28,7 +29,7 @@ devinfo = mididevinfo;
 edrumulus_in_device_index = 1;
 
 for i = 1:length(devinfo.input)
-  if strfind(devinfo.input{i}.Name, 'Edrumulus')
+  if strfind(devinfo.input{i}.Name, midi_device_name)
     edrumulus_in_device_index = i;
   end
 end
@@ -37,8 +38,9 @@ edrumulus_in_device = mididevice(devinfo.input{edrumulus_in_device_index}.ID);
 
 
 % Plot MIDI messages -----------------------------------------------------------
-midi_velocity_values = [];
-midi_control_values  = [];
+max_num_values       = 100;
+midi_velocity_values = zeros(max_num_values, 1);
+midi_control_values  = zeros(max_num_values, 1);
 
 while true
 
@@ -49,9 +51,10 @@ while true
     % apply MIDI filters for NoteOn message
     if (midi_message.type == midimsgtype.NoteOn) && ...
       (midi_message.channel == midi_channel_filter) && ...
-      (midi_message.note == midi_note_filter)
+      (any(midi_message.note == midi_note_filter))
 
-      midi_velocity_values = [midi_velocity_values; midi_message.velocity];
+      midi_velocity_values(1:max_num_values - 1) = midi_velocity_values(2:max_num_values);
+      midi_velocity_values(max_num_values)       = midi_message.velocity;
 
       % display note value
       subplot(2, 1, 1), plot(midi_velocity_values, '*-');
@@ -65,14 +68,15 @@ while true
       (midi_message.channel == midi_channel_filter) && ...
       (midi_message.ccnumber == midi_pos_sense_filter)
 
-      midi_control_values = [midi_control_values; midi_message.ccvalue];
+      midi_control_values(1:max_num_values - 1) = midi_control_values(2:max_num_values);
+      midi_control_values(max_num_values)       = midi_message.ccvalue;
 
       % display control value
       subplot(2, 1, 2), plot(midi_control_values, '*-');
       ax = axis; axis([ax(1), ax(2), 1, 127]); title('positional sensing');
       drawnow;
 
-  end
+    end
 
   end
 
