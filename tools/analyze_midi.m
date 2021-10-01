@@ -17,10 +17,10 @@
 
 pkg load audio
 
-midi_channel_filter   = 10;
+midi_channel_filter   = [10, 11];
 midi_note_filter      = [38, 40, 48, 50]; % snare/tom1
 midi_pos_sense_filter = 16;
-midi_device_name      = 'Edrumulus';% 'MidiLink Mini';% 
+midi_device_name      = 'Midi Through';% 'Edrumulus';% 'MidiLink Mini';% 
 
 
 % Get Edrumulus input device ---------------------------------------------------
@@ -38,9 +38,11 @@ edrumulus_in_device = mididevice(devinfo.input{edrumulus_in_device_index}.ID);
 
 
 % Plot MIDI messages -----------------------------------------------------------
-max_num_values       = 100;
-midi_velocity_values = zeros(max_num_values, 1);
-midi_control_values  = zeros(max_num_values, 1);
+max_num_values                   = 100;
+midi_velocity_values             = zeros(max_num_values, 1);
+midi_velocity_is_default_channel = false(max_num_values, 1);
+midi_control_values              = zeros(max_num_values, 1);
+midi_control_is_default_channel  = false(max_num_values, 1);
 
 while true
 
@@ -50,14 +52,20 @@ while true
 
     % apply MIDI filters for NoteOn message
     if (midi_message.type == midimsgtype.NoteOn) && ...
-      (midi_message.channel == midi_channel_filter) && ...
+      (any(midi_message.channel == midi_channel_filter)) && ...
       (any(midi_message.note == midi_note_filter))
 
-      midi_velocity_values(1:max_num_values - 1) = midi_velocity_values(2:max_num_values);
-      midi_velocity_values(max_num_values)       = midi_message.velocity;
+      midi_velocity_values(1:max_num_values - 1)             = midi_velocity_values(2:max_num_values);
+      midi_velocity_is_default_channel(1:max_num_values - 1) = midi_velocity_is_default_channel(2:max_num_values);
+      midi_velocity_values(max_num_values)                   = midi_message.velocity;
+      midi_velocity_is_default_channel(max_num_values)       = midi_message.channel == midi_channel_filter(1);
 
       % display note value
-      subplot(2, 1, 1), plot(midi_velocity_values, '*-');
+      subplot(2, 1, 1);
+      plot(find(midi_velocity_is_default_channel), midi_velocity_values(midi_velocity_is_default_channel), '*-');
+      hold on;
+      plot(find(~midi_velocity_is_default_channel), midi_velocity_values(~midi_velocity_is_default_channel), 'r*-');
+      hold off;
       ax = axis; axis([ax(1), ax(2), 1, 127]); title('MIDI value');
       drawnow;
 
@@ -65,14 +73,20 @@ while true
 
     % apply MIDI filters for ControlChange message
     if (midi_message.type == midimsgtype.ControlChange) && ...
-      (midi_message.channel == midi_channel_filter) && ...
+      (any(midi_message.channel == midi_channel_filter)) && ...
       (midi_message.ccnumber == midi_pos_sense_filter)
 
-      midi_control_values(1:max_num_values - 1) = midi_control_values(2:max_num_values);
-      midi_control_values(max_num_values)       = midi_message.ccvalue;
+      midi_control_values(1:max_num_values - 1)             = midi_control_values(2:max_num_values);
+      midi_control_is_default_channel(1:max_num_values - 1) = midi_control_is_default_channel(2:max_num_values);
+      midi_control_values(max_num_values)                   = midi_message.ccvalue;
+      midi_control_is_default_channel(max_num_values)       = midi_message.channel == midi_channel_filter(1);
 
       % display control value
-      subplot(2, 1, 2), plot(midi_control_values, '*-');
+      subplot(2, 1, 2);
+      plot(find(midi_control_is_default_channel), midi_control_values(midi_control_is_default_channel), '*-');
+      hold on;
+      plot(find(~midi_control_is_default_channel), midi_control_values(~midi_control_is_default_channel), 'r*-');
+      hold off;
       ax = axis; axis([ax(1), ax(2), 1, 127]); title('positional sensing');
       drawnow;
 
