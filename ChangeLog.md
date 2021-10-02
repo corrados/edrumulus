@@ -1,5 +1,18 @@
 # Edrumulus project log
 
+- (10/02/2021) I just found out that on the PD-80R mesh pad the detected MIDI velocity at the
+  edge of the pad is much too small compared to the hit with the same force in the middle of
+  the pad. The problem is that there is a moving average of 2 ms applied to the signal which
+  is used to find the maximum value. If you play a mesh pad at the edge, the main peak is of
+  smaller width compared to the peak if you hit the mesh pad in the middle. Therefore, a lot
+  more energy is collected with the long moving average filter for the hit in the middle. To
+  fix this issue, the moving average could be shortened to, e.g., 0.5 ms. But if this is
+  modified, multiple other problems arise like we have to rise the threshold. This is most
+  probably caused by the fact that the longer averaging has filtered away small peaks from
+  the ADC noise. Also, the retrigger cancellation does not work as good anymore.<br/>
+  To solve the issue, one way would be to use the longer moving average filter for the
+  threshold detection and a shorter moving average filter for the MIDI velocity detection.
+
 - (09/28/2021) It turned out that the positional sensing algorithm does not work at all for the
   Roland PD-8 rubber pad. Interestingly, it works quite good for the Yamaha TP-80 rubber pad.
   More investigations are needed to find out the cause of the problem.<br/>
