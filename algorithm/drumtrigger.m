@@ -56,7 +56,7 @@ x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(5
 % pad PRESET settings first, then overwrite these with pad specific properties
 pad.threshold_db          = 23;
 pad.mask_time_ms          = 6;
-pad.energy_win_len_ms     = 0.5;%0.3;%2;
+pad.energy_win_len_ms     = 0.5; % keep small (~0.5 ms) to avoid power drops on edge of mesh head
 pad.scan_time_ms          = 2.5;
 pad.main_peak_dist_ms     = 2.25;
 pad.decay_est_delay2nd_ms = 2.5;
@@ -76,6 +76,10 @@ pad.pos_invert            = false;
 switch padtype
   case 'pd120'
     % note: the PRESET settings are from the PD120 pad
+    pad.decay_len_ms1         = 30;
+    pad.decay_grad_fact1      = 100;
+    pad.decay_len_ms2         = 250;
+    pad.decay_grad_fact2      = 200;
   case 'pd80r'
     pad.scan_time_ms          = 3;
     pad.main_peak_dist_ms     = 2.4;
@@ -84,10 +88,9 @@ switch padtype
     pad.decay_len_ms3         = 300;
     pad.decay_grad_fact3      = 100;
     pad.pos_energy_win_len_ms = 2;%0.5;
-
   case 'pd8'
     pad.scan_time_ms          = 1.3;
-    pad.main_peak_dist_ms     = 0.75;
+    pad.main_peak_dist_ms     = 1;
     pad.decay_est_delay2nd_ms = 6;
     pad.mask_time_ms          = 7;
     pad.decay_fact_db         = 5;
@@ -122,6 +125,7 @@ switch padtype
     pad.decay_len_ms3         = 600; % must be long because of open Hi-Hat ringing
     pad.decay_grad_fact3      = 75;
   case 'kd7'
+    pad.energy_win_len_ms     = 2; % large value possible since always same position of mallet
     pad.scan_time_ms          = 3.5;
     pad.main_peak_dist_ms     = 2;
     pad.decay_est_delay2nd_ms = 4;
@@ -348,9 +352,9 @@ while ~no_more_peak
 
 end
 
-%figure; plot(10 * log10([hil_filt, hil_filt_decay, decay_all, decay_est_rng])); hold on;
-%plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'k*');
-%plot(all_sec_peaks, 10 * log10(hil_filt(all_sec_peaks)), 'y*');
+figure; plot(10 * log10([hil_filt, hil_filt_decay, decay_all, decay_est_rng])); hold on;
+plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'k*');
+plot(all_sec_peaks, 10 * log10(hil_filt(all_sec_peaks)), 'y*');
 
 % TODO What is this zoom area for?
 %axis([2.835616531556589e+05   2.856098468655325e+05  -1.994749771562022e+01   4.962270061651073e+01]);
@@ -406,9 +410,9 @@ hil_low = filter(alpha, [1, alpha - 1], hil);
 %all_peaks = all_peaks + 7;
 hil_low = circshift(hil_low, -4);
 
-figure; plot(20 * log10(abs([hil(1:length(hil_low)), hil_low]))); hold on;
-        plot(all_peaks, 20 * log10(hil(all_peaks)), 'k*');
-        plot(all_peaks, 20 * log10(hil_low(all_peaks)), 'k*');
+%figure; plot(20 * log10(abs([hil(1:length(hil_low)), hil_low]))); hold on;
+%        plot(all_peaks, 20 * log10(hil(all_peaks)), 'k*');
+%        plot(all_peaks, 20 * log10(hil_low(all_peaks)), 'k*');
 
 peak_energy     = [];
 peak_energy_low = [];

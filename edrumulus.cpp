@@ -301,9 +301,10 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.rim_shot_treshold      = 11; // 0..31
   pad_settings.cancellation           = 0;  // 0..31
   pad_settings.curve_type             = LINEAR;
-  pad_settings.pos_sense_is_used      = false; // must be explicitely enabled if it shall be used
-  pad_settings.rim_shot_is_used       = false; // must be explicitely enabled if it shall be used
-  pad_settings.energy_win_len_ms      = 2.0f;   // pad specific parameter: hit energy estimation time window length
+  pad_settings.pos_sense_is_used      = false;  // must be explicitely enabled if it shall be used
+  pad_settings.rim_shot_is_used       = false;  // must be explicitely enabled if it shall be used
+  pad_settings.energy_win_len_ms      = 0.5f;   // pad specific parameter: hit energy estimation time window length
+                                                //                         keep small (~0.5 ms) to avoid power drops on edge of mesh head
   pad_settings.scan_time_ms           = 2.5f;   // pad specific parameter: scan time after first detected peak
   pad_settings.main_peak_dist_ms      = 2.25f;  // pad specific parameter: distance between the two main peaks
   pad_settings.decay_est_delay2nd_ms  = 2.5f;   // pad specific parameter: delay after second main peak until decay power estimation starts
@@ -325,6 +326,10 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   {
     case PD120:
       // note: the PRESET settings are from the PD-120 pad
+      pad_settings.decay_len1_ms    = 30.0f;
+      pad_settings.decay_grad_fact1 = 100.0f;
+      pad_settings.decay_len2_ms    = 250.0f;
+      pad_settings.decay_grad_fact2 = 200.0f;
       break;
 
     case PD80R:
@@ -348,7 +353,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       pad_settings.rim_shot_treshold     = 16;
       pad_settings.mask_time_ms          = 7;
       pad_settings.scan_time_ms          = 1.3f;
-      pad_settings.main_peak_dist_ms     = 0.75f;
+      pad_settings.main_peak_dist_ms     = 1.0f;
       pad_settings.decay_est_delay2nd_ms = 6.0f;
       pad_settings.decay_fact_db         = 5.0f;
       pad_settings.decay_len1_ms         = 10.0f;
@@ -400,6 +405,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       break;
 
     case KD7:
+      pad_settings.energy_win_len_ms     = 2.0f; // large value possible since always same position of mallet
       pad_settings.velocity_threshold    = 9;
       pad_settings.velocity_sensitivity  = 14;
       pad_settings.scan_time_ms          = 3.5f;
