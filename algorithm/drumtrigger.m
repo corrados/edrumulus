@@ -56,7 +56,7 @@ x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(5
 % pad PRESET settings first, then overwrite these with pad specific properties
 pad.threshold_db          = 23;
 pad.mask_time_ms          = 6;
-pad.energy_win_len_ms     = 2;
+pad.energy_win_len_ms     = 0.5;%0.3;%2;
 pad.scan_time_ms          = 2.5;
 pad.main_peak_dist_ms     = 2.25;
 pad.decay_est_delay2nd_ms = 2.5;
@@ -83,7 +83,7 @@ switch padtype
     pad.decay_grad_fact2      = 300;
     pad.decay_len_ms3         = 300;
     pad.decay_grad_fact3      = 100;
-    pad.pos_energy_win_len_ms = 0.5;
+    pad.pos_energy_win_len_ms = 2;%0.5;
 
   case 'pd8'
     pad.scan_time_ms          = 1.3;
@@ -402,7 +402,13 @@ pos_energy_window_len = round(pad.pos_energy_win_len_ms * 1e-3 * Fs); % position
 alpha   = pad.pos_iir_alpha / Fs;
 hil_low = filter(alpha, [1, alpha - 1], hil);
 
-% figure; plot(20 * log10(abs([hil(1:length(hil_low)), hil_low]))); hold on;
+% TEST
+%all_peaks = all_peaks + 7;
+hil_low = circshift(hil_low, -4);
+
+figure; plot(20 * log10(abs([hil(1:length(hil_low)), hil_low]))); hold on;
+        plot(all_peaks, 20 * log10(hil(all_peaks)), 'k*');
+        plot(all_peaks, 20 * log10(hil_low(all_peaks)), 'k*');
 
 peak_energy     = [];
 peak_energy_low = [];
