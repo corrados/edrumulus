@@ -56,6 +56,7 @@ x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(5
 % pad PRESET settings first, then overwrite these with pad specific properties
 pad.threshold_db          = 23;
 pad.mask_time_ms          = 6;
+pad.energy_win_len_ms_1   = 4; % TEST
 pad.energy_win_len_ms     = 0.5; % keep small (~0.5 ms) to avoid power drops on edge of mesh head
 pad.scan_time_ms          = 2.5;
 pad.main_peak_dist_ms     = 2.25;
@@ -197,21 +198,23 @@ hil = filter(a, 1, x);
 end
 
 
-function [hil, hil_filt] = filter_input_signal(x, Fs)
+function [hil, hil_filt, hil_filt_1] = filter_input_signal(x, Fs)
 global pad;
 
-energy_window_len = round(pad.energy_win_len_ms * 1e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
+energy_window_len_1 = round(pad.energy_win_len_ms_1 * 1e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
+energy_window_len   = round(pad.energy_win_len_ms * 1e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
 
 % Hilbert filter
 hil = myhilbert(x);
 
 % moving average filter
-hil_filt = abs(filter(ones(energy_window_len, 1) / energy_window_len, 1, hil)) .^ 2; % moving average
+hil_filt_1 = abs(filter(ones(energy_window_len_1, 1) / sqrt(energy_window_len_1), 1, hil)) .^ 2; % moving average
+hil_filt = abs(filter(ones(energy_window_len, 1) / sqrt(energy_window_len), 1, hil)) .^ 2; % moving average
 
 end
 
 
-function [all_peaks, all_first_peaks, scan_region] = calc_peak_detection(hil_filt, Fs)
+function [all_peaks, all_first_peaks, scan_region] = calc_peak_detection(hil_filt, hil_filt_1, Fs)
 global pad;
 
 scan_region = nan(size(hil_filt));
@@ -352,7 +355,7 @@ while ~no_more_peak
 
 end
 
-figure; plot(10 * log10([hil_filt, hil_filt_decay, decay_all, decay_est_rng])); hold on;
+figure; plot(10 * log10([hil_filt, hil_filt_1, hil_filt_decay, decay_all, decay_est_rng])); hold on;
 plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'k*');
 plot(all_sec_peaks, 10 * log10(hil_filt(all_sec_peaks)), 'y*');
 
@@ -511,8 +514,8 @@ end
 function processing(x, Fs)
 
 % calculate peak detection and positional sensing
-[hil, hil_filt]                           = filter_input_signal(x(:, 1), Fs);
-[all_peaks, all_first_peaks, scan_region] = calc_peak_detection(hil_filt, Fs);
+[hil, hil_filt, hil_filt_1]               = filter_input_signal(x(:, 1), Fs);
+[all_peaks, all_first_peaks, scan_region] = calc_peak_detection(hil_filt, hil_filt_1, Fs);
 is_rim_shot                               = detect_rim_shot(x, hil_filt, all_first_peaks, Fs);
 pos_sense_metric                          = calc_pos_sense_metric(hil, hil_filt, Fs, all_first_peaks);
 
