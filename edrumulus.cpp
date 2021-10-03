@@ -456,7 +456,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
 void Edrumulus::Pad::initialize()
 {
   // set algorithm parameters
-  const float threshold_db = 9.0f + pad_settings.velocity_threshold;            // gives us a threshold range of 9..40 dB
+  const float threshold_db = 20.0f + pad_settings.velocity_threshold;           // gives us a threshold range of 20..51 dB
   threshold                = pow   ( 10.0f, threshold_db / 10 );                // linear power threshold
   first_peak_diff_thresh   = pow   ( 10.0f, 20.0f / 10 );                       // 20 dB difference allowed between first peak and later peak in scan time
   energy_window_len        = round ( pad_settings.energy_win_len_ms * 1e-3f * Fs ); // hit energy estimation time window length (e.g. 2 ms)
