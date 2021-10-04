@@ -30,7 +30,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/esp32_pd120.wav");
 %x = audioread("signals/esp32_pd8.wav");padtype = 'pd8';
 %x = audioread("signals/pd120_pos_sense.wav");%x = x(2900:10000, :);%x = x(55400:58000, :);%
-x = audioread("signals/pd120_pos_sense2.wav");
+%x = audioread("signals/pd120_pos_sense2.wav");
 %x = audioread("signals/pd120_single_hits.wav");
 %x = audioread("signals/pd120_roll.wav");%x = x(292410:294749, :);%x = x(311500:317600, :);
 %x = audioread("signals/pd120_middle_velocity.wav");
@@ -38,7 +38,7 @@ x = audioread("signals/pd120_pos_sense2.wav");
 %x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
-%x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);
+x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);
 %x = audioread("signals/pd6.wav");
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
@@ -69,7 +69,7 @@ pad.decay_len_ms3         = 0; % not used
 pad.decay_grad_fact1      = 200;
 pad.decay_grad_fact2      = 200;
 pad.decay_grad_fact3      = 200;
-pad.pos_energy_win_len_ms = 2;
+pad.pos_energy_win_len_ms = 2;%0.5;%2;%0.5;%2;
 pad.pos_iir_alpha         = 200;
 pad.pos_invert            = false;
 
@@ -84,6 +84,8 @@ switch padtype
   case 'pd80r'
     pad.scan_time_ms          = 3;
     pad.main_peak_dist_ms     = 2.4;
+    pad.decay_len_ms1         = 10;
+    pad.decay_grad_fact1      = 30;
     pad.decay_len_ms2         = 75;
     pad.decay_grad_fact2      = 300;
     pad.decay_len_ms3         = 300;
@@ -406,8 +408,9 @@ alpha   = pad.pos_iir_alpha / Fs;
 hil_low = filter(alpha, [1, alpha - 1], hil);
 
 % TEST
-all_peaks = all_peaks - 2;
-hil_low = circshift(hil_low, -7);
+all_peaks = all_peaks + 6;
+%all_peaks = all_peaks - 2;
+%hil_low = circshift(hil_low, -3);%-7);
 
 figure; plot(20 * log10(abs([hil(1:length(hil_low)), hil_low]))); hold on;
         plot(all_peaks, 20 * log10(hil(all_peaks)), 'k*');
