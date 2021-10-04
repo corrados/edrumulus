@@ -30,7 +30,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/esp32_pd120.wav");
 %x = audioread("signals/esp32_pd8.wav");padtype = 'pd8';
 %x = audioread("signals/pd120_pos_sense.wav");%x = x(2900:10000, :);%x = x(55400:58000, :);%
-%x = audioread("signals/pd120_pos_sense2.wav");
+x = audioread("signals/pd120_pos_sense2.wav");
 %x = audioread("signals/pd120_single_hits.wav");
 %x = audioread("signals/pd120_roll.wav");%x = x(292410:294749, :);%x = x(311500:317600, :);
 %x = audioread("signals/pd120_middle_velocity.wav");
@@ -38,7 +38,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
-x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);
+%x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);
 %x = audioread("signals/pd6.wav");
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
@@ -54,9 +54,9 @@ x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(5
 
 
 % pad PRESET settings first, then overwrite these with pad specific properties
-pad.threshold_db          = 23;
+pad.threshold_db          = 28;
 pad.mask_time_ms          = 6;
-pad.energy_win_len_ms     = 2;
+pad.energy_win_len_ms     = 0.5;
 pad.scan_time_ms          = 2.5;
 pad.main_peak_dist_ms     = 2.25;
 pad.decay_est_delay2nd_ms = 2.5;
@@ -76,6 +76,11 @@ pad.pos_invert            = false;
 switch padtype
   case 'pd120'
     % note: the PRESET settings are from the PD120 pad
+    pad.decay_len_ms1         = 10;
+    pad.decay_grad_fact1      = 30;
+    pad.decay_len_ms2         = 250;
+    pad.decay_grad_fact2      = 220;
+    pad.decay_len_ms3         = 0; % not used
   case 'pd80r'
     pad.scan_time_ms          = 3;
     pad.main_peak_dist_ms     = 2.4;
@@ -83,8 +88,6 @@ switch padtype
     pad.decay_grad_fact2      = 300;
     pad.decay_len_ms3         = 300;
     pad.decay_grad_fact3      = 100;
-    pad.pos_energy_win_len_ms = 0.5;
-
   case 'pd8'
     pad.scan_time_ms          = 1.3;
     pad.main_peak_dist_ms     = 0.75;
@@ -202,7 +205,7 @@ energy_window_len = round(pad.energy_win_len_ms * 1e-3 * Fs); % hit energy estim
 hil = myhilbert(x);
 
 % moving average filter
-hil_filt = abs(filter(ones(energy_window_len, 1) / energy_window_len, 1, hil)) .^ 2; % moving average
+hil_filt = abs(filter(ones(energy_window_len, 1) / energy_window_len, 1, abs(hil) .^ 2)); % moving average
 
 end
 
@@ -331,7 +334,7 @@ while ~no_more_peak
 
   % exponential decay assumption
   decay           = decay_factor * decay_curve;
-  decay_x         = peak_idx + (0:decay_len - 1) + 2; % NOTE "+ 2" delay needed for sample-wise processing
+  decay_x         = first_peak_idx + (0:decay_len - 1) + 2; % NOTE "+ 2" delay needed for sample-wise processing
   valid_decay_idx = decay_x <= length(hil_filt_decay);
   decay           = decay(valid_decay_idx);
   decay_x         = decay_x(valid_decay_idx);
@@ -348,9 +351,9 @@ while ~no_more_peak
 
 end
 
-%figure; plot(10 * log10([hil_filt, hil_filt_decay, decay_all, decay_est_rng])); hold on;
-%plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'k*');
-%plot(all_sec_peaks, 10 * log10(hil_filt(all_sec_peaks)), 'y*');
+figure; plot(10 * log10([hil_filt, hil_filt_decay, decay_all, decay_est_rng])); hold on;
+plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'k*');
+plot(all_sec_peaks, 10 * log10(hil_filt(all_sec_peaks)), 'y*');
 
 % TODO What is this zoom area for?
 %axis([2.835616531556589e+05   2.856098468655325e+05  -1.994749771562022e+01   4.962270061651073e+01]);
@@ -402,7 +405,13 @@ pos_energy_window_len = round(pad.pos_energy_win_len_ms * 1e-3 * Fs); % position
 alpha   = pad.pos_iir_alpha / Fs;
 hil_low = filter(alpha, [1, alpha - 1], hil);
 
-% figure; plot(20 * log10(abs([hil(1:length(hil_low)), hil_low]))); hold on;
+% TEST
+all_peaks = all_peaks - 2;
+hil_low = circshift(hil_low, -7);
+
+figure; plot(20 * log10(abs([hil(1:length(hil_low)), hil_low]))); hold on;
+        plot(all_peaks, 20 * log10(hil(all_peaks)), 'k*');
+        plot(all_peaks, 20 * log10(hil_low(all_peaks)), 'k*');
 
 peak_energy     = [];
 peak_energy_low = [];
