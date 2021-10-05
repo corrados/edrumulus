@@ -56,7 +56,7 @@ x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(5
 % pad PRESET settings first, then overwrite these with pad specific properties
 pad.threshold_db          = 28;
 pad.mask_time_ms          = 6;
-pad.energy_win_len_ms     = 0.5;
+pad.energy_win_len_ms     = 0.5;%10;%20;%0.4;%0.1;%0.4;%0.1;%0.5;
 pad.scan_time_ms          = 2.5;
 pad.main_peak_dist_ms     = 2.25;
 pad.decay_est_delay2nd_ms = 2.5;
@@ -69,7 +69,7 @@ pad.decay_len_ms3         = 0; % not used
 pad.decay_grad_fact1      = 200;
 pad.decay_grad_fact2      = 200;
 pad.decay_grad_fact3      = 200;
-pad.pos_energy_win_len_ms = 2;%0.5;%2;%0.5;%2;
+pad.pos_energy_win_len_ms = 0.5;%0.5;%2;%0.5;%2;
 pad.pos_iir_alpha         = 200;
 pad.pos_invert            = false;
 
@@ -207,7 +207,11 @@ energy_window_len = round(pad.energy_win_len_ms * 1e-3 * Fs); % hit energy estim
 hil = myhilbert(x);
 
 % moving average filter
-hil_filt = abs(filter(ones(energy_window_len, 1) / energy_window_len, 1, abs(hil) .^ 2)); % moving average
+b = ones(energy_window_len, 1) / energy_window_len;
+%b = [0:energy_window_len / 2 + 1, energy_window_len / 2 + 1:-1:0] / energy_window_len / 2;
+%b = b(2:end - 1);
+%b
+hil_filt = filter(b, 1, abs(hil) .^ 2); % moving average
 
 end
 
@@ -408,9 +412,10 @@ alpha   = pad.pos_iir_alpha / Fs;
 hil_low = filter(alpha, [1, alpha - 1], hil);
 
 % TEST
-all_peaks = all_peaks + 6;
+energy_window_len = round(pad.energy_win_len_ms * 1e-3 * Fs); % <- COPY FROM ABOVE!!!!!!
+all_peaks = all_peaks - energy_window_len / 2;
 %all_peaks = all_peaks - 2;
-%hil_low = circshift(hil_low, -3);%-7);
+hil_low = circshift(hil_low, -5);%-7);
 
 figure; plot(20 * log10(abs([hil(1:length(hil_low)), hil_low]))); hold on;
         plot(all_peaks, 20 * log10(hil(all_peaks)), 'k*');
