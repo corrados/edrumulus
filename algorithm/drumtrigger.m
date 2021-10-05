@@ -208,8 +208,8 @@ energy_window_len   = round(pad.energy_win_len_ms * 1e-3 * Fs); % hit energy est
 hil = myhilbert(x);
 
 % moving average filter
-hil_filt_1 = abs(filter(ones(energy_window_len_1, 1) / energy_window_len_1, 1, abs(hil) .^ 2)); % moving average
-hil_filt = abs(filter(ones(energy_window_len, 1) / energy_window_len, 1, abs(hil) .^ 2)); % moving average
+hil_filt_1 = filter(ones(energy_window_len_1, 1) / energy_window_len_1, 1, abs(hil) .^ 2); % moving average
+hil_filt = filter(ones(energy_window_len, 1) / energy_window_len, 1, abs(hil) .^ 2); % moving average
 
 end
 
