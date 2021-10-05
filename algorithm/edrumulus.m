@@ -28,10 +28,10 @@ close all
 %x = audioread("signals/pd120_roll.wav");x = x(292410:294749, :);
 %x = audioread("signals/pd120_single_hits.wav");
 %x = audioread("signals/pd120_pos_sense.wav");x = x(2900:10000, :);%x = x(55400:58000, :);%
-x = audioread("signals/pd120_pos_sense2.wav");x = x(109000:117000, :);%
+%x = audioread("signals/pd120_pos_sense2.wav");x = x(109000:117000, :);%
 %x = audioread("signals/pd120_rimshot.wav");x = x(168000:171000, :);%x = x(1:8000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
-%x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(130000:176000, :);%265000, :);%x = x(57500:59000, :);%
+x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(130000:176000, :);%265000, :);%x = x(57500:59000, :);%
 
 
 % match the signal level of the ESP32
@@ -190,6 +190,7 @@ global rim_high_prev_x;
 global rim_x_high;
 global energy_window_len;
 global pos_energy_window_len;
+global pos_unfiltered_delay;
 global scan_time;
 global scan_time_cnt;
 global mov_av_hist;
@@ -219,6 +220,7 @@ global alpha;
 global hil_low_re hil_low_im;
 global hil_hist_re hil_hist_im;
 global hil_low_hist_re hil_low_hist_im;
+global pos_sense_unfilt_hist;
 global pos_sense_cnt;
 global rim_shot_window_len;
 global rim_shot_treshold_dB;
@@ -250,7 +252,7 @@ scan_time_cnt           = 0;
 mov_av_hist             = zeros(energy_window_len, 1); % memory for moving average filter history
 mask_time               = round(6e-3 * Fs); % mask time (e.g. 10 ms)
 mask_back_cnt           = 0;
-threshold               = power(10, 23 / 10); % 23 dB threshold
+threshold               = power(10, 28 / 10); % 28 dB threshold
 first_peak_diff_thresh  = 10 ^ (20 / 10); % 20 dB difference allowed between first peak and later peak in scan time
 was_above_threshold     = false;
 first_peak_val          = 0;
@@ -271,12 +273,14 @@ decay_scaling           = 1;
 alpha                   = 200 / Fs;
 hil_low_re              = 0;
 hil_low_im              = 0;
-pos_energy_window_len   = round(2e-3 * Fs); % positional sensing energy estimation time window length (e.g. 2 ms)
+pos_energy_window_len   = round(0.5e-3 * Fs); % positional sensing energy estimation time window length (e.g. 2 ms)
+pos_unfiltered_delay    = 5; % TODO do not use a constant here -> must be dependend on current low-pass filter configuration
 pos_sense_cnt           = 0;
 hil_hist_re             = zeros(pos_energy_window_len, 1);
 hil_hist_im             = zeros(pos_energy_window_len, 1);
 hil_low_hist_re         = zeros(pos_energy_window_len, 1);
 hil_low_hist_im         = zeros(pos_energy_window_len, 1);
+pos_sense_unfilt_hist   = zeros(pos_unfiltered_delay, 1); % memory for unfiltered signal for positional sensing metric
 rim_shot_window_len     = round(5e-3 * Fs); % window length (e.g. 6 ms)
 rim_shot_treshold_dB    = 2.3; % dB
 rim_x_high_hist         = zeros(rim_shot_window_len, 1);
@@ -333,7 +337,7 @@ function [hil_debug, ...
           x_rim_high_debug, ...
           peak_found, ...
           peak_found_offset, ...
-          peak_energy, ...
+          peak_energy_delayed, ...
           peak_energy_low, ...
           was_pos_sense_ready, ...
           pos_sense_metric, ...
@@ -349,6 +353,7 @@ global rim_high_prev_x;
 global rim_x_high;
 global energy_window_len;
 global pos_energy_window_len;
+global pos_unfiltered_delay;
 global scan_time;
 global scan_time_cnt;
 global mov_av_hist;
@@ -378,6 +383,7 @@ global alpha;
 global hil_low_re hil_low_im;
 global hil_hist_re hil_hist_im;
 global hil_low_hist_re hil_low_hist_im;
+global pos_sense_unfilt_hist;
 global pos_sense_cnt;
 global rim_shot_window_len;
 global rim_shot_treshold_dB;
@@ -581,12 +587,16 @@ if pos_sense_is_used
   peak_energy     = sum(hil_hist_re     .* hil_hist_re     + hil_hist_im     .* hil_hist_im);
   peak_energy_low = sum(hil_low_hist_re .* hil_low_hist_re + hil_low_hist_im .* hil_low_hist_im);
 
+  % delay the unfiltered signal so that it matches delay of low-pass filter
+  pos_sense_unfilt_hist = update_fifo(peak_energy, pos_unfiltered_delay, pos_sense_unfilt_hist);
+  peak_energy_delayed   = pos_sense_unfilt_hist(1);
+
   % start condition of delay process to fill up the required buffers
   if first_peak_found && (~was_pos_sense_ready) && (pos_sense_cnt == 0)
 
     % a peak was found, we now have to start the delay process to fill up the
     % required buffer length for our metric
-    pos_sense_cnt = pos_energy_window_len / 2 - 1;
+    pos_sense_cnt = pos_energy_window_len / 2 - 1 + pos_unfiltered_delay;
 
   end
 
@@ -598,7 +608,7 @@ if pos_sense_is_used
     if pos_sense_cnt <= 0
 
       % the buffers are filled, now calculate the metric
-      stored_pos_sense_metric = peak_energy / peak_energy_low;
+      stored_pos_sense_metric = peak_energy_delayed / peak_energy_low;
       was_pos_sense_ready     = true;
 
     else
