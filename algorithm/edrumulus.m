@@ -192,7 +192,7 @@ global energy_window_len;
 global pos_energy_window_len;
 global scan_time;
 global scan_time_cnt;
-global mov_av_hist_re mov_av_hist_im;
+global mov_av_hist;
 global mask_time;
 global mask_back_cnt;
 global threshold;
@@ -244,11 +244,10 @@ rim_high_prev_x         = 0;
 rim_x_high              = 0;
 b_rim_high              = [0.969531252908746, -0.969531252908746];
 a_rim_high              = -0.939062505817492;
-energy_window_len       = round(2e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
+energy_window_len       = round(0.5e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
 scan_time               = round(2.5e-3 * Fs); % scan time from first detected peak
 scan_time_cnt           = 0;
-mov_av_hist_re          = zeros(energy_window_len, 1); % real part memory for moving average filter history
-mov_av_hist_im          = zeros(energy_window_len, 1); % imaginary part memory for moving average filter history
+mov_av_hist             = zeros(energy_window_len, 1); % memory for moving average filter history
 mask_time               = round(6e-3 * Fs); % mask time (e.g. 10 ms)
 mask_back_cnt           = 0;
 threshold               = power(10, 23 / 10); % 23 dB threshold
@@ -352,7 +351,7 @@ global energy_window_len;
 global pos_energy_window_len;
 global scan_time;
 global scan_time_cnt;
-global mov_av_hist_re mov_av_hist_im;
+global mov_av_hist;
 global mask_time;
 global mask_back_cnt;
 global threshold;
@@ -414,11 +413,9 @@ hil_im    = sum(hil_hist .* a_im);
 hil_debug = complex(hil_re, hil_im); % just for debugging
 
 % moving average filter
-mov_av_hist_re = update_fifo(hil_re, energy_window_len, mov_av_hist_re);
-mov_av_hist_im = update_fifo(hil_im, energy_window_len, mov_av_hist_im);
-mov_av_re      = sum(mov_av_hist_re) / energy_window_len;
-mov_av_im      = sum(mov_av_hist_im) / energy_window_len;
-hil_filt       = mov_av_re * mov_av_re + mov_av_im * mov_av_im;
+hil_sq      = hil_re * hil_re + hil_im * hil_im;
+mov_av_hist = update_fifo(hil_sq, energy_window_len, mov_av_hist);
+hil_filt    = sum(mov_av_hist) / energy_window_len;
 
 % exponential decay assumption
 if decay_back_cnt > 0
