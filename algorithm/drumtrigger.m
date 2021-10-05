@@ -207,11 +207,7 @@ energy_window_len = round(pad.energy_win_len_ms * 1e-3 * Fs); % hit energy estim
 hil = myhilbert(x);
 
 % moving average filter
-b = ones(energy_window_len, 1) / energy_window_len;
-%b = [0:energy_window_len / 2 + 1, energy_window_len / 2 + 1:-1:0] / energy_window_len / 2;
-%b = b(2:end - 1);
-%b
-hil_filt = filter(b, 1, abs(hil) .^ 2); % moving average
+hil_filt = filter(ones(energy_window_len, 1) / energy_window_len, 1, abs(hil) .^ 2); % moving average
 
 end
 
