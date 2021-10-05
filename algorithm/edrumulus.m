@@ -27,11 +27,11 @@ close all
 % load test data
 %x = audioread("signals/pd120_roll.wav");x = x(292410:294749, :);
 %x = audioread("signals/pd120_single_hits.wav");
-x = audioread("signals/pd120_pos_sense.wav");x = x(2900:10000, :);%x = x(55400:58000, :);%
-%x = audioread("signals/pd120_pos_sense2.wav");
+%x = audioread("signals/pd120_pos_sense.wav");x = x(2900:10000, :);%x = x(55400:58000, :);%
+x = audioread("signals/pd120_pos_sense2.wav");x = x(109000:117000, :);%
 %x = audioread("signals/pd120_rimshot.wav");x = x(168000:171000, :);%x = x(1:8000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
-%x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(57500:59000, :);%x = x(1:265000, :);%
+%x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(130000:176000, :);%265000, :);%x = x(57500:59000, :);%
 
 
 % match the signal level of the ESP32
@@ -492,8 +492,8 @@ if ((hil_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
       prev_hil_filt_val   = 0;
       was_above_threshold = false;
       decay_scaling       = max_hil_filt_val * decay_fact;
-      decay_back_cnt      = decay_len - peak_found_offset;
-      mask_back_cnt       = mask_time - peak_found_offset;
+      decay_back_cnt      = decay_len - scan_time; % start is first peak (i.e. scan_time instead of peak_found_offset)
+      mask_back_cnt       = mask_time - scan_time; % start is first peak (i.e. scan_time instead of peak_found_offset)
       was_peak_found      = true;
 
       % for left/right main peak detection (note that we have to add one because
