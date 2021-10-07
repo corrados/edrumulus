@@ -218,8 +218,8 @@ global decay_back_cnt;
 global decay_scaling;
 global alpha;
 global hil_low_re hil_low_im;
-global hil_hist_re hil_hist_im;
-global hil_low_hist_re hil_low_hist_im;
+global pos_hil_hist;
+global pos_hil_low_hist;
 global pos_sense_unfilt_hist;
 global pos_sense_cnt;
 global rim_shot_window_len;
@@ -276,10 +276,8 @@ hil_low_im              = 0;
 pos_energy_window_len   = round(0.5e-3 * Fs); % positional sensing energy estimation time window length (e.g. 2 ms)
 pos_unfiltered_delay    = 5; % TODO do not use a constant here -> must be dependend on current low-pass filter configuration
 pos_sense_cnt           = 0;
-hil_hist_re             = zeros(pos_energy_window_len, 1);
-hil_hist_im             = zeros(pos_energy_window_len, 1);
-hil_low_hist_re         = zeros(pos_energy_window_len, 1);
-hil_low_hist_im         = zeros(pos_energy_window_len, 1);
+pos_hil_hist            = zeros(pos_energy_window_len, 1);
+pos_hil_low_hist        = zeros(pos_energy_window_len, 1);
 pos_sense_unfilt_hist   = zeros(pos_unfiltered_delay, 1); % memory for unfiltered signal for positional sensing metric
 rim_shot_window_len     = round(5e-3 * Fs); % window length (e.g. 6 ms)
 rim_shot_treshold_dB    = 2.3; % dB
@@ -381,8 +379,8 @@ global decay_back_cnt;
 global decay_scaling;
 global alpha;
 global hil_low_re hil_low_im;
-global hil_hist_re hil_hist_im;
-global hil_low_hist_re hil_low_hist_im;
+global pos_hil_hist;
+global pos_hil_low_hist;
 global pos_sense_unfilt_hist;
 global pos_sense_cnt;
 global rim_shot_window_len;
@@ -579,13 +577,14 @@ if pos_sense_is_used
   hil_low_re = (1 - alpha) * hil_low_re + alpha * hil_re;
   hil_low_im = (1 - alpha) * hil_low_im + alpha * hil_im;
 
-  hil_hist_re     = update_fifo(hil_re,     pos_energy_window_len, hil_hist_re);
-  hil_hist_im     = update_fifo(hil_im,     pos_energy_window_len, hil_hist_im);
-  hil_low_hist_re = update_fifo(hil_low_re, pos_energy_window_len, hil_low_hist_re);
-  hil_low_hist_im = update_fifo(hil_low_im, pos_energy_window_len, hil_low_hist_im);
+  pos_hil     = hil_re * hil_re + hil_im * hil_im;
+  pos_hil_low = hil_low_re * hil_low_re + hil_low_im * hil_low_im;
 
-  peak_energy     = sum(hil_hist_re     .* hil_hist_re     + hil_hist_im     .* hil_hist_im);
-  peak_energy_low = sum(hil_low_hist_re .* hil_low_hist_re + hil_low_hist_im .* hil_low_hist_im);
+  pos_hil_hist     = update_fifo(pos_hil,     pos_energy_window_len, pos_hil_hist);
+  pos_hil_low_hist = update_fifo(pos_hil_low, pos_energy_window_len, pos_hil_low_hist);
+
+  peak_energy     = sum(pos_hil_hist);
+  peak_energy_low = sum(pos_hil_low_hist);
 
   % delay the unfiltered signal so that it matches delay of low-pass filter
   pos_sense_unfilt_hist = update_fifo(peak_energy, pos_unfiltered_delay, pos_sense_unfilt_hist);
