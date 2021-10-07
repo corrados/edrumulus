@@ -30,7 +30,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/esp32_pd120.wav");
 %x = audioread("signals/esp32_pd8.wav");padtype = 'pd8';
 %x = audioread("signals/pd120_pos_sense.wav");%x = x(2900:10000, :);%x = x(55400:58000, :);%
-%x = audioread("signals/pd120_pos_sense2.wav");
+x = audioread("signals/pd120_pos_sense2.wav");
 %x = audioread("signals/pd120_single_hits.wav");
 %x = audioread("signals/pd120_roll.wav");%x = x(292410:294749, :);%x = x(311500:317600, :);
 %x = audioread("signals/pd120_middle_velocity.wav");
@@ -38,7 +38,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
-x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);
+%x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);
 %x = audioread("signals/pd6.wav");
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
@@ -56,7 +56,7 @@ x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(5
 % pad PRESET settings first, then overwrite these with pad specific properties
 pad.threshold_db          = 28;
 pad.mask_time_ms          = 6;
-pad.energy_win_len_ms     = 0.5;%0.5;%10;%20;%0.4;%0.1;%0.4;%0.1;%0.5;
+pad.energy_win_len_ms     = 2;%0.5;%0.5;%10;%20;%0.4;%0.1;%0.4;%0.1;%0.5;
 pad.scan_time_ms          = 2.5;
 pad.main_peak_dist_ms     = 2.25;
 pad.decay_est_delay2nd_ms = 2.5;
@@ -69,8 +69,8 @@ pad.decay_len_ms3         = 0; % not used
 pad.decay_grad_fact1      = 200;
 pad.decay_grad_fact2      = 200;
 pad.decay_grad_fact3      = 200;
-pad.pos_energy_win_len_ms = 2;%0.2;%0.5;%0.5;%2;%0.5;%2;
-pad.pos_iir_alpha         = 200;
+pad.pos_energy_win_len_ms = 1;%0.5;%0.5;%2;%0.2;%0.5;%0.5;%2;%0.5;%2;
+pad.pos_low_pass_cutoff   = 150;%250; % Hz
 pad.pos_invert            = false;
 
 switch padtype
@@ -398,27 +398,22 @@ global pad;
 pos_energy_window_len = round(pad.pos_energy_win_len_ms * 1e-3 * Fs); % positional sensing energy estimation time window length (e.g. 2 ms)
 
 % low pass filter of the Hilbert signal
-% lp_ir_len = 80; % low-pass filter length
-% lp_cutoff = 0.02; % normalized cut-off of low-pass filter
-% a         = fir1(lp_ir_len, lp_cutoff);
-% hil_low   = filter(a, 1, hil);
-% hil_low   = hil_low(lp_ir_len / 2:end);
-% use a simple one-pole IIR filter for less CPU processing and shorter delay
-alpha   = pad.pos_iir_alpha / Fs;
-hil_low = filter(alpha, [1, alpha - 1], hil);
+% moving average cut off frequency approximation according to:
+% https://dsp.stackexchange.com/questions/9966/what-is-the-cut-off-frequency-of-a-moving-average-filter
+low_pass_cutoff_normalized  = pad.pos_low_pass_cutoff / Fs;
+low_pass_moving_average_len = round(sqrt(0.196202 + low_pass_cutoff_normalized ^ 2) / low_pass_cutoff_normalized);
+if mod(low_pass_moving_average_len, 2) == 1
+  low_pass_moving_average_len = low_pass_moving_average_len + 1; % make sure we have an even length
+endif
 
-%% TEST
-%testlen = 16;
-%b = ones(testlen, 1) / testlen;
-%%b = [0.5:0.5 / testlen * 2:1 1:-0.5 / testlen * 2:0.5];
-%hil_low = filter(b, 1, hil); % moving average
-%hil_low = circshift(hil_low, -testlen / 2);
+hil_low = filter(ones(low_pass_moving_average_len, 1) / low_pass_moving_average_len, 1, hil); % moving average
+hil_low = circshift(hil_low, -low_pass_moving_average_len / 2);
 
-%% TEST
-%energy_window_len = round(pad.energy_win_len_ms * 1e-3 * Fs); % <- COPY FROM ABOVE!!!!!!
-%all_peaks = all_peaks - energy_window_len / 2;
-%%all_peaks = all_peaks - 2;
-hil_low = circshift(hil_low, -5);%-7);
+% TEST
+energy_window_len = round(pad.energy_win_len_ms * 1e-3 * Fs); % <- COPY FROM ABOVE!!!!!!
+all_peaks = all_peaks - energy_window_len / 2;
+
+
 
 figure; plot(20 * log10(abs([hil(1:length(hil_low)), 10 * hil_low]))); hold on;
         plot(all_peaks, 20 * log10(abs(hil(all_peaks))), 'k*');
