@@ -401,6 +401,7 @@ end
 function pos_sense_metric = calc_pos_sense_metric(hil, hil_filt, Fs, all_peaks)
 global pad;
 
+energy_window_len     = round(pad.energy_win_len_ms * 1e-3 * Fs); % <- COPY FROM ABOVE
 pos_energy_window_len = round(pad.pos_energy_win_len_ms * 1e-3 * Fs); % positional sensing energy estimation time window length (e.g. 2 ms)
 
 % low pass filter of the Hilbert signal
@@ -416,8 +417,7 @@ hil_low = filter(ones(low_pass_moving_average_len, 1) / low_pass_moving_average_
 hil_low = circshift(hil_low, -low_pass_moving_average_len / 2); % compensate low-pass filter delay
 
 % compensate energy window moving average delay of peak detection
-energy_window_len = round(pad.energy_win_len_ms * 1e-3 * Fs); % <- COPY FROM ABOVE
-all_peaks         = all_peaks - energy_window_len / 2;
+all_peaks = all_peaks - energy_window_len / 2;
 
 figure; plot(20 * log10(abs([hil(1:length(hil_low)), 10 * hil_low]))); hold on;
         plot(all_peaks, 20 * log10(abs(hil(all_peaks))), 'k*');
