@@ -30,7 +30,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/esp32_pd120.wav");
 %x = audioread("signals/esp32_pd8.wav");padtype = 'pd8';
 %x = audioread("signals/pd120_pos_sense.wav");%x = x(2900:10000, :);%x = x(55400:58000, :);%
-x = audioread("signals/pd120_pos_sense2.wav");
+%x = audioread("signals/pd120_pos_sense2.wav");
 %x = audioread("signals/pd120_single_hits.wav");
 %x = audioread("signals/pd120_roll.wav");%x = x(292410:294749, :);%x = x(311500:317600, :);
 %x = audioread("signals/pd120_middle_velocity.wav");
@@ -38,7 +38,7 @@ x = audioread("signals/pd120_pos_sense2.wav");
 %x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
-%x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);
+x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);
 %x = audioread("signals/pd6.wav");
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
@@ -46,7 +46,7 @@ x = audioread("signals/pd120_pos_sense2.wav");
 %x = audioread("signals/cy8.wav");padtype = 'cy8';%x = x(1:200000, :);
 %x = audioread("signals/kd8.wav");
 %x = audioread("signals/kd7.wav");padtype = 'kd7';%x = x(1:170000, :);
-%x = audioread("signals/tp80.wav");padtype = 'tp80';
+%x = audioread("signals/tp80.wav");padtype = 'tp80';x = x(1:318000, :);
 %x = audioread("signals/vh12.wav");padtype = 'vh12';%x = x(900000:end, :);%x = x(376000:420000, :);%x = x(1:140000, :);
 %org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
 %org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
@@ -56,7 +56,7 @@ x = audioread("signals/pd120_pos_sense2.wav");
 % pad PRESET settings first, then overwrite these with pad specific properties
 pad.threshold_db          = 28;
 pad.mask_time_ms          = 6;
-pad.energy_win_len_ms     = 2;%0.5;%0.5;%10;%20;%0.4;%0.1;%0.4;%0.1;%0.5;
+pad.energy_win_len_ms     = 0.5;
 pad.scan_time_ms          = 2.5;
 pad.main_peak_dist_ms     = 2.25;
 pad.decay_est_delay2nd_ms = 2.5;
@@ -69,19 +69,25 @@ pad.decay_len_ms3         = 0; % not used
 pad.decay_grad_fact1      = 200;
 pad.decay_grad_fact2      = 200;
 pad.decay_grad_fact3      = 200;
-pad.pos_energy_win_len_ms = 1;%0.5;%0.5;%2;%0.2;%0.5;%0.5;%2;%0.5;%2;
-pad.pos_low_pass_cutoff   = 150;%250; % Hz
+pad.pos_energy_win_len_ms = 1;
+pad.pos_low_pass_cutoff   = 250; % Hz
 pad.pos_invert            = false;
 
 switch padtype
   case 'pd120'
     % note: the PRESET settings are from the PD120 pad
+pad.energy_win_len_ms     = 2;
+pad.pos_energy_win_len_ms = 2;
+pad.pos_low_pass_cutoff   = 150; % Hz
     pad.decay_len_ms1         = 10;
     pad.decay_grad_fact1      = 30;
     pad.decay_len_ms2         = 250;
     pad.decay_grad_fact2      = 220;
     pad.decay_len_ms3         = 0; % not used
-  case 'pd80r'
+case 'pd80r'
+pad.energy_win_len_ms     = 2;%0.5;%0.5;%10;%20;%0.4;%0.1;%0.4;%0.1;%0.5;
+pad.pos_energy_win_len_ms = 0.5;%0.5;%2;%0.2;%0.5;%0.5;%2;%0.5;%2;
+pad.pos_low_pass_cutoff   = 250; % Hz
     pad.scan_time_ms          = 3;
     pad.main_peak_dist_ms     = 2.4;
     pad.decay_len_ms1         = 10;
