@@ -413,13 +413,11 @@ if mod(low_pass_moving_average_len, 2) == 1
 endif
 
 hil_low = filter(ones(low_pass_moving_average_len, 1) / low_pass_moving_average_len, 1, hil); % moving average
-hil_low = circshift(hil_low, -low_pass_moving_average_len / 2);
+hil_low = circshift(hil_low, -low_pass_moving_average_len / 2); % compensate low-pass filter delay
 
-% TEST
-energy_window_len = round(pad.energy_win_len_ms * 1e-3 * Fs); % <- COPY FROM ABOVE!!!!!!
-all_peaks = all_peaks - energy_window_len / 2;
-
-
+% compensate energy window moving average delay of peak detection
+energy_window_len = round(pad.energy_win_len_ms * 1e-3 * Fs); % <- COPY FROM ABOVE
+all_peaks         = all_peaks - energy_window_len / 2;
 
 figure; plot(20 * log10(abs([hil(1:length(hil_low)), 10 * hil_low]))); hold on;
         plot(all_peaks, 20 * log10(abs(hil(all_peaks))), 'k*');
