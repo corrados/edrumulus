@@ -216,8 +216,8 @@ global decay_len;
 global decay;
 global decay_back_cnt;
 global decay_scaling;
-global alpha;
-global hil_low_re hil_low_im;
+global pos_low_pass_hist_len;
+global pos_low_pass_hist_re pos_low_pass_hist_im;
 global pos_hil_hist;
 global pos_hil_low_hist;
 global pos_sense_unfilt_hist;
@@ -242,11 +242,21 @@ a_re = [-0.037749783581601, -0.069256807147465, -1.443799477299919,  2.473967088
          0.551482327389238, -0.224119735833791, -0.011665324660691]';
 a_im = [ 0,                  0.213150535195075, -1.048981722170302, -1.797442302898130, ...
          1.697288080048948,  0,                  0.035902177664014]';
+
+% moving average cut off frequency approximation according to:
+% https://dsp.stackexchange.com/questions/9966/what-is-the-cut-off-frequency-of-a-moving-average-filter
+pos_low_pass_cutoff        = 250; % Hz
+low_pass_cutoff_normalized = pos_low_pass_cutoff / Fs;
+pos_low_pass_hist_len      = round(sqrt(0.196202 + low_pass_cutoff_normalized ^ 2) / low_pass_cutoff_normalized);
+if mod(pos_low_pass_hist_len, 2) == 1
+  pos_low_pass_hist_len = pos_low_pass_hist_len + 1; % make sure we have an even length
+endif
+
 rim_high_prev_x         = 0;
 rim_x_high              = 0;
 b_rim_high              = [0.969531252908746, -0.969531252908746];
 a_rim_high              = -0.939062505817492;
-energy_window_len       = round(0.5e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
+energy_window_len       = round(2e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
 scan_time               = round(2.5e-3 * Fs); % scan time from first detected peak
 scan_time_cnt           = 0;
 mov_av_hist             = zeros(energy_window_len, 1); % memory for moving average filter history
@@ -270,11 +280,10 @@ decay_est_fact          = 10 ^ (15 / 10);
 decay_fact              = power(10, 1 / 10); % decay factor of 1 dB
 decay_back_cnt          = 0;
 decay_scaling           = 1;
-alpha                   = 200 / Fs;
-hil_low_re              = 0;
-hil_low_im              = 0;
+pos_low_pass_hist_re    = zeros(pos_low_pass_hist_len, 1);
+pos_low_pass_hist_im    = zeros(pos_low_pass_hist_len, 1);
 pos_energy_window_len   = round(0.5e-3 * Fs); % positional sensing energy estimation time window length (e.g. 2 ms)
-pos_unfiltered_delay    = 5; % TODO do not use a constant here -> must be dependend on current low-pass filter configuration
+pos_unfiltered_delay    = pos_low_pass_hist_len / 2;
 pos_sense_cnt           = 0;
 pos_hil_hist            = zeros(pos_energy_window_len, 1);
 pos_hil_low_hist        = zeros(pos_energy_window_len, 1);
@@ -377,8 +386,8 @@ global decay_len;
 global decay;
 global decay_back_cnt;
 global decay_scaling;
-global alpha;
-global hil_low_re hil_low_im;
+global pos_low_pass_hist_len;
+global pos_low_pass_hist_re pos_low_pass_hist_im;
 global pos_hil_hist;
 global pos_hil_low_hist;
 global pos_sense_unfilt_hist;
@@ -574,8 +583,17 @@ hil_filt_decay_debug = hil_filt_decay; % just for debugging
 if pos_sense_is_used
 
   % low pass filter of the Hilbert signal
-  hil_low_re = (1 - alpha) * hil_low_re + alpha * hil_re;
-  hil_low_im = (1 - alpha) * hil_low_im + alpha * hil_im;
+  pos_low_pass_hist_re = update_fifo(hil_re, pos_low_pass_hist_len, pos_low_pass_hist_re);
+  pos_low_pass_hist_im = update_fifo(hil_im, pos_low_pass_hist_len, pos_low_pass_hist_im);
+  hil_low_re           = sum(pos_low_pass_hist_re) / pos_low_pass_hist_len;
+  hil_low_im           = sum(pos_low_pass_hist_im) / pos_low_pass_hist_len;
+
+
+% TODO!!!!
+% compensate energy window moving average delay of peak detection
+%all_peaks = all_peaks - energy_window_len / 2;
+
+
 
   pos_hil     = hil_re * hil_re + hil_im * hil_im;
   pos_hil_low = hil_low_re * hil_low_re + hil_low_im * hil_low_im;
@@ -594,7 +612,7 @@ if pos_sense_is_used
   if first_peak_found && (~was_pos_sense_ready) && (pos_sense_cnt == 0)
 
     % a peak was found, we now have to start the delay process to fill up the
-    % required buffer length for our metric
+    % required buffer length for our metric (compensate low-pass filter delay, too)
     pos_sense_cnt = pos_energy_window_len / 2 - 1 + pos_unfiltered_delay;
 
   end

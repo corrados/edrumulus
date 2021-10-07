@@ -38,7 +38,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
-x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);
+x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(130000:176000, :);%x = x(52000:60000, :);
 %x = audioread("signals/pd6.wav");
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
