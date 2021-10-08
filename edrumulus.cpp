@@ -303,7 +303,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.curve_type             = LINEAR;
   pad_settings.pos_sense_is_used      = false; // must be explicitely enabled if it shall be used
   pad_settings.rim_shot_is_used       = false; // must be explicitely enabled if it shall be used
-  pad_settings.energy_win_len_ms      = 2.0f;   // pad specific parameter: hit energy estimation time window length
+  pad_settings.energy_win_len_ms      = 0.5f;   // pad specific parameter: hit energy estimation time window length
   pad_settings.scan_time_ms           = 2.5f;   // pad specific parameter: scan time after first detected peak
   pad_settings.main_peak_dist_ms      = 2.25f;  // pad specific parameter: distance between the two main peaks
   pad_settings.decay_est_delay2nd_ms  = 2.5f;   // pad specific parameter: delay after second main peak until decay power estimation starts
@@ -316,8 +316,8 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.decay_grad_fact2       = 200.0f; // pad specific parameter: decay function gradient factor 2
   pad_settings.decay_len3_ms          = 0.0f;   // pad specific parameter: length of the decay 3
   pad_settings.decay_grad_fact3       = 200.0f; // pad specific parameter: decay function gradient factor 3
-  pad_settings.pos_energy_win_len_ms  = 2.0f;   // pad specific parameter: pos sense energy estimation time window length
-  pad_settings.pos_iir_alpha          = 200.0f; // pad specific parameter: IIR low-pass alpha value for positional sensing
+  pad_settings.pos_energy_win_len_ms  = 1.0f;   // pad specific parameter: pos sense energy estimation time window length
+  pad_settings.pos_low_pass_cutoff    = 250.0f; // pad specific parameter: low-pass cut-off frequency for positional sensing
   pad_settings.pos_invert             = false;  // pad specific parameter: invert the positional sensing metric
   pad_settings.rim_shot_window_len_ms = 5.0f;   // pad specific parameter: window length for rim shot detection
 
@@ -325,20 +325,33 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   {
     case PD120:
       // note: the PRESET settings are from the PD-120 pad
+pad_settings.energy_win_len_ms     = 2.0f;
+pad_settings.pos_energy_win_len_ms = 2.0f;
+pad_settings.pos_low_pass_cutoff   = 150.0f; // Hz
+      pad_settings.decay_len1_ms         = 10.0f;
+      pad_settings.decay_grad_fact1      = 30.0f;
+      pad_settings.decay_len2_ms         = 250.0f;
+      pad_settings.decay_grad_fact2      = 220.0f;
+      pad_settings.decay_len3_ms         = 0.0f; // not used
       break;
 
     case PD80R:
-      pad_settings.velocity_sensitivity  = 6;
+pad_settings.velocity_threshold    = 1;
+pad_settings.energy_win_len_ms     = 2.0f;
+pad_settings.pos_energy_win_len_ms = 0.5f;
+pad_settings.pos_low_pass_cutoff   = 250.0f; // Hz
+      pad_settings.velocity_sensitivity  = 10;
       pad_settings.rim_shot_treshold     = 8;
       pad_settings.pos_threshold         = 13;
       pad_settings.pos_sensitivity       = 20;
       pad_settings.scan_time_ms          = 3.0f;
       pad_settings.main_peak_dist_ms     = 2.4f;
+      pad_settings.decay_len1_ms         = 10.0f;
+      pad_settings.decay_grad_fact1      = 30.0f;
       pad_settings.decay_len2_ms         = 75.0f;
       pad_settings.decay_grad_fact2      = 300.0f;
       pad_settings.decay_len3_ms         = 300.0f;
       pad_settings.decay_grad_fact3      = 100.0f;
-      pad_settings.pos_energy_win_len_ms = 0.5f;
       break;
 
     case PD8:
@@ -449,8 +462,17 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
 
 void Edrumulus::Pad::initialize()
 {
+  // moving average cut off frequency approximation according to:
+  // https://dsp.stackexchange.com/questions/9966/what-is-the-cut-off-frequency-of-a-moving-average-filter
+  const float low_pass_cutoff_normalized = pad_settings.pos_low_pass_cutoff / Fs;
+  pos_low_pass_hist_len = round ( sqrt ( 0.196202f + low_pass_cutoff_normalized * low_pass_cutoff_normalized ) / low_pass_cutoff_normalized );
+  if ( ( pos_low_pass_hist_len % 2 ) == 1 )
+  {
+    pos_low_pass_hist_len++; // make sure we have an even length
+  }
+
   // set algorithm parameters
-  const float threshold_db = 9.0f + pad_settings.velocity_threshold;            // gives us a threshold range of 9..40 dB
+  const float threshold_db = 24.0f + pad_settings.velocity_threshold;           // gives us a threshold range of 24..55 dB
   threshold                = pow   ( 10.0f, threshold_db / 10 );                // linear power threshold
   first_peak_diff_thresh   = pow   ( 10.0f, 20.0f / 10 );                       // 20 dB difference allowed between first peak and later peak in scan time
   energy_window_len        = round ( pad_settings.energy_win_len_ms * 1e-3f * Fs ); // hit energy estimation time window length (e.g. 2 ms)
@@ -469,7 +491,7 @@ void Edrumulus::Pad::initialize()
   decay_est_len            = round ( pad_settings.decay_est_len_ms      * 1e-3f * Fs );
   decay_est_fact           = pow ( 10.0f, pad_settings.decay_est_fact_db / 10 );
   pos_energy_window_len    = round ( pad_settings.pos_energy_win_len_ms * 1e-3f * Fs );         // positional sensing energy estimation time window length (e.g. 2 ms)
-  alpha                    = pad_settings.pos_iir_alpha / Fs;                                   // IIR low pass filter coefficient
+  pos_unfiltered_delay     = pos_low_pass_hist_len / 2;                                         // positional sensing low-pass filter delay
   rim_shot_window_len      = round ( pad_settings.rim_shot_window_len_ms * 1e-3f * Fs );        // window length (e.g. 5 ms)
   rim_shot_treshold_dB     = static_cast<float> ( pad_settings.rim_shot_treshold ) / 2 - 13;    // gives us a rim shot threshold range of -13..2.5 dB
   rim_switch_treshold      = -ADC_MAX_NOISE_AMPL + 9 * ( pad_settings.rim_shot_treshold - 31 ); // rim switch linear threshold
@@ -524,14 +546,14 @@ void Edrumulus::Pad::initialize()
 
   // allocate and initialize memory for vectors
   allocate_initialize ( &hil_hist,                hil_filt_len );          // memory for Hilbert filter history
-  allocate_initialize ( &mov_av_hist_re,          energy_window_len );     // real part memory for moving average filter history
-  allocate_initialize ( &mov_av_hist_im,          energy_window_len );     // imaginary part memory for moving average filter history
+  allocate_initialize ( &mov_av_hist,             energy_window_len );     // memory for moving average filter history
   allocate_initialize ( &decay,                   decay_len );             // memory for decay function
   allocate_initialize ( &hist_main_peak_pow_left, main_peak_dist );        // memory for left main peak power
-  allocate_initialize ( &hil_hist_re,             pos_energy_window_len ); // real part of memory for moving average of Hilbert filtered signal
-  allocate_initialize ( &hil_hist_im,             pos_energy_window_len ); // imaginary part of memory for moving average of Hilbert filtered signal
-  allocate_initialize ( &hil_low_hist_re,         pos_energy_window_len ); // real part of memory for moving average of low-pass filtered Hilbert signal
-  allocate_initialize ( &hil_low_hist_im,         pos_energy_window_len ); // imaginary part of memory for moving average of low-pass filtered Hilbert signal
+  allocate_initialize ( &pos_low_pass_hist_re,    pos_low_pass_hist_len ); // real part of memory for moving average low-pass filter
+  allocate_initialize ( &pos_low_pass_hist_im,    pos_low_pass_hist_len ); // imaginary part of memory for moving average low-pass filter
+  allocate_initialize ( &pos_hil_hist,            pos_energy_window_len );
+  allocate_initialize ( &pos_hil_low_hist,        pos_energy_window_len );
+  allocate_initialize ( &pos_sense_unfilt_hist,   pos_unfiltered_delay );
   allocate_initialize ( &rim_x_high_hist,         rim_shot_window_len );   // memory for rim shot detection
   allocate_initialize ( &ctrl_hist,               ctrl_history_len );      // memory for Hi-Hat control pad hit detection
 
@@ -618,20 +640,15 @@ debug = 0.0f; // TEST
   }
 
   // moving average filter
-  update_fifo ( hil_re, energy_window_len, mov_av_hist_re );
-  update_fifo ( hil_im, energy_window_len, mov_av_hist_im );
+  const float hil_sq = hil_re * hil_re + hil_im * hil_im;
+  update_fifo ( hil_sq, energy_window_len, mov_av_hist );
 
-  float mov_av_re = 0;
-  float mov_av_im = 0;
+  float hil_filt = 0;
   for ( int i = 0; i < energy_window_len; i++ )
   {
-    mov_av_re += mov_av_hist_re[i];
-    mov_av_im += mov_av_hist_im[i];
+    hil_filt += mov_av_hist[i];
   }
-  mov_av_re /= energy_window_len;
-  mov_av_im /= energy_window_len;
-
-  const float hil_filt = mov_av_re * mov_av_re + mov_av_im * mov_av_im;
+  hil_filt /= energy_window_len;
 
   // exponential decay assumption
   float hil_filt_decay = hil_filt;
@@ -707,8 +724,8 @@ debug = 0.0f; // TEST
         prev_hil_filt_val   = 0.0f;
         was_above_threshold = false;
         decay_scaling       = max_hil_filt_val * decay_fact;
-        decay_back_cnt      = decay_len - peak_found_offset;
-        mask_back_cnt       = mask_time - peak_found_offset;
+        decay_back_cnt      = decay_len - scan_time; // start is first peak (i.e. scan_time instead of peak_found_offset)
+        mask_back_cnt       = mask_time - scan_time; // start is first peak (i.e. scan_time instead of peak_found_offset)
         was_peak_found      = true;
 
         // for left/right main peak detection (note that we have to add one because
@@ -779,28 +796,49 @@ debug = 0.0f; // TEST
   if ( pos_sense_is_used )
   {
     // low pass filter of the Hilbert signal
-    hil_low_re = ( 1.0f - alpha ) * hil_low_re + alpha * hil_re;
-    hil_low_im = ( 1.0f - alpha ) * hil_low_im + alpha * hil_im;
-  
-    update_fifo ( hil_re,     pos_energy_window_len, hil_hist_re );
-    update_fifo ( hil_im,     pos_energy_window_len, hil_hist_im );
-    update_fifo ( hil_low_re, pos_energy_window_len, hil_low_hist_re );
-    update_fifo ( hil_low_im, pos_energy_window_len, hil_low_hist_im );
-  
+    update_fifo ( hil_re, pos_low_pass_hist_len, pos_low_pass_hist_re );
+    update_fifo ( hil_im, pos_low_pass_hist_len, pos_low_pass_hist_im );
+
+    float hil_low_re = 0;
+    float hil_low_im = 0;
+    for ( int i = 0; i < pos_low_pass_hist_len; i++ )
+    {
+      hil_low_re += pos_low_pass_hist_re[i];
+      hil_low_im += pos_low_pass_hist_im[i];
+    }
+    hil_low_re /= pos_low_pass_hist_len;
+    hil_low_im /= pos_low_pass_hist_len;
+
+    const float pos_hil     = hil_re * hil_re + hil_im * hil_im;
+    const float pos_hil_low = hil_low_re * hil_low_re + hil_low_im * hil_low_im;
+
+    update_fifo ( pos_hil,     pos_energy_window_len, pos_hil_hist );
+    update_fifo ( pos_hil_low, pos_energy_window_len, pos_hil_low_hist );
+
     float peak_energy     = 0;
     float peak_energy_low = 0;
     for ( int i = 0; i < pos_energy_window_len; i++ )
     {
-      peak_energy     += ( hil_hist_re[i]     * hil_hist_re[i]     + hil_hist_im[i]     * hil_hist_im[i] );
-      peak_energy_low += ( hil_low_hist_re[i] * hil_low_hist_re[i] + hil_low_hist_im[i] * hil_low_hist_im[i] );
+      peak_energy     += pos_hil_hist[i];
+      peak_energy_low += pos_hil_low_hist[i];
     }
+
+    // delay the unfiltered signal so that it matches delay of low-pass filter
+    update_fifo ( peak_energy, pos_unfiltered_delay, pos_sense_unfilt_hist );
+    const float peak_energy_delayed = pos_sense_unfilt_hist[0];
   
     // start condition of delay process to fill up the required buffers
     if ( first_peak_found && ( !was_pos_sense_ready ) && ( pos_sense_cnt == 0 ) )
     {
       // a peak was found, we now have to start the delay process to fill up the
-      // required buffer length for our metric
-      pos_sense_cnt = pos_energy_window_len / 2 - 1;
+      // required buffer length for our metric (compensate low-pass filter delay
+      // and energy window moving average delay of peak detection)
+      pos_sense_cnt = pos_energy_window_len / 2 - 1 + pos_unfiltered_delay - energy_window_len / 2;
+
+// TODO if the energy window length is longer than the positional sensing energy
+//      window length plus the unfiltered delay, the counter may get <= 1
+pos_sense_cnt = max ( pos_sense_cnt, 1 );
+
     }
   
     if ( pos_sense_cnt > 0 )
@@ -816,11 +854,11 @@ debug = 0.0f; // TEST
         if ( pos_sense_inverted )
         {
           // add offset (dB) to get to similar range as non-inverted metric
-          pos_sense_metric = peak_energy_low / peak_energy * 10000.0f;
+          pos_sense_metric = peak_energy_low / peak_energy_delayed * 10000.0f;
         }
         else
         {
-          pos_sense_metric = peak_energy / peak_energy_low;
+          pos_sense_metric = peak_energy_delayed / peak_energy_low;
         }
         was_pos_sense_ready = true;
 

@@ -588,13 +588,6 @@ if pos_sense_is_used
   hil_low_re           = sum(pos_low_pass_hist_re) / pos_low_pass_hist_len;
   hil_low_im           = sum(pos_low_pass_hist_im) / pos_low_pass_hist_len;
 
-
-% TODO!!!!
-% compensate energy window moving average delay of peak detection
-%all_peaks = all_peaks - energy_window_len / 2;
-
-
-
   pos_hil     = hil_re * hil_re + hil_im * hil_im;
   pos_hil_low = hil_low_re * hil_low_re + hil_low_im * hil_low_im;
 
@@ -612,8 +605,15 @@ if pos_sense_is_used
   if first_peak_found && (~was_pos_sense_ready) && (pos_sense_cnt == 0)
 
     % a peak was found, we now have to start the delay process to fill up the
-    % required buffer length for our metric (compensate low-pass filter delay, too)
-    pos_sense_cnt = pos_energy_window_len / 2 - 1 + pos_unfiltered_delay;
+    % required buffer length for our metric (compensate low-pass filter delay
+    % and energy window moving average delay of peak detection)
+    pos_sense_cnt = pos_energy_window_len / 2 - 1 + pos_unfiltered_delay - energy_window_len / 2;
+
+
+% TODO if the energy window length is longer than the positional sensing energy
+%      window length plus the unfiltered delay, the counter may get <= 1
+pos_sense_cnt = max(pos_sense_cnt, 1);
+
 
   end
 

@@ -180,7 +180,7 @@ protected:
         float      decay_len1_ms,    decay_len2_ms,    decay_len3_ms;
         float      decay_grad_fact1, decay_grad_fact2, decay_grad_fact3;
         float      pos_energy_win_len_ms;
-        float      pos_iir_alpha;
+        float      pos_low_pass_cutoff;
         bool       pos_invert;
         float      rim_shot_window_len_ms;
       };
@@ -199,14 +199,14 @@ protected:
       const float a_rim_high    = -0.939062505817492f;
 
       float* hil_hist                = nullptr;
-      float* mov_av_hist_re          = nullptr;
-      float* mov_av_hist_im          = nullptr;
+      float* mov_av_hist             = nullptr;
       float* decay                   = nullptr;
       float* hist_main_peak_pow_left = nullptr;
-      float* hil_hist_re             = nullptr;
-      float* hil_hist_im             = nullptr;
-      float* hil_low_hist_re         = nullptr;
-      float* hil_low_hist_im         = nullptr;
+      float* pos_low_pass_hist_re    = nullptr;
+      float* pos_low_pass_hist_im    = nullptr;
+      float* pos_hil_hist            = nullptr;
+      float* pos_hil_low_hist        = nullptr;
+      float* pos_sense_unfilt_hist   = nullptr;
       float* rim_x_high_hist         = nullptr;
       float* ctrl_hist               = nullptr;
 
@@ -242,7 +242,6 @@ protected:
       float        decay_fact;
       int          decay_back_cnt;
       float        decay_scaling;
-      float        alpha;
       float        rim_high_prev_x;
       float        rim_x_high;
       int          rim_shot_window_len;
@@ -250,7 +249,9 @@ protected:
       float        rim_switch_treshold;
       int          rim_switch_on_cnt;
       int          rim_switch_on_cnt_thresh;
+      int          pos_low_pass_hist_len;
       int          pos_energy_window_len;
+      int          pos_unfiltered_delay;
       int          pos_sense_cnt;
       int          rim_shot_cnt;
       float        hil_filt_max_pow;
