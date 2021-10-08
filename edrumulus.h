@@ -263,8 +263,6 @@ protected:
       bool         was_peak_found;
       bool         was_pos_sense_ready;
       bool         was_rim_shot_ready;
-      float        hil_low_re;
-      float        hil_low_im;
       Epadsettings pad_settings;
       int          midi_note;
       int          midi_note_rim;

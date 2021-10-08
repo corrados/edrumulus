@@ -570,8 +570,6 @@ void Edrumulus::Pad::initialize()
   decay_pow_est_cnt       = 0;
   decay_pow_est_sum       = 0.0f;
   pos_sense_cnt           = 0;
-  hil_low_re              = 0.0f;
-  hil_low_im              = 0.0f;
   rim_shot_cnt            = 0;
   rim_high_prev_x         = 0.0f;
   rim_x_high              = 0.0f;
@@ -1004,7 +1002,7 @@ if ( stored_is_rimshot )
   }
 
 // TEST
-debug = hil_low_re;
+debug = hil_re;
 
 }
 
