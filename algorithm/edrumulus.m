@@ -428,7 +428,8 @@ hil_debug = complex(hil_re, hil_im); % just for debugging
 % moving average filter
 hil_sq      = hil_re * hil_re + hil_im * hil_im;
 mov_av_hist = update_fifo(hil_sq, energy_window_len, mov_av_hist);
-hil_filt    = sum(mov_av_hist) / energy_window_len;
+hil_filt    = sum(mov_av_hist) / (energy_window_len * energy_window_len);
+
 
 % exponential decay assumption
 if decay_back_cnt > 0
