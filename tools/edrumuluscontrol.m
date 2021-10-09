@@ -25,28 +25,51 @@ pkg load audio
 figure_handle = figure;
 old_figure_position = get(figure_handle, 'Position');
 set(figure_handle, 'Position', [old_figure_position(1), old_figure_position(2), 1500, 600]);
-slider_width  = 0.1;
-slider_hight  = 0.7;
-value_hight   = 0.2;
+slider_width = 0.1;
+slider_hight = 0.7;
+value_hight  = 0.2;
 
-% MIDI device selection combo box
-GUI.midi_dev_list = uicontrol(figure_handle, ...
+% MIDI device selection combo boxes
+GUI.midi_out_dev_list = uicontrol(figure_handle, ...
   'style',    'listbox', ...
   'units',    'normalized', ...
   'position', [0, 0.8, 0.4, 0.2], ...
-  'callback', @midi_sel_callback);
+  'callback', @midi_out_sel_callback);
+GUI.midi_in_dev_list = uicontrol(figure_handle, ...
+  'style',    'listbox', ...
+  'units',    'normalized', ...
+  'position', [0, 0.6, 0.4, 0.2], ...
+  'callback', @midi_in_sel_callback);
 
-midi_devices   = mididevinfo;
-midi_in_names  = {};
-midi_out_names = {};
+midi_devices        = mididevinfo;
+midi_in_names       = {};
+midi_out_names      = {};
+edrumulus_in_index  = [];
+edrumulus_out_index = [];
 for i = 1:length(midi_devices.input)
   midi_in_names = [midi_in_names, midi_devices.input{i}.Name];
+  if ~isempty(strfind(midi_devices.input{i}.Name, 'Edrumulus'))
+    edrumulus_in_index = i;
+  end
 end
 for i = 1:length(midi_devices.output)
   midi_out_names = [midi_out_names, midi_devices.output{i}.Name];
+  if ~isempty(strfind(midi_devices.output{i}.Name, 'Edrumulus'))
+    edrumulus_out_index = i;
+  end
 end
-set(GUI.midi_dev_list, 'string', midi_out_names);
-GUI.midi_dev = [];
+set(GUI.midi_out_dev_list, 'string', midi_out_names);
+set(GUI.midi_in_dev_list,  'string', midi_in_names);
+GUI.midi_out_dev = [];
+GUI.midi_in_dev  = [];
+
+% if Edrumulus devices for input and output were found, select them
+if ~isempty(edrumulus_in_index) && ~isempty(edrumulus_out_index)
+  set(GUI.midi_out_dev_list, 'value', edrumulus_out_index);
+  set(GUI.midi_in_dev_list,  'value', edrumulus_in_index);
+  GUI.midi_out_dev = mididevice("output", midi_devices.output{edrumulus_out_index}.Name);
+  GUI.midi_in_dev  = mididevice("input",  midi_devices.input{edrumulus_in_index}.Name);
+end
 
 % default settings button
 GUI.set_but = uicontrol(figure_handle, ...
@@ -270,12 +293,9 @@ GUI.slider9 = uicontrol(GUI.set_panel, ...
 
 reset_sliders;
 
-
-% TEST
-midi_in_dev = mididevice("input", 3);
-
+% parse MIDI input to receive pad parameters and apply them to the GUI controls
 while ishandle(figure_handle)
-  midi_message = midireceive(midi_in_dev, 1);
+  midi_message = midireceive(GUI.midi_in_dev, 1);
   if ~isempty(midi_message) && (midi_message.type == midimsgtype.NoteOff) && ...
       (midi_message.channel == 1)
 
@@ -300,19 +320,26 @@ while ishandle(figure_handle)
     end
 
   end
-  pause(0.01);
+  pause(0.01); % do not block the CPU all the time
+end
+
 end
 
 
-
-end
-
-
-function midi_sel_callback(hObject)
+function midi_out_sel_callback(hObject)
 
 global GUI;
 list_entries = get(hObject, 'string');
-GUI.midi_dev = mididevice("output", list_entries{get(hObject, 'value')});
+GUI.midi_out_dev = mididevice("output", list_entries{get(hObject, 'value')});
+
+end
+
+
+function midi_in_sel_callback(hObject)
+
+global GUI;
+list_entries = get(hObject, 'string');
+GUI.midi_in_dev = mididevice("input", list_entries{get(hObject, 'value')});
 
 end
 
@@ -335,6 +362,7 @@ function slider_callback(hObject)
 set_slieder_value(hObject, round(get(hObject, 'value')), true)
 end
 
+
 function set_slieder_value(hObject, value, do_send_midi)
 
 global GUI;
@@ -347,7 +375,7 @@ switch hObject
   case GUI.slider1
     set(GUI.val1, 'string', num2str(value));
     if do_send_midi
-      midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, value));
+      midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 108, value));
       reset_sliders; % on a pad change we do not know the current parameters
     end
 
@@ -375,38 +403,38 @@ switch hObject
         set(GUI.val2, 'string', 'CY8');
     end
     if do_send_midi
-      midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, value));
+      midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 102, value));
       reset_sliders; % if a pad type is changed, all parameters are reset in the ESP32
     end
 
   case GUI.slider3
     set(GUI.val3, 'string', num2str(value));
     if do_send_midi
-      midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, value));
+      midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 103, value));
     end
 
   case GUI.slider4
     set(GUI.val4, 'string', num2str(value));
     if do_send_midi
-      midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, value));
+      midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 104, value));
     end
 
   case GUI.slider5
     set(GUI.val5, 'string', num2str(value));
     if do_send_midi
-      midisend(GUI.midi_dev, midimsg("controlchange", 10, 105, value));
+      midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 105, value));
     end
 
   case GUI.slider6
     set(GUI.val6, 'string', num2str(value));
     if do_send_midi
-      midisend(GUI.midi_dev, midimsg("controlchange", 10, 106, value));
+      midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 106, value));
     end
 
   case GUI.slider7
     set(GUI.val7, 'string', num2str(value));
     if do_send_midi
-      midisend(GUI.midi_dev, midimsg("controlchange", 10, 107, value));
+      midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 107, value));
     end
 
   case GUI.slider8
@@ -423,13 +451,13 @@ switch hObject
         set(GUI.val8, 'string', 'LOG2');
     end
     if do_send_midi
-      midisend(GUI.midi_dev, midimsg("controlchange", 10, 109, value));
+      midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 109, value));
     end
 
   case GUI.slider9
     set(GUI.val9, 'string', num2str(value));
     if do_send_midi
-      midisend(GUI.midi_dev, midimsg("controlchange", 10, 114, value));
+      midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 114, value));
     end
 end
 
@@ -441,62 +469,62 @@ function button_callback(hObject)
 global GUI;
 
 % snare
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 0)); % pad 0
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 2)); % PD8
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 3)); % threshold
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 8)); % sensitivity
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 107, 16)); % rim shot threshold
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 105, 26)); % positional sensing threshold
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 106, 11)); % positional sensing sensitivity
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 111, 3)); % both, rim shot and positional sensing
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 108, 0)); % pad 0
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 102, 2)); % PD8
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 103, 3)); % threshold
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 104, 8)); % sensitivity
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 107, 16)); % rim shot threshold
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 105, 26)); % positional sensing threshold
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 106, 11)); % positional sensing sensitivity
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 111, 3)); % both, rim shot and positional sensing
 
 % kick
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 1)); % pad 1
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 6)); % KD7
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 9)); % threshold
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 9)); % sensitivity
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 108, 1)); % pad 1
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 102, 6)); % KD7
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 103, 9)); % threshold
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 104, 9)); % sensitivity
 
 % Hi-Hat
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 2)); % pad 2
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 2)); % PD8
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 4)); % threshold
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 8)); % sensitivity
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 111, 1)); % enable rim shot
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 108, 2)); % pad 2
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 102, 2)); % PD8
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 103, 4)); % threshold
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 104, 8)); % sensitivity
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 111, 1)); % enable rim shot
 
 % Hi-Hat control
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 3)); % pad 3
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 3)); % FD8
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 5)); % threshold
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 0)); % sensitivity
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 108, 3)); % pad 3
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 102, 3)); % FD8
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 103, 5)); % threshold
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 104, 0)); % sensitivity
 
 % crash
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 4)); % pad 4
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 8)); % CY6
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 19)); % threshold
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 21)); % sensitivity
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 111, 1)); % enable rim shot
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 108, 4)); % pad 4
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 102, 8)); % CY6
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 103, 19)); % threshold
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 104, 21)); % sensitivity
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 111, 1)); % enable rim shot
 
 % tom 1
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 5)); % pad 5
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 1)); % PD80R
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 9)); % threshold
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 0)); % sensitivity
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 108, 5)); % pad 5
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 102, 1)); % PD80R
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 103, 9)); % threshold
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 104, 0)); % sensitivity
 
 % ride
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 6)); % pad 6
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 2)); % PD8
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 18)); % threshold
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 21)); % sensitivity
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 111, 1)); % enable rim shot
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 108, 6)); % pad 6
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 102, 2)); % PD8
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 103, 18)); % threshold
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 104, 21)); % sensitivity
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 111, 1)); % enable rim shot
 
 % tom 2
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 7)); % pad 7
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, 1)); % PD80R
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, 18)); % threshold
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, 0)); % sensitivity
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 108, 7)); % pad 7
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 102, 1)); % PD80R
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 103, 18)); % threshold
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 104, 0)); % sensitivity
 
 % cleanup GUI
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, 0)); % pad 0
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 108, 0)); % pad 0
 reset_sliders;
 
 end
@@ -507,7 +535,7 @@ function checkbox_callback(hObject)
 global GUI;
 
 % spike cancellation checkbox
-midisend(GUI.midi_dev, midimsg("controlchange", 10, 110, get(hObject, 'value')));
+midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 110, get(hObject, 'value')));
 
 end
 
