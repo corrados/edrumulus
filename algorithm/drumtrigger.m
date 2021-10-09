@@ -69,14 +69,12 @@ pad.decay_len_ms3         = 0; % not used
 pad.decay_grad_fact1      = 200;
 pad.decay_grad_fact2      = 200;
 pad.decay_grad_fact3      = 200;
-pad.pos_energy_win_len_ms = 1;
 pad.pos_low_pass_cutoff   = 250; % Hz
 pad.pos_invert            = false;
 
 switch padtype
   case 'pd120'
     % note: the PRESET settings are from the PD120 pad
-pad.pos_energy_win_len_ms = 2;%0.5;%2;
 pad.pos_low_pass_cutoff   = 100; % Hz
     pad.decay_len_ms1         = 10;
     pad.decay_grad_fact1      = 30;
@@ -84,7 +82,6 @@ pad.pos_low_pass_cutoff   = 100; % Hz
     pad.decay_grad_fact2      = 220;
     pad.decay_len_ms3         = 0; % not used
 case 'pd80r'
-pad.pos_energy_win_len_ms = 0.1;%0.1;%2.5;
 pad.pos_low_pass_cutoff   = 150; % Hz
     pad.scan_time_ms          = 3;
     pad.main_peak_dist_ms     = 2.4;
@@ -206,7 +203,7 @@ function [hil, hil_filt] = filter_input_signal(x, Fs)
 global pad;
 
 energy_window_len = round(pad.energy_win_len_ms * 1e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
-energy_window_len
+
 % Hilbert filter
 hil = myhilbert(x);
 
@@ -221,7 +218,7 @@ global pad;
 
 scan_region = nan(size(hil_filt));
 
-first_peak_diff_thresh = 10 ^ (15 / 10); % 15 dB difference allowed
+first_peak_diff_thresh = 10 ^ (8 / 10); % 8 dB difference allowed
 mask_time              = round(pad.mask_time_ms * 1e-3 * Fs); % mask time (e.g. 10 ms)
 scan_time              = round(pad.scan_time_ms * 1e-3 * Fs); % scan time from first detected peak
 
@@ -399,9 +396,6 @@ end
 function pos_sense_metric = calc_pos_sense_metric(hil, hil_filt, Fs, all_peaks)
 global pad;
 
-energy_window_len     = round(pad.energy_win_len_ms * 1e-3 * Fs); % <- COPY FROM ABOVE
-pos_energy_window_len = round(pad.pos_energy_win_len_ms * 1e-3 * Fs); % positional sensing energy estimation time window length (e.g. 2 ms)
-
 % low pass filter of the Hilbert signal
 % moving average cut off frequency approximation according to:
 % https://dsp.stackexchange.com/questions/9966/what-is-the-cut-off-frequency-of-a-moving-average-filter
@@ -411,62 +405,30 @@ if mod(low_pass_moving_average_len, 2) == 1
   low_pass_moving_average_len = low_pass_moving_average_len + 1; % make sure we have an even length
 endif
 low_pass_moving_average_len
-low_pass_moving_average_len / 2 / 8
-pos_energy_window_len
+disp(['low-pass filter delay: ' num2str(low_pass_moving_average_len / 2 / 8) ' ms']);
 
 l = low_pass_moving_average_len / 2 - 1;
-b = [0.5:0.5 / l:1 1:-0.5 / l:0.5];
+b = [0.5:0.5 / l:1 1:-0.5 / l:0.5] / low_pass_moving_average_len;
 %b = ones(low_pass_moving_average_len, 1) / low_pass_moving_average_len;
 
 hil_low = filter(b, 1, hil); % moving average
-hil_low = circshift(hil_low, -low_pass_moving_average_len / 2); % compensate low-pass filter delay
 
-% compensate energy window moving average delay of peak detection
-all_peaks = all_peaks - energy_window_len / 2;
+% TODO This together with "test_len = 20" must be optimized to always find the correct first peak!
+hil_low  = circshift(hil_low, -low_pass_moving_average_len / 2); % compensate low-pass filter delay
+test_len = 24;
 
 peak_energy     = [];
 peak_energy_low = [];
-win_idx_all     = []; % only for debugging
 
 % TEST
-all_peaks_normal = all_peaks;
-all_peaks_low    = all_peaks;
+all_peaks_low = all_peaks;
 
 for i = 1:length(all_peaks)
 
-
-% TEST
-test_len = 20;
+% TEST find first peak of low-pass filtered signal
 test_win_idx = (all_peaks_low(i):all_peaks_low(i) + test_len - 1) - round(test_len / 2);
 [~, test_max] = max(hil_low(test_win_idx));
 all_peaks_low(i) = all_peaks_low(i) - round(test_len / 2) + test_max - 1;
-
-% TEST
-test_win_idx2 = (all_peaks_normal(i):all_peaks_normal(i) + test_len - 1) - round(test_len / 2);
-[~, test_max2] = max(hil(test_win_idx2));
-all_peaks_normal(i) = all_peaks_normal(i) - round(test_len / 2) + test_max2 - 1;
-
-
-  % The peak detection was performed on the moving averaged filtered signal but
-  % for positional sensing we need to use the original Hilbert transformed signal
-  % since we have to calculate a separate low-pass filter. Since the detected
-  % peak position in the moving averaged filtered signal might be in an attenuated
-  % region of the original Hilbert transformed signal, we average the powers of
-  % the filtered and un-filtered signals around the detected peak position.
-  win_idx            = (all_peaks(i):all_peaks(i) + pos_energy_window_len - 1) - round(pos_energy_window_len / 2);
-  win_idx            = win_idx((win_idx <= length(hil_low)) & (win_idx > 0));
-  
-% TEST
-win_idx_normal = (all_peaks_normal(i):all_peaks_normal(i) + pos_energy_window_len - 1) - round(pos_energy_window_len / 2);
-win_idx_normal = win_idx_normal((win_idx <= length(hil_low)) & (win_idx > 0));
-win_idx_low    = (all_peaks_low(i):all_peaks_low(i) + pos_energy_window_len - 1) - round(pos_energy_window_len / 2);
-win_idx_low    = win_idx_low((win_idx_low <= length(hil_low)) & (win_idx_low > 0));
-  
-%  peak_energy(i)     = sum(abs(hil(win_idx)) .^ 2);
-%  peak_energy_low(i) = sum(abs(hil_low(win_idx)) .^ 2);
-
-peak_energy(i)     = sum(abs(hil(win_idx_normal)) .^ 2);
-peak_energy_low(i) = sum(abs(hil_low(win_idx_low)) .^ 2);
 
 % TEST If enabling this, we are using the "normal" peak value from the hil_filt
 %      which is already available and we already have a peak detection apply so,
@@ -475,20 +437,18 @@ peak_energy_low(i) = sum(abs(hil_low(win_idx_low)) .^ 2);
 %      performance is good even without that filter if we use the correct
 %      peak values.
 % TODO compare results with/without the new algorithm and check if the results are still ok
-%peak_energy(i)  = hil_filt(all_peaks(i));
-
-
-  win_idx_all = [win_idx_all; win_idx]; % only for debugging
+peak_energy(i)     = hil_filt(all_peaks(i));
+peak_energy_low(i) = abs(hil_low(all_peaks_low(i))) .^ 2;
 
 end
 
-figure; plot(20 * log10(abs([hil(1:length(hil_low)), hil_low]))); hold on;
-        plot(all_peaks_normal, 20 * log10(abs(hil(all_peaks_normal))), 'k*');
+figure; plot(10 * log10([hil_filt(1:length(hil_low)), abs(hil_low) .^ 2])); hold on;
+        plot(all_peaks, 10 * log10(abs(hil_filt(all_peaks))), 'k*');
         plot(all_peaks_low, 20 * log10(abs(hil_low(all_peaks_low))), 'g*');
 
 if pad.pos_invert
   % add offset to get to similar range as non-inverted metric
-  pos_sense_metric = 10 * log10(peak_energy_low) - 10 * log10(peak_energy) + 40;
+  pos_sense_metric = 10 * log10(peak_energy_low) - 10 * log10(peak_energy);
 else
   pos_sense_metric = 10 * log10(peak_energy) - 10 * log10(peak_energy_low);
 end
@@ -503,23 +463,6 @@ end
 %figure
 %plot(10 * log10([abs(hil(x_peaks)) .^ 2, abs(hil_low(x_peaks)) .^ 2])); grid on; hold on;
 %%plot(21:80:length(all_peaks) * 80, 20 * log10(abs(hil(all_peaks))), 'y*');
-
-
-%figure; plot(20 * log10(abs([hil, hil_low, hil_filt]))); hold on;
-%plot(win_idx_all', 20 * log10(abs(hil(win_idx_all'))), 'k.-');
-%grid on; axis([2978.533   3072.863    -20.398    131.296]);
-%
-%figure; plot(20 * log10(abs([hil, hil_low, hil_filt]))); hold on;
-%plot(win_idx_all', 20 * log10(abs(hil(win_idx_all'))), 'k.-');
-%grid on; axis([2.3806e+04   2.3900e+04  -1.4506e+01   1.1036e+02]);
-
-%figure; plot(20 * log10(abs(hil))); hold on;
-%for i = 1:size(win_idx_all, 1)
-%  plot(win_idx_all(i, :), 20 * log10(abs(hil(win_idx_all(i, :)))), 'k.-');
-%  plot(win_idx_all(i, :), 20 * log10(abs(hil_low(win_idx_all(i, :)))), 'b.-');
-%  plot(all_peaks, 10 * log10(peak_energy), 'k');
-%  plot(all_peaks, 10 * log10(peak_energy_low), 'b');
-%end
 
 end
 
