@@ -23,6 +23,8 @@ close all;
 pkg load audio
 
 figure_handle = figure;
+old_figure_position = get(figure_handle, 'Position');
+set(figure_handle, 'Position', [old_figure_position(1), old_figure_position(2), 1500, 600]);
 slider_width  = 0.1;
 slider_hight  = 0.7;
 value_hight   = 0.2;
@@ -34,12 +36,16 @@ GUI.midi_dev_list = uicontrol(figure_handle, ...
   'position', [0, 0.8, 0.4, 0.2], ...
   'callback', @midi_sel_callback);
 
-midi_devices = mididevinfo;
-list_entries = {};
-for i = 1:length(midi_devices.output)
-  list_entries = [list_entries, midi_devices.output{i}.Name];
+midi_devices   = mididevinfo;
+midi_in_names  = {};
+midi_out_names = {};
+for i = 1:length(midi_devices.input)
+  midi_in_names = [midi_in_names, midi_devices.input{i}.Name];
 end
-set(GUI.midi_dev_list, 'string', list_entries);
+for i = 1:length(midi_devices.output)
+  midi_out_names = [midi_out_names, midi_devices.output{i}.Name];
+end
+set(GUI.midi_dev_list, 'string', midi_out_names);
 GUI.midi_dev = [];
 
 % default settings button
@@ -264,6 +270,41 @@ GUI.slider9 = uicontrol(GUI.set_panel, ...
 
 reset_sliders;
 
+
+% TEST
+midi_in_dev = mididevice("input", 3);
+
+while ishandle(figure_handle)
+  midi_message = midireceive(midi_in_dev, 1);
+  if ~isempty(midi_message) && (midi_message.type == midimsgtype.NoteOff) && ...
+      (midi_message.channel == 1)
+
+    if midi_message.note == 102
+      set_slieder_value(GUI.slider1, midi_message.velocity, false);
+    elseif midi_message.note == 103
+      set_slieder_value(GUI.slider2, midi_message.velocity, false);
+    elseif midi_message.note == 104
+      set_slieder_value(GUI.slider3, midi_message.velocity, false);
+    elseif midi_message.note == 105
+      set_slieder_value(GUI.slider4, midi_message.velocity, false);
+    elseif midi_message.note == 106
+      set_slieder_value(GUI.slider5, midi_message.velocity, false);
+    elseif midi_message.note == 107
+      set_slieder_value(GUI.slider6, midi_message.velocity, false);
+    elseif midi_message.note == 109
+      set_slieder_value(GUI.slider7, midi_message.velocity, false);
+    elseif midi_message.note == 110
+      set(GUI.spike_chbx, 'value', midi_message.velocity);
+    elseif midi_message.note == 114
+      set_slieder_value(GUI.slider9, midi_message.velocity, false);
+    end
+
+  end
+  pause(0.01);
+end
+
+
+
 end
 
 
@@ -291,81 +332,105 @@ end
 
 
 function slider_callback(hObject)
+set_slieder_value(hObject, round(get(hObject, 'value')), true)
+end
+
+function set_slieder_value(hObject, value, do_send_midi)
 
 global GUI;
 
-value = round(get(hObject, 'value'));
+if ~do_send_midi
+  set(hObject, 'value', value);
+end
 
 switch hObject
-   case GUI.slider1
-     switch value
-       case 0
-         set(GUI.val1, 'string', 'PD120');
-       case 1
-         set(GUI.val1, 'string', 'PD80R');
-       case 2
-         set(GUI.val1, 'string', 'PD8');
-       case 3
-         set(GUI.val1, 'string', 'FD8');
-       case 4
-         set(GUI.val1, 'string', 'VH12');
-       case 5
-         set(GUI.val1, 'string', 'VH12CTRL');
-       case 6
-         set(GUI.val1, 'string', 'KD7');
-       case 7
-         set(GUI.val1, 'string', 'TP80');
-       case 8
-         set(GUI.val1, 'string', 'CY6');
-       case 9
-         set(GUI.val1, 'string', 'CY8');
-     end
-     midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, value));
-     reset_sliders; % if a pad type is changed, all parameters are reset in the ESP32
+  case GUI.slider1
+    switch value
+      case 0
+        set(GUI.val1, 'string', 'PD120');
+      case 1
+        set(GUI.val1, 'string', 'PD80R');
+      case 2
+        set(GUI.val1, 'string', 'PD8');
+      case 3
+        set(GUI.val1, 'string', 'FD8');
+      case 4
+        set(GUI.val1, 'string', 'VH12');
+      case 5
+        set(GUI.val1, 'string', 'VH12CTRL');
+      case 6
+        set(GUI.val1, 'string', 'KD7');
+      case 7
+        set(GUI.val1, 'string', 'TP80');
+      case 8
+        set(GUI.val1, 'string', 'CY6');
+      case 9
+        set(GUI.val1, 'string', 'CY8');
+    end
+    if do_send_midi
+      midisend(GUI.midi_dev, midimsg("controlchange", 10, 102, value));
+      reset_sliders; % if a pad type is changed, all parameters are reset in the ESP32
+    end
 
-   case GUI.slider2
-     set(GUI.val2, 'string', num2str(value));
-     midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, value));
+  case GUI.slider2
+    set(GUI.val2, 'string', num2str(value));
+    if do_send_midi
+      midisend(GUI.midi_dev, midimsg("controlchange", 10, 103, value));
+    end
 
-   case GUI.slider3
-     set(GUI.val3, 'string', num2str(value));
-     midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, value));
+  case GUI.slider3
+    set(GUI.val3, 'string', num2str(value));
+    if do_send_midi
+      midisend(GUI.midi_dev, midimsg("controlchange", 10, 104, value));
+    end
 
-   case GUI.slider4
-     set(GUI.val4, 'string', num2str(value));
-     midisend(GUI.midi_dev, midimsg("controlchange", 10, 105, value));
+  case GUI.slider4
+    set(GUI.val4, 'string', num2str(value));
+    if do_send_midi
+      midisend(GUI.midi_dev, midimsg("controlchange", 10, 105, value));
+    end
 
-   case GUI.slider5
-     set(GUI.val5, 'string', num2str(value));
-     midisend(GUI.midi_dev, midimsg("controlchange", 10, 106, value));
+  case GUI.slider5
+    set(GUI.val5, 'string', num2str(value));
+    if do_send_midi
+      midisend(GUI.midi_dev, midimsg("controlchange", 10, 106, value));
+    end
 
-   case GUI.slider6
-     set(GUI.val6, 'string', num2str(value));
-     midisend(GUI.midi_dev, midimsg("controlchange", 10, 107, value));
+  case GUI.slider6
+    set(GUI.val6, 'string', num2str(value));
+    if do_send_midi
+      midisend(GUI.midi_dev, midimsg("controlchange", 10, 107, value));
+    end
 
-   case GUI.slider7
-     switch value
-       case 0
-         set(GUI.val7, 'string', 'LINEAR');
-       case 1
-         set(GUI.val7, 'string', 'EXP1');
-       case 2
-         set(GUI.val7, 'string', 'EXP2');
-       case 3
-         set(GUI.val7, 'string', 'LOG1');
-       case 4
-         set(GUI.val7, 'string', 'LOG2');
-     end
-     midisend(GUI.midi_dev, midimsg("controlchange", 10, 109, value));
+  case GUI.slider7
+    switch value
+      case 0
+        set(GUI.val7, 'string', 'LINEAR');
+      case 1
+        set(GUI.val7, 'string', 'EXP1');
+      case 2
+        set(GUI.val7, 'string', 'EXP2');
+      case 3
+        set(GUI.val7, 'string', 'LOG1');
+      case 4
+        set(GUI.val7, 'string', 'LOG2');
+    end
+    if do_send_midi
+      midisend(GUI.midi_dev, midimsg("controlchange", 10, 109, value));
+    end
 
-   case GUI.slider8
-     set(GUI.val8, 'string', num2str(value));
-     midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, value));
-     reset_sliders; % on a pad change we do not know the current parameters
+  case GUI.slider8
+    set(GUI.val8, 'string', num2str(value));
+    if do_send_midi
+      midisend(GUI.midi_dev, midimsg("controlchange", 10, 108, value));
+      reset_sliders; % on a pad change we do not know the current parameters
+    end
 
-   case GUI.slider9
-     set(GUI.val9, 'string', num2str(value));
-     midisend(GUI.midi_dev, midimsg("controlchange", 10, 114, value));
+  case GUI.slider9
+    set(GUI.val9, 'string', num2str(value));
+    if do_send_midi
+      midisend(GUI.midi_dev, midimsg("controlchange", 10, 114, value));
+    end
 end
 
 end
