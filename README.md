@@ -5,12 +5,12 @@
 The aim of the Edrumulus project is to create a high quality Open Source e-drum trigger module software.
 
 
-## News (project log)
+## News
 
 Find all important updates of the Edrumulus project in the [change log file](ChangeLog.md).
 
 
-## Project specifications
+## Specifications
 
 - The trigger performance shall be similar to the Roland TD-27.
 
@@ -36,11 +36,10 @@ Find all important updates of the Edrumulus project in the [change log file](Cha
   *WARNING* This circuit diagram is only intended for my initial tests. Use it at your own risk.
 
 
-## Algorithm development
+## Algorithm
 
-The algorithm research is done using a regular audio card. The drum pad output signal is captured and
-the signal processing and algorithm development is then done in Octave. The development is done in
-three steps:
+The algorithms are developed using a regular audio card. The drum pad output signal is captured and
+the signal processing and algorithm development is done in Octave. The development runs in three steps:
 
 1. Create the algorithms using a captured test signal and analyze it as a whole. This is the
    easiest and fastest way to create and improve the algorithms (this is the "playground"). The
