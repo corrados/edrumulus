@@ -409,36 +409,27 @@ disp(['low-pass filter delay: ' num2str(low_pass_moving_average_len / 2 / 8) ' m
 
 l = low_pass_moving_average_len / 2 - 1;
 b = [0.5:0.5 / l:1 1:-0.5 / l:0.5] / low_pass_moving_average_len;
-%b = ones(low_pass_moving_average_len, 1) / low_pass_moving_average_len;
-
+%b = ones(low_pass_moving_average_len, 1) / low_pass_moving_average_len; % TEST
 hil_low = filter(b, 1, hil); % moving average
-
-% TODO This together with "test_len = 20" must be optimized to always find the correct first peak!
-hil_low  = circshift(hil_low, -low_pass_moving_average_len / 2); % compensate low-pass filter delay
-test_len = 24;
 
 peak_energy     = [];
 peak_energy_low = [];
-
-% TEST
-all_peaks_low = all_peaks;
+all_peaks_low   = all_peaks;
 
 for i = 1:length(all_peaks)
 
-% TEST find first peak of low-pass filtered signal
-test_win_idx = (all_peaks_low(i):all_peaks_low(i) + test_len - 1) - round(test_len / 2);
-[~, test_max] = max(hil_low(test_win_idx));
-all_peaks_low(i) = all_peaks_low(i) - round(test_len / 2) + test_max - 1;
+  % find first peak of low-pass filtered signal searching for the maximum in the
+  % range of the low-pass moving average window length
+  test_win_offset  = low_pass_moving_average_len / 2 - round(low_pass_moving_average_len / 2);
+  test_win_idx     = (all_peaks(i):all_peaks(i) + low_pass_moving_average_len - 1) + test_win_offset;
+  [~, test_max]    = max(hil_low(test_win_idx));
+  all_peaks_low(i) = all_peaks(i) + test_win_offset + test_max - 1;
 
-% TEST If enabling this, we are using the "normal" peak value from the hil_filt
-%      which is already available and we already have a peak detection apply so,
-%      we would not need to do a peak detection in this routine again. So, we
-%      could remove the pos_energy_win moving average since it seems that the
-%      performance is good even without that filter if we use the correct
-%      peak values.
-% TODO compare results with/without the new algorithm and check if the results are still ok
-peak_energy(i)     = hil_filt(all_peaks(i));
-peak_energy_low(i) = abs(hil_low(all_peaks_low(i))) .^ 2;
+  % use the Hilbert filtered signal with energy window moving average as the
+  % reference power for the positional sensing metric where the first peak
+  % position is used
+  peak_energy(i)     = hil_filt(all_peaks(i));
+  peak_energy_low(i) = abs(hil_low(all_peaks_low(i))) .^ 2;
 
 end
 
@@ -452,7 +443,6 @@ if pad.pos_invert
 else
   pos_sense_metric = 10 * log10(peak_energy) - 10 * log10(peak_energy_low);
 end
-
 
 % TODO only show peaks
 %x_peaks = [];
