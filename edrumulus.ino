@@ -251,6 +251,21 @@ void loop()
       {
         selected_pad = value;
         is_used      = true;
+
+        // on a pad selection, return all parameters of the selected pad
+        MYMIDI.sendNoteOff ( 102, static_cast<int> ( edrumulus.get_pad_type ( selected_pad ) ), 1 );
+        MYMIDI.sendNoteOff ( 103, edrumulus.get_velocity_threshold ( selected_pad ), 1 );
+        MYMIDI.sendNoteOff ( 104, edrumulus.get_velocity_sensitivity ( selected_pad ), 1 );
+        MYMIDI.sendNoteOff ( 105, edrumulus.get_pos_threshold ( selected_pad ), 1 );
+        MYMIDI.sendNoteOff ( 106, edrumulus.get_pos_sensitivity ( selected_pad ), 1 );
+        MYMIDI.sendNoteOff ( 107, edrumulus.get_rim_shot_treshold ( selected_pad ), 1 );
+        MYMIDI.sendNoteOff ( 108, selected_pad, 1 );
+        MYMIDI.sendNoteOff ( 109, static_cast<int> ( edrumulus.get_curve ( selected_pad ) ), 1 );
+        MYMIDI.sendNoteOff ( 110, edrumulus.get_spike_cancel_is_used(), 1 );
+        MYMIDI.sendNoteOff ( 111, 0, 1 ); // TODO not yet supported
+        MYMIDI.sendNoteOff ( 112, 0, 1 ); // TODO not yet supported
+        MYMIDI.sendNoteOff ( 113, 0, 1 ); // TODO not yet supported
+        MYMIDI.sendNoteOff ( 114, edrumulus.get_cancellation ( selected_pad ), 1 );
       }
 
       // controller 109: MIDI curve type
