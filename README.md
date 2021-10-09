@@ -5,6 +5,11 @@
 The aim of the Edrumulus project is to create a high quality Open Source e-drum trigger module software.
 
 
+## News (project log)
+
+Find all important updates of the Edrumulus project in the [change log file](ChangeLog.md).
+
+
 ## Project specifications
 
 - The trigger performance shall be similar to the Roland TD-27.
@@ -50,11 +55,6 @@ three steps:
    signal and compare it in Octave to the reference code.
 
 The algorithms are described in [this document](algorithm/README.md).
-
-
-## Project log
-
-A log of the project can be found in the [change log](ChangeLog.md) file.
 
 
 ## Links
