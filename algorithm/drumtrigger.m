@@ -37,8 +37,8 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd120_hot_spot.wav");
 %x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
-x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
-%x = audioread("signals/pd80r.wav");padtype = 'pd80r';%x = x(1:265000, :);%x = x(52000:60000, :);%x = x(260000:360000, :);%x = x(130000:176000, :);%
+%x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
+x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);%x = x(260000:360000, :);%x = x(130000:176000, :);%
 %x = audioread("signals/pd6.wav");
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
@@ -221,7 +221,7 @@ global pad;
 
 scan_region = nan(size(hil_filt));
 
-first_peak_diff_thresh = 10 ^ (20 / 10); % 20 dB difference allowed
+first_peak_diff_thresh = 10 ^ (15 / 10); % 15 dB difference allowed
 mask_time              = round(pad.mask_time_ms * 1e-3 * Fs); % mask time (e.g. 10 ms)
 scan_time              = round(pad.scan_time_ms * 1e-3 * Fs); % scan time from first detected peak
 
@@ -429,7 +429,8 @@ peak_energy_low = [];
 win_idx_all     = []; % only for debugging
 
 % TEST
-all_peaks_low = all_peaks;
+all_peaks_normal = all_peaks;
+all_peaks_low    = all_peaks;
 
 for i = 1:length(all_peaks)
 
@@ -441,9 +442,9 @@ test_win_idx = (all_peaks_low(i):all_peaks_low(i) + test_len - 1) - round(test_l
 all_peaks_low(i) = all_peaks_low(i) - round(test_len / 2) + test_max - 1;
 
 % TEST
-test_win_idx2 = (all_peaks(i):all_peaks(i) + test_len - 1) - round(test_len / 2);
+test_win_idx2 = (all_peaks_normal(i):all_peaks_normal(i) + test_len - 1) - round(test_len / 2);
 [~, test_max2] = max(hil(test_win_idx2));
-all_peaks(i) = all_peaks(i) - round(test_len / 2) + test_max2 - 1;
+all_peaks_normal(i) = all_peaks_normal(i) - round(test_len / 2) + test_max2 - 1;
 
 
   % The peak detection was performed on the moving averaged filtered signal but
@@ -456,19 +457,33 @@ all_peaks(i) = all_peaks(i) - round(test_len / 2) + test_max2 - 1;
   win_idx            = win_idx((win_idx <= length(hil_low)) & (win_idx > 0));
   
 % TEST
-win_idx_low            = (all_peaks_low(i):all_peaks_low(i) + pos_energy_window_len - 1) - round(pos_energy_window_len / 2);
-win_idx_low            = win_idx((win_idx_low <= length(hil_low)) & (win_idx_low > 0));
+win_idx_normal = (all_peaks_normal(i):all_peaks_normal(i) + pos_energy_window_len - 1) - round(pos_energy_window_len / 2);
+win_idx_normal = win_idx_normal((win_idx <= length(hil_low)) & (win_idx > 0));
+win_idx_low    = (all_peaks_low(i):all_peaks_low(i) + pos_energy_window_len - 1) - round(pos_energy_window_len / 2);
+win_idx_low    = win_idx_low((win_idx_low <= length(hil_low)) & (win_idx_low > 0));
   
-  peak_energy(i)     = sum(abs(hil(win_idx)) .^ 2);
+%  peak_energy(i)     = sum(abs(hil(win_idx)) .^ 2);
 %  peak_energy_low(i) = sum(abs(hil_low(win_idx)) .^ 2);
+
+peak_energy(i)     = sum(abs(hil(win_idx_normal)) .^ 2);
 peak_energy_low(i) = sum(abs(hil_low(win_idx_low)) .^ 2);
+
+% TEST If enabling this, we are using the "normal" peak value from the hil_filt
+%      which is already available and we already have a peak detection apply so,
+%      we would not need to do a peak detection in this routine again. So, we
+%      could remove the pos_energy_win moving average since it seems that the
+%      performance is good even without that filter if we use the correct
+%      peak values.
+% TODO compare results with/without the new algorithm and check if the results are still ok
+%peak_energy(i)  = hil_filt(all_peaks(i));
+
 
   win_idx_all = [win_idx_all; win_idx]; % only for debugging
 
 end
 
 figure; plot(20 * log10(abs([hil(1:length(hil_low)), hil_low]))); hold on;
-        plot(all_peaks, 20 * log10(abs(hil(all_peaks))), 'k*');
+        plot(all_peaks_normal, 20 * log10(abs(hil(all_peaks_normal))), 'k*');
         plot(all_peaks_low, 20 * log10(abs(hil_low(all_peaks_low))), 'g*');
 
 if pad.pos_invert
