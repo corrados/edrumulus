@@ -69,20 +69,19 @@ pad.decay_len_ms3         = 0; % not used
 pad.decay_grad_fact1      = 200;
 pad.decay_grad_fact2      = 200;
 pad.decay_grad_fact3      = 200;
-pad.pos_low_pass_cutoff   = 250; % Hz
+pad.pos_low_pass_cutoff   = 150; % Hz
 pad.pos_invert            = false;
 
 switch padtype
   case 'pd120'
     % note: the PRESET settings are from the PD120 pad
-pad.pos_low_pass_cutoff   = 100; % Hz
     pad.decay_len_ms1         = 10;
     pad.decay_grad_fact1      = 30;
     pad.decay_len_ms2         = 250;
     pad.decay_grad_fact2      = 220;
     pad.decay_len_ms3         = 0; % not used
+    pad.pos_low_pass_cutoff   = 100; % Hz
 case 'pd80r'
-pad.pos_low_pass_cutoff   = 150; % Hz
     pad.scan_time_ms          = 3;
     pad.main_peak_dist_ms     = 2.4;
     pad.decay_len_ms1         = 10;
@@ -91,6 +90,7 @@ pad.pos_low_pass_cutoff   = 150; % Hz
     pad.decay_grad_fact2      = 300;
     pad.decay_len_ms3         = 300;
     pad.decay_grad_fact3      = 100;
+    pad.pos_low_pass_cutoff   = 150; % Hz
   case 'pd8'
     pad.scan_time_ms          = 1.3;
     pad.main_peak_dist_ms     = 0.75;
@@ -113,6 +113,7 @@ pad.pos_low_pass_cutoff   = 150; % Hz
     pad.decay_grad_fact2      = 600;
     pad.decay_len_ms3         = 700;
     pad.decay_grad_fact3      = 60;
+    pad.pos_low_pass_cutoff   = 150; % Hz
     pad.pos_invert            = true;
   case 'vh12'
 % TODO if the Hi-Hat is open just a little bit, we get double triggers
