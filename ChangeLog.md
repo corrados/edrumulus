@@ -1,4 +1,4 @@
-# Edrumulus project log
+# Edrumulus Project Log
 
 ## 10/09/2021 Fixing issues and improving positional sensing
   I am currently heavily changing the Edrumulus code on a Git side branch. I found an issue
