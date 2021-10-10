@@ -88,6 +88,16 @@ GUI.spike_chbx = uicontrol(figure_handle, ...
   'position', [0.7, 0.75, 0.3, 0.1], ...
   'callback', @checkbox_callback);
 
+% auto pad select checkbox
+GUI.autopad      = false;
+GUI.autopad_chbx = uicontrol(figure_handle, ...
+  'style',    'checkbox', ...
+  'value',    0, ...
+  'string',   'Auto Pad Select', ...
+  'units',    'normalized', ...
+  'position', [0.7, 0.65, 0.3, 0.1], ...
+  'callback', @checkbox_callback);
+
 % settings panel
 GUI.set_panel = uipanel(figure_handle, ...
   'Title',    'Edrumulus settings', ...
@@ -320,11 +330,41 @@ while ishandle(figure_handle)
     end
 
   end
+
+  % auto pad selection
+  if GUI.autopad
+
+    if ~isempty(midi_message) && (midi_message.type == midimsgtype.NoteOn) && ...
+        (midi_message.channel == 10)
+
+      update_pad_selection(midi_message, 38, 40, 0) % snare
+      update_pad_selection(midi_message, 36, 36, 1) % kick
+      update_pad_selection(midi_message, 22, 26, 2) % hi-hat
+      update_pad_selection(midi_message, 49, 55, 4) % crash
+      update_pad_selection(midi_message, 48, 50, 5) % tom1
+
+    end
+
+  end
+
   pause(0.01); % do not block the CPU all the time
 end
 
 end
 
+
+function update_pad_selection(midi_message, midi_note1, midi_note2, pad_index)
+
+global GUI;
+if ((midi_message.note == midi_note1) || (midi_message.note == midi_note2)) && ...
+    (round(get(GUI.slider1, 'value')) ~= pad_index)
+
+  set(GUI.slider1, 'value', pad_index);
+  set_slieder_value(GUI.slider1, pad_index, true)
+
+end
+
+end
 
 function midi_out_sel_callback(hObject)
 
@@ -533,9 +573,15 @@ end
 function checkbox_callback(hObject)
 
 global GUI;
+switch hObject
+  case GUI.spike_chbx
+    % spike cancellation checkbox
+    midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 110, get(hObject, 'value')));
 
-% spike cancellation checkbox
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 110, get(hObject, 'value')));
+  case GUI.autopad_chbx
+    % auto pad select
+    GUI.autopad = get(hObject, 'value');
+end
 
 end
 
