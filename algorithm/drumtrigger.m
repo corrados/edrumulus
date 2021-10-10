@@ -27,7 +27,7 @@ Fs      = 8000; % Hz
 padtype = 'pd120'; % default
 
 % TEST process recordings
-%x = audioread("signals/esp32_pd120.wav");
+x = audioread("signals/esp32_pd120.wav");
 %x = audioread("signals/esp32_pd8.wav");padtype = 'pd8';
 %x = audioread("signals/pd120_pos_sense.wav");%x = x(2900:10000, :);%x = x(55400:58000, :);%
 %x = audioread("signals/pd120_pos_sense2.wav");
@@ -38,7 +38,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
-x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);
+%x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);
 %x = audioread("signals/pd6.wav");
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
@@ -57,6 +57,7 @@ x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(5
 pad.threshold_db          = 30;%23;
 pad.mask_time_ms          = 6;
 pad.energy_win_len_ms_1   = 2; % TEST
+pad.energy_win_len_ms_2   = 6;%2; % TEST
 pad.energy_win_len_ms     = 0.5;%0.5; % keep small (~0.5 ms) to avoid power drops on edge of mesh head
 pad.scan_time_ms          = 2.5;
 pad.main_peak_dist_ms     = 2.25;
@@ -198,10 +199,11 @@ hil = filter(a, 1, x);
 end
 
 
-function [hil, hil_filt, hil_filt_1] = filter_input_signal(x, Fs)
+function [hil, hil_filt, hil_filt_1, hil_filt_2, hil_filt_3] = filter_input_signal(x, Fs)
 global pad;
 
 energy_window_len_1 = round(pad.energy_win_len_ms_1 * 1e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
+energy_window_len_2 = round(pad.energy_win_len_ms_2 * 1e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
 energy_window_len   = round(pad.energy_win_len_ms * 1e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
 
 % Hilbert filter
@@ -209,7 +211,13 @@ hil = myhilbert(x);
 
 % moving average filter
 hil_filt_1 = filter(ones(energy_window_len_1, 1) / energy_window_len_1, 1, abs(hil) .^ 2); % moving average
-hil_filt = filter(ones(energy_window_len, 1) / energy_window_len, 1, abs(hil) .^ 2); % moving average
+hil_filt_2 = abs(filter(ones(energy_window_len_2, 1) / energy_window_len_2, 1, hil)) .^ 2; % moving average
+hil_filt   = filter(ones(energy_window_len, 1) / energy_window_len, 1, abs(hil) .^ 2); % moving average
+
+% TEST
+l = energy_window_len_2 / 2 - 1;
+b = [0.5:0.5 / l:1 1:-0.5 / l:0.5] / energy_window_len_2;
+hil_filt_3 = abs(filter(b, 1, hil)) .^ 2;
 
 end
 
@@ -514,7 +522,7 @@ end
 function processing(x, Fs)
 
 % calculate peak detection and positional sensing
-[hil, hil_filt, hil_filt_1]               = filter_input_signal(x(:, 1), Fs);
+[hil, hil_filt, hil_filt_1, hil_filt_2, hil_filt_3] = filter_input_signal(x(:, 1), Fs);
 [all_peaks, all_first_peaks, scan_region] = calc_peak_detection(hil_filt, hil_filt_1, Fs);
 is_rim_shot                               = detect_rim_shot(x, hil_filt, all_first_peaks, Fs);
 pos_sense_metric                          = calc_pos_sense_metric(hil, hil_filt, Fs, all_first_peaks);
@@ -522,7 +530,9 @@ pos_sense_metric                          = calc_pos_sense_metric(hil, hil_filt,
 
 % plot results
 figure
-plot(10 * log10([abs(x(:, 1)) .^ 2, hil_filt, scan_region])); grid on; hold on;
+%plot(10 * log10([abs(x(:, 1)) .^ 2, hil_filt, hil_filt_1, hil_filt_2, scan_region])); grid on; hold on;
+plot(10 * log10([hil_filt, 3.2 * hil_filt_1, 10 * hil_filt_2, 12.5 * hil_filt_3])); grid on; hold on;
+%plot(10 * log10([abs(x(:, 1)) .^ 2])); grid on; hold on;
 plot(all_first_peaks, 10 * log10(hil_filt(all_first_peaks)), 'y*');
 plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'g*');
 plot(all_first_peaks, pos_sense_metric + 40, 'k*');
