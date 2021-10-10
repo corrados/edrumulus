@@ -27,6 +27,7 @@ Fs      = 8000; % Hz
 padtype = 'pd120'; % default
 
 % TEST process recordings
+%x = audioread("signals/teensy4_0_pd80r.wav");x=x-mean(x);padtype = 'pd80r';x = x(1:390000, :);%
 %x = audioread("signals/esp32_pd120.wav");
 %x = audioread("signals/esp32_pd8.wav");padtype = 'pd8';
 %x = audioread("signals/pd120_pos_sense.wav");%x = x(2900:10000, :);%x = x(55400:58000, :);%
