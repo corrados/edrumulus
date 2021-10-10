@@ -189,7 +189,7 @@ a   = fir1(6, 0.4);
 a   = a .* exp(1j * 2 * pi * (0:length(a) - 1) * 0.3) * length(a);
 hil = filter(a, 1, x);
 
-% figure; freqz(a);
+% figure; freqz(a, 1, 1024, 8000);
 % figure;
 % subplot(2, 1, 1), pwelch(x,[],[],[],[],'twosided','db');
 % subplot(2, 1, 2), pwelch(hil,[],[],[],[],'twosided','db');
@@ -411,7 +411,7 @@ disp(['low-pass filter delay: ' num2str(low_pass_moving_average_len / 2 / 8) ' m
 l = low_pass_moving_average_len / 2 - 1;
 b = [0.5:0.5 / l:1 1:-0.5 / l:0.5] / low_pass_moving_average_len;
 %b = ones(low_pass_moving_average_len, 1) / low_pass_moving_average_len; % TEST
-hil_low = filter(b, 1, hil); % moving average
+hil_low = abs(filter(b, 1, hil)) .^ 2; % moving average
 
 peak_energy     = [];
 peak_energy_low = [];
@@ -430,11 +430,11 @@ for i = 1:length(all_peaks)
   % reference power for the positional sensing metric where the first peak
   % position is used
   peak_energy(i)     = hil_filt(all_peaks(i));
-  peak_energy_low(i) = abs(hil_low(all_peaks_low(i))) .^ 2;
+  peak_energy_low(i) = hil_low(all_peaks_low(i));
 
 end
 
-figure; plot(10 * log10([hil_filt(1:length(hil_low)), abs(hil_low) .^ 2])); hold on;
+figure; plot(10 * log10([hil_filt(1:length(hil_low)), hil_low])); hold on;
         plot(all_peaks, 10 * log10(abs(hil_filt(all_peaks))), 'k*');
         plot(all_peaks_low, 20 * log10(abs(hil_low(all_peaks_low))), 'g*');
 
