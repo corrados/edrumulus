@@ -225,6 +225,44 @@ void Edrumulus_hardware::on_timer()
 }
 
 
+#define ABMAX  4
+uint16_t audio_buf[8][ABMAX];  /* FIXME: hardcode 8... bad */
+uint16_t uRdIdx;
+uint16_t uWrIdx;
+
+int usb_audio_transmit_callback(uint16_t *buf, int len)
+{
+  int k;
+  unsigned int uIdx = uRdIdx & (ABMAX-1);
+  for (k=0;k<len;k++) {
+    buf[k] = audio_buf[k][uIdx];
+  }
+
+  /* if not empty. move the read pointer */
+  if (uWrIdx != uRdIdx)
+    uRdIdx++;
+
+  return len;
+}
+
+static inline void write_audio_buf(uint16_t sample)
+{
+  static int k=0;
+
+  unsigned int uIdx = uWrIdx & (ABMAX-1);
+  audio_buf[k++][uIdx] = sample;
+
+  if (k < 8)
+    return;
+
+  k = 0;
+  unsigned int uSz = uWrIdx - uRdIdx;
+  /* if not full, move the write pointer */
+  if(uSz < (ABMAX-1))
+    uWrIdx++;
+}
+
+
 void Edrumulus_hardware::capture_samples ( const int number_pads,
                                            const int number_inputs[],
                                            int       analog_pin[][MAX_NUM_PAD_INPUTS],
@@ -247,6 +285,9 @@ void Edrumulus_hardware::capture_samples ( const int number_pads,
     {
       input_sample[i] = adc_obj.adc0->analogRead ( input_pin[i] );
     }
+  if (i == 0) {
+    write_audio_buf(input_sample[i]);
+  }    
   }
 
   // copy captured samples in pad buffer
