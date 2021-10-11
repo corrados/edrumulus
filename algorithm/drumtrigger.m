@@ -27,7 +27,7 @@ Fs      = 8000; % Hz
 padtype = 'pd120'; % default
 
 % TEST process recordings
-%x = audioread("signals/teensy4_0_noise_test.wav");x=x-mean(x);padtype = 'pd80r';
+x = audioread("signals/teensy4_0_noise_test.wav");x=x-mean(x);padtype = 'pd80r';
 %x = audioread("signals/teensy4_0_pd80r.wav");x=x-mean(x);padtype = 'pd80r';x = x(1:390000, :);%
 %x = audioread("signals/esp32_pd120.wav");
 %x = audioread("signals/esp32_pd8.wav");padtype = 'pd8';
@@ -40,7 +40,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
-x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);%x = x(260000:360000, :);%x = x(130000:176000, :);%
+%x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);%x = x(260000:360000, :);%x = x(130000:176000, :);%
 %x = audioread("signals/pd6.wav");
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
@@ -202,7 +202,7 @@ hil = filter(a, 1, x);
 end
 
 
-function [hil, hil_filt] = filter_input_signal(x, Fs)
+function [hil, hil_filt, hil_filt1] = filter_input_signal(x, Fs)
 global pad;
 
 energy_window_len = round(pad.energy_win_len_ms * 1e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
@@ -211,7 +211,19 @@ energy_window_len = round(pad.energy_win_len_ms * 1e-3 * Fs); % hit energy estim
 hil = myhilbert(x);
 
 % moving average filter
-hil_filt = filter(ones(energy_window_len, 1) / energy_window_len ^ 2, 1, abs(hil) .^ 2); % moving average
+%hil_filt = filter(ones(energy_window_len, 1) / energy_window_len ^ 2, 1, abs(hil) .^ 2); % moving average
+
+
+% TEST
+energy_window_len = round(2.5 * 1e-3 * Fs);
+hil_filt1 = abs(filter(ones(energy_window_len, 1) / energy_window_len, 1, hil)) .^ 2; % moving average
+
+%l = energy_window_len / 2 - 1;
+%b = [0.5:0.5 / l:1 1:-0.5 / l:0.5] / energy_window_len;
+%hil_filt1 = abs(filter(b, 1, hil)) .^ 2; % moving average
+
+alpha    = 200 / Fs;
+hil_filt = abs(filter(alpha, [1, alpha - 1], hil)) .^ 2;
 
 end
 
@@ -498,7 +510,7 @@ end
 function processing(x, Fs)
 
 % calculate peak detection and positional sensing
-[hil, hil_filt]                           = filter_input_signal(x(:, 1), Fs);
+[hil, hil_filt, hil_filt1]                = filter_input_signal(x(:, 1), Fs);
 [all_peaks, all_first_peaks, scan_region] = calc_peak_detection(hil_filt, Fs);
 is_rim_shot                               = detect_rim_shot(x, hil_filt, all_first_peaks, Fs);
 pos_sense_metric                          = calc_pos_sense_metric(hil, hil_filt, Fs, all_first_peaks);
@@ -506,6 +518,7 @@ pos_sense_metric                          = calc_pos_sense_metric(hil, hil_filt,
 
 % plot results
 figure
+%plot(10 * log10([abs(x(:, 1)) .^ 2, hil_filt, hil_filt1, scan_region])); grid on; hold on;
 plot(10 * log10([abs(x(:, 1)) .^ 2, hil_filt, scan_region])); grid on; hold on;
 plot(all_first_peaks, 10 * log10(hil_filt(all_first_peaks)), 'y*');
 plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'g*');
@@ -513,6 +526,15 @@ plot(all_first_peaks, pos_sense_metric + 40, 'k*');
 title('Green marker: level; Black marker: position');
 xlabel('samples'); ylabel('dB');
 ylim([-10, 90]);
+
+noise_max = 10 * log10(max(hil_filt(140000:end)));
+%min_signal_peak = 10 * log10(max(hil_filt(52000:60000)));
+min_signal_peak1 = 10 * log10(max(hil_filt(42600:42750)));
+min_signal_peak2 = 10 * log10(max(hil_filt(49940:50020)));
+min_signal_peak3 = 10 * log10(max(hil_filt(65700:65800)));
+min_signal_peak = min([min_signal_peak1, min_signal_peak2, min_signal_peak3]);
+title(['diff: ' num2str(min_signal_peak - noise_max) ' dB / noise max: ' num2str(noise_max) ' dB / minimum signal peak: ' num2str(min_signal_peak) ' dB']);
+
 
 
 % TEST
