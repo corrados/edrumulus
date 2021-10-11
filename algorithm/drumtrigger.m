@@ -208,21 +208,21 @@ global pad;
 energy_window_len = round(pad.energy_win_len_ms * 1e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
 
 % Hilbert filter
-hil = myhilbert(x);
+hil = x;%myhilbert(x);
 
 % moving average filter
 %hil_filt = filter(ones(energy_window_len, 1) / energy_window_len ^ 2, 1, abs(hil) .^ 2); % moving average
 
 
 % TEST
-energy_window_len = round(2.5 * 1e-3 * Fs);
+energy_window_len = round(4 * 1e-3 * Fs);
 hil_filt1 = abs(filter(ones(energy_window_len, 1) / energy_window_len, 1, hil)) .^ 2; % moving average
 
 %l = energy_window_len / 2 - 1;
 %b = [0.5:0.5 / l:1 1:-0.5 / l:0.5] / energy_window_len;
 %hil_filt1 = abs(filter(b, 1, hil)) .^ 2; % moving average
 
-alpha    = 200 / Fs;
+alpha    = 400 / Fs;
 hil_filt = abs(filter(alpha, [1, alpha - 1], hil)) .^ 2;
 
 end
@@ -519,7 +519,7 @@ pos_sense_metric                          = calc_pos_sense_metric(hil, hil_filt,
 % plot results
 figure
 %plot(10 * log10([abs(x(:, 1)) .^ 2, hil_filt, hil_filt1, scan_region])); grid on; hold on;
-plot(10 * log10([abs(x(:, 1)) .^ 2, hil_filt, scan_region])); grid on; hold on;
+plot(10 * log10(hil_filt)); grid on; hold on;
 plot(all_first_peaks, 10 * log10(hil_filt(all_first_peaks)), 'y*');
 plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'g*');
 plot(all_first_peaks, pos_sense_metric + 40, 'k*');
@@ -535,6 +535,9 @@ min_signal_peak3 = 10 * log10(max(hil_filt(65700:65800)));
 min_signal_peak = min([min_signal_peak1, min_signal_peak2, min_signal_peak3]);
 title(['diff: ' num2str(min_signal_peak - noise_max) ' dB / noise max: ' num2str(noise_max) ' dB / minimum signal peak: ' num2str(min_signal_peak) ' dB']);
 
+%alpha = 400 / Fs;
+%y     = filter(alpha, [1, alpha - 1], x(:, 1));
+%figure; subplot(2, 1, 1), plot(x(:, 1)); subplot(2, 1, 2), plot(y);
 
 
 % TEST
