@@ -1,6 +1,6 @@
 # Edrumulus
 
-![Homepage picture](algorithm/images/edrumulus.png)
+<img width="100" height="100" src="algorithm/images/edrumulus_logo.png"/>
 
 The aim of the Edrumulus project is to create a high quality Open Source e-drum trigger module software.
 
