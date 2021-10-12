@@ -225,6 +225,11 @@ hil_filt1 = abs(filter(ones(energy_window_len, 1) / energy_window_len, 1, hil)) 
 alpha    = 400 / Fs;
 hil_filt = abs(filter(alpha, [1, alpha - 1], hil)) .^ 2;
 
+
+% TEST an additional moving average over the powers -> seems not to improve anything
+%energy_window_len = 4;
+%hil_filt = filter(ones(energy_window_len, 1) / energy_window_len, 1, hil_filt); % moving average
+
 end
 
 
