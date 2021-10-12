@@ -59,7 +59,8 @@ public:
 
   float cancel_ADC_spikes ( const float input,
                             const int   pad_index,
-                            const int   input_channel_index );
+                            const int   input_channel_index,
+                            const int   level );
 
 protected:
   int           Fs;
@@ -117,7 +118,8 @@ public:
 
   float cancel_ADC_spikes ( const float input,
                             const int   pad_index,
-                            const int   input_channel_index );
+                            const int   input_channel_index,
+                            const int   level );
 
 protected:
   int                        Fs;

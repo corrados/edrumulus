@@ -48,13 +48,15 @@ edrumulus_in_index  = [];
 edrumulus_out_index = [];
 for i = 1:length(midi_devices.input)
   midi_in_names = [midi_in_names, midi_devices.input{i}.Name];
-  if ~isempty(strfind(midi_devices.input{i}.Name, 'Edrumulus'))
+  if ~isempty(strfind(midi_devices.input{i}.Name, 'Edrumulus')) || ...
+      ~isempty(strfind(midi_devices.input{i}.Name, 'ttymidi'))
     edrumulus_in_index = i;
   end
 end
 for i = 1:length(midi_devices.output)
   midi_out_names = [midi_out_names, midi_devices.output{i}.Name];
-  if ~isempty(strfind(midi_devices.output{i}.Name, 'Edrumulus'))
+  if ~isempty(strfind(midi_devices.output{i}.Name, 'Edrumulus')) || ...
+      ~isempty(strfind(midi_devices.output{i}.Name, 'ttymidi'))
     edrumulus_out_index = i;
   end
 end
@@ -79,13 +81,23 @@ GUI.set_but = uicontrol(figure_handle, ...
   'position', [0.7, 0.9, 0.3, 0.1], ...
   'callback', @button_callback);
 
-% spike cancellation checkbox
-GUI.spike_chbx = uicontrol(figure_handle, ...
-  'style',    'checkbox', ...
+% spike cancellation dropdown
+GUI.spike_dropdown = uicontrol(figure_handle, ...
+  'style',    'popupmenu', ...
   'value',    1, ... % is on per default on the ESP32
-  'string',   'Spike Cancellation', ...
+  'string',   {'Off', 'Level 1', 'Level 2', 'Level 3', 'Level 4'}, ...
   'units',    'normalized', ...
   'position', [0.7, 0.75, 0.3, 0.1], ...
+  'callback', @popupmenu_callback);
+
+% auto pad select checkbox
+GUI.autopad      = false;
+GUI.autopad_chbx = uicontrol(figure_handle, ...
+  'style',    'checkbox', ...
+  'value',    0, ...
+  'string',   'Auto Pad Select', ...
+  'units',    'normalized', ...
+  'position', [0.7, 0.65, 0.3, 0.1], ...
   'callback', @checkbox_callback);
 
 % auto pad select checkbox
@@ -324,7 +336,7 @@ while ishandle(figure_handle)
     elseif midi_message.note == 109
       set_slieder_value(GUI.slider8, midi_message.velocity, false);
     elseif midi_message.note == 110
-      set(GUI.spike_chbx, 'value', midi_message.velocity);
+      set(GUI.spike_dropdown, 'value', midi_message.velocity + 1);
     elseif midi_message.note == 114
       set_slieder_value(GUI.slider9, midi_message.velocity, false);
     end
@@ -570,14 +582,22 @@ reset_sliders;
 end
 
 
+function popupmenu_callback(hObject)
+
+global GUI;
+switch hObject
+  case GUI.spike_dropdown
+    % spike cancellation dropdown
+    midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 110, get(hObject, 'value') - 1));
+end
+
+end
+
+
 function checkbox_callback(hObject)
 
 global GUI;
 switch hObject
-  case GUI.spike_chbx
-    % spike cancellation checkbox
-    midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 110, get(hObject, 'value')));
-
   case GUI.autopad_chbx
     % auto pad select
     GUI.autopad = get(hObject, 'value');

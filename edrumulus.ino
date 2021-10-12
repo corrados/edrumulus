@@ -261,7 +261,7 @@ void loop()
         MYMIDI.sendNoteOff ( 107, edrumulus.get_rim_shot_treshold ( selected_pad ), 1 );
         MYMIDI.sendNoteOff ( 108, selected_pad, 1 );
         MYMIDI.sendNoteOff ( 109, static_cast<int> ( edrumulus.get_curve ( selected_pad ) ), 1 );
-        MYMIDI.sendNoteOff ( 110, edrumulus.get_spike_cancel_is_used(), 1 );
+        MYMIDI.sendNoteOff ( 110, edrumulus.get_spike_cancel_level(), 1 );
         MYMIDI.sendNoteOff ( 111, 0, 1 ); // TODO not yet supported
         MYMIDI.sendNoteOff ( 112, 0, 1 ); // TODO not yet supported
         MYMIDI.sendNoteOff ( 113, 0, 1 ); // TODO not yet supported
@@ -275,10 +275,10 @@ void loop()
         is_used = true;
       }
 
-      // controller 110: enable spike cancellation algorithm
+      // controller 110: spike cancellation level
       if ( controller == 110 )
       {
-        edrumulus.set_spike_cancel_is_used ( value > 0 );
+        edrumulus.set_spike_cancel_level ( value );
         is_used = true;
       }
 
