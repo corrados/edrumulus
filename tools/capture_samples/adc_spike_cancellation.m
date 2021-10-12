@@ -17,6 +17,7 @@
 
 % setup and load test signal
 close all;
+
 %load win_recording1.txt
 %x = win_recording1;
 
@@ -90,96 +91,6 @@ for block_index = block_index_range
     ST_SPIKE_HIGH = 3;
     ST_SPIKE_LOW  = 4;
 
-
-
-
-%if 0
-% % TODO create more generic algorithm where we can freely adjust the number of
-% %      samples allowed for one spike
-%max_spike_len = 3;
-%
-%input_mem       = zeros(max_spike_len, 1);
-%input_state_mem = zeros(max_spike_len + 1, 1);
-%
-%for i = 1:length(input)
-%
-%  cur_input                          = input(i);
-%  input_mem(max_spike_len)           = cur_input;
-%  input_state_mem(max_spike_len + 1) = ST_OTHER; % initialization value, might be overwritten
-%
-%  % get the input sample state
-%  if abs(cur_input) < ADC_MAX_NOISE_AMPL
-%    input_state_mem(1) = ST_NOISE;
-%  elseif (cur_input < max_peak_threshold) && (cur_input > 0)
-%    input_state_mem(1) = ST_SPIKE_HIGH;
-%  elseif (cur_input > -max_peak_threshold) && (cur_input < 0)
-%    input_state_mem(1) = ST_SPIKE_LOW;
-%  end
-%
-%  last_input_state_low  = (input_state_mem(max_spike_len + 1) == ST_NOISE) || ...
-%                          (input_state_mem(max_spike_len + 1) == ST_SPIKE_LOW);
-%
-%  last_input_state_high = (input_state_mem(max_spike_len + 1) == ST_NOISE) || ...
-%                          (input_state_mem(max_spike_len + 1) == ST_SPIKE_HIGH);
-%
-%  for j = 1:max_spike_len
-%
-%    % check for high spike case
-%    all_spike_high = input_state_mem(max_spike_len) == ST_SPIKE_HIGH;
-%
-%    for k = 1:max_spike_len - 1
-%      all_spike_high = all_spike_high && (input_state_mem(max_spike_len - k) == ST_SPIKE_HIGH);
-%    end
-%
-%    if last_input_state_low && all_spike_high && ...
-%        ((input_state_mem(1) == ST_NOISE) || (input_state_mem(1) == ST_SPIKE_LOW))
-%
-%      % remove spike samples
-%      for m = 1:j
-%        input_mem(m) = 0;
-%      end
-%
-%    end
-%
-%    % check for low spike case
-%    all_spike_low = input_state_mem(max_spike_len) == ST_SPIKE_LOW;
-%
-%    for k = 1:max_spike_len - 1
-%      all_spike_low = all_spike_low && (input_state_mem(max_spike_len - k) == ST_SPIKE_LOW);
-%    end
-%
-%    if last_input_state_high && all_spike_low && ...
-%        ((input_state_mem(1) == ST_NOISE) || (input_state_mem(1) == ST_SPIKE_HIGH))
-%
-%      % remove spike samples
-%      for m = 1:j
-%        input_mem(m) = 0;
-%      end
-%
-%    end
-%
-%  end
-%
-%  % store current processed output value
-%  out(i, j) = input_mem(1);
-%
-%  % move all values in the history one step back
-%  input_mem(1:max_spike_len - 1)   = input_mem(2:max_spike_len);           % update_fifo()
-%  input_state_mem(1:max_spike_len) = input_state_mem(2:max_spike_len + 1); % update_fifo()
-%
-%end
-%
-% % cut out algorithm settling time
-%out = out(max_spike_len:end, :);
-%
-% % plot results
-%subplot(2, 1, 1), plot(out); title(num2str(block_index));
-%subplot(2, 1, 2), plot(x); title('original');
-%return;
-%end
-
-
-
     prev_input1       = 0;
     prev_input2       = 0;
     prev_input3       = 0;
@@ -197,142 +108,109 @@ for block_index = block_index_range
       input_abs    = abs(input(i));
       input_state  = ST_OTHER; % initialization value, might be overwritten
 
-% TEST
-do_original_algorithm = false;%true;
 
-      if do_original_algorithm
+      % spike cancellation algorithm -------------------------------------------
+      if abs(cur_input) < ADC_MAX_NOISE_AMPL
+        input_state = ST_NOISE;
+      elseif (cur_input < max_peak_threshold) && (cur_input > 0)
+        input_state = ST_SPIKE_HIGH;
+      elseif (cur_input > -max_peak_threshold) && (cur_input < 0)
+        input_state = ST_SPIKE_LOW;
+      end
 
-        if input_abs < ADC_MAX_NOISE_AMPL
-          input_state = ST_NOISE;
-        elseif input_abs < max_peak_threshold
-          input_state = ST_SPIKE;
-        end
+      % check for single high spike sample case
+      if ((prev5_input_state == ST_NOISE) || (prev5_input_state == ST_SPIKE_LOW)) && ...
+         (prev4_input_state == ST_SPIKE_HIGH) && ...
+         ((prev3_input_state == ST_NOISE) || (prev3_input_state == ST_SPIKE_LOW))
 
-        % check for single spike sample case
-        if (prev5_input_state == ST_NOISE) && ...
-           (prev4_input_state == ST_SPIKE) && ...
-           (prev3_input_state == ST_NOISE)
+        return_value = 0; % remove single spike
 
-          return_value = 0; % remove single spike
-        end
+      end
 
-        % check for two sample spike case
-        if (prev5_input_state == ST_NOISE) && ...
-           (prev4_input_state == ST_SPIKE) && ...
-           (prev3_input_state == ST_SPIKE) && ...
-           (prev2_input_state == ST_NOISE)
+      % check for single low spike sample case
+      if ((prev5_input_state == ST_NOISE) || (prev5_input_state == ST_SPIKE_HIGH)) && ...
+         (prev4_input_state == ST_SPIKE_LOW) && ...
+         ((prev3_input_state == ST_NOISE) || (prev3_input_state == ST_SPIKE_HIGH))
 
-          return_value = 0; % remove two sample spike
-          prev_input3  = 0; % remove two sample spike
+        return_value = 0; % remove single spike
 
-        end
+      end
 
-      else
+      % check for two sample high spike case
+      if ((prev5_input_state == ST_NOISE) || (prev5_input_state == ST_SPIKE_LOW)) && ...
+         (prev4_input_state == ST_SPIKE_HIGH) && ...
+         (prev3_input_state == ST_SPIKE_HIGH) && ...
+         ((prev2_input_state == ST_NOISE) || (prev2_input_state == ST_SPIKE_LOW))
 
-        % new algorithm --------------------------------------------------------
-        if abs(cur_input) < ADC_MAX_NOISE_AMPL
-          input_state = ST_NOISE;
-        elseif (cur_input < max_peak_threshold) && (cur_input > 0)
-          input_state = ST_SPIKE_HIGH;
-        elseif (cur_input > -max_peak_threshold) && (cur_input < 0)
-          input_state = ST_SPIKE_LOW;
-        end
+        return_value = 0; % remove two sample spike
+        prev_input3  = 0; % remove two sample spike
 
-        % check for single high spike sample case
-        if ((prev5_input_state == ST_NOISE) || (prev5_input_state == ST_SPIKE_LOW)) && ...
-           (prev4_input_state == ST_SPIKE_HIGH) && ...
-           ((prev3_input_state == ST_NOISE) || (prev3_input_state == ST_SPIKE_LOW))
+      end
 
-          return_value = 0; % remove single spike
+      % check for two sample low spike case
+      if ((prev5_input_state == ST_NOISE) || (prev5_input_state == ST_SPIKE_HIGH)) && ...
+         (prev4_input_state == ST_SPIKE_LOW) && ...
+         (prev3_input_state == ST_SPIKE_LOW) && ...
+         ((prev2_input_state == ST_NOISE) || (prev2_input_state == ST_SPIKE_HIGH))
 
-        end
+        return_value = 0; % remove two sample spike
+        prev_input3  = 0; % remove two sample spike
 
-        % check for single low spike sample case
-        if ((prev5_input_state == ST_NOISE) || (prev5_input_state == ST_SPIKE_HIGH)) && ...
-           (prev4_input_state == ST_SPIKE_LOW) && ...
-           ((prev3_input_state == ST_NOISE) || (prev3_input_state == ST_SPIKE_HIGH))
+      end
 
-          return_value = 0; % remove single spike
+      % check for three sample high spike case
+      if ((prev5_input_state == ST_NOISE) || (prev5_input_state == ST_SPIKE_LOW)) && ...
+         (prev4_input_state == ST_SPIKE_HIGH) && ...
+         (prev3_input_state == ST_SPIKE_HIGH) && ...
+         (prev2_input_state == ST_SPIKE_HIGH) && ...
+         ((prev1_input_state == ST_NOISE) || (prev1_input_state == ST_SPIKE_LOW))
 
-        end
+        return_value = 0; % remove three sample spike
+        prev_input3  = 0; % remove three sample spike
+        prev_input2  = 0; % remove three sample spike
 
-        % check for two sample high spike case
-        if ((prev5_input_state == ST_NOISE) || (prev5_input_state == ST_SPIKE_LOW)) && ...
-           (prev4_input_state == ST_SPIKE_HIGH) && ...
-           (prev3_input_state == ST_SPIKE_HIGH) && ...
-           ((prev2_input_state == ST_NOISE) || (prev2_input_state == ST_SPIKE_LOW))
+      end
 
-          return_value = 0; % remove two sample spike
-          prev_input3  = 0; % remove two sample spike
+      % check for three sample low spike case
+      if ((prev5_input_state == ST_NOISE) || (prev5_input_state == ST_SPIKE_HIGH)) && ...
+         (prev4_input_state == ST_SPIKE_LOW) && ...
+         (prev3_input_state == ST_SPIKE_LOW) && ...
+         (prev2_input_state == ST_SPIKE_LOW) && ...
+         ((prev1_input_state == ST_NOISE) || (prev1_input_state == ST_SPIKE_HIGH))
 
-        end
+        return_value = 0; % remove three sample spike
+        prev_input3  = 0; % remove three sample spike
+        prev_input2  = 0; % remove three sample spike
 
-        % check for two sample low spike case
-        if ((prev5_input_state == ST_NOISE) || (prev5_input_state == ST_SPIKE_HIGH)) && ...
-           (prev4_input_state == ST_SPIKE_LOW) && ...
-           (prev3_input_state == ST_SPIKE_LOW) && ...
-           ((prev2_input_state == ST_NOISE) || (prev2_input_state == ST_SPIKE_HIGH))
+      end
 
-          return_value = 0; % remove two sample spike
-          prev_input3  = 0; % remove two sample spike
+      % check for four sample high spike case
+      if ((prev5_input_state == ST_NOISE) || (prev5_input_state == ST_SPIKE_LOW)) && ...
+         (prev4_input_state == ST_SPIKE_HIGH) && ...
+         (prev3_input_state == ST_SPIKE_HIGH) && ...
+         (prev2_input_state == ST_SPIKE_HIGH) && ...
+         (prev1_input_state == ST_SPIKE_HIGH) && ...
+         ((input_state == ST_NOISE) || (input_state == ST_SPIKE_LOW))
 
-        end
+        return_value = 0; % remove four sample spike
+        prev_input3  = 0; % remove four sample spike
+        prev_input2  = 0; % remove four sample spike
+        prev_input1  = 0; % remove four sample spike
 
-        % check for three sample high spike case
-        if ((prev5_input_state == ST_NOISE) || (prev5_input_state == ST_SPIKE_LOW)) && ...
-           (prev4_input_state == ST_SPIKE_HIGH) && ...
-           (prev3_input_state == ST_SPIKE_HIGH) && ...
-           (prev2_input_state == ST_SPIKE_HIGH) && ...
-           ((prev1_input_state == ST_NOISE) || (prev1_input_state == ST_SPIKE_LOW))
+      end
 
-          return_value = 0; % remove three sample spike
-          prev_input3  = 0; % remove three sample spike
-          prev_input2  = 0; % remove three sample spike
+      % check for four sample low spike case
+      if ((prev5_input_state == ST_NOISE) || (prev5_input_state == ST_SPIKE_HIGH)) && ...
+         (prev4_input_state == ST_SPIKE_LOW) && ...
+         (prev3_input_state == ST_SPIKE_LOW) && ...
+         (prev2_input_state == ST_SPIKE_LOW) && ...
+         (prev1_input_state == ST_SPIKE_LOW) && ...
+         ((input_state == ST_NOISE) || (input_state == ST_SPIKE_HIGH))
 
-        end
-
-        % check for three sample low spike case
-        if ((prev5_input_state == ST_NOISE) || (prev5_input_state == ST_SPIKE_HIGH)) && ...
-           (prev4_input_state == ST_SPIKE_LOW) && ...
-           (prev3_input_state == ST_SPIKE_LOW) && ...
-           (prev2_input_state == ST_SPIKE_LOW) && ...
-           ((prev1_input_state == ST_NOISE) || (prev1_input_state == ST_SPIKE_HIGH))
-
-          return_value = 0; % remove three sample spike
-          prev_input3  = 0; % remove three sample spike
-          prev_input2  = 0; % remove three sample spike
-
-        end
-
-        % check for four sample high spike case
-        if ((prev5_input_state == ST_NOISE) || (prev5_input_state == ST_SPIKE_LOW)) && ...
-           (prev4_input_state == ST_SPIKE_HIGH) && ...
-           (prev3_input_state == ST_SPIKE_HIGH) && ...
-           (prev2_input_state == ST_SPIKE_HIGH) && ...
-           (prev1_input_state == ST_SPIKE_HIGH) && ...
-           ((input_state == ST_NOISE) || (input_state == ST_SPIKE_LOW))
-
-          return_value = 0; % remove four sample spike
-          prev_input3  = 0; % remove four sample spike
-          prev_input2  = 0; % remove four sample spike
-          prev_input1  = 0; % remove four sample spike
-
-        end
-
-        % check for four sample low spike case
-        if ((prev5_input_state == ST_NOISE) || (prev5_input_state == ST_SPIKE_HIGH)) && ...
-           (prev4_input_state == ST_SPIKE_LOW) && ...
-           (prev3_input_state == ST_SPIKE_LOW) && ...
-           (prev2_input_state == ST_SPIKE_LOW) && ...
-           (prev1_input_state == ST_SPIKE_LOW) && ...
-           ((input_state == ST_NOISE) || (input_state == ST_SPIKE_HIGH))
-
-          return_value = 0; % remove four sample spike
-          prev_input3  = 0; % remove four sample spike
-          prev_input2  = 0; % remove four sample spike
-          prev_input1  = 0; % remove four sample spike
-
-        end
+        return_value = 0; % remove four sample spike
+        prev_input3  = 0; % remove four sample spike
+        prev_input2  = 0; % remove four sample spike
+        prev_input1  = 0; % remove four sample spike
 
       end
 
