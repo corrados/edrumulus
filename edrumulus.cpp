@@ -29,9 +29,9 @@ Edrumulus::Edrumulus() :
   samplerate_prev_micros     = micros();
   status_is_error            = false;
 #ifdef ESP_PLATFORM
-  spike_cancel_is_used       = true; // use spike cancellation on the ESP32 per default (note that it increases the latency)
+  spike_cancel_level         = 4; // use max. spike cancellation on the ESP32 per default (note that it increases the latency)
 #else
-  spike_cancel_is_used       = false; // default
+  spike_cancel_level         = 0; // default
 #endif
   cancel_num_samples         = ( cancel_time_ms * Fs ) / 1000;
   cancel_cnt                 = 0;
@@ -170,9 +170,9 @@ Serial.println ( serial_print );
         sample[j] = sample_org_pad[j] - dc_offset[i][j];
 
         // ADC spike cancellation (do not use spike cancellation for rim switches since they have short peaks)
-        if ( spike_cancel_is_used && !( pad[i].get_is_rim_switch() && ( j > 0 ) ) )
+        if ( ( spike_cancel_level > 0 ) && !( pad[i].get_is_rim_switch() && ( j > 0 ) ) )
         {
-          sample[j] = edrumulus_hardware.cancel_ADC_spikes ( sample[j], i, j );
+          sample[j] = edrumulus_hardware.cancel_ADC_spikes ( sample[j], i, j, spike_cancel_level );
         }
       }
 

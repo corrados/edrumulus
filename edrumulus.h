@@ -99,8 +99,8 @@ public:
   void set_midi_ctrl_ch         ( const int pad_idx, const int new_midi_ctrl_ch )                           { pad[pad_idx].set_midi_ctrl_ch ( new_midi_ctrl_ch ); }
   void set_rim_shot_is_used     ( const int pad_idx, const bool new_is_used ) { pad[pad_idx].set_rim_shot_is_used ( new_is_used ); }
   void set_pos_sense_is_used    ( const int pad_idx, const bool new_is_used ) { pad[pad_idx].set_pos_sense_is_used ( new_is_used ); }
-  void set_spike_cancel_is_used ( const bool new_is_used )                    { spike_cancel_is_used = new_is_used; }
-  bool get_spike_cancel_is_used ()                                            { return spike_cancel_is_used; }
+  void set_spike_cancel_level   ( const int new_level )                       { spike_cancel_level = new_level; }
+  int get_spike_cancel_level    ()                                            { return spike_cancel_level; }
 
   // overload and error handling
   bool get_status_is_overload() { return status_is_overload; }
@@ -320,7 +320,7 @@ protected:
   int                sample_org[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   float              dc_offset_iir_gamma;
   float              dc_offset_iir_one_minus_gamma;
-  bool               spike_cancel_is_used;
+  int                spike_cancel_level;
   int                overload_LED_cnt;
   int                overload_LED_on_time;
   bool               status_is_overload;
