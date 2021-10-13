@@ -33,14 +33,14 @@ padtype = 'pd120'; % default
 %x = audioread("signals/esp32_pd8.wav");padtype = 'pd8';
 %x = audioread("signals/pd120_pos_sense.wav");%x = x(2900:10000, :);%x = x(55400:58000, :);%
 %x = audioread("signals/pd120_pos_sense2.wav");
-%x = audioread("signals/pd120_single_hits.wav");
+x = audioread("signals/pd120_single_hits.wav");
 %x = audioread("signals/pd120_roll.wav");%x = x(292410:294749, :);%x = x(311500:317600, :);
 %x = audioread("signals/pd120_middle_velocity.wav");
 %x = audioread("signals/pd120_hot_spot.wav");
 %x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
-x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);%x = x(260000:360000, :);%x = x(130000:176000, :);%
+%x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);%x = x(260000:360000, :);%x = x(130000:176000, :);%
 %x = audioread("signals/pd6.wav");
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
@@ -56,7 +56,7 @@ x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(5
 
 
 % pad PRESET settings first, then overwrite these with pad specific properties
-pad.threshold_db          = 28;
+pad.threshold_db          = 0;
 pad.mask_time_ms          = 6;
 pad.energy_win_len_ms     = 0.3;
 pad.scan_time_ms          = 2.5;
@@ -185,41 +185,23 @@ processing(x * 25000, Fs); % scale to the ESP32 input range
 end
 
 
-function hil = myhilbert(x)
-
-a   = fir1(6, 0.4);
-a   = a .* exp(1j * 2 * pi * (0:length(a) - 1) * 0.3) * length(a);
-hil = filter(a, 1, x);
-
-% figure; freqz(a, 1, 1024, 8000);
-% figure;
-% subplot(2, 1, 1), pwelch(x,[],[],[],[],'twosided','db');
-% subplot(2, 1, 2), pwelch(hil,[],[],[],[],'twosided','db');
-
-% TEST use built-in hilbert filter instead of my own implementation for reference
-% hil = hilbert(x);
-
-end
-
-
-function [hil, hil_filt] = filter_input_signal(x, Fs)
+function [x_movav, x_lpfilt] = filter_input_signal(x, Fs)
 global pad;
 
 energy_window_len = round(pad.energy_win_len_ms * 1e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
 
-% Hilbert filter
-hil = myhilbert(x);
+x_movav = abs(filter(ones(energy_window_len, 1) / energy_window_len, 1, x(:, 1))) .^ 2; % moving average
 
-% moving average filter
-hil_filt = filter(ones(energy_window_len, 1) / energy_window_len ^ 2, 1, abs(hil) .^ 2); % moving average
+alpha    = 400 / Fs;
+x_lpfilt = abs(filter(alpha, [1, alpha - 1], x(:, 1))) .^ 2;
 
 end
 
 
-function [all_peaks, all_first_peaks, scan_region] = calc_peak_detection(hil_filt, Fs)
+function [all_peaks, all_first_peaks, scan_region] = calc_peak_detection(x_movav, x_lpfilt, Fs)
 global pad;
 
-scan_region = nan(size(hil_filt));
+scan_region = nan(size(x_lpfilt));
 
 first_peak_diff_thresh = 10 ^ (8 / 10); % 8 dB difference allowed
 mask_time              = round(pad.mask_time_ms * 1e-3 * Fs); % mask time (e.g. 10 ms)
@@ -247,16 +229,15 @@ last_peak_idx   = 0;
 all_peaks       = [];
 all_first_peaks = [];
 all_sec_peaks   = [];
-i               = 1;
 no_more_peak    = false;
-hil_filt_decay  = hil_filt;
-decay_all       = nan(size(hil_filt)); % only for debugging
-decay_est_rng   = nan(size(hil_filt)); % only for debugging
+x_lpfilt_decay  = x_lpfilt;
+decay_all       = nan(size(x_lpfilt)); % only for debugging
+decay_est_rng   = nan(size(x_lpfilt)); % only for debugging
 
 while ~no_more_peak
 
   % find values above threshold, masking regions which are already done
-  above_thresh = (hil_filt_decay > 10 ^ (pad.threshold_db / 10)) & [zeros(last_peak_idx, 1); ones(length(hil_filt_decay) - last_peak_idx, 1)];
+  above_thresh = (x_lpfilt_decay > 10 ^ (pad.threshold_db / 10)) & [zeros(last_peak_idx, 1); ones(length(x_lpfilt_decay) - last_peak_idx, 1)];
   peak_start   = find(diff(above_thresh) > 0);
 
   % exit condition
@@ -267,20 +248,20 @@ while ~no_more_peak
 
   % climb to the maximum of the first peak
   peak_idx = peak_start(1);
-  max_idx  = find(hil_filt(1 + peak_idx:end) - hil_filt(peak_idx:end - 1) < 0);
+  max_idx  = find(x_lpfilt(1 + peak_idx:end) - x_lpfilt(peak_idx:end - 1) < 0);
 
   if ~isempty(max_idx)
     peak_idx = peak_idx + max_idx(1) - 1;
   end
 
   % find all peaks after the initial peak
-  peak_idx_after_initial = find((hil_filt(2 + peak_idx:end) < hil_filt(1 + peak_idx:end - 1)) & ...
-    (hil_filt(1 + peak_idx:end - 1) > hil_filt(peak_idx:end - 2)));
+  peak_idx_after_initial = find((x_lpfilt(2 + peak_idx:end) < x_lpfilt(1 + peak_idx:end - 1)) & ...
+    (x_lpfilt(1 + peak_idx:end - 1) > x_lpfilt(peak_idx:end - 2)));
 
   scan_peaks_idx = peak_idx + peak_idx_after_initial(peak_idx_after_initial <= scan_time);
 
   % if a peak in the scan time is much higher than the initial peak, use that one
-  much_higher_peaks = find(hil_filt(peak_idx) * first_peak_diff_thresh < hil_filt(scan_peaks_idx));
+  much_higher_peaks = find(x_lpfilt(peak_idx) * first_peak_diff_thresh < x_lpfilt(scan_peaks_idx));
 
   if ~isempty(much_higher_peaks)
     peak_idx = scan_peaks_idx(much_higher_peaks(1));
@@ -289,22 +270,22 @@ while ~no_more_peak
   all_first_peaks = [all_first_peaks; peak_idx];
 
   % search in a pre-defined scan time for the highest peak
-  scan_indexes              = peak_idx:min(1 + peak_idx + scan_time - 1, length(hil_filt));
-  [~, max_idx]              = max(hil_filt(scan_indexes));
+  scan_indexes              = peak_idx:min(1 + peak_idx + scan_time - 1, length(x_lpfilt));
+  [~, max_idx]              = max(x_lpfilt(scan_indexes));
   peak_idx                  = peak_idx + max_idx - 1;
-  scan_region(scan_indexes) = hil_filt(peak_idx); % mark scan time region
+  scan_region(scan_indexes) = x_lpfilt(peak_idx); % mark scan time region
 
   % calculate power left/right of detected peak for second main peak position detection
   first_peak_idx = peak_idx; % initialization
 
   if peak_idx - main_peak_dist < 1
     all_sec_peaks = [all_sec_peaks; 1];
-  elseif peak_idx + main_peak_dist > length(hil_filt)
-    all_sec_peaks = [all_sec_peaks; length(hil_filt)];
+  elseif peak_idx + main_peak_dist > length(x_lpfilt)
+    all_sec_peaks = [all_sec_peaks; length(x_lpfilt)];
   else
 
-    power_hypo_left  = hil_filt(peak_idx - main_peak_dist);
-    power_hypo_right = hil_filt(peak_idx + main_peak_dist);
+    power_hypo_left  = x_lpfilt(peak_idx - main_peak_dist);
+    power_hypo_right = x_lpfilt(peak_idx + main_peak_dist);
 
     if power_hypo_left > power_hypo_right
 
@@ -318,16 +299,16 @@ while ~no_more_peak
   end
 
   % estimate current decay power
-  decay_factor = hil_filt(peak_idx);
+  decay_factor = x_lpfilt(peak_idx);
 
-  if first_peak_idx + main_peak_dist + decay_est_delay2nd + decay_est_len - 1 <= length(hil_filt)
+  if first_peak_idx + main_peak_dist + decay_est_delay2nd + decay_est_len - 1 <= length(x_lpfilt)
 
     % average power measured right after the two main peaks (it showed for high level hits
     % close to the pad center the decay has much lower power right after the main peaks) in
     % a predefined time intervall, but never use a higher decay factor than derived from the
     % main peak (in case a second hit is right behind our main peaks to avoid very high
     % decay curve placement)
-    decay_power  = mean(hil_filt(first_peak_idx + main_peak_dist + decay_est_delay2nd + (0:decay_est_len - 1)));
+    decay_power  = mean(x_lpfilt(first_peak_idx + main_peak_dist + decay_est_delay2nd + (0:decay_est_len - 1)));
     decay_factor = min(decay_factor, decay_est_fact * decay_power);
 
     decay_est_rng(first_peak_idx + main_peak_dist + decay_est_delay2nd + (0:decay_est_len - 1)) = decay_power; % only for debugging
@@ -336,70 +317,37 @@ while ~no_more_peak
 
   % store the new detected peak
   all_peaks     = [all_peaks; peak_idx];
-  last_peak_idx = min(first_peak_idx + mask_time, length(hil_filt));
+  last_peak_idx = min(first_peak_idx + mask_time, length(x_lpfilt));
 
   % exponential decay assumption
   decay           = decay_factor * decay_curve;
   decay_x         = first_peak_idx + (0:decay_len - 1) + 2; % NOTE "+ 2" delay needed for sample-wise processing
-  valid_decay_idx = decay_x <= length(hil_filt_decay);
+  valid_decay_idx = decay_x <= length(x_lpfilt_decay);
   decay           = decay(valid_decay_idx);
   decay_x         = decay_x(valid_decay_idx);
 
   % subtract decay (with clipping at zero)
-  hil_filt_new                   = hil_filt_decay(decay_x) - decay.';
-  hil_filt_new(hil_filt_new < 0) = 0;
+  x_lpfilt_new                   = x_lpfilt_decay(decay_x) - decay.';
+  x_lpfilt_new(x_lpfilt_new < 0) = 0;
 
   % update filtered signal
-  hil_filt_decay(decay_x) = hil_filt_new;
-  i                       = i + 1;
+  x_lpfilt_decay(decay_x) = x_lpfilt_new;
 
   decay_all(decay_x) = decay; % only for debugging
 
 end
 
-figure; plot(10 * log10([hil_filt, hil_filt_decay, decay_all, decay_est_rng])); hold on;
-plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'k*');
-plot(all_sec_peaks, 10 * log10(hil_filt(all_sec_peaks)), 'y*');
-
-% TODO What is this zoom area for?
-%axis([2.835616531556589e+05   2.856098468655325e+05  -1.994749771562022e+01   4.962270061651073e+01]);
-
-% incorrect triggering: low level hit prior to high level hit
-%axis([2.924131435344061e+05   2.947458419243922e+05  -1.015529367435146e+00   5.738834385758622e+01]);
-%axis([2.421239842841798e+05   2.444566826741658e+05   5.379662774744027e+00   6.378353599976542e+01]);
-
-% difficult region with low level hits (at the edge?)
-%axis([3.116618850384215e+05   3.139945834284076e+05  -8.199169855910323e+00   5.020470336911105e+01]);
-
-% second hit has almost only one peak, not two as usual
-%axis([3.205408049935086e+05   3.228735033834946e+05   1.221288177597649e+01   7.061675500099790e+01]);
-
-% three missed hits at low level hits in the middle position
-%axis([3.325856532044706e+05   3.349183515944567e+05   1.177485491692314e+01   7.017872814194450e+01]);
-%axis([3.351685187444009e+05   3.375012171343870e+05   8.358245416306897e+00   6.676211864132827e+01]);
-%axis([3.411346824123786e+05   3.434673808023647e+05   1.011035285252035e+01   6.851422607754172e+01]);
-
-% difficult to identify hits by eye (low level hits at the edge)
-%axis([ 2.834549475082915e+05   2.857876458982775e+05  -6.009035560643461e+00   5.239483766437795e+01]);
-%axis([2.510387063358597e+05   2.533714047258457e+05  -1.628766970109801e+00   5.677510625491159e+01]);
-%axis([2.492000129465431e+05   2.515327113365291e+05  -5.220587214347390e+00   5.318328601067400e+01]);
-%axis([2.459957253014613e+05   2.483284236914473e+05  -3.818901265376631e+00   5.458497195964476e+01]);
-%axis([2.217960652971447e+05   2.241287636871307e+05  -3.118058290891270e+00   5.528581493413012e+01]);
-%axis([2.195405332117799e+05   2.218732316017659e+05  -1.278345482867138e+00   5.712552774215425e+01]);
-%axis([2.053756894239842e+05   2.077083878139702e+05   2.985512097249909e-01   5.870242443474638e+01]);
-%axis([1.634437624356316e+05   1.657764608256176e+05  -1.803977713731133e+00   5.659989551129024e+01]);
-
-% are these real hits?
-%axis([1.014064009176438e+05   1.037390993076298e+05  -5.045376470726055e+00   5.335849675429534e+01]);
-
+figure; plot(10 * log10([x_lpfilt, x_lpfilt_decay, decay_all, decay_est_rng])); hold on;
+plot(all_peaks, 10 * log10(x_lpfilt(all_peaks)), 'k*');
+plot(all_sec_peaks, 10 * log10(x_lpfilt(all_sec_peaks)), 'y*');
 
 end
 
 
-function pos_sense_metric = calc_pos_sense_metric(hil, hil_filt, Fs, all_peaks)
+function pos_sense_metric = calc_pos_sense_metric(x, x_movav, Fs, all_peaks)
 global pad;
 
-% low pass filter of the Hilbert signal
+% low pass filter of the signal
 % moving average cut off frequency approximation according to:
 % https://dsp.stackexchange.com/questions/9966/what-is-the-cut-off-frequency-of-a-moving-average-filter
 low_pass_cutoff_normalized  = pad.pos_low_pass_cutoff / Fs;
@@ -413,7 +361,7 @@ disp(['low-pass filter delay: ' num2str(low_pass_moving_average_len / 2 / 8) ' m
 l = low_pass_moving_average_len / 2 - 1;
 b = [0.5:0.5 / l:1 1:-0.5 / l:0.5] / low_pass_moving_average_len;
 %b = ones(low_pass_moving_average_len, 1) / low_pass_moving_average_len; % TEST
-hil_low = abs(filter(b, 1, hil)) .^ 2; % moving average
+x_low = abs(filter(b, 1, x(:, 1))) .^ 2; % moving average
 
 peak_energy     = [];
 peak_energy_low = [];
@@ -425,20 +373,20 @@ for i = 1:length(all_peaks)
   % range of the low-pass moving average window length
   test_win_offset  = low_pass_moving_average_len / 2 - round(low_pass_moving_average_len / 2);
   test_win_idx     = (all_peaks(i):all_peaks(i) + low_pass_moving_average_len - 1) + test_win_offset;
-  [~, test_max]    = max(hil_low(test_win_idx));
+  [~, test_max]    = max(x_low(test_win_idx));
   all_peaks_low(i) = all_peaks(i) + test_win_offset + test_max - 1;
 
-  % use the Hilbert filtered signal with energy window moving average as the
+  % use the filtered signal with energy window moving average as the
   % reference power for the positional sensing metric where the first peak
   % position is used
-  peak_energy(i)     = hil_filt(all_peaks(i));
-  peak_energy_low(i) = hil_low(all_peaks_low(i));
+  peak_energy(i)     = x_movav(all_peaks(i));
+  peak_energy_low(i) = x_low(all_peaks_low(i));
 
 end
 
-figure; plot(10 * log10([hil_filt(1:length(hil_low)), hil_low])); hold on;
-        plot(all_peaks, 10 * log10(abs(hil_filt(all_peaks))), 'k*');
-        plot(all_peaks_low, 20 * log10(abs(hil_low(all_peaks_low))), 'g*');
+figure; plot(10 * log10([x_movav(1:length(x_low)), x_low])); hold on;
+        plot(all_peaks, 10 * log10(abs(x_movav(all_peaks))), 'k*');
+        plot(all_peaks_low, 20 * log10(abs(x_low(all_peaks_low))), 'g*');
 
 if pad.pos_invert
   % add offset to get to similar range as non-inverted metric
@@ -454,13 +402,13 @@ end
 %end
 %x_peaks_inv = find(x_peaks);
 %figure
-%plot(10 * log10([abs(hil(x_peaks)) .^ 2, abs(hil_low(x_peaks)) .^ 2])); grid on; hold on;
-%%plot(21:80:length(all_peaks) * 80, 20 * log10(abs(hil(all_peaks))), 'y*');
+%plot(10 * log10([abs(x(x_peaks, 1)) .^ 2, abs(x_low(x_peaks)) .^ 2])); grid on; hold on;
+%%plot(21:80:length(all_peaks) * 80, 20 * log10(abs(x(all_peaks, 1))), 'y*');
 
 end
 
 
-function is_rim_shot = detect_rim_shot(x, hil_filt, all_first_peaks, Fs)
+function is_rim_shot = detect_rim_shot(x, x_movav, all_first_peaks, Fs)
 
 is_rim_shot          = false(size(all_first_peaks));
 rim_shot_window_len  = round(5e-3 * Fs); % scan time (e.g. 6 ms)
@@ -474,18 +422,18 @@ if size(x, 2) > 1
 
   for i = 1:length(all_first_peaks)
 
-    win_idx             = (all_first_peaks(i):all_first_peaks(i) + rim_shot_window_len - 1) - rim_shot_window_len / 2;
-    win_idx             = win_idx((win_idx <= length(rim_x_high)) & (win_idx > 0));
-    rim_max_pow(i)      = max(abs(rim_x_high(win_idx)) .^ 2);
-    hil_filt_max_pow(i) = hil_filt(all_first_peaks(i));
+    win_idx            = (all_first_peaks(i):all_first_peaks(i) + rim_shot_window_len - 1) - rim_shot_window_len / 2;
+    win_idx            = win_idx((win_idx <= length(rim_x_high)) & (win_idx > 0));
+    rim_max_pow(i)     = max(abs(rim_x_high(win_idx)) .^ 2);
+    x_movav_max_pow(i) = x_movav(all_first_peaks(i));
 
   end
 
-  rim_metric_db = 10 * log10(rim_max_pow ./ hil_filt_max_pow);
+  rim_metric_db = 10 * log10(rim_max_pow ./ x_movav_max_pow);
   is_rim_shot   = rim_metric_db > rim_shot_treshold_dB;
 
 %figure;
-%plot(10 * log10(abs([hil_filt, rim_x_high]))); hold on; grid on;
+%plot(10 * log10(abs([x_movav, rim_x_high]))); hold on; grid on;
 %plot(all_first_peaks, rim_metric_db, '*-');
 %plot(all_first_peaks(is_rim_shot), rim_metric_db(is_rim_shot), '*');
 %plot(all_first_peaks(~is_rim_shot), rim_metric_db(~is_rim_shot), '*');
@@ -498,17 +446,17 @@ end
 function processing(x, Fs)
 
 % calculate peak detection and positional sensing
-[hil, hil_filt]                           = filter_input_signal(x(:, 1), Fs);
-[all_peaks, all_first_peaks, scan_region] = calc_peak_detection(hil_filt, Fs);
-is_rim_shot                               = detect_rim_shot(x, hil_filt, all_first_peaks, Fs);
-pos_sense_metric                          = calc_pos_sense_metric(hil, hil_filt, Fs, all_first_peaks);
+[x_movav, x_lpfilt]                       = filter_input_signal(x(:, 1), Fs);
+[all_peaks, all_first_peaks, scan_region] = calc_peak_detection(x_movav, x_lpfilt, Fs);
+is_rim_shot                               = detect_rim_shot(x, x_movav, all_first_peaks, Fs);
+pos_sense_metric                          = calc_pos_sense_metric(x, x_movav, Fs, all_first_peaks);
 
 
 % plot results
 figure
-plot(10 * log10([abs(x(:, 1)) .^ 2, hil_filt, scan_region])); grid on; hold on;
-plot(all_first_peaks, 10 * log10(hil_filt(all_first_peaks)), 'y*');
-plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'g*');
+plot(10 * log10([abs(x(:, 1)) .^ 2, x_movav, scan_region])); grid on; hold on;
+plot(all_first_peaks, 10 * log10(x_movav(all_first_peaks)), 'y*');
+plot(all_peaks, 10 * log10(x_movav(all_peaks)), 'g*');
 plot(all_first_peaks, pos_sense_metric + 40, 'k*');
 title('Green marker: level; Black marker: position');
 xlabel('samples'); ylabel('dB');
@@ -517,7 +465,7 @@ ylim([-10, 90]);
 
 % TEST
 % velocity/positional sensing mapping and play MIDI notes
-velocity            = (10 * log10(hil_filt(all_peaks)) / 39) * 127 - 73;
+velocity            = (10 * log10(x_movav(all_peaks)) / 39) * 127 - 73;
 velocity_clipped    = max(1, min(127, velocity));
 pos_sensing         = (pos_sense_metric / 4) * 127 - 510;
 pos_sensing_clipped = max(1, min(127, pos_sensing));
