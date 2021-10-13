@@ -184,7 +184,7 @@ a   = fir1(6, 0.4);
 a   = a .* exp(1j * 2 * pi * (0:length(a) - 1) * 0.3) * length(a);
 hil = filter(a, 1, x);
 
-% figure; freqz(a);
+% figure; freqz(a, 1, 1024, 8000);
 % figure;
 % subplot(2, 1, 1), pwelch(x,[],[],[],[],'twosided','db');
 % subplot(2, 1, 2), pwelch(hil,[],[],[],[],'twosided','db');
@@ -518,7 +518,6 @@ plot(all_first_peaks, pos_sense_metric + 40, 'k*');
 title('Green marker: level; Black marker: position');
 xlabel('samples'); ylabel('dB');
 ylim([-10, 90]);
-
 
 % TEST
 % velocity/positional sensing mapping and play MIDI notes
