@@ -492,8 +492,8 @@ if ((hil_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
       prev_hil_filt_val   = 0;
       was_above_threshold = false;
       decay_scaling       = max_hil_filt_val * decay_fact;
-      decay_back_cnt      = decay_len - peak_found_offset;
-      mask_back_cnt       = mask_time - peak_found_offset;
+      decay_back_cnt      = decay_len - scan_time; % start is first peak (i.e. scan_time instead of peak_found_offset)
+      mask_back_cnt       = mask_time - scan_time; % start is first peak (i.e. scan_time instead of peak_found_offset)
       was_peak_found      = true;
 
       % for left/right main peak detection (note that we have to add one because

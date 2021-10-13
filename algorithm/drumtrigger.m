@@ -329,11 +329,11 @@ while ~no_more_peak
 
   % store the new detected peak
   all_peaks     = [all_peaks; peak_idx];
-  last_peak_idx = min(peak_idx + mask_time, length(hil_filt));
+  last_peak_idx = min(first_peak_idx + mask_time, length(hil_filt));
 
   % exponential decay assumption
   decay           = decay_factor * decay_curve;
-  decay_x         = peak_idx + (0:decay_len - 1) + 2; % NOTE "+ 2" delay needed for sample-wise processing
+  decay_x         = first_peak_idx + (0:decay_len - 1) + 2; % NOTE "+ 2" delay needed for sample-wise processing
   valid_decay_idx = decay_x <= length(hil_filt_decay);
   decay           = decay(valid_decay_idx);
   decay_x         = decay_x(valid_decay_idx);
@@ -350,9 +350,9 @@ while ~no_more_peak
 
 end
 
-%figure; plot(10 * log10([hil_filt, hil_filt_decay, decay_all, decay_est_rng])); hold on;
-%plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'k*');
-%plot(all_sec_peaks, 10 * log10(hil_filt(all_sec_peaks)), 'y*');
+figure; plot(10 * log10([hil_filt, hil_filt_decay, decay_all, decay_est_rng])); hold on;
+plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'k*');
+plot(all_sec_peaks, 10 * log10(hil_filt(all_sec_peaks)), 'y*');
 
 % TODO What is this zoom area for?
 %axis([2.835616531556589e+05   2.856098468655325e+05  -1.994749771562022e+01   4.962270061651073e+01]);
