@@ -56,7 +56,7 @@ x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(5
 
 
 % pad PRESET settings first, then overwrite these with pad specific properties
-pad.threshold_db          = 23;
+pad.threshold_db          = 35;
 pad.mask_time_ms          = 6;
 pad.energy_win_len_ms     = 2;
 pad.scan_time_ms          = 2.5;
@@ -204,7 +204,7 @@ energy_window_len = round(pad.energy_win_len_ms * 1e-3 * Fs); % hit energy estim
 hil = myhilbert(x);
 
 % moving average filter
-hil_filt = abs(filter(ones(energy_window_len, 1) / energy_window_len, 1, hil)) .^ 2; % moving average
+hil_filt = abs(filter(ones(energy_window_len, 1) / sqrt(energy_window_len), 1, hil)) .^ 2; % moving average
 
 end
 

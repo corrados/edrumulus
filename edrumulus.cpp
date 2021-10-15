@@ -450,10 +450,11 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
 void Edrumulus::Pad::initialize()
 {
   // set algorithm parameters
-  const float threshold_db = 9.0f + pad_settings.velocity_threshold;            // gives us a threshold range of 9..40 dB
+  const float threshold_db = 21.0f + pad_settings.velocity_threshold;           // gives us a threshold range of 21..52 dB
   threshold                = pow   ( 10.0f, threshold_db / 10 );                // linear power threshold
   first_peak_diff_thresh   = pow   ( 10.0f, 20.0f / 10 );                       // 20 dB difference allowed between first peak and later peak in scan time
   energy_window_len        = round ( pad_settings.energy_win_len_ms * 1e-3f * Fs ); // hit energy estimation time window length (e.g. 2 ms)
+  mov_av_norm_fact         = 1.0f / sqrt ( static_cast<float> ( energy_window_len ) );
   scan_time                = round ( pad_settings.scan_time_ms  * 1e-3f * Fs ); // scan time from first detected peak
   mask_time                = round ( pad_settings.mask_time_ms  * 1e-3f * Fs ); // mask time (e.g. 10 ms)
   decay_len1               = round ( pad_settings.decay_len1_ms * 1e-3f * Fs ); // decay time 1 (e.g. 250 ms)
@@ -628,8 +629,8 @@ debug = 0.0f; // TEST
     mov_av_re += mov_av_hist_re[i];
     mov_av_im += mov_av_hist_im[i];
   }
-  mov_av_re /= energy_window_len;
-  mov_av_im /= energy_window_len;
+  mov_av_re *= mov_av_norm_fact;
+  mov_av_im *= mov_av_norm_fact;
 
   const float hil_filt = mov_av_re * mov_av_re + mov_av_im * mov_av_im;
 

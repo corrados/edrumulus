@@ -193,6 +193,7 @@ global pos_energy_window_len;
 global scan_time;
 global scan_time_cnt;
 global mov_av_hist_re mov_av_hist_im;
+global mov_av_norm_fact;
 global mask_time;
 global mask_back_cnt;
 global threshold;
@@ -245,13 +246,14 @@ rim_x_high              = 0;
 b_rim_high              = [0.969531252908746, -0.969531252908746];
 a_rim_high              = -0.939062505817492;
 energy_window_len       = round(2e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
+mov_av_norm_fact        = 1 / sqrt(energy_window_len);
 scan_time               = round(2.5e-3 * Fs); % scan time from first detected peak
 scan_time_cnt           = 0;
 mov_av_hist_re          = zeros(energy_window_len, 1); % real part memory for moving average filter history
 mov_av_hist_im          = zeros(energy_window_len, 1); % imaginary part memory for moving average filter history
 mask_time               = round(6e-3 * Fs); % mask time (e.g. 10 ms)
 mask_back_cnt           = 0;
-threshold               = power(10, 23 / 10); % 23 dB threshold
+threshold               = power(10, 35 / 10); % 35 dB threshold
 first_peak_diff_thresh  = 10 ^ (20 / 10); % 20 dB difference allowed between first peak and later peak in scan time
 was_above_threshold     = false;
 first_peak_val          = 0;
@@ -353,6 +355,7 @@ global pos_energy_window_len;
 global scan_time;
 global scan_time_cnt;
 global mov_av_hist_re mov_av_hist_im;
+global mov_av_norm_fact;
 global mask_time;
 global mask_back_cnt;
 global threshold;
@@ -416,8 +419,8 @@ hil_debug = complex(hil_re, hil_im); % just for debugging
 % moving average filter
 mov_av_hist_re = update_fifo(hil_re, energy_window_len, mov_av_hist_re);
 mov_av_hist_im = update_fifo(hil_im, energy_window_len, mov_av_hist_im);
-mov_av_re      = sum(mov_av_hist_re) / energy_window_len;
-mov_av_im      = sum(mov_av_hist_im) / energy_window_len;
+mov_av_re      = sum(mov_av_hist_re) * mov_av_norm_fact;
+mov_av_im      = sum(mov_av_hist_im) * mov_av_norm_fact;
 hil_filt       = mov_av_re * mov_av_re + mov_av_im * mov_av_im;
 
 % exponential decay assumption

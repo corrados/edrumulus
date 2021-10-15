@@ -232,6 +232,7 @@ protected:
       int          Fs;
       int          number_inputs;
       int          energy_window_len;
+      float        mov_av_norm_fact;
       int          scan_time;
       int          scan_time_cnt;
       int          decay_len, decay_len1, decay_len2, decay_len3;
