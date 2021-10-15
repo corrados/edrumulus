@@ -209,7 +209,7 @@ hil_filt = abs(filter(ones(energy_window_len, 1) / energy_window_len, 1, hil)) .
 end
 
 
-function [all_peaks, all_first_peaks, scan_region] = calc_peak_detection(hil_filt, Fs)
+function [all_peaks, all_first_peaks, scan_region] = calc_peak_detection(hil, hil_filt, Fs)
 global pad;
 
 scan_region = nan(size(hil_filt));
@@ -326,6 +326,15 @@ while ~no_more_peak
     decay_est_rng(first_peak_idx + main_peak_dist + decay_est_delay2nd + (0:decay_est_len - 1)) = decay_power; % only for debugging
 
   end
+
+% % TEST
+% energy_window_len = round(pad.energy_win_len_ms * 1e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
+% win_offset        = scan_indexes(1) - energy_window_len - 1;
+% win_idx           = win_offset + (1:scan_indexes(end) - scan_indexes(1) + 1 + energy_window_len);
+% [~, max_idx]      = max(abs(hil(win_idx)) .^ 2);
+% peak_idx          = win_offset + max_idx;
+% %plot(10*log10(abs(hil(win_idx)) .^ 2))
+% %pause;
 
   % store the new detected peak
   all_peaks     = [all_peaks; peak_idx];
@@ -504,7 +513,7 @@ function processing(x, Fs)
 
 % calculate peak detection and positional sensing
 [hil, hil_filt]                           = filter_input_signal(x(:, 1), Fs);
-[all_peaks, all_first_peaks, scan_region] = calc_peak_detection(hil_filt, Fs);
+[all_peaks, all_first_peaks, scan_region] = calc_peak_detection(hil, hil_filt, Fs);
 is_rim_shot                               = detect_rim_shot(x, hil_filt, all_first_peaks, Fs);
 pos_sense_metric                          = calc_pos_sense_metric(hil, hil_filt, Fs, all_first_peaks);
 
@@ -512,8 +521,11 @@ pos_sense_metric                          = calc_pos_sense_metric(hil, hil_filt,
 % plot results
 figure
 plot(10 * log10([abs(x(:, 1)) .^ 2, hil_filt, scan_region])); grid on; hold on;
+%plot(10 * log10([abs(hil) .^ 2, hil_filt, scan_region])); grid on; hold on;
+%%plot(10 * log10([abs(hil) .^ 2, abs(x(:, 1)) .^ 2, hil_filt, scan_region])); grid on; hold on;
 plot(all_first_peaks, 10 * log10(hil_filt(all_first_peaks)), 'y*');
 plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'g*');
+%plot(all_peaks, 10 * log10(abs(hil(all_peaks)) .^ 2), 'g*');
 plot(all_first_peaks, pos_sense_metric + 40, 'k*');
 title('Green marker: level; Black marker: position');
 xlabel('samples'); ylabel('dB');
