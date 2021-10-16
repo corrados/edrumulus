@@ -40,7 +40,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
-x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);
+x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(106000:116000, :);%x = x(52000:60000, :);
 %x = audioread("signals/pd6.wav");
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
@@ -209,7 +209,7 @@ hil_filt = abs(filter(ones(energy_window_len, 1) / sqrt(energy_window_len), 1, h
 end
 
 
-function [all_peaks, all_peaks_hil, all_first_peaks, scan_region] = calc_peak_detection(hil, hil_filt, Fs)
+function [all_peaks, all_peaks_hil, all_peaks_x, all_first_peaks, scan_region] = calc_peak_detection(x, hil, hil_filt, Fs)
 global pad;
 
 scan_region = nan(size(hil_filt));
@@ -240,6 +240,7 @@ decay_len    = decay_len1 + decay_len2 + decay_len3;
 last_peak_idx   = 0;
 all_peaks       = [];
 all_peaks_hil   = [];
+all_peaks_x     = [];
 all_first_peaks = [];
 all_sec_peaks   = [];
 i               = 1;
@@ -339,6 +340,8 @@ while ~no_more_peak
   win_idx           = win_offset + (1:scan_indexes(end) - scan_indexes(1) + 1 + energy_window_len);
   [~, max_idx]      = max(abs(hil(win_idx)) .^ 2);
   all_peaks_hil     = [all_peaks_hil; win_offset + max_idx];
+  [~, max_idx]      = max(abs(x(win_idx)) .^ 2);
+  all_peaks_x       = [all_peaks_x; win_offset + max_idx];
 %plot(10*log10(abs(hil(win_idx)) .^ 2));pause;
 
   % store the new detected peak
@@ -518,7 +521,7 @@ function processing(x, Fs)
 
 % calculate peak detection and positional sensing
 [hil, hil_filt]                                          = filter_input_signal(x(:, 1), Fs);
-[all_peaks, all_peaks_hil, all_first_peaks, scan_region] = calc_peak_detection(hil, hil_filt, Fs);
+[all_peaks, all_peaks_hil, all_peaks_x, all_first_peaks, scan_region] = calc_peak_detection(x(:, 1), hil, hil_filt, Fs);
 is_rim_shot                                              = detect_rim_shot(x, hil_filt, all_first_peaks, Fs);
 pos_sense_metric                                         = calc_pos_sense_metric(hil, hil_filt, Fs, all_first_peaks);
 
@@ -528,13 +531,17 @@ figure
 plot(10 * log10([abs(x(:, 1)) .^ 2, abs(hil) .^ 2, hil_filt, scan_region])); grid on; hold on;
 %plot(10 * log10([abs(hil) .^ 2, hil_filt, scan_region])); grid on; hold on;
 %%plot(10 * log10([abs(hil) .^ 2, abs(x(:, 1)) .^ 2, hil_filt, scan_region])); grid on; hold on;
-plot(all_first_peaks, 10 * log10(hil_filt(all_first_peaks)), 'y*');
-plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'r*');
-plot(all_peaks_hil, 10 * log10(abs(hil(all_peaks_hil)) .^ 2), 'g*');
-plot(all_first_peaks, pos_sense_metric + 40, 'k*');
+%plot(all_first_peaks, 10 * log10(hil_filt(all_first_peaks)), 'y*');
+plot(all_peaks, 10 * log10(hil_filt(all_peaks)) - 1.2, 'r*');
+plot(all_peaks_hil, 10 * log10(abs(hil(all_peaks_hil)) .^ 2) + 3, 'g*');
+plot(all_peaks_x, 10 * log10(abs(x(all_peaks_x)) .^ 2) + 8, 'b*');
+%plot(all_first_peaks, pos_sense_metric + 40, 'k*');
 title('Green marker: level; Black marker: position');
 xlabel('samples'); ylabel('dB');
 ylim([-10, 90]);
+
+%figure;plot(x(:,1))
+%figure;plot(x(106000 + (4840:4940),1))
 
 % TEST
 % velocity/positional sensing mapping and play MIDI notes
