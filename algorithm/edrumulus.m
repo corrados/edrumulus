@@ -185,6 +185,7 @@ global Fs;
 global a_re a_im;
 global hil_filt_len;
 global hil_hist;
+global hil_hist_velocity hil_hist_velocity_len;
 global b_rim_high a_rim_high;
 global rim_high_prev_x;
 global rim_x_high;
@@ -276,6 +277,8 @@ hil_low_re              = 0;
 hil_low_im              = 0;
 pos_energy_window_len   = round(2e-3 * Fs); % positional sensing energy estimation time window length (e.g. 2 ms)
 pos_sense_cnt           = 0;
+hil_hist_velocity_len   = scan_time + energy_window_len;
+hil_hist_velocity       = zeros(hil_hist_velocity_len, 1);
 hil_hist_re             = zeros(pos_energy_window_len, 1);
 hil_hist_im             = zeros(pos_energy_window_len, 1);
 hil_low_hist_re         = zeros(pos_energy_window_len, 1);
@@ -347,6 +350,7 @@ global Fs;
 global a_re a_im;
 global hil_filt_len;
 global hil_hist;
+global hil_hist_velocity hil_hist_velocity_len;
 global b_rim_high a_rim_high;
 global rim_high_prev_x;
 global rim_x_high;
@@ -415,6 +419,10 @@ hil_hist  = update_fifo(x(1), hil_filt_len, hil_hist);
 hil_re    = sum(hil_hist .* a_re);
 hil_im    = sum(hil_hist .* a_im);
 hil_debug = complex(hil_re, hil_im); % just for debugging
+
+% hilbert filtered signal storage for velocity estimation
+hil_magsq         = hil_re * hil_re + hil_im * hil_im;
+hil_hist_velocity = update_fifo(hil_magsq, hil_hist_velocity_len, hil_hist_velocity);
 
 % moving average filter
 mov_av_hist_re = update_fifo(hil_re, energy_window_len, mov_av_hist_re);
@@ -489,6 +497,9 @@ if ((hil_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
 
     % end condition of scan time
     if scan_time_cnt <= 0
+
+      % get the maximum velocity in the scan time using the hilbert filtered signal
+      peak_velocity = max(hil_hist_velocity);
 
       % scan time expired
       first_peak_val      = 0;

@@ -209,11 +209,12 @@ hil_filt = abs(filter(ones(energy_window_len, 1) / sqrt(energy_window_len), 1, h
 end
 
 
-function [all_peaks, all_first_peaks, scan_region] = calc_peak_detection(hil, hil_filt, Fs)
+function [all_peaks, all_peaks_hil, all_first_peaks, scan_region] = calc_peak_detection(hil, hil_filt, Fs)
 global pad;
 
 scan_region = nan(size(hil_filt));
 
+energy_window_len      = round(pad.energy_win_len_ms * 1e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
 first_peak_diff_thresh = 10 ^ (20 / 10); % 20 dB difference allowed
 mask_time              = round(pad.mask_time_ms * 1e-3 * Fs); % mask time (e.g. 10 ms)
 scan_time              = round(pad.scan_time_ms * 1e-3 * Fs); % scan time from first detected peak
@@ -238,6 +239,7 @@ decay_len    = decay_len1 + decay_len2 + decay_len3;
 
 last_peak_idx   = 0;
 all_peaks       = [];
+all_peaks_hil   = [];
 all_first_peaks = [];
 all_sec_peaks   = [];
 i               = 1;
@@ -327,14 +329,17 @@ while ~no_more_peak
 
   end
 
-% % TEST
-% energy_window_len = round(pad.energy_win_len_ms * 1e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
-% win_offset        = scan_indexes(1) - energy_window_len - 1;
-% win_idx           = win_offset + (1:scan_indexes(end) - scan_indexes(1) + 1 + energy_window_len);
-% [~, max_idx]      = max(abs(hil(win_idx)) .^ 2);
-% peak_idx          = win_offset + max_idx;
-% %plot(10*log10(abs(hil(win_idx)) .^ 2))
-% %pause;
+  % It has shown that using the moving average filtered signal for velocity
+  % estimation, the detected velocity drops significantly if a mesh pad is hit
+  % close to the edge. This is because the main lope is much smaller at the edge
+  % and therefore the collected energy is much smaller. To solve this issue, we
+  % have to use the unfiltered signal. Detect the maximum in the scan time
+  % window considering also the filter delay of the moving average filter.
+  win_offset        = scan_indexes(1) - energy_window_len - 1;
+  win_idx           = win_offset + (1:scan_indexes(end) - scan_indexes(1) + 1 + energy_window_len);
+  [~, max_idx]      = max(abs(hil(win_idx)) .^ 2);
+  all_peaks_hil     = [all_peaks_hil; win_offset + max_idx];
+%plot(10*log10(abs(hil(win_idx)) .^ 2));pause;
 
   % store the new detected peak
   all_peaks     = [all_peaks; peak_idx];
@@ -512,20 +517,20 @@ end
 function processing(x, Fs)
 
 % calculate peak detection and positional sensing
-[hil, hil_filt]                           = filter_input_signal(x(:, 1), Fs);
-[all_peaks, all_first_peaks, scan_region] = calc_peak_detection(hil, hil_filt, Fs);
-is_rim_shot                               = detect_rim_shot(x, hil_filt, all_first_peaks, Fs);
-pos_sense_metric                          = calc_pos_sense_metric(hil, hil_filt, Fs, all_first_peaks);
+[hil, hil_filt]                                          = filter_input_signal(x(:, 1), Fs);
+[all_peaks, all_peaks_hil, all_first_peaks, scan_region] = calc_peak_detection(hil, hil_filt, Fs);
+is_rim_shot                                              = detect_rim_shot(x, hil_filt, all_first_peaks, Fs);
+pos_sense_metric                                         = calc_pos_sense_metric(hil, hil_filt, Fs, all_first_peaks);
 
 
 % plot results
 figure
-plot(10 * log10([abs(x(:, 1)) .^ 2, hil_filt, scan_region])); grid on; hold on;
+plot(10 * log10([abs(x(:, 1)) .^ 2, abs(hil) .^ 2, hil_filt, scan_region])); grid on; hold on;
 %plot(10 * log10([abs(hil) .^ 2, hil_filt, scan_region])); grid on; hold on;
 %%plot(10 * log10([abs(hil) .^ 2, abs(x(:, 1)) .^ 2, hil_filt, scan_region])); grid on; hold on;
 plot(all_first_peaks, 10 * log10(hil_filt(all_first_peaks)), 'y*');
-plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'g*');
-%plot(all_peaks, 10 * log10(abs(hil(all_peaks)) .^ 2), 'g*');
+plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'r*');
+plot(all_peaks_hil, 10 * log10(abs(hil(all_peaks_hil)) .^ 2), 'g*');
 plot(all_first_peaks, pos_sense_metric + 40, 'k*');
 title('Green marker: level; Black marker: position');
 xlabel('samples'); ylabel('dB');

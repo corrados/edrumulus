@@ -465,6 +465,7 @@ void Edrumulus::Pad::initialize()
   const float decay_grad1  = pad_settings.decay_grad_fact1 / Fs;                // decay gradient factor 1
   const float decay_grad2  = pad_settings.decay_grad_fact2 / Fs;                // decay gradient factor 2
   const float decay_grad3  = pad_settings.decay_grad_fact3 / Fs;                // decay gradient factor 3
+  hil_hist_velocity_len    = scan_time + energy_window_len;
   main_peak_dist           = round ( pad_settings.main_peak_dist_ms     * 1e-3f * Fs );
   decay_est_delay2nd       = round ( pad_settings.decay_est_delay2nd_ms * 1e-3f * Fs );
   decay_est_len            = round ( pad_settings.decay_est_len_ms      * 1e-3f * Fs );
@@ -529,6 +530,7 @@ void Edrumulus::Pad::initialize()
   allocate_initialize ( &mov_av_hist_im,          energy_window_len );     // imaginary part memory for moving average filter history
   allocate_initialize ( &decay,                   decay_len );             // memory for decay function
   allocate_initialize ( &hist_main_peak_pow_left, main_peak_dist );        // memory for left main peak power
+  allocate_initialize ( &hil_hist_velocity,       hil_hist_velocity_len ); // memory for Hilbert filtered signal for maximum velocity estimation
   allocate_initialize ( &hil_hist_re,             pos_energy_window_len ); // real part of memory for moving average of Hilbert filtered signal
   allocate_initialize ( &hil_hist_im,             pos_energy_window_len ); // imaginary part of memory for moving average of Hilbert filtered signal
   allocate_initialize ( &hil_low_hist_re,         pos_energy_window_len ); // real part of memory for moving average of low-pass filtered Hilbert signal
@@ -618,6 +620,10 @@ debug = 0.0f; // TEST
     hil_im += hil_hist[i] * a_im[i];
   }
 
+  // hilbert filtered signal storage for velocity estimation
+  const float hil_magsq = hil_re * hil_re + hil_im * hil_im;
+  update_fifo ( hil_magsq, hil_hist_velocity_len, hil_hist_velocity );
+
   // moving average filter
   update_fifo ( hil_re, energy_window_len, mov_av_hist_re );
   update_fifo ( hil_im, energy_window_len, mov_av_hist_im );
@@ -699,8 +705,15 @@ debug = 0.0f; // TEST
       // end condition of scan time
       if ( scan_time_cnt <= 0 )
       {
+        // get the maximum velocity in the scan time using the hilbert filtered signal
+        float peak_velocity = 0;
+        for ( int i = 0; i < hil_hist_velocity_len; i++ )
+        {
+          peak_velocity = max ( peak_velocity, hil_hist_velocity[i] );
+        }
+
         // calculate the MIDI velocity value with clipping to allowed MIDI value range
-        stored_midi_velocity = velocity_factor * pow ( max_hil_filt_val, velocity_exponent ) + velocity_offset;
+        stored_midi_velocity = velocity_factor * pow ( peak_velocity, velocity_exponent ) + velocity_offset;
         stored_midi_velocity = max ( 1, min ( 127, stored_midi_velocity ) );
 
         // scan time expired

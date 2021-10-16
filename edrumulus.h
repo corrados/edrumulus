@@ -224,6 +224,7 @@ protected:
       float* hist_main_peak_pow_left = nullptr;
       float* hil_hist_re             = nullptr;
       float* hil_hist_im             = nullptr;
+      float* hil_hist_velocity       = nullptr;
       float* hil_low_hist_re         = nullptr;
       float* hil_low_hist_im         = nullptr;
       float* rim_x_high_hist         = nullptr;
@@ -232,6 +233,7 @@ protected:
       int          Fs;
       int          number_inputs;
       int          energy_window_len;
+      int          hil_hist_velocity_len;
       float        mov_av_norm_fact;
       int          scan_time;
       int          scan_time_cnt;
