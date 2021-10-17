@@ -202,6 +202,7 @@ protected:
         float      pos_iir_alpha;
         bool       pos_invert;
         float      rim_shot_window_len_ms;
+        int        rim_shot_velocity_thresh;
       };
 
       void initialize();
