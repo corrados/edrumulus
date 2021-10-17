@@ -360,7 +360,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       break;
 
     case TP80:
-      pad_settings.velocity_sensitivity  = 10;
+      pad_settings.velocity_sensitivity  = 12;
       pad_settings.pos_threshold         = 22;
       pad_settings.pos_sensitivity       = 23;
       pad_settings.scan_time_ms          = 2.75f;
