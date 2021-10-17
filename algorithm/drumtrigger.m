@@ -526,8 +526,6 @@ pos_sense_metric                                         = calc_pos_sense_metric
 % plot results
 figure
 plot(10 * log10([abs(x(:, 1)) .^ 2, abs(hil) .^ 2, hil_filt, scan_region])); grid on; hold on;
-%plot(10 * log10([abs(hil) .^ 2, hil_filt, scan_region])); grid on; hold on;
-%%plot(10 * log10([abs(hil) .^ 2, abs(x(:, 1)) .^ 2, hil_filt, scan_region])); grid on; hold on;
 plot(all_first_peaks, 10 * log10(hil_filt(all_first_peaks)), 'y*');
 plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'r*');
 plot(all_peaks_hil, 10 * log10(abs(hil(all_peaks_hil)) .^ 2), 'g*');
