@@ -298,7 +298,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.mask_time_ms           = 6;  // 0..31 (ms)
   pad_settings.pos_threshold          = 9;  // 0..31
   pad_settings.pos_sensitivity        = 14; // 0..31
-  pad_settings.rim_shot_treshold      = 11; // 0..31
+  pad_settings.rim_shot_treshold      = 12; // 0..31
   pad_settings.cancellation           = 0;  // 0..31
   pad_settings.curve_type             = LINEAR;
   pad_settings.pos_sense_is_used      = false; // must be explicitely enabled if it shall be used
@@ -329,7 +329,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
 
     case PD80R:
       pad_settings.velocity_sensitivity  = 6;
-      pad_settings.rim_shot_treshold     = 8;
+      pad_settings.rim_shot_treshold     = 10;
       pad_settings.pos_threshold         = 13;
       pad_settings.pos_sensitivity       = 20;
       pad_settings.scan_time_ms          = 3.0f;
@@ -472,7 +472,7 @@ void Edrumulus::Pad::initialize()
   pos_energy_window_len    = round ( pad_settings.pos_energy_win_len_ms * 1e-3f * Fs );         // positional sensing energy estimation time window length (e.g. 2 ms)
   alpha                    = pad_settings.pos_iir_alpha / Fs;                                   // IIR low pass filter coefficient
   rim_shot_window_len      = round ( pad_settings.rim_shot_window_len_ms * 1e-3f * Fs );        // window length (e.g. 5 ms)
-  rim_shot_treshold_dB     = static_cast<float> ( pad_settings.rim_shot_treshold ) / 2 - 13;    // gives us a rim shot threshold range of -13..2.5 dB
+  rim_shot_treshold_dB     = static_cast<float> ( pad_settings.rim_shot_treshold ) / 2 - 28;    // gives us a rim shot threshold range of -28..-12.5 dB
   rim_switch_treshold      = -ADC_MAX_NOISE_AMPL + 9 * ( pad_settings.rim_shot_treshold - 31 ); // rim switch linear threshold
   rim_switch_on_cnt_thresh = round ( 10.0f * 1e-3f * Fs );                                      // number of on samples until we detect a choke
   cancellation_factor      = static_cast<float> ( pad_settings.cancellation ) / 31.0f;          // cancellation factor: range of 0.0..1.0
@@ -907,7 +907,7 @@ debug = 0.0f; // TEST
         // a peak was found, we now have to start the delay process to fill up the
         // required buffer length for our metric
         rim_shot_cnt     = rim_shot_window_len / 2 - 1;
-        hil_filt_max_pow = hil_filt;
+        hil_filt_max_pow = first_peak_val;
       }
 
       if ( rim_shot_cnt > 0 )

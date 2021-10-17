@@ -642,7 +642,7 @@ if length(x) > 1 % rim piezo signal is in second dimension
     % a peak was found, we now have to start the delay process to fill up the
     % required buffer length for our metric
     rim_shot_cnt     = rim_shot_window_len / 2 - 1;
-    hil_filt_max_pow = hil_filt;
+    hil_filt_max_pow = first_peak_val;
 
   end
 

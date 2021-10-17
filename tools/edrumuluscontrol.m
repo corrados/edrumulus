@@ -65,14 +65,6 @@ set(GUI.midi_in_dev_list,  'string', midi_in_names);
 GUI.midi_out_dev = [];
 GUI.midi_in_dev  = [];
 
-% if Edrumulus devices for input and output were found, select them
-if ~isempty(edrumulus_in_index) && ~isempty(edrumulus_out_index)
-  set(GUI.midi_out_dev_list, 'value', edrumulus_out_index);
-  set(GUI.midi_in_dev_list,  'value', edrumulus_in_index);
-  GUI.midi_out_dev = mididevice("output", midi_devices.output{edrumulus_out_index}.Name);
-  GUI.midi_in_dev  = mididevice("input",  midi_devices.input{edrumulus_in_index}.Name);
-end
-
 % default settings button
 GUI.set_but = uicontrol(figure_handle, ...
   'style',    'pushbutton', ... 
@@ -304,6 +296,17 @@ GUI.slider9 = uicontrol(GUI.set_panel, ...
   'callback',   @slider_callback);
 
 reset_sliders;
+
+% if Edrumulus devices for input and output were found, select them
+if ~isempty(edrumulus_in_index) && ~isempty(edrumulus_out_index)
+  set(GUI.midi_out_dev_list, 'value', edrumulus_out_index);
+  set(GUI.midi_in_dev_list,  'value', edrumulus_in_index);
+  GUI.midi_out_dev = mididevice("output", midi_devices.output{edrumulus_out_index}.Name);
+  GUI.midi_in_dev  = mididevice("input",  midi_devices.input{edrumulus_in_index}.Name);
+
+  % let Edrumulus know which pad is currently selected (to retrieve parameters)
+  midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 108, 0)); % pad 0
+end
 
 % parse MIDI input to receive pad parameters and apply them to the GUI controls
 while ishandle(figure_handle)
