@@ -72,6 +72,11 @@ pad.decay_grad_fact3      = 200;
 pad.pos_low_pass_cutoff   = 150; % Hz
 pad.pos_invert            = false;
 
+% TEST
+pad.pos_energy_win_len_ms = 2; % legacy parameter
+pad.pos_iir_alpha         = 200; % legacy parameter
+
+
 switch padtype
   case 'pd120'
     % note: the PRESET settings are from the PD120 pad
@@ -82,6 +87,9 @@ switch padtype
     pad.decay_grad_fact2      = 300;
     pad.decay_len_ms3         = 300;
     pad.decay_grad_fact3      = 100;
+
+% TEST
+pad.pos_energy_win_len_ms = 0.5; % legacy parameter
 
   case 'pd8'
     pad.scan_time_ms          = 1.3;
@@ -458,6 +466,56 @@ end
 end
 
 
+
+function pos_sense_metric = calc_pos_sense_metric_legacy(hil, hil_filt, Fs, all_peaks)
+global pad;
+
+pos_energy_window_len = round(pad.pos_energy_win_len_ms * 1e-3 * Fs); % positional sensing energy estimation time window length (e.g. 2 ms)
+
+% low pass filter of the Hilbert signal
+% lp_ir_len = 80; % low-pass filter length
+% lp_cutoff = 0.02; % normalized cut-off of low-pass filter
+% a         = fir1(lp_ir_len, lp_cutoff);
+% hil_low   = filter(a, 1, hil);
+% hil_low   = hil_low(lp_ir_len / 2:end);
+% use a simple one-pole IIR filter for less CPU processing and shorter delay
+alpha   = pad.pos_iir_alpha / Fs;
+hil_low = filter(alpha, [1, alpha - 1], hil);
+
+% figure; plot(20 * log10(abs([hil(1:length(hil_low)), hil_low]))); hold on;
+
+peak_energy     = [];
+peak_energy_low = [];
+win_idx_all     = []; % only for debugging
+
+for i = 1:length(all_peaks)
+
+  % The peak detection was performed on the moving averaged filtered signal but
+  % for positional sensing we need to use the original Hilbert transformed signal
+  % since we have to calculate a separate low-pass filter. Since the detected
+  % peak position in the moving averaged filtered signal might be in an attenuated
+  % region of the original Hilbert transformed signal, we average the powers of
+  % the filtered and un-filtered signals around the detected peak position.
+  win_idx            = (all_peaks(i):all_peaks(i) + pos_energy_window_len - 1) - pos_energy_window_len / 2;
+  win_idx            = win_idx((win_idx <= length(hil_low)) & (win_idx > 0));
+  peak_energy(i)     = sum(abs(hil(win_idx)) .^ 2);
+  peak_energy_low(i) = sum(abs(hil_low(win_idx)) .^ 2);
+
+  win_idx_all = [win_idx_all; win_idx]; % only for debugging
+
+end
+
+if pad.pos_invert
+  % add offset to get to similar range as non-inverted metric
+  pos_sense_metric = 10 * log10(peak_energy_low) - 10 * log10(peak_energy) + 40;
+else
+  pos_sense_metric = 10 * log10(peak_energy) - 10 * log10(peak_energy_low);
+end
+
+end
+
+
+
 function is_rim_shot = detect_rim_shot(x, hil_filt, all_first_peaks, Fs)
 
 is_rim_shot          = false(size(all_first_peaks));
@@ -500,6 +558,8 @@ function processing(x, Fs)
 [all_peaks, all_peaks_hil, all_first_peaks, scan_region] = calc_peak_detection(hil, hil_filt, Fs);
 is_rim_shot                                              = detect_rim_shot(x, hil_filt, all_first_peaks, Fs);
 pos_sense_metric                                         = calc_pos_sense_metric(x(:, 1), hil, hil_filt, Fs, all_first_peaks, all_peaks_hil);
+pos_sense_metric_legacy                                  = calc_pos_sense_metric_legacy(hil, hil_filt, Fs, all_first_peaks);
+
 
 % plot results
 figure
@@ -508,6 +568,7 @@ plot(all_first_peaks, 10 * log10(hil_filt(all_first_peaks)), 'y*');
 plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'r*');
 plot(all_peaks_hil, 10 * log10(abs(hil(all_peaks_hil)) .^ 2), 'g*');
 plot(all_first_peaks, pos_sense_metric + 40, 'k*');
+plot(all_first_peaks, pos_sense_metric_legacy + 25, 'b*');
 title('Green marker: level; Black marker: position');
 xlabel('samples'); ylabel('dB');
 ylim([-10, 90]);
