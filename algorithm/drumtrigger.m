@@ -359,8 +359,14 @@ plot(all_sec_peaks, 10 * log10(hil_filt(all_sec_peaks)), 'y*');
 end
 
 
-function pos_sense_metric = calc_pos_sense_metric(hil, hil_filt, Fs, all_peaks, all_peaks_hil)
+function pos_sense_metric = calc_pos_sense_metric(x, hil, hil_filt, Fs, all_first_peaks, all_peaks_hil)
 global pad;
+
+energy_window_len = round(pad.energy_win_len_ms * 1e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
+energy_window_len
+offset_x   = -energy_window_len / 2;% - 3; % 3 from Hilbert filter, needed for signal x
+offset_low = 2; % TEST
+ref_sig    = abs(hil) .^ 2;%abs(x) .^ 2; % TEST
 
 % low pass filter of the Hilbert signal
 % moving average cut off frequency approximation according to:
@@ -380,28 +386,48 @@ hil_low = abs(filter(b, 1, hil)) .^ 2; % moving average
 
 peak_energy     = [];
 peak_energy_low = [];
-all_peaks_low   = all_peaks;
+all_peaks_low   = all_first_peaks;
+all_peaks_x     = all_first_peaks;
 
-for i = 1:length(all_peaks)
+win_low_all = nan(length(hil_low), 1);
+win_x_all   = nan(length(hil_low), 1);
+
+for i = 1:length(all_first_peaks)
 
   % find first peak of low-pass filtered signal searching for the maximum in the
   % range of the low-pass moving average window length
-win_len = 2 * low_pass_moving_average_len; % TEST
-  test_win_offset  = win_len / 2 - round(win_len / 2);
-  test_win_idx     = (all_peaks(i):all_peaks(i) + win_len - 1) + test_win_offset;
+win_len = energy_window_len; % TEST
+  test_win_offset  = -win_len / 2 + offset_low;
+  test_win_idx     = (all_first_peaks(i):all_first_peaks(i) + win_len - 1) + test_win_offset;
+win_low_all(test_win_idx) = hil_low(test_win_idx);
   [~, test_max]    = max(hil_low(test_win_idx));
-  all_peaks_low(i) = all_peaks(i) + test_win_offset + test_max - 1;
+  all_peaks_low(i) = all_first_peaks(i) + test_win_offset + test_max - 1;
+
+% TEST
+% TODO the maximum detection does not work somehow...
+% TODO we need to use the very first main peak
+test_win_offset = -win_len / 2 + offset_x;
+test_win_idx    = (all_first_peaks(i):all_first_peaks(i) + win_len - 1) + test_win_offset;
+win_x_all(test_win_idx) = ref_sig(test_win_idx);
+[~, test_max]   = max(ref_sig(test_win_idx));
+all_peaks_x(i)  = all_first_peaks(i) + test_win_offset + test_max - 1;
 
   % use the Hilbert filtered signal as the reference power for the positional
   % sensing metric where the first peak position is used
-  peak_energy(i)     = abs(hil(all_peaks_hil(i))) .^ 2;
+  peak_energy(i)     = ref_sig(all_peaks_x(i));
   peak_energy_low(i) = hil_low(all_peaks_low(i));
 
 end
 
-figure; plot(10 * log10([abs(hil(1:length(hil_low))) .^ 2, hil_low])); hold on;
-        plot(all_peaks_hil, 10 * log10(abs(hil(all_peaks_hil)) .^ 2), 'k*');
-        plot(all_peaks_low, 10 * log10(abs(hil_low(all_peaks_low))), 'g*');
+figure; plot(10 * log10([ref_sig(1:length(hil_low)), hil_low])); hold on;
+        plot(10 * log10(win_x_all), 'k.');
+        plot(10 * log10(win_low_all), 'g.');
+        plot(all_peaks_x, 10 * log10(ref_sig(all_peaks_x)), 'k*');
+        plot(all_peaks_low, 10 * log10(hil_low(all_peaks_low)), 'g*');
+
+%figure; plot(10 * log10([abs(ref_sig(1:length(hil_low))) .^ 2, hil_low])); hold on;
+%        plot(all_first_peaks + offset_x, 10 * log10(abs(ref_sig(all_first_peaks + offset_x)) .^ 2), 'k*');
+%        plot(all_first_peaks + offset_low, 10 * log10(abs(hil_low(all_first_peaks + offset_low))), 'g*');
 
 if pad.pos_invert
   % add offset to get to similar range as non-inverted metric
@@ -413,20 +439,20 @@ end
 
 % TODO only show peaks
 %x_peaks = [];
-%for i = 1:length(all_peaks)
-%  x_peaks = [x_peaks, all_peaks(i) - 20:all_peaks(i) + 60];
+%for i = 1:length(all_first_peaks)
+%  x_peaks = [x_peaks, all_first_peaks(i) - 20:all_first_peaks(i) + 60];
 %end
 %x_peaks_inv = find(x_peaks);
 %figure
 %plot(10 * log10([abs(hil(x_peaks)) .^ 2, abs(hil_low(x_peaks)) .^ 2])); grid on; hold on;
-%%plot(21:80:length(all_peaks) * 80, 20 * log10(abs(hil(all_peaks))), 'y*');
+%%plot(21:80:length(all_first_peaks) * 80, 20 * log10(abs(hil(all_first_peaks))), 'y*');
 
 %figure; plot(20 * log10(abs(hil))); hold on;
 %for i = 1:size(win_idx_all, 1)
 %  plot(win_idx_all(i, :), 20 * log10(abs(hil(win_idx_all(i, :)))), 'k.-');
 %  plot(win_idx_all(i, :), 20 * log10(abs(hil_low(win_idx_all(i, :)))), 'b.-');
-%  plot(all_peaks, 10 * log10(peak_energy), 'k');
-%  plot(all_peaks, 10 * log10(peak_energy_low), 'b');
+%  plot(all_first_peaks, 10 * log10(peak_energy), 'k');
+%  plot(all_first_peaks, 10 * log10(peak_energy_low), 'b');
 %end
 
 end
@@ -473,7 +499,7 @@ function processing(x, Fs)
 [hil, hil_filt]                                          = filter_input_signal(x(:, 1), Fs);
 [all_peaks, all_peaks_hil, all_first_peaks, scan_region] = calc_peak_detection(hil, hil_filt, Fs);
 is_rim_shot                                              = detect_rim_shot(x, hil_filt, all_first_peaks, Fs);
-pos_sense_metric                                         = calc_pos_sense_metric(hil, hil_filt, Fs, all_first_peaks, all_peaks_hil);
+pos_sense_metric                                         = calc_pos_sense_metric(x(:, 1), hil, hil_filt, Fs, all_first_peaks, all_peaks_hil);
 
 % plot results
 figure
