@@ -73,7 +73,7 @@ pad.pos_low_pass_cutoff   = 150; % Hz
 pad.pos_invert            = false;
 
 % TEST
-pad.pos_energy_win_len_ms = 2; % legacy parameter
+pad.pos_energy_win_len_ms = 0.5;%2; % legacy parameter
 pad.pos_iir_alpha         = 200; % legacy parameter
 
 
@@ -87,10 +87,6 @@ switch padtype
     pad.decay_grad_fact2      = 300;
     pad.decay_len_ms3         = 300;
     pad.decay_grad_fact3      = 100;
-
-% TEST
-pad.pos_energy_win_len_ms = 0.5; % legacy parameter
-
   case 'pd8'
     pad.scan_time_ms          = 1.3;
     pad.main_peak_dist_ms     = 0.75;
@@ -360,9 +356,9 @@ while ~no_more_peak
 
 end
 
-figure; plot(10 * log10([hil_filt, hil_filt_decay, decay_all, decay_est_rng])); hold on;
-plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'k*');
-plot(all_sec_peaks, 10 * log10(hil_filt(all_sec_peaks)), 'y*');
+%figure; plot(10 * log10([hil_filt, hil_filt_decay, decay_all, decay_est_rng])); hold on;
+%plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'k*');
+%plot(all_sec_peaks, 10 * log10(hil_filt(all_sec_peaks)), 'y*');
 
 end
 
@@ -427,11 +423,11 @@ all_peaks_x(i)  = all_first_peaks(i) + test_win_offset + test_max - 1;
 
 end
 
-figure; plot(10 * log10([ref_sig(1:length(hil_low)), hil_low])); hold on;
-        plot(10 * log10(win_x_all), 'k.');
-        plot(10 * log10(win_low_all), 'g.');
-        plot(all_peaks_x, 10 * log10(ref_sig(all_peaks_x)), 'k*');
-        plot(all_peaks_low, 10 * log10(hil_low(all_peaks_low)), 'g*');
+%figure; plot(10 * log10([ref_sig(1:length(hil_low)), hil_low])); hold on;
+%        plot(10 * log10(win_x_all), 'k.');
+%        plot(10 * log10(win_low_all), 'g.');
+%        plot(all_peaks_x, 10 * log10(ref_sig(all_peaks_x)), 'k*');
+%        plot(all_peaks_low, 10 * log10(hil_low(all_peaks_low)), 'g*');
 
 %figure; plot(10 * log10([abs(ref_sig(1:length(hil_low))) .^ 2, hil_low])); hold on;
 %        plot(all_first_peaks + offset_x, 10 * log10(abs(ref_sig(all_first_peaks + offset_x)) .^ 2), 'k*');
@@ -467,7 +463,7 @@ end
 
 
 
-function pos_sense_metric = calc_pos_sense_metric_legacy(hil, hil_filt, Fs, all_peaks)
+function pos_sense_metric = calc_pos_sense_metric_legacy(x, hil, hil_filt, Fs, all_peaks)
 global pad;
 
 pos_energy_window_len = round(pad.pos_energy_win_len_ms * 1e-3 * Fs); % positional sensing energy estimation time window length (e.g. 2 ms)
@@ -482,11 +478,10 @@ pos_energy_window_len = round(pad.pos_energy_win_len_ms * 1e-3 * Fs); % position
 alpha   = pad.pos_iir_alpha / Fs;
 hil_low = filter(alpha, [1, alpha - 1], hil);
 
-% figure; plot(20 * log10(abs([hil(1:length(hil_low)), hil_low]))); hold on;
-
 peak_energy     = [];
 peak_energy_low = [];
 win_idx_all     = []; % only for debugging
+win_idx_x_all   = []; % only for debugging
 
 for i = 1:length(all_peaks)
 
@@ -501,9 +496,22 @@ for i = 1:length(all_peaks)
   peak_energy(i)     = sum(abs(hil(win_idx)) .^ 2);
   peak_energy_low(i) = sum(abs(hil_low(win_idx)) .^ 2);
 
-  win_idx_all = [win_idx_all; win_idx]; % only for debugging
+win_idx_x          = win_idx - 9; % TEST
+%peak_energy(i)     = sum(abs(x(win_idx_x)) .^ 2);
+
+
+  win_idx_all   = [win_idx_all; win_idx]; % only for debugging
+  win_idx_x_all = [win_idx_x_all; win_idx_x]; % only for debugging
 
 end
+
+%figure; plot(10 * log10([abs(x(1:length(hil_low))) .^ 2, abs(hil_low) .^ 2])); hold on;
+%        plot(win_idx_x_all, 10 * log10(abs(x(win_idx_x_all)) .^ 2), 'k*');
+
+
+figure; plot(20 * log10(abs([hil(1:length(hil_low)), hil_low]))); hold on;
+        plot(win_idx_all, 10 * log10(abs(hil_low(win_idx_all)) .^ 2), 'k*');
+
 
 if pad.pos_invert
   % add offset to get to similar range as non-inverted metric
@@ -558,7 +566,7 @@ function processing(x, Fs)
 [all_peaks, all_peaks_hil, all_first_peaks, scan_region] = calc_peak_detection(hil, hil_filt, Fs);
 is_rim_shot                                              = detect_rim_shot(x, hil_filt, all_first_peaks, Fs);
 pos_sense_metric                                         = calc_pos_sense_metric(x(:, 1), hil, hil_filt, Fs, all_first_peaks, all_peaks_hil);
-pos_sense_metric_legacy                                  = calc_pos_sense_metric_legacy(hil, hil_filt, Fs, all_first_peaks);
+pos_sense_metric_legacy                                  = calc_pos_sense_metric_legacy(x(:, 1), hil, hil_filt, Fs, all_first_peaks);
 
 
 % plot results
