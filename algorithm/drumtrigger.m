@@ -34,13 +34,13 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd120_pos_sense.wav");%x = x(2900:10000, :);%x = x(55400:58000, :);%
 %x = audioread("signals/pd120_pos_sense2.wav");
 %x = audioread("signals/pd120_single_hits.wav");
-%x = audioread("signals/pd120_roll.wav");%x = x(292410:294749, :);%x = x(311500:317600, :);
+x = audioread("signals/pd120_roll.wav");%x = x(292410:294749, :);%x = x(311500:317600, :);
 %x = audioread("signals/pd120_middle_velocity.wav");
 %x = audioread("signals/pd120_hot_spot.wav");
 %x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
-x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);
+%x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);
 %x = audioread("signals/pd6.wav");
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
@@ -251,42 +251,44 @@ decay_est_rng   = nan(size(hil_filt)); % only for debugging
 while ~no_more_peak
 
   % find values above threshold, masking regions which are already done
-  above_thresh = (hil_filt_decay > 10 ^ (pad.threshold_db / 10)) & [zeros(last_peak_idx, 1); ones(length(hil_filt_decay) - last_peak_idx, 1)];
-  peak_start   = find(diff(above_thresh) > 0);
+  above_thresh       = (hil_filt_decay > 10 ^ (pad.threshold_db / 10)) & [zeros(last_peak_idx, 1); ones(length(hil_filt_decay) - last_peak_idx, 1)];
+  above_thresh_start = find(diff(above_thresh) > 0);
 
   % exit condition
-  if isempty(peak_start)
+  if isempty(above_thresh_start)
     no_more_peak = true;
     continue;
   end
 
+  above_thresh_start = above_thresh_start(1);
+
   % climb to the maximum of the first peak
-  peak_idx = peak_start(1);
-  max_idx  = find(hil_filt(1 + peak_idx:end) - hil_filt(peak_idx:end - 1) < 0);
+  first_peak_idx = above_thresh_start;
+  max_idx  = find(hil_filt(1 + first_peak_idx:end) - hil_filt(first_peak_idx:end - 1) < 0);
 
   if ~isempty(max_idx)
-    peak_idx = peak_idx + max_idx(1) - 1;
+    first_peak_idx = first_peak_idx + max_idx(1) - 1;
   end
 
   % find all peaks after the initial peak
-  peak_idx_after_initial = find((hil_filt(2 + peak_idx:end) < hil_filt(1 + peak_idx:end - 1)) & ...
-    (hil_filt(1 + peak_idx:end - 1) > hil_filt(peak_idx:end - 2)));
+  peak_idx_after_initial = find((hil_filt(2 + first_peak_idx:end) < hil_filt(1 + first_peak_idx:end - 1)) & ...
+    (hil_filt(1 + first_peak_idx:end - 1) > hil_filt(first_peak_idx:end - 2)));
 
-  scan_peaks_idx = peak_idx + peak_idx_after_initial(peak_idx_after_initial <= scan_time);
+  scan_peaks_idx = first_peak_idx + peak_idx_after_initial(peak_idx_after_initial <= scan_time);
 
   % if a peak in the scan time is much higher than the initial peak, use that one
-  much_higher_peaks = find(hil_filt(peak_idx) * first_peak_diff_thresh < hil_filt(scan_peaks_idx));
+  much_higher_peaks = find(hil_filt(first_peak_idx) * first_peak_diff_thresh < hil_filt(scan_peaks_idx));
 
   if ~isempty(much_higher_peaks)
-    peak_idx = scan_peaks_idx(much_higher_peaks(1));
+    first_peak_idx = scan_peaks_idx(much_higher_peaks(1));
   end
 
-  all_first_peaks = [all_first_peaks; peak_idx];
+  all_first_peaks = [all_first_peaks; first_peak_idx];
 
   % search in a pre-defined scan time for the highest peak
-  scan_indexes              = peak_idx:min(1 + peak_idx + scan_time - 1, length(hil_filt));
+  scan_indexes              = above_thresh_start:min(1 + above_thresh_start + scan_time - 1, length(hil_filt));
   [~, max_idx]              = max(hil_filt(scan_indexes));
-  peak_idx                  = peak_idx + max_idx - 1;
+  peak_idx                  = above_thresh_start + max_idx - 1;
   scan_region(scan_indexes) = hil_filt(peak_idx); % mark scan time region
 
   % calculate power left/right of detected peak for second main peak position detection
