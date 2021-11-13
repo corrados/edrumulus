@@ -201,7 +201,7 @@ hil_filt          = abs(filter(ones(energy_window_len, 1) / sqrt(energy_window_l
 end
 
 
-function [all_peaks, all_peaks_hil, all_first_peaks, scan_region] = calc_peak_detection(hil, hil_filt, Fs)
+function [all_peaks, all_peaks_hil, all_first_peaks, all_hil_first_peaks, scan_region] = calc_peak_detection(hil, hil_filt, Fs)
 global pad;
 
 scan_region = nan(size(hil_filt));
@@ -229,16 +229,18 @@ decay_curve3 = 10 .^ (-(0:decay_len3 - 1) / 10 * decay_grad3);
 decay_curve  = [decay_curve1(1:end - 1), decay_curve1(end) * decay_curve2(1:end - 1), decay_curve1(end) * decay_curve2(end) * decay_curve3];
 decay_len    = decay_len1 + decay_len2 + decay_len3;
 
-last_peak_idx   = 0;
-all_peaks       = [];
-all_peaks_hil   = [];
-all_first_peaks = [];
-all_sec_peaks   = [];
-i               = 1;
-no_more_peak    = false;
-hil_filt_decay  = hil_filt;
-decay_all       = nan(size(hil_filt)); % only for debugging
-decay_est_rng   = nan(size(hil_filt)); % only for debugging
+last_peak_idx       = 0;
+all_peaks           = [];
+all_peaks_hil       = [];
+all_first_peaks     = [];
+all_hil_first_peaks = [];
+all_sec_peaks       = [];
+i                   = 1;
+no_more_peak        = false;
+hil_filt_decay      = hil_filt;
+hil_pow             = abs(hil) .^ 2;
+decay_all           = nan(size(hil_filt)); % only for debugging
+decay_est_rng       = nan(size(hil_filt)); % only for debugging
 
 while ~no_more_peak
 
@@ -253,27 +255,45 @@ while ~no_more_peak
   end
 
   % climb to the maximum of the first peak
-  peak_idx = peak_start(1);
-  max_idx  = find(hil_filt(1 + peak_idx:end) - hil_filt(peak_idx:end - 1) < 0);
+  peak_idx     = peak_start(1);
+
+% TODO consider offset to start caused by filter delay, also consider below: scan_time + offset!
+hil_peak_idx = peak_start(1);
+
+  
+  max_idx     = find(hil_filt(1 + peak_idx:end) - hil_filt(peak_idx:end - 1) < 0);
+  hil_max_idx = find(hil_pow(1 + hil_peak_idx:end) - hil_pow(hil_peak_idx:end - 1) < 0);
 
   if ~isempty(max_idx)
     peak_idx = peak_idx + max_idx(1) - 1;
+  end
+  if ~isempty(hil_max_idx)
+    hil_peak_idx = hil_peak_idx + hil_max_idx(1) - 1;
   end
 
   % find all peaks after the initial peak
   peak_idx_after_initial = find((hil_filt(2 + peak_idx:end) < hil_filt(1 + peak_idx:end - 1)) & ...
     (hil_filt(1 + peak_idx:end - 1) > hil_filt(peak_idx:end - 2)));
 
-  scan_peaks_idx = peak_idx + peak_idx_after_initial(peak_idx_after_initial <= scan_time);
+  hil_peak_idx_after_initial = find((hil_pow(2 + hil_peak_idx:end) < hil_pow(1 + hil_peak_idx:end - 1)) & ...
+    (hil_pow(1 + hil_peak_idx:end - 1) > hil_pow(hil_peak_idx:end - 2)));
+
+  scan_peaks_idx     = peak_idx + peak_idx_after_initial(peak_idx_after_initial <= scan_time);
+  hil_scan_peaks_idx = hil_peak_idx + hil_peak_idx_after_initial(hil_peak_idx_after_initial <= scan_time);
 
   % if a peak in the scan time is much higher than the initial peak, use that one
-  much_higher_peaks = find(hil_filt(peak_idx) * first_peak_diff_thresh < hil_filt(scan_peaks_idx));
+  much_higher_peaks     = find(hil_filt(peak_idx) * first_peak_diff_thresh < hil_filt(scan_peaks_idx));
+  hil_much_higher_peaks = find(hil_pow(hil_peak_idx) * first_peak_diff_thresh < hil_pow(hil_scan_peaks_idx));
 
   if ~isempty(much_higher_peaks)
     peak_idx = scan_peaks_idx(much_higher_peaks(1));
   end
+  if ~isempty(hil_much_higher_peaks)
+    hil_peak_idx = hil_scan_peaks_idx(hil_much_higher_peaks(1));
+  end
 
-  all_first_peaks = [all_first_peaks; peak_idx];
+  all_first_peaks     = [all_first_peaks; peak_idx];
+  all_hil_first_peaks = [all_hil_first_peaks; hil_peak_idx];
 
   % search in a pre-defined scan time for the highest peak
   scan_indexes              = peak_idx:min(1 + peak_idx + scan_time - 1, length(hil_filt));
@@ -363,7 +383,7 @@ end
 end
 
 
-function pos_sense_metric = calc_pos_sense_metric(x, hil, hil_filt, Fs, all_first_peaks, all_peaks_hil)
+function pos_sense_metric = calc_pos_sense_metric(x, hil, hil_filt, Fs, all_first_peaks, all_hil_first_peaks, all_peaks_hil)
 global pad;
 
 energy_window_len = round(pad.energy_win_len_ms * 1e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
@@ -563,9 +583,9 @@ function processing(x, Fs)
 
 % calculate peak detection and positional sensing
 [hil, hil_filt]                                          = filter_input_signal(x(:, 1), Fs);
-[all_peaks, all_peaks_hil, all_first_peaks, scan_region] = calc_peak_detection(hil, hil_filt, Fs);
+[all_peaks, all_peaks_hil, all_first_peaks, all_hil_first_peaks, scan_region] = calc_peak_detection(hil, hil_filt, Fs);
 is_rim_shot                                              = detect_rim_shot(x, hil_filt, all_first_peaks, Fs);
-pos_sense_metric                                         = calc_pos_sense_metric(x(:, 1), hil, hil_filt, Fs, all_first_peaks, all_peaks_hil);
+pos_sense_metric                                         = calc_pos_sense_metric(x(:, 1), hil, hil_filt, Fs, all_first_peaks, all_hil_first_peaks, all_peaks_hil);
 pos_sense_metric_legacy                                  = calc_pos_sense_metric_legacy(x(:, 1), hil, hil_filt, Fs, all_first_peaks);
 
 
