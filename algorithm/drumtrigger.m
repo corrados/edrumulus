@@ -61,10 +61,10 @@ pad.mask_time_ms          = 6;
 pad.energy_win_len_ms     = 2;
 pad.scan_time_ms          = 2.5;
 pad.main_peak_dist_ms     = 2.25;
-pad.decay_est_delay2nd_ms = 2.5;
+pad.decay_est_delay2nd_ms = 3.5;
 pad.decay_est_len_ms      = 3;
 pad.decay_est_fact_db     = 15;
-pad.decay_fact_db         = 1;
+pad.decay_fact_db         = 6;
 pad.decay_len_ms1         = 0; % not used
 pad.decay_len_ms2         = 250;
 pad.decay_len_ms3         = 0; % not used
@@ -80,7 +80,7 @@ switch padtype
     % note: the PRESET settings are from the PD120 pad
   case 'pd80r'
     pad.scan_time_ms          = 3;
-    pad.main_peak_dist_ms     = 2.4;
+    pad.main_peak_dist_ms     = 1.5;%2.4;
     pad.decay_len_ms2         = 75;
     pad.decay_grad_fact2      = 300;
     pad.decay_len_ms3         = 300;
@@ -244,6 +244,7 @@ all_first_peaks = [];
 all_sec_peaks   = [];
 i               = 1;
 no_more_peak    = false;
+hil_sq          = abs(hil) .^ 2;
 hil_filt_decay  = hil_filt;
 decay_all       = nan(size(hil_filt)); % only for debugging
 decay_est_rng   = nan(size(hil_filt)); % only for debugging
@@ -262,20 +263,20 @@ while ~no_more_peak
 
   % climb to the maximum of the first peak
   peak_idx = peak_start(1);
-  max_idx  = find(hil_filt(1 + peak_idx:end) - hil_filt(peak_idx:end - 1) < 0);
+  max_idx  = find(hil_sq(1 + peak_idx:end) - hil_sq(peak_idx:end - 1) < 0);
 
   if ~isempty(max_idx)
     peak_idx = peak_idx + max_idx(1) - 1;
   end
 
   % find all peaks after the initial peak
-  peak_idx_after_initial = find((hil_filt(2 + peak_idx:end) < hil_filt(1 + peak_idx:end - 1)) & ...
-    (hil_filt(1 + peak_idx:end - 1) > hil_filt(peak_idx:end - 2)));
+  peak_idx_after_initial = find((hil_sq(2 + peak_idx:end) < hil_sq(1 + peak_idx:end - 1)) & ...
+    (hil_sq(1 + peak_idx:end - 1) > hil_sq(peak_idx:end - 2)));
 
   scan_peaks_idx = peak_idx + peak_idx_after_initial(peak_idx_after_initial <= scan_time);
 
   % if a peak in the scan time is much higher than the initial peak, use that one
-  much_higher_peaks = find(hil_filt(peak_idx) * first_peak_diff_thresh < hil_filt(scan_peaks_idx));
+  much_higher_peaks = find(hil_sq(peak_idx) * first_peak_diff_thresh < hil_sq(scan_peaks_idx));
 
   if ~isempty(much_higher_peaks)
     peak_idx = scan_peaks_idx(much_higher_peaks(1));
@@ -284,22 +285,22 @@ while ~no_more_peak
   all_first_peaks = [all_first_peaks; peak_idx];
 
   % search in a pre-defined scan time for the highest peak
-  scan_indexes              = peak_idx:min(1 + peak_idx + scan_time - 1, length(hil_filt));
-  [~, max_idx]              = max(hil_filt(scan_indexes));
+  scan_indexes              = peak_idx:min(1 + peak_idx + scan_time - 1, length(hil_sq));
+  [~, max_idx]              = max(hil_sq(scan_indexes));
   peak_idx                  = peak_idx + max_idx - 1;
-  scan_region(scan_indexes) = hil_filt(peak_idx); % mark scan time region
+  scan_region(scan_indexes) = hil_sq(peak_idx); % mark scan time region
 
   % calculate power left/right of detected peak for second main peak position detection
   first_peak_idx = peak_idx; % initialization
 
   if peak_idx - main_peak_dist < 1
     all_sec_peaks = [all_sec_peaks; 1];
-  elseif peak_idx + main_peak_dist > length(hil_filt)
-    all_sec_peaks = [all_sec_peaks; length(hil_filt)];
+  elseif peak_idx + main_peak_dist > length(hil_sq)
+    all_sec_peaks = [all_sec_peaks; length(hil_sq)];
   else
 
-    power_hypo_left  = hil_filt(peak_idx - main_peak_dist);
-    power_hypo_right = hil_filt(peak_idx + main_peak_dist);
+    power_hypo_left  = hil_sq(peak_idx - main_peak_dist);
+    power_hypo_right = hil_sq(peak_idx + main_peak_dist);
 
     if power_hypo_left > power_hypo_right
 
@@ -313,7 +314,7 @@ while ~no_more_peak
   end
 
   % estimate current decay power
-  decay_factor = hil_filt(peak_idx);
+  decay_factor = hil_sq(peak_idx);
 
   if first_peak_idx + main_peak_dist + decay_est_delay2nd + decay_est_len - 1 <= length(hil_filt)
 
@@ -364,9 +365,9 @@ while ~no_more_peak
 
 end
 
-figure; plot(10 * log10([hil_filt, hil_filt_decay, decay_all, decay_est_rng])); hold on;
-plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'k*');
-plot(all_sec_peaks, 10 * log10(hil_filt(all_sec_peaks)), 'y*');
+figure; plot(10 * log10([hil_sq, hil_filt, hil_filt_decay, decay_all, decay_est_rng])); hold on;
+plot(all_peaks, 10 * log10(hil_sq(all_peaks)), 'k*');
+plot(all_sec_peaks, 10 * log10(hil_sq(all_sec_peaks)), 'y*');
 
 % TODO What is this zoom area for?
 %axis([2.835616531556589e+05   2.856098468655325e+05  -1.994749771562022e+01   4.962270061651073e+01]);
