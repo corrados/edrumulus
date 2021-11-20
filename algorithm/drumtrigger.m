@@ -27,7 +27,7 @@ Fs      = 8000; % Hz
 padtype = 'pd120'; % default
 
 % TEST process recordings
-%x = audioread("signals/teensy4_0_noise_test.wav");x=x-mean(x);padtype = 'pd80r';
+x = audioread("signals/teensy4_0_noise_test.wav");x=x-mean(x);padtype = 'pd80r';
 %x = audioread("signals/teensy4_0_pd80r.wav");x=x-mean(x);padtype = 'pd80r';x = x(1:390000, :);%
 %x = audioread("signals/esp32_pd120.wav");
 %x = audioread("signals/esp32_pd8.wav");padtype = 'pd8';
@@ -40,7 +40,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
-x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);
+%x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);
 %x = audioread("signals/pd6.wav");
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
@@ -205,6 +205,20 @@ hil = myhilbert(x);
 
 % moving average filter
 hil_filt = abs(filter(ones(energy_window_len, 1) / sqrt(energy_window_len), 1, hil)) .^ 2; % moving average
+
+
+
+
+% TEST
+[b, a] = ellip (2, 0.9, 40, [.01 .05]);
+close all;freqz(b, a, 512, 8000);figure
+y = filter(b, a, x) * 2.5;
+subplot(2,1,1), plot(20 * log10(abs([x y]))); axis([-1809.80310, 142862.72867, -130.11254, 96.47492]);
+subplot(2, 1, 2), plot(10 * log10([abs(x) .^ 2 hil_filt / 6])); axis([-1809.80310, 142862.72867, -130.11254, 96.47492]);
+f(3)
+
+%plot(10 * log10([abs(x) .^ 2 hil_filt / 6]));
+%f(3)
 
 end
 
