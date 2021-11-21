@@ -1,5 +1,29 @@
 # Edrumulus Project Log
 
+
+
+## 11/21/2021 Time to say goodbye, Hilbert...
+
+  The filtered signal currently used for peak detection is a Hilbert filtered signal with
+  a moving average low-pass filter applied to it. The initial motivation for this design
+  was to reduce the noise and improve the main lobe energy measurement. It turned out that
+  it is advantageous to just use the peak value instead of an average.<br/>
+  Therefore, we should use an optimized filter which improves the peak detection. To
+  reduce the noise floor, a low-pass filter should still be applied. At the same time, some
+  high pass filter should be applied to filter out very low frequency noise caused by, e.g,
+  the movement of the pad stand after a hit on the pad. Thus, a Butterworth band-pass filter
+  with a pass-band of 40 to 400 Hz was chosen. The shorter the pass-band, the longer the
+  resulting impluse response. Since the impulse response should be as short as possible, it
+  is a trade-off between noise reduction and latency.<br/>
+  In the following picture, the current Hilbert filter based design is compared to the new
+  Butterworth filter design where the peak detection threshold is tweaked for each scenario
+  so that no false peaks are detected in the entire signal:
+  <br/>![Butterworth filter versus Hilbert filter](algorithm/images/butterworthvshilbert.png)<br/>
+  It can be seen that the new Butterworth filter design detects more peaks compared to
+  the existing Hilber filter design.<br/>
+  Note that the investigation and implementation is currently on a Git side branch. It will
+  take some time to finish this work until it is ready to be merge on the Git main branch.
+
 ## 10/09/2021 Fixing issues and improving positional sensing
   I am currently heavily changing the Edrumulus code on a Git side branch. I found an issue
   with the moving average filter of the Hilbert filter result and also want to improve the
