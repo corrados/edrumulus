@@ -56,7 +56,7 @@ x = audioread("signals/teensy4_0_noise_test.wav");x=x-mean(x);padtype = 'pd80r';
 
 
 % pad PRESET settings first, then overwrite these with pad specific properties
-pad.threshold_db          = 35;
+pad.threshold_db          = 35;%21;%23;%35;
 pad.mask_time_ms          = 6;
 pad.energy_win_len_ms     = 2;
 pad.scan_time_ms          = 2.5;
@@ -207,18 +207,17 @@ hil = myhilbert(x);
 hil_filt = abs(filter(ones(energy_window_len, 1) / sqrt(energy_window_len), 1, hil)) .^ 2; % moving average
 
 
-
-
 % TEST
-[b, a] = ellip (2, 0.9, 40, [.01 .05]);
-close all;freqz(b, a, 512, 8000);figure
+%[b, a] = ellip(2, 2, 15, [40 400] / 4e3); % optimized for speed, i.e., quick rise time
+%[b, a] = ellip(2, 0.9, 40, [40 400] / 4e3); % optimized for detecting peaks in noise
+[b, a] = butter(2, [40 400] / 4e3);
 y = filter(b, a, x) * 2.5;
-subplot(2,1,1), plot(20 * log10(abs([x y]))); axis([-1809.80310, 142862.72867, -130.11254, 96.47492]);
-subplot(2, 1, 2), plot(10 * log10([abs(x) .^ 2 hil_filt / 6])); axis([-1809.80310, 142862.72867, -130.11254, 96.47492]);
-f(3)
+%close all;freqz(b, a, 512, 8000);f(3)
+%subplot(2,1,1), plot(20 * log10(abs([x y]))); axis([-1809.80310, 142862.72867, -130.11254, 96.47492]);
+%subplot(2, 1, 2), plot(10 * log10([abs(x) .^ 2 hil_filt / 6])); axis([-1809.80310, 142862.72867, -130.11254, 96.47492]);f(3)
 
-%plot(10 * log10([abs(x) .^ 2 hil_filt / 6]));
-%f(3)
+hil_filt = abs(y) .^ 2 * 10;
+
 
 end
 
@@ -379,6 +378,9 @@ while ~no_more_peak
 end
 
 figure; plot(10 * log10([hil_filt, hil_filt_decay, decay_all, decay_est_rng])); hold on;
+%title('Hilbert filter with moving average low-pass filter');
+%%title('Butterworth band-pass filter');
+%axis([76277.41548   102566.06753       -3.77447       32.24596]);
 plot(all_peaks, 10 * log10(hil_filt(all_peaks)), 'k*');
 plot(all_sec_peaks, 10 * log10(hil_filt(all_sec_peaks)), 'y*');
 
