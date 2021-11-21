@@ -12,8 +12,8 @@
   reduce the noise floor, a low-pass filter should still be applied. At the same time, some
   high pass filter should be applied to filter out very low frequency noise caused by, e.g,
   the movement of the pad stand after a hit on the pad. Thus, a Butterworth band-pass filter
-  with a pass-band of 40 to 400 Hz was chosen. The shorter the pass-band, the longer the
-  resulting impluse response. Since the impulse response should be as short as possible, it
+  with a pass-band of 40 to 400 Hz was chosen. The shorter the pass-band, the longer the filter
+  settle time will be. Since the settle time should be as short as possible, it
   is a trade-off between noise reduction and latency.<br/>
   In the following picture, the current Hilbert filter based design is compared to the new
   Butterworth filter design where the peak detection threshold is tweaked for each scenario
@@ -22,12 +22,12 @@
   It can be seen that the new Butterworth filter design detects more peaks compared to
   the existing Hilber filter design.<br/>
   Note that the investigation and implementation is currently on a Git side branch. It will
-  take some time to finish this work until it is ready to be merge on the Git main branch.
+  take some time to finish this work until it is ready to be merged on the Git main branch.
 
 ## 10/09/2021 Fixing issues and improving positional sensing
   I am currently heavily changing the Edrumulus code on a Git side branch. I found an issue
   with the moving average filter of the Hilbert filter result and also want to improve the
-  positional sensing. As soon as these changes are done, the code will be merge onto the
+  positional sensing. As soon as these changes are done, the code will be merged onto the
   main Git branch.
 
 ## 10/02/2021 PD-80R investigations
