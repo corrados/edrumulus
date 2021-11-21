@@ -206,7 +206,7 @@ global pad;
 scan_region = nan(size(x_filt));
 
 energy_window_len      = round(pad.energy_win_len_ms * 1e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
-first_peak_diff_thresh = 10 ^ (20 / 10); % 20 dB difference allowed
+first_peak_diff_thresh = 10 ^ (12 / 10); % 12 dB difference allowed
 mask_time              = round(pad.mask_time_ms * 1e-3 * Fs); % mask time (e.g. 10 ms)
 scan_time              = round(pad.scan_time_ms * 1e-3 * Fs); % scan time from first detected peak
 
@@ -232,7 +232,6 @@ last_peak_idx   = 0;
 all_peaks       = [];
 all_peaks_x     = [];
 all_first_peaks = [];
-all_sec_peaks   = [];
 i               = 1;
 no_more_peak    = false;
 x_filt_decay    = x_filt;
@@ -272,35 +271,13 @@ while ~no_more_peak
     peak_idx = scan_peaks_idx(much_higher_peaks(1));
   end
 
-  all_first_peaks = [all_first_peaks; peak_idx];
+  first_peak_idx  = peak_idx;
+  all_first_peaks = [all_first_peaks; first_peak_idx];
 
   % search in a pre-defined scan time for the highest peak
   scan_indexes              = peak_idx:min(1 + peak_idx + scan_time - 1, length(x_filt));
   [~, max_idx]              = max(x_filt(scan_indexes));
   peak_idx                  = peak_idx + max_idx - 1;
-
-  % calculate power left/right of detected peak for second main peak position detection
-  first_peak_idx = peak_idx; % initialization
-
-  if peak_idx - main_peak_dist < 1
-    all_sec_peaks = [all_sec_peaks; 1];
-  elseif peak_idx + main_peak_dist > length(x_filt)
-    all_sec_peaks = [all_sec_peaks; length(x_filt)];
-  else
-
-    power_hypo_left  = x_filt(peak_idx - main_peak_dist);
-    power_hypo_right = x_filt(peak_idx + main_peak_dist);
-
-    if power_hypo_left > power_hypo_right
-
-      all_sec_peaks  = [all_sec_peaks; peak_idx - main_peak_dist];
-      first_peak_idx = peak_idx - main_peak_dist;
-
-    else
-      all_sec_peaks = [all_sec_peaks; peak_idx + main_peak_dist];
-    end
-
-  end
 
   % estimate current decay power
   decay_factor = x_filt(peak_idx);
@@ -356,16 +333,13 @@ while ~no_more_peak
 end
 
 figure; plot(10 * log10([x_filt, x_filt_decay, decay_all, decay_est_rng])); hold on;
-%title('Hilbert filter with moving average low-pass filter');
-%%title('Butterworth band-pass filter');
-%axis([76277.41548   102566.06753       -3.77447       32.24596]);
 plot(all_peaks, 10 * log10(x_filt(all_peaks)), 'k*');
-plot(all_sec_peaks, 10 * log10(x_filt(all_sec_peaks)), 'y*');
+plot(all_first_peaks, 10 * log10(x_filt(all_first_peaks)), 'y*');
 
 end
 
 
-function pos_sense_metric = calc_pos_sense_metric(hil, x_filt, Fs, all_peaks)
+function pos_sense_metric = calc_pos_sense_metric(x, x_filt, Fs, all_peaks)
 global pad;
 
 pos_energy_window_len = round(pad.pos_energy_win_len_ms * 1e-3 * Fs); % positional sensing energy estimation time window length (e.g. 2 ms)
@@ -374,13 +348,13 @@ pos_energy_window_len = round(pad.pos_energy_win_len_ms * 1e-3 * Fs); % position
 % lp_ir_len = 80; % low-pass filter length
 % lp_cutoff = 0.02; % normalized cut-off of low-pass filter
 % a         = fir1(lp_ir_len, lp_cutoff);
-% hil_low   = filter(a, 1, hil);
+% hil_low   = filter(a, 1, x);
 % hil_low   = hil_low(lp_ir_len / 2:end);
 % use a simple one-pole IIR filter for less CPU processing and shorter delay
 alpha   = pad.pos_iir_alpha / Fs;
-hil_low = filter(alpha, [1, alpha - 1], hil);
+hil_low = filter(alpha, [1, alpha - 1], x);
 
-% figure; plot(20 * log10(abs([hil(1:length(hil_low)), hil_low]))); hold on;
+% figure; plot(20 * log10(abs([x(1:length(hil_low)), hil_low]))); hold on;
 
 peak_energy     = [];
 peak_energy_low = [];
@@ -396,7 +370,7 @@ for i = 1:length(all_peaks)
   % the filtered and un-filtered signals around the detected peak position.
   win_idx            = (all_peaks(i):all_peaks(i) + pos_energy_window_len - 1) - pos_energy_window_len / 2;
   win_idx            = win_idx((win_idx <= length(hil_low)) & (win_idx > 0));
-  peak_energy(i)     = sum(abs(hil(win_idx)) .^ 2);
+  peak_energy(i)     = sum(abs(x(win_idx)) .^ 2);
   peak_energy_low(i) = sum(abs(hil_low(win_idx)) .^ 2);
 
   win_idx_all = [win_idx_all; win_idx]; % only for debugging
@@ -417,20 +391,20 @@ end
 %end
 %x_peaks_inv = find(x_peaks);
 %figure
-%plot(10 * log10([abs(hil(x_peaks)) .^ 2, abs(hil_low(x_peaks)) .^ 2])); grid on; hold on;
-%%plot(21:80:length(all_peaks) * 80, 20 * log10(abs(hil(all_peaks))), 'y*');
+%plot(10 * log10([abs(x(x_peaks)) .^ 2, abs(hil_low(x_peaks)) .^ 2])); grid on; hold on;
+%%plot(21:80:length(all_peaks) * 80, 20 * log10(abs(x(all_peaks))), 'y*');
 
-%figure; plot(20 * log10(abs([hil, hil_low, x_filt]))); hold on;
-%plot(win_idx_all', 20 * log10(abs(hil(win_idx_all'))), 'k.-');
+%figure; plot(20 * log10(abs([x, hil_low, x_filt]))); hold on;
+%plot(win_idx_all', 20 * log10(abs(x(win_idx_all'))), 'k.-');
 %grid on; axis([2978.533   3072.863    -20.398    131.296]);
 %
-%figure; plot(20 * log10(abs([hil, hil_low, x_filt]))); hold on;
-%plot(win_idx_all', 20 * log10(abs(hil(win_idx_all'))), 'k.-');
+%figure; plot(20 * log10(abs([x, hil_low, x_filt]))); hold on;
+%plot(win_idx_all', 20 * log10(abs(x(win_idx_all'))), 'k.-');
 %grid on; axis([2.3806e+04   2.3900e+04  -1.4506e+01   1.1036e+02]);
 
-%figure; plot(20 * log10(abs(hil))); hold on;
+%figure; plot(20 * log10(abs(x))); hold on;
 %for i = 1:size(win_idx_all, 1)
-%  plot(win_idx_all(i, :), 20 * log10(abs(hil(win_idx_all(i, :)))), 'k.-');
+%  plot(win_idx_all(i, :), 20 * log10(abs(x(win_idx_all(i, :)))), 'k.-');
 %  plot(win_idx_all(i, :), 20 * log10(abs(hil_low(win_idx_all(i, :)))), 'b.-');
 %  plot(all_peaks, 10 * log10(peak_energy), 'k');
 %  plot(all_peaks, 10 * log10(peak_energy_low), 'b');
