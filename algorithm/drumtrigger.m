@@ -200,7 +200,7 @@ x_filt_delay      = 2 * x_filt_delay; % overestimate the delay, see above commen
 end
 
 
-function [all_peaks, all_peaks_x, all_first_peaks, scan_region] = calc_peak_detection(x, x_filt, x_filt_delay, Fs)
+function [all_peaks, all_first_peaks, scan_region] = calc_peak_detection(x, x_filt, x_filt_delay, Fs)
 global pad;
 
 scan_region = nan(size(x_filt));
@@ -230,10 +230,10 @@ decay_len    = decay_len1 + decay_len2 + decay_len3;
 
 last_peak_idx   = 0;
 all_peaks       = [];
-all_peaks_x     = [];
 all_first_peaks = [];
 i               = 1;
 no_more_peak    = false;
+x_sq            = abs(x) .^ 2;
 x_filt_decay    = x_filt;
 decay_all       = nan(size(x_filt)); % only for debugging
 decay_est_rng   = nan(size(x_filt)); % only for debugging
@@ -250,22 +250,30 @@ while ~no_more_peak
     continue;
   end
 
+  % It has shown that using the filtered signal for velocity
+  % estimation, the detected velocity drops significantly if a mesh pad is hit
+  % close to the edge. This is because the main lope is much smaller at the edge
+  % and therefore the collected energy is much smaller. To solve this issue, we
+  % have to use the unfiltered signal.
+
+% TODO we assume here that x_sq peak is AFTER x_filt_decay exceeds the threshold ignoring the filter delay
+
   % climb to the maximum of the first peak
   peak_idx = peak_start(1);
-  max_idx  = find(x_filt(1 + peak_idx:end) - x_filt(peak_idx:end - 1) < 0);
+  max_idx  = find(x_sq(1 + peak_idx:end) - x_sq(peak_idx:end - 1) < 0);
 
   if ~isempty(max_idx)
     peak_idx = peak_idx + max_idx(1) - 1;
   end
 
   % find all peaks after the initial peak
-  peak_idx_after_initial = find((x_filt(2 + peak_idx:end) < x_filt(1 + peak_idx:end - 1)) & ...
-    (x_filt(1 + peak_idx:end - 1) > x_filt(peak_idx:end - 2)));
+  peak_idx_after_initial = find((x_sq(2 + peak_idx:end) < x_sq(1 + peak_idx:end - 1)) & ...
+    (x_sq(1 + peak_idx:end - 1) > x_sq(peak_idx:end - 2)));
 
   scan_peaks_idx = peak_idx + peak_idx_after_initial(peak_idx_after_initial <= scan_time);
 
   % if a peak in the scan time is much higher than the initial peak, use that one
-  much_higher_peaks = find(x_filt(peak_idx) * first_peak_diff_thresh < x_filt(scan_peaks_idx));
+  much_higher_peaks = find(x_sq(peak_idx) * first_peak_diff_thresh < x_sq(scan_peaks_idx));
 
   if ~isempty(much_higher_peaks)
     peak_idx = scan_peaks_idx(much_higher_peaks(1));
@@ -275,12 +283,15 @@ while ~no_more_peak
   all_first_peaks = [all_first_peaks; first_peak_idx];
 
   % search in a pre-defined scan time for the highest peak
-  scan_indexes              = peak_idx:min(1 + peak_idx + scan_time - 1, length(x_filt));
-  [~, max_idx]              = max(x_filt(scan_indexes));
+  scan_indexes              = peak_idx:min(1 + peak_idx + scan_time - 1, length(x_sq));
+  [~, max_idx]              = max(x_sq(scan_indexes));
   peak_idx                  = peak_idx + max_idx - 1;
+  scan_region(scan_indexes) = x_sq(peak_idx); % mark scan time region
 
   % estimate current decay power
-  decay_factor = x_filt(peak_idx);
+
+% TODO use the maximum of x_filt in scantime+masktime region instead
+decay_factor = x_sq(peak_idx);
 
   if first_peak_idx + main_peak_dist + decay_est_delay2nd + decay_est_len - 1 <= length(x_filt)
 
@@ -295,19 +306,6 @@ while ~no_more_peak
     decay_est_rng(first_peak_idx + main_peak_dist + decay_est_delay2nd + (0:decay_est_len - 1)) = decay_power; % only for debugging
 
   end
-
-  % It has shown that using the filtered signal for velocity
-  % estimation, the detected velocity drops significantly if a mesh pad is hit
-  % close to the edge. This is because the main lope is much smaller at the edge
-  % and therefore the collected energy is much smaller. To solve this issue, we
-  % have to use the unfiltered signal. Detect the maximum in the scan time
-  % window considering also the filter delay of the signal filter.
-  win_offset           = scan_indexes(1) - x_filt_delay - 1;
-  win_idx              = win_offset + (1:scan_indexes(end) - scan_indexes(1) + 1 + x_filt_delay);
-  scan_region(win_idx) = x_filt(peak_idx); % mark scan time region
-  [~, max_idx]         = max(abs(x(win_idx)) .^ 2);
-  all_peaks_x          = [all_peaks_x; win_offset + max_idx];
-%plot(10*log10(abs(x(win_idx)) .^ 2));pause;
 
   % store the new detected peak
   all_peaks     = [all_peaks; peak_idx];
@@ -332,9 +330,9 @@ while ~no_more_peak
 
 end
 
-figure; plot(10 * log10([x_filt, x_filt_decay, decay_all, decay_est_rng])); hold on;
-plot(all_peaks, 10 * log10(x_filt(all_peaks)), 'k*');
-plot(all_first_peaks, 10 * log10(x_filt(all_first_peaks)), 'y*');
+figure; plot(10 * log10([x_sq, x_filt, x_filt_decay, decay_all, decay_est_rng])); hold on;
+plot(all_peaks, 10 * log10(x_sq(all_peaks)), 'k*');
+plot(all_first_peaks, 10 * log10(x_sq(all_first_peaks)), 'y*');
 
 end
 
@@ -452,10 +450,10 @@ end
 function processing(x, Fs)
 
 % calculate peak detection and positional sensing
-[x_filt, x_filt_delay]                                 = filter_input_signal(x(:, 1), Fs);
-[all_peaks, all_peaks_x, all_first_peaks, scan_region] = calc_peak_detection(x(:, 1), x_filt, x_filt_delay, Fs);
-is_rim_shot                                            = detect_rim_shot(x, all_peaks_x, Fs);
-pos_sense_metric                                       = calc_pos_sense_metric(x(:, 1), x_filt, Fs, all_first_peaks);
+[x_filt, x_filt_delay]                    = filter_input_signal(x(:, 1), Fs);
+[all_peaks, all_first_peaks, scan_region] = calc_peak_detection(x(:, 1), x_filt, x_filt_delay, Fs);
+is_rim_shot                               = detect_rim_shot(x, all_peaks, Fs);
+pos_sense_metric                          = calc_pos_sense_metric(x(:, 1), x_filt, Fs, all_first_peaks);
 
 
 % plot results
@@ -463,7 +461,7 @@ figure
 plot(10 * log10([abs(x(:, 1)) .^ 2, x_filt, scan_region])); grid on; hold on;
 plot(all_first_peaks, 10 * log10(x_filt(all_first_peaks)), 'y*');
 plot(all_peaks, 10 * log10(x_filt(all_peaks)), 'r*');
-plot(all_peaks_x, 10 * log10(abs(x(all_peaks_x, 1)) .^ 2), 'g*');
+plot(all_peaks, 10 * log10(abs(x(all_peaks, 1)) .^ 2), 'g*');
 plot(all_first_peaks, pos_sense_metric + 40, 'k*');
 title('Green marker: level; Black marker: position');
 xlabel('samples'); ylabel('dB');
