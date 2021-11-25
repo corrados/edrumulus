@@ -178,7 +178,7 @@ processing(x * 25000, Fs); % scale to the ESP32 input range
 end
 
 
-function [x_filt, x_filt_delay] = filter_input_signal(x, Fs)
+function [x, x_filt] = filter_input_signal(x, Fs)
 global pad;
 
 % different band-pass filter designs for testing
@@ -186,27 +186,31 @@ global pad;
 %[b, a] = ellip(2, 0.9, 40, [40 400] / 4e3); % optimized for detecting peaks in noise
 [b, a] = butter(2, [40 400] / 4e3); % seems to be a good trade-off
 
-x_filt = abs(filter(b, a, x)) .^ 2;
+x_filt = abs(filter(b, a, x(:, 1))) .^ 2;
 %close all;freqz(b, a, 512, 8000);f(3)
-%subplot(2,1,1), plot(20 * log10(abs([x y]))); axis([-1809.80310, 142862.72867, -130.11254, 96.47492]);
+%subplot(2,1,1), plot(20 * log10(abs([x(:, 1) y]))); axis([-1809.80310, 142862.72867, -130.11254, 96.47492]);
 
-% Estimate the filter delay which is used to define the scan time for the
-% unfiltered signal. Since it is more critical to have a scan time which is too
-% short, we double the estimated filter delay to make the scan time window large
-% enough to never miss an early peak.
+% estimate the filter delay which is used to define the scan time for the
+% unfiltered signal
 [~, x_filt_delay] = max(impz(b, a));
-x_filt_delay      = 2 * x_filt_delay; % overestimate the delay, see above comment
+x_filt_delay      = x_filt_delay;
+
+% TODO Latency optimization: To have a simple implementation, we delay the input
+%      signal by the latency of the band-pass filter so that the peaks are
+%      matched (which is important for, e.g., the threshold check for the
+%      filtered signal which is applied to the unfiltered signal as well.
+x = circshift(x, x_filt_delay); % note that we delay both channels of x
 
 end
 
 
-function [all_peaks, all_first_peaks, scan_region] = calc_peak_detection(x, x_filt, x_filt_delay, Fs)
+function [all_peaks, all_first_peaks, scan_region] = calc_peak_detection(x, x_filt, Fs)
 global pad;
 
 scan_region = nan(size(x_filt));
 
 energy_window_len      = round(pad.energy_win_len_ms * 1e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
-first_peak_diff_thresh = 10 ^ (12 / 10); % 12 dB difference allowed
+first_peak_diff_thresh = 10 ^ (8 / 10); % 8 dB difference allowed
 mask_time              = round(pad.mask_time_ms * 1e-3 * Fs); % mask time (e.g. 10 ms)
 scan_time              = round(pad.scan_time_ms * 1e-3 * Fs); % scan time from first detected peak
 
@@ -228,15 +232,16 @@ decay_curve3 = 10 .^ (-(0:decay_len3 - 1) / 10 * decay_grad3);
 decay_curve  = [decay_curve1(1:end - 1), decay_curve1(end) * decay_curve2(1:end - 1), decay_curve1(end) * decay_curve2(end) * decay_curve3];
 decay_len    = decay_len1 + decay_len2 + decay_len3;
 
-last_peak_idx   = 0;
-all_peaks       = [];
-all_first_peaks = [];
-i               = 1;
-no_more_peak    = false;
-x_sq            = abs(x) .^ 2;
-x_filt_decay    = x_filt;
-decay_all       = nan(size(x_filt)); % only for debugging
-decay_est_rng   = nan(size(x_filt)); % only for debugging
+last_peak_idx      = 0;
+all_peaks          = [];
+all_first_peaks    = [];
+i                  = 1;
+no_more_peak       = false;
+x_sq               = abs(x) .^ 2;
+x_filt_decay       = x_filt;
+all_scan_peaks_idx = [];                % only for debugging
+decay_all          = nan(size(x_filt)); % only for debugging
+decay_est_rng      = nan(size(x_filt)); % only for debugging
 
 while ~no_more_peak
 
@@ -256,8 +261,6 @@ while ~no_more_peak
   % and therefore the collected energy is much smaller. To solve this issue, we
   % have to use the unfiltered signal.
 
-% TODO we assume here that x_sq peak is AFTER x_filt_decay exceeds the threshold ignoring the filter delay
-
   % climb to the maximum of the first peak
   peak_idx = peak_start(1);
   max_idx  = find(x_sq(1 + peak_idx:end) - x_sq(peak_idx:end - 1) < 0);
@@ -270,13 +273,16 @@ while ~no_more_peak
   peak_idx_after_initial = find((x_sq(2 + peak_idx:end) < x_sq(1 + peak_idx:end - 1)) & ...
     (x_sq(1 + peak_idx:end - 1) > x_sq(peak_idx:end - 2)));
 
-  scan_peaks_idx = peak_idx + peak_idx_after_initial(peak_idx_after_initial <= scan_time);
+  scan_peaks_idx     = peak_idx + peak_idx_after_initial(peak_idx_after_initial <= scan_time);
+  all_scan_peaks_idx = [all_scan_peaks_idx; scan_peaks_idx]; % only for debugging
 
   % if a peak in the scan time is much higher than the initial peak, use that one
-  much_higher_peaks = find(x_sq(peak_idx) * first_peak_diff_thresh < x_sq(scan_peaks_idx));
+  for i = 1:length(scan_peaks_idx)
 
-  if ~isempty(much_higher_peaks)
-    peak_idx = scan_peaks_idx(much_higher_peaks(1));
+    if x_sq(peak_idx) * first_peak_diff_thresh < x_sq(scan_peaks_idx(i))
+      peak_idx = scan_peaks_idx(i);
+    end
+
   end
 
   first_peak_idx  = peak_idx;
@@ -331,6 +337,7 @@ decay_factor = x_sq(peak_idx);
 end
 
 figure; plot(10 * log10([x_sq, x_filt, x_filt_decay, decay_all, decay_est_rng])); hold on;
+plot(all_scan_peaks_idx, 10 * log10(x_sq(all_scan_peaks_idx)), '.');
 plot(all_peaks, 10 * log10(x_sq(all_peaks)), 'k*');
 plot(all_first_peaks, 10 * log10(x_sq(all_first_peaks)), 'y*');
 
@@ -450,8 +457,8 @@ end
 function processing(x, Fs)
 
 % calculate peak detection and positional sensing
-[x_filt, x_filt_delay]                    = filter_input_signal(x(:, 1), Fs);
-[all_peaks, all_first_peaks, scan_region] = calc_peak_detection(x(:, 1), x_filt, x_filt_delay, Fs);
+[x, x_filt]                               = filter_input_signal(x, Fs);
+[all_peaks, all_first_peaks, scan_region] = calc_peak_detection(x(:, 1), x_filt, Fs);
 is_rim_shot                               = detect_rim_shot(x, all_peaks, Fs);
 pos_sense_metric                          = calc_pos_sense_metric(x(:, 1), x_filt, Fs, all_first_peaks);
 
