@@ -85,7 +85,6 @@ switch padtype
     pad.decay_grad_fact2      = 300;
     pad.decay_len_ms3         = 300;
     pad.decay_grad_fact3      = 100;
-    pad.pos_energy_win_len_ms = 0.5;
 
   case 'pd8'
     pad.scan_time_ms          = 1.3;
@@ -344,7 +343,7 @@ plot(all_first_peaks, 10 * log10(x_sq(all_first_peaks)), 'y*');
 end
 
 
-function pos_sense_metric = calc_pos_sense_metric(x, x_filt, Fs, all_peaks)
+function pos_sense_metric = calc_pos_sense_metric(x, Fs, all_first_peaks)
 global pad;
 
 pos_energy_window_len = round(pad.pos_energy_win_len_ms * 1e-3 * Fs); % positional sensing energy estimation time window length (e.g. 2 ms)
@@ -353,19 +352,22 @@ pos_energy_window_len = round(pad.pos_energy_win_len_ms * 1e-3 * Fs); % position
 % lp_ir_len = 80; % low-pass filter length
 % lp_cutoff = 0.02; % normalized cut-off of low-pass filter
 % a         = fir1(lp_ir_len, lp_cutoff);
-% hil_low   = filter(a, 1, x);
-% hil_low   = hil_low(lp_ir_len / 2:end);
+% x_low     = filter(a, 1, x);
+% x_low     = x_low(lp_ir_len / 2:end);
 % use a simple one-pole IIR filter for less CPU processing and shorter delay
-alpha   = pad.pos_iir_alpha / Fs;
-hil_low = filter(alpha, [1, alpha - 1], x);
+alpha = pad.pos_iir_alpha / Fs;
+x_low = filter(alpha, [1, alpha - 1], x);
 
-% figure; plot(20 * log10(abs([x(1:length(hil_low)), hil_low]))); hold on;
+% TEST acausal shift of low-pass filtered signal for testing...
+x_low = circshift(x_low, -5);
+
+% figure; plot(20 * log10(abs([x(1:length(x_low)), x_low]))); hold on;
 
 peak_energy     = [];
 peak_energy_low = [];
 win_idx_all     = []; % only for debugging
 
-for i = 1:length(all_peaks)
+for i = 1:length(all_first_peaks)
 
   % The peak detection was performed on the moving averaged filtered signal but
   % for positional sensing we need to use the original Hilbert transformed signal
@@ -373,10 +375,10 @@ for i = 1:length(all_peaks)
   % peak position in the moving averaged filtered signal might be in an attenuated
   % region of the original Hilbert transformed signal, we average the powers of
   % the filtered and un-filtered signals around the detected peak position.
-  win_idx            = (all_peaks(i):all_peaks(i) + pos_energy_window_len - 1) - pos_energy_window_len / 2;
-  win_idx            = win_idx((win_idx <= length(hil_low)) & (win_idx > 0));
+  win_idx            = (all_first_peaks(i):all_first_peaks(i) + pos_energy_window_len - 1) - pos_energy_window_len / 2;
+  win_idx            = win_idx((win_idx <= length(x_low)) & (win_idx > 0));
   peak_energy(i)     = sum(abs(x(win_idx)) .^ 2);
-  peak_energy_low(i) = sum(abs(hil_low(win_idx)) .^ 2);
+  peak_energy_low(i) = sum(abs(x_low(win_idx)) .^ 2);
 
   win_idx_all = [win_idx_all; win_idx]; % only for debugging
 
@@ -389,31 +391,27 @@ else
   pos_sense_metric = 10 * log10(peak_energy) - 10 * log10(peak_energy_low);
 end
 
-% TODO only show peaks
-%x_peaks = [];
-%for i = 1:length(all_peaks)
-%  x_peaks = [x_peaks, all_peaks(i) - 20:all_peaks(i) + 60];
-%end
-%x_peaks_inv = find(x_peaks);
-%figure
-%plot(10 * log10([abs(x(x_peaks)) .^ 2, abs(hil_low(x_peaks)) .^ 2])); grid on; hold on;
-%%plot(21:80:length(all_peaks) * 80, 20 * log10(abs(x(all_peaks))), 'y*');
-
-%figure; plot(20 * log10(abs([x, hil_low, x_filt]))); hold on;
-%plot(win_idx_all', 20 * log10(abs(x(win_idx_all'))), 'k.-');
-%grid on; axis([2978.533   3072.863    -20.398    131.296]);
-%
-%figure; plot(20 * log10(abs([x, hil_low, x_filt]))); hold on;
-%plot(win_idx_all', 20 * log10(abs(x(win_idx_all'))), 'k.-');
-%grid on; axis([2.3806e+04   2.3900e+04  -1.4506e+01   1.1036e+02]);
+figure; plot(20 * log10(abs([x, x_low]))); hold on;
+plot(win_idx_all', 20 * log10(abs(x(win_idx_all'))), 'k.-');
+plot(win_idx_all', 20 * log10(abs(x_low(win_idx_all'))), 'k.-');
 
 %figure; plot(20 * log10(abs(x))); hold on;
 %for i = 1:size(win_idx_all, 1)
 %  plot(win_idx_all(i, :), 20 * log10(abs(x(win_idx_all(i, :)))), 'k.-');
-%  plot(win_idx_all(i, :), 20 * log10(abs(hil_low(win_idx_all(i, :)))), 'b.-');
-%  plot(all_peaks, 10 * log10(peak_energy), 'k');
-%  plot(all_peaks, 10 * log10(peak_energy_low), 'b');
+%  plot(win_idx_all(i, :), 20 * log10(abs(x_low(win_idx_all(i, :)))), 'b.-');
+%  plot(all_first_peaks, 10 * log10(peak_energy), 'k');
+%  plot(all_first_peaks, 10 * log10(peak_energy_low), 'b');
 %end
+
+% TODO only show peaks
+%x_peaks = [];
+%for i = 1:length(all_first_peaks)
+%  x_peaks = [x_peaks, all_first_peaks(i) - 20:all_first_peaks(i) + 60];
+%end
+%x_peaks_inv = find(x_peaks);
+%figure
+%plot(10 * log10([abs(x(x_peaks)) .^ 2, abs(x_low(x_peaks)) .^ 2])); grid on; hold on;
+%%plot(21:80:length(all_first_peaks) * 80, 20 * log10(abs(x(all_first_peaks))), 'y*');
 
 end
 
@@ -460,7 +458,7 @@ function processing(x, Fs)
 [x, x_filt]                               = filter_input_signal(x, Fs);
 [all_peaks, all_first_peaks, scan_region] = calc_peak_detection(x(:, 1), x_filt, Fs);
 is_rim_shot                               = detect_rim_shot(x, all_peaks, Fs);
-pos_sense_metric                          = calc_pos_sense_metric(x(:, 1), x_filt, Fs, all_first_peaks);
+pos_sense_metric                          = calc_pos_sense_metric(x(:, 1), Fs, all_first_peaks);
 
 
 % plot results
