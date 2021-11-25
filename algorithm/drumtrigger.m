@@ -34,7 +34,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd120_pos_sense.wav");%x = x(2900:10000, :);%x = x(55400:58000, :);%
 %x = audioread("signals/pd120_pos_sense2.wav");
 %x = audioread("signals/pd120_single_hits.wav");
-%x = audioread("signals/pd120_roll.wav");%x = x(292410:294749, :);%x = x(311500:317600, :);
+%x = audioread("signals/pd120_roll.wav");%x = x(1:20000, :);%%x = x(292410:294749, :);%x = x(311500:317600, :);
 %x = audioread("signals/pd120_middle_velocity.wav");
 %x = audioread("signals/pd120_hot_spot.wav");
 %x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
@@ -203,10 +203,11 @@ x = circshift(x, x_filt_delay); % note that we delay both channels of x
 end
 
 
-function [all_peaks, all_first_peaks, scan_region] = calc_peak_detection(x, x_filt, Fs)
+function [all_peaks, all_first_peaks, scan_region, mask_region, decay_all, decay_est_rng] = calc_peak_detection(x, x_filt, Fs)
 global pad;
 
 scan_region = nan(size(x_filt));
+mask_region = nan(size(x_filt));
 
 energy_window_len      = round(pad.energy_win_len_ms * 1e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
 first_peak_diff_thresh = 10 ^ (8 / 10); % 8 dB difference allowed
@@ -245,14 +246,16 @@ decay_est_rng      = nan(size(x_filt)); % only for debugging
 while ~no_more_peak
 
   % find values above threshold, masking regions which are already done
-  above_thresh = (x_filt_decay > 10 ^ (pad.threshold_db / 10)) & [zeros(last_peak_idx, 1); ones(length(x_filt_decay) - last_peak_idx, 1)];
-  peak_start   = find(diff(above_thresh) > 0);
+  above_thresh       = (x_filt_decay > 10 ^ (pad.threshold_db / 10)) & [zeros(last_peak_idx, 1); ones(length(x_filt_decay) - last_peak_idx, 1)];
+  above_thresh_start = find(diff(above_thresh) > 0) + 1;
 
   % exit condition
-  if isempty(peak_start)
+  if isempty(above_thresh_start)
     no_more_peak = true;
     continue;
   end
+
+  above_thresh_start = above_thresh_start(1);
 
   % It has shown that using the filtered signal for velocity
   % estimation, the detected velocity drops significantly if a mesh pad is hit
@@ -261,36 +264,35 @@ while ~no_more_peak
   % have to use the unfiltered signal.
 
   % climb to the maximum of the first peak
-  peak_idx = peak_start(1);
-  max_idx  = find(x_sq(1 + peak_idx:end) - x_sq(peak_idx:end - 1) < 0);
+  first_peak_idx = above_thresh_start;
+  max_idx  = find(x_sq(1 + first_peak_idx:end) - x_sq(first_peak_idx:end - 1) < 0);
 
   if ~isempty(max_idx)
-    peak_idx = peak_idx + max_idx(1) - 1;
+    first_peak_idx = first_peak_idx + max_idx(1) - 1;
   end
 
   % find all peaks after the initial peak
-  peak_idx_after_initial = find((x_sq(2 + peak_idx:end) < x_sq(1 + peak_idx:end - 1)) & ...
-    (x_sq(1 + peak_idx:end - 1) > x_sq(peak_idx:end - 2)));
+  peak_idx_after_initial = find((x_sq(2 + first_peak_idx:end) < x_sq(1 + first_peak_idx:end - 1)) & ...
+    (x_sq(1 + first_peak_idx:end - 1) > x_sq(first_peak_idx:end - 2)));
 
-  scan_peaks_idx     = peak_idx + peak_idx_after_initial(peak_idx_after_initial <= scan_time);
+  scan_peaks_idx     = first_peak_idx + peak_idx_after_initial(peak_idx_after_initial <= scan_time);
   all_scan_peaks_idx = [all_scan_peaks_idx; scan_peaks_idx]; % only for debugging
 
   % if a peak in the scan time is much higher than the initial peak, use that one
   for i = 1:length(scan_peaks_idx)
 
-    if x_sq(peak_idx) * first_peak_diff_thresh < x_sq(scan_peaks_idx(i))
-      peak_idx = scan_peaks_idx(i);
+    if x_sq(first_peak_idx) * first_peak_diff_thresh < x_sq(scan_peaks_idx(i))
+      first_peak_idx = scan_peaks_idx(i);
     end
 
   end
 
-  first_peak_idx  = peak_idx;
   all_first_peaks = [all_first_peaks; first_peak_idx];
 
   % search in a pre-defined scan time for the highest peak
-  scan_indexes              = peak_idx:min(1 + peak_idx + scan_time - 1, length(x_sq));
+  scan_indexes              = above_thresh_start:min(1 + above_thresh_start + scan_time - 1, length(x_sq));
   [~, max_idx]              = max(x_sq(scan_indexes));
-  peak_idx                  = peak_idx + max_idx - 1;
+  peak_idx                  = above_thresh_start + max_idx - 1;
   scan_region(scan_indexes) = x_sq(peak_idx); % mark scan time region
 
   % estimate current decay power
@@ -314,7 +316,8 @@ decay_factor = x_sq(peak_idx);
 
   % store the new detected peak
   all_peaks     = [all_peaks; peak_idx];
-  last_peak_idx = min(first_peak_idx + mask_time, length(x_filt));
+  last_peak_idx = min(above_thresh_start + scan_time + mask_time, length(x_filt));
+  mask_region(last_peak_idx + (-mask_time + 1:0)) = x_sq(peak_idx); % mark mask region
 
   % exponential decay assumption
   decay           = decay_factor * decay_curve;
@@ -335,10 +338,10 @@ decay_factor = x_sq(peak_idx);
 
 end
 
-figure; plot(10 * log10([x_sq, x_filt, x_filt_decay, decay_all, decay_est_rng])); hold on;
-plot(all_scan_peaks_idx, 10 * log10(x_sq(all_scan_peaks_idx)), '.');
-plot(all_peaks, 10 * log10(x_sq(all_peaks)), 'k*');
-plot(all_first_peaks, 10 * log10(x_sq(all_first_peaks)), 'y*');
+%figure; plot(10 * log10([x_sq, x_filt, x_filt_decay, decay_all, decay_est_rng])); hold on;
+%plot(all_scan_peaks_idx, 10 * log10(x_sq(all_scan_peaks_idx)), '.');
+%plot(all_peaks, 10 * log10(x_sq(all_peaks)), 'k*');
+%plot(all_first_peaks, 10 * log10(x_sq(all_first_peaks)), 'y*');
 
 end
 
@@ -391,9 +394,9 @@ else
   pos_sense_metric = 10 * log10(peak_energy) - 10 * log10(peak_energy_low);
 end
 
-figure; plot(20 * log10(abs([x, x_low]))); hold on;
-plot(win_idx_all', 20 * log10(abs(x(win_idx_all'))), 'k.-');
-plot(win_idx_all', 20 * log10(abs(x_low(win_idx_all'))), 'k.-');
+%figure; plot(20 * log10(abs([x, x_low]))); hold on;
+%plot(win_idx_all', 20 * log10(abs(x(win_idx_all'))), 'k.-');
+%plot(win_idx_all', 20 * log10(abs(x_low(win_idx_all'))), 'k.-');
 
 %figure; plot(20 * log10(abs(x))); hold on;
 %for i = 1:size(win_idx_all, 1)
@@ -453,21 +456,23 @@ end
 
 
 function processing(x, Fs)
+global pad;
 
 % calculate peak detection and positional sensing
-[x, x_filt]                               = filter_input_signal(x, Fs);
-[all_peaks, all_first_peaks, scan_region] = calc_peak_detection(x(:, 1), x_filt, Fs);
-is_rim_shot                               = detect_rim_shot(x, all_peaks, Fs);
-pos_sense_metric                          = calc_pos_sense_metric(x(:, 1), Fs, all_first_peaks);
+[x, x_filt] = filter_input_signal(x, Fs);
+[all_peaks, all_first_peaks, scan_region, mask_region, decay_all, decay_est_rng] = calc_peak_detection(x(:, 1), x_filt, Fs);
+is_rim_shot = detect_rim_shot(x, all_peaks, Fs);
+pos_sense_metric = calc_pos_sense_metric(x(:, 1), Fs, all_first_peaks);
 
 
 % plot results
 figure
-plot(10 * log10([abs(x(:, 1)) .^ 2, x_filt, scan_region])); grid on; hold on;
+plot(10 * log10([abs(x(:, 1)) .^ 2, x_filt, mask_region, scan_region, decay_all, decay_est_rng])); grid on; hold on;
 plot(all_first_peaks, 10 * log10(x_filt(all_first_peaks)), 'y*');
 plot(all_peaks, 10 * log10(x_filt(all_peaks)), 'r*');
 plot(all_peaks, 10 * log10(abs(x(all_peaks, 1)) .^ 2), 'g*');
 plot(all_first_peaks, pos_sense_metric + 40, 'k*');
+plot([1, length(x_filt)], [pad.threshold_db, pad.threshold_db], '--');
 title('Green marker: level; Black marker: position');
 xlabel('samples'); ylabel('dB');
 ylim([-10, 90]);
