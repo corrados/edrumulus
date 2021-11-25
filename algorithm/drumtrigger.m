@@ -18,7 +18,7 @@
 function drumtrigger
 global pad;
 
-% Drum trigger tests
+% Edrumulus algorithm development
 
 close all;
 pkg load signal
@@ -26,7 +26,7 @@ pkg load signal
 Fs      = 8000; % Hz
 padtype = 'pd120'; % default
 
-% TEST process recordings
+% select the recording to process:
 %x = audioread("signals/teensy4_0_noise_test.wav");x=x-mean(x);padtype = 'pd80r';
 %x = audioread("signals/teensy4_0_pd80r.wav");x=x-mean(x);padtype = 'pd80r';x = x(1:390000, :);%
 %x = audioread("signals/esp32_pd120.wav");
@@ -52,7 +52,6 @@ x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(5
 %x = audioread("signals/vh12.wav");padtype = 'vh12';%x = x(900000:end, :);%x = x(376000:420000, :);%x = x(1:140000, :);
 %org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
 %org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
-
 
 
 % pad PRESET settings first, then overwrite these with pad specific properties
@@ -147,16 +146,10 @@ switch padtype
     pad.decay_grad_fact3      = 30;
 end
 
-
 % % TEST call reference mode for C++ implementation
 % edrumulus(x);
-
 % % TEST use 4 kHz sampling rate
 % x = resample(x, 1, 2); Fs = Fs / 2;
-
-% % TEST simulate a DC offset -> TODO the algorithms needs a DC offset compensation
-% x = x + 0.01;
-
 % % TEST quantize to 12 bit resolution as available in ESP32 micro controller
 % iNumBits = 10;%12; % reserve 2 bits for overload headroom -> 10 bits
 % max_val  = max(abs(x));
@@ -328,11 +321,6 @@ decay_factor = x_sq(peak_idx);
   decay_all(decay_x) = decay; % only for debugging
 
 end
-
-%figure; plot(10 * log10([x_sq, x_filt, x_filt_decay, decay_all, decay_est_rng])); hold on;
-%plot(all_scan_peaks_idx, 10 * log10(x_sq(all_scan_peaks_idx)), '.');
-%plot(all_peaks, 10 * log10(x_sq(all_peaks)), 'k*');
-%plot(all_first_peaks, 10 * log10(x_sq(all_first_peaks)), 'y*');
 
 end
 
