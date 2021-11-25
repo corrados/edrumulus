@@ -88,8 +88,6 @@ switch padtype
     pad.decay_est_delay2nd_ms = 8;
     pad.mask_time_ms          = 7;
     pad.decay_fact_db         = 5;
-    pad.decay_len_ms1         = 10;
-    pad.decay_grad_fact1      = 30;
     pad.decay_len_ms2         = 30;
     pad.decay_grad_fact2      = 600;
     pad.decay_len_ms3         = 150;
@@ -97,10 +95,10 @@ switch padtype
   case 'tp80'
     pad.scan_time_ms          = 2.75;
     pad.decay_est_delay2nd_ms = 9;
-    pad.decay_len_ms1         = 10;
+    pad.decay_len_ms1         = 3;
     pad.decay_grad_fact1      = 30;
-    pad.decay_len_ms2         = 30;
-    pad.decay_grad_fact2      = 600;
+    pad.decay_len_ms2         = 60;
+    pad.decay_grad_fact2      = 400;
     pad.decay_len_ms3         = 700;
     pad.decay_grad_fact3      = 60;
     pad.pos_invert            = true;
@@ -305,7 +303,7 @@ decay_factor = x_sq(peak_idx);
 
   % exponential decay assumption
   decay           = decay_factor * decay_curve;
-  decay_x         = first_peak_idx + (0:decay_len - 1) + 2; % NOTE "+ 2" delay needed for sample-wise processing
+  decay_x         = above_thresh_start + scan_time + mask_time + (0:decay_len - 1);
   valid_decay_idx = decay_x <= length(x_filt_decay);
   decay           = decay(valid_decay_idx);
   decay_x         = decay_x(valid_decay_idx);
@@ -318,7 +316,8 @@ decay_factor = x_sq(peak_idx);
   x_filt_decay(decay_x) = x_filt_new;
   i                     = i + 1;
 
-  decay_all(decay_x) = decay; % only for debugging
+  decay_all(decay_x)                                            = decay; % only for debugging
+  decay_all(above_thresh_start + (0:scan_time + mask_time - 1)) = nan;   % only for debugging
 
 end
 
