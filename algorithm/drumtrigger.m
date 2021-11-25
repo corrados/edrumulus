@@ -60,8 +60,7 @@ pad.threshold_db          = 17;%6;%
 pad.mask_time_ms          = 6;
 pad.energy_win_len_ms     = 2;
 pad.scan_time_ms          = 2.5;
-pad.main_peak_dist_ms     = 2.25;
-pad.decay_est_delay2nd_ms = 2.5;
+pad.decay_est_delay2nd_ms = 4.5;
 pad.decay_est_len_ms      = 3;
 pad.decay_est_fact_db     = 15;
 pad.decay_fact_db         = 1;
@@ -80,7 +79,6 @@ switch padtype
     % note: the PRESET settings are from the PD120 pad
   case 'pd80r'
     pad.scan_time_ms          = 3;
-    pad.main_peak_dist_ms     = 2.4;
     pad.decay_len_ms2         = 75;
     pad.decay_grad_fact2      = 300;
     pad.decay_len_ms3         = 300;
@@ -88,8 +86,7 @@ switch padtype
 
   case 'pd8'
     pad.scan_time_ms          = 1.3;
-    pad.main_peak_dist_ms     = 0.75;
-    pad.decay_est_delay2nd_ms = 6;
+    pad.decay_est_delay2nd_ms = 8;
     pad.mask_time_ms          = 7;
     pad.decay_fact_db         = 5;
     pad.decay_len_ms1         = 10;
@@ -100,8 +97,7 @@ switch padtype
     pad.decay_grad_fact3      = 120;
   case 'tp80'
     pad.scan_time_ms          = 2.75;
-    pad.main_peak_dist_ms     = 2;
-    pad.decay_est_delay2nd_ms = 7;
+    pad.decay_est_delay2nd_ms = 9;
     pad.decay_len_ms1         = 10;
     pad.decay_grad_fact1      = 30;
     pad.decay_len_ms2         = 30;
@@ -113,8 +109,7 @@ switch padtype
 % TODO if the Hi-Hat is open just a little bit, we get double triggers
     pad.threshold_db          = 16;
     pad.scan_time_ms          = 4;
-    pad.main_peak_dist_ms     = 0.75;
-    pad.decay_est_delay2nd_ms = 5;
+    pad.decay_est_delay2nd_ms = 7;
     pad.decay_fact_db         = 5;
     pad.decay_len_ms1         = 4;
     pad.decay_grad_fact1      = 30;
@@ -124,8 +119,7 @@ switch padtype
     pad.decay_grad_fact3      = 75;
   case 'kd7'
     pad.scan_time_ms          = 3.5;
-    pad.main_peak_dist_ms     = 2;
-    pad.decay_est_delay2nd_ms = 4;
+    pad.decay_est_delay2nd_ms = 6;
     pad.decay_fact_db         = 5;
     pad.decay_len_ms1         = 4;
     pad.decay_grad_fact1      = 30;
@@ -135,7 +129,6 @@ switch padtype
     pad.decay_grad_fact3      = 45;
   case 'cy6'
     pad.scan_time_ms          = 6;
-    pad.main_peak_dist_ms     = 2;
     pad.decay_fact_db         = 4;
     pad.decay_len_ms1         = 20;
     pad.decay_grad_fact1      = 400;
@@ -145,7 +138,6 @@ switch padtype
     pad.decay_grad_fact3      = 30;
   case 'cy8'
     pad.scan_time_ms          = 6;
-    pad.main_peak_dist_ms     = 2;
     pad.decay_fact_db         = 7;
     pad.decay_len_ms1         = 40;
     pad.decay_grad_fact1      = 10;
@@ -221,7 +213,6 @@ decay_len2         = round(pad.decay_len_ms2 * 1e-3 * Fs);
 decay_grad2        = pad.decay_grad_fact2 / Fs;
 decay_len3         = round(pad.decay_len_ms3 * 1e-3 * Fs);
 decay_grad3        = pad.decay_grad_fact3 / Fs;
-main_peak_dist     = round(pad.main_peak_dist_ms * 1e-3 * Fs);
 decay_est_delay2nd = round(pad.decay_est_delay2nd_ms * 1e-3 * Fs);
 decay_est_len      = round(pad.decay_est_len_ms * 1e-3 * Fs);
 decay_est_fact     = 10 ^ (pad.decay_est_fact_db / 10);
@@ -300,17 +291,17 @@ while ~no_more_peak
 % TODO use the maximum of x_filt in scantime+masktime region instead
 decay_factor = x_sq(peak_idx);
 
-  if first_peak_idx + main_peak_dist + decay_est_delay2nd + decay_est_len - 1 <= length(x_filt)
+  if first_peak_idx + decay_est_delay2nd + decay_est_len - 1 <= length(x_filt)
 
     % average power measured right after the two main peaks (it showed for high level hits
     % close to the pad center the decay has much lower power right after the main peaks) in
     % a predefined time intervall, but never use a higher decay factor than derived from the
     % main peak (in case a second hit is right behind our main peaks to avoid very high
     % decay curve placement)
-    decay_power  = mean(x_filt(first_peak_idx + main_peak_dist + decay_est_delay2nd + (0:decay_est_len - 1)));
+    decay_power  = mean(x_filt(first_peak_idx + decay_est_delay2nd + (0:decay_est_len - 1)));
     decay_factor = min(decay_factor, decay_est_fact * decay_power);
 
-    decay_est_rng(first_peak_idx + main_peak_dist + decay_est_delay2nd + (0:decay_est_len - 1)) = decay_power; % only for debugging
+    decay_est_rng(first_peak_idx + decay_est_delay2nd + (0:decay_est_len - 1)) = decay_power; % only for debugging
 
   end
 
@@ -468,8 +459,7 @@ pos_sense_metric = calc_pos_sense_metric(x(:, 1), Fs, all_first_peaks);
 % plot results
 figure
 plot(10 * log10([abs(x(:, 1)) .^ 2, x_filt, mask_region, scan_region, decay_all, decay_est_rng])); grid on; hold on;
-plot(all_first_peaks, 10 * log10(x_filt(all_first_peaks)), 'y*');
-plot(all_peaks, 10 * log10(x_filt(all_peaks)), 'r*');
+plot(all_first_peaks, 10 * log10(abs(x(all_first_peaks, 1)) .^ 2), 'y*');
 plot(all_peaks, 10 * log10(abs(x(all_peaks, 1)) .^ 2), 'g*');
 plot(all_first_peaks, pos_sense_metric + 40, 'k*');
 plot([1, length(x_filt)], [pad.threshold_db, pad.threshold_db], '--');
