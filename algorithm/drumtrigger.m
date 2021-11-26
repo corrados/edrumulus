@@ -69,8 +69,7 @@ pad.decay_len_ms3         = 0; % not used
 pad.decay_grad_fact1      = 200;
 pad.decay_grad_fact2      = 200;
 pad.decay_grad_fact3      = 200;
-pad.pos_energy_win_len_ms = 2;
-pad.pos_iir_alpha         = 200;
+pad.pos_low_pass_cutoff   = 150; % Hz
 pad.pos_invert            = false;
 
 switch padtype
@@ -82,7 +81,6 @@ switch padtype
     pad.decay_grad_fact2      = 300;
     pad.decay_len_ms3         = 300;
     pad.decay_grad_fact3      = 100;
-
   case 'pd8'
     pad.scan_time_ms          = 1.3;
     pad.decay_est_delay2nd_ms = 8;
@@ -168,7 +166,7 @@ global pad;
 %[b, a] = ellip(2, 0.9, 40, [40 400] / 4e3); % optimized for detecting peaks in noise
 [b, a] = butter(2, [40 400] / 4e3); % seems to be a good trade-off
 
-x_filt = abs(filter(b, a, x(:, 1))) .^ 2;
+x_filt = filter(b, a, x(:, 1)) .^ 2;
 %close all;freqz(b, a, 512, 8000);f(3)
 %subplot(2,1,1), plot(20 * log10(abs([x(:, 1) y]))); axis([-1809.80310, 142862.72867, -130.11254, 96.47492]);
 
@@ -219,7 +217,7 @@ all_peaks          = [];
 all_first_peaks    = [];
 i                  = 1;
 no_more_peak       = false;
-x_sq               = abs(x) .^ 2;
+x_sq               = x .^ 2;
 x_filt_decay       = x_filt;
 all_scan_peaks_idx = [];                % only for debugging
 decay_all          = nan(size(x_filt)); % only for debugging
@@ -327,41 +325,49 @@ end
 function pos_sense_metric = calc_pos_sense_metric(x, Fs, all_first_peaks)
 global pad;
 
-pos_energy_window_len = round(pad.pos_energy_win_len_ms * 1e-3 * Fs); % positional sensing energy estimation time window length (e.g. 2 ms)
-
 % low pass filter of the Hilbert signal
-% lp_ir_len = 80; % low-pass filter length
-% lp_cutoff = 0.02; % normalized cut-off of low-pass filter
-% a         = fir1(lp_ir_len, lp_cutoff);
-% x_low     = filter(a, 1, x);
-% x_low     = x_low(lp_ir_len / 2:end);
-% use a simple one-pole IIR filter for less CPU processing and shorter delay
-alpha = pad.pos_iir_alpha / Fs;
-x_low = filter(alpha, [1, alpha - 1], x);
+% moving average cut off frequency approximation according to:
+% https://dsp.stackexchange.com/questions/9966/what-is-the-cut-off-frequency-of-a-moving-average-filter
+lp_cutoff_norm        = pad.pos_low_pass_cutoff / Fs;
+lp_moving_average_len = round(sqrt(0.196202 + lp_cutoff_norm ^ 2) / lp_cutoff_norm);
+if mod(lp_moving_average_len, 2) == 0
+  lp_moving_average_len = lp_moving_average_len + 1; % make sure we have an odd length
+endif
 
-% TEST acausal shift of low-pass filtered signal for testing...
-x_low = circshift(x_low, -5);
+l = (lp_moving_average_len - 1) / 2;
+b = [0.5:0.5 / l:(1 - 0.5 / l) 1 (1 - 0.5 / l):-0.5 / l:0.5] / lp_moving_average_len;
+%b = ones(lp_moving_average_len, 1) / lp_moving_average_len; % TEST
+x_low = filter(b, 1, x) .^ 2; % moving average
 
-% figure; plot(20 * log10(abs([x(1:length(x_low)), x_low]))); hold on;
+%disp(['low-pass filter delay: ' num2str(lp_moving_average_len / 2 / 8) ' ms, ' num2str(lp_moving_average_len) ' samples']);
 
-peak_energy     = [];
-peak_energy_low = [];
-win_idx_all     = []; % only for debugging
+x_sq            = x .^ 2;
+num_peaks       = length(all_first_peaks);
+peak_energy     = zeros(num_peaks, 1);
+peak_energy_low = zeros(num_peaks, 1);
+all_peaks_low   = zeros(num_peaks, 1);
 
-for i = 1:length(all_first_peaks)
+win_len     = length(b);
+win_low_all = nan(length(x_low), 1);
 
-  % The peak detection was performed on the moving averaged filtered signal but
-  % for positional sensing we need to use the original Hilbert transformed signal
-  % since we have to calculate a separate low-pass filter. Since the detected
-  % peak position in the moving averaged filtered signal might be in an attenuated
-  % region of the original Hilbert transformed signal, we average the powers of
-  % the filtered and un-filtered signals around the detected peak position.
-  win_idx            = (all_first_peaks(i):all_first_peaks(i) + pos_energy_window_len - 1) - pos_energy_window_len / 2;
-  win_idx            = win_idx((win_idx <= length(x_low)) & (win_idx > 0));
-  peak_energy(i)     = sum(abs(x(win_idx)) .^ 2);
-  peak_energy_low(i) = sum(abs(x_low(win_idx)) .^ 2);
+for i = 1:num_peaks
 
-  win_idx_all = [win_idx_all; win_idx]; % only for debugging
+  % find first peak of low-pass filtered signal searching for the maximum in the
+  % range of the low-pass moving average window length
+
+% TODO find the correct offset (0 seems to work good)
+win_offset           = 0;%-(win_len - 1) / 2;
+
+  win_idx              = (all_first_peaks(i):all_first_peaks(i) + win_len - 1) + win_offset;
+  win_idx              = win_idx((win_idx <= length(x_sq)) & (win_idx > 0));
+  [~, x_low_max_index] = max(x_low(win_idx));
+  all_peaks_low(i)     = all_first_peaks(i) + win_offset + x_low_max_index - 1;
+  win_low_all(win_idx) = x_low(win_idx); % only for debugging
+
+  % use the original signal as the reference power for the positional
+  % sensing metric where the first peak position is used
+  peak_energy(i)     = x_sq(all_first_peaks(i));
+  peak_energy_low(i) = x_low(all_peaks_low(i));
 
 end
 
@@ -372,27 +378,10 @@ else
   pos_sense_metric = 10 * log10(peak_energy) - 10 * log10(peak_energy_low);
 end
 
-%figure; plot(20 * log10(abs([x, x_low]))); hold on;
-%plot(win_idx_all', 20 * log10(abs(x(win_idx_all'))), 'k.-');
-%plot(win_idx_all', 20 * log10(abs(x_low(win_idx_all'))), 'k.-');
-
-%figure; plot(20 * log10(abs(x))); hold on;
-%for i = 1:size(win_idx_all, 1)
-%  plot(win_idx_all(i, :), 20 * log10(abs(x(win_idx_all(i, :)))), 'k.-');
-%  plot(win_idx_all(i, :), 20 * log10(abs(x_low(win_idx_all(i, :)))), 'b.-');
-%  plot(all_first_peaks, 10 * log10(peak_energy), 'k');
-%  plot(all_first_peaks, 10 * log10(peak_energy_low), 'b');
-%end
-
-% TODO only show peaks
-%x_peaks = [];
-%for i = 1:length(all_first_peaks)
-%  x_peaks = [x_peaks, all_first_peaks(i) - 20:all_first_peaks(i) + 60];
-%end
-%x_peaks_inv = find(x_peaks);
-%figure
-%plot(10 * log10([abs(x(x_peaks)) .^ 2, abs(x_low(x_peaks)) .^ 2])); grid on; hold on;
-%%plot(21:80:length(all_first_peaks) * 80, 20 * log10(abs(x(all_first_peaks))), 'y*');
+%figure; plot(10 * log10([x_sq(1:length(x_low)), x_low])); hold on;
+%        plot(10 * log10(win_low_all), 'g.', 'MarkerSize', 10);
+%        plot(all_first_peaks, 10 * log10(x_sq(all_first_peaks)), 'k*');
+%        plot(all_peaks_low, 10 * log10(x_low(all_peaks_low)), 'g*');
 
 end
 
@@ -442,7 +431,6 @@ global pad;
 is_rim_shot = detect_rim_shot(x, all_peaks, Fs);
 pos_sense_metric = calc_pos_sense_metric(x(:, 1), Fs, all_first_peaks);
 
-
 % plot results
 figure
 plot(10 * log10([abs(x(:, 1)) .^ 2, x_filt, mask_region, scan_region, decay_all, decay_est_rng])); grid on; hold on;
@@ -453,14 +441,6 @@ plot([1, length(x_filt)], [pad.threshold_db, pad.threshold_db], '--');
 title('Green marker: level; Black marker: position');
 xlabel('samples'); ylabel('dB');
 ylim([-10, 90]);
-
-% TEST
-% velocity/positional sensing mapping and play MIDI notes
-velocity            = (10 * log10(x_filt(all_peaks)) / 39) * 127 - 73;
-velocity_clipped    = max(1, min(127, velocity));
-pos_sensing         = (pos_sense_metric / 4) * 127 - 510;
-pos_sensing_clipped = max(1, min(127, pos_sensing));
-% figure; subplot(2, 1, 1), plot(velocity); title('velocity'); subplot(2, 1, 2), plot(pos_sensing); title('pos');
 
 end
 
