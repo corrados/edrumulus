@@ -34,14 +34,14 @@ Fs      = 8000; % Hz
 padtype = 'pd120'; % default
 
 % select the recording to process:
-%x = audioread("signals/teensy4_0_noise_test.wav");x=x-mean(x);padtype = 'pd80r';
-%x = audioread("signals/teensy4_0_pd80r.wav");x=x-mean(x);padtype = 'pd80r';x = x(1:390000, :);%
-%x = audioread("signals/esp32_pd120.wav");
-%x = audioread("signals/esp32_pd8.wav");padtype = 'pd8';
+%x = audioread("signals/teensy4_0_noise_test.wav");x=(x-mean(x))*4;padtype = 'pd80r';
+%x = audioread("signals/teensy4_0_pd80r.wav");x=(x-mean(x))*4;padtype = 'pd80r';%x = x(1:390000, :);%
+%x = audioread("signals/esp32_pd120.wav");x=x/8;
+%x = audioread("signals/esp32_pd8.wav");x=x/8;padtype = 'pd8';
 %x = audioread("signals/pd120_pos_sense.wav");%x = x(2900:10000, :);%x = x(55400:58000, :);%
 %x = audioread("signals/pd120_pos_sense2.wav");
 %x = audioread("signals/pd120_single_hits.wav");
-%x = audioread("signals/pd120_roll.wav");x=x(1600:5000);%%x = x(1:20000, :);%%x = x(292410:294749, :);%x = x(311500:317600, :);
+%x = audioread("signals/pd120_roll.wav");%x = x(1:20000, :);%x = x(292410:294749, :);%x = x(311500:317600, :);
 %x = audioread("signals/pd120_middle_velocity.wav");
 %x = audioread("signals/pd120_hot_spot.wav");
 %x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
@@ -51,22 +51,20 @@ x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(5
 %x = audioread("signals/pd6.wav");
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
-%x = audioread("signals/cy6.wav");padtype = 'cy6';x = x(480000:590000, :);%x = x(250000:450000, :);%x = x(1:150000, :);
+%x = audioread("signals/cy6.wav");padtype = 'cy6';%x = x(480000:590000, :);%x = x(250000:450000, :);%x = x(1:150000, :);
 %x = audioread("signals/cy8.wav");padtype = 'cy8';%x = x(1:200000, :);
 %x = audioread("signals/kd8.wav");
 %x = audioread("signals/kd7.wav");padtype = 'kd7';%x = x(1:170000, :);
 %x = audioread("signals/tp80.wav");padtype = 'tp80';
 %x = audioread("signals/vh12.wav");padtype = 'vh12';%x = x(900000:end, :);%x = x(376000:420000, :);%x = x(1:140000, :);
-%org = audioread("signals/snare.wav"); x = resample(org(:, 1), 1, 6); % PD-120
-%org = audioread("signals/snare.wav"); x = org(:, 1); Fs = 48e3; % PD-120
 
 
 % pad PRESET settings first, then overwrite these with pad specific properties
-pad.threshold_db              = 17;%6;%
+pad.threshold_db              = 17;
 pad.mask_time_ms              = 6;
 pad.first_peak_diff_thresh_db = 8;
 pad.scan_time_ms              = 2.5;
-pad.pre_scan_time_ms          = 2.5;
+pad.pre_scan_time_ms          = 3;
 pad.decay_est_delay_ms        = 8;
 pad.decay_est_len_ms          = 3;
 pad.decay_est_fact_db         = 15;
@@ -101,8 +99,6 @@ switch padtype
   case 'tp80'
     pad.scan_time_ms       = 2.75;
     pad.decay_est_delay_ms = 11;
-    pad.decay_len_ms1      = 3;
-    pad.decay_grad_fact1   = 30;
     pad.decay_len_ms2      = 60;
     pad.decay_grad_fact2   = 400;
     pad.decay_len_ms3      = 700;
@@ -114,8 +110,6 @@ switch padtype
     pad.scan_time_ms       = 4;
     pad.decay_est_delay_ms = 9;
     pad.decay_fact_db      = 5;
-    pad.decay_len_ms1      = 4;
-    pad.decay_grad_fact1   = 30;
     pad.decay_len_ms2      = 27;
     pad.decay_grad_fact2   = 700;
     pad.decay_len_ms3      = 600; % must be long because of open Hi-Hat ringing
@@ -132,20 +126,16 @@ switch padtype
     pad.decay_grad_fact3   = 45;
   case 'cy6'
     pad.scan_time_ms       = 6;
-    pad.decay_fact_db      = 4;
-    pad.decay_len_ms1      = 20;
-    pad.decay_grad_fact1   = 400;
     pad.decay_len_ms2      = 150;
     pad.decay_grad_fact2   = 120;
     pad.decay_len_ms3      = 450;
     pad.decay_grad_fact3   = 30;
   case 'cy8'
     pad.scan_time_ms       = 6;
-    pad.decay_fact_db      = 7;
-    pad.decay_len_ms1      = 40;
+    pad.decay_len_ms1      = 10;
     pad.decay_grad_fact1   = 10;
     pad.decay_len_ms2      = 100;
-    pad.decay_grad_fact2   = 120;
+    pad.decay_grad_fact2   = 200;
     pad.decay_len_ms3      = 450;
     pad.decay_grad_fact3   = 30;
 end
@@ -239,7 +229,7 @@ while ~no_more_peak
   above_thresh_start = find(diff(above_thresh) > 0) + 1;
 
   % exit condition
-  if isempty(above_thresh_start)
+  if isempty(above_thresh_start) || (above_thresh_start(1) + decay_est_delay + decay_est_len >= length(x))
     no_more_peak = true;
     continue;
   end
@@ -253,7 +243,7 @@ while ~no_more_peak
   % have to use the unfiltered signal.
 
   % climb to the maximum of the first peak
-  first_peak_idx = above_thresh_start - pre_scan_time;
+  first_peak_idx = max(1, above_thresh_start - pre_scan_time);
   max_idx  = find(x_sq(1 + first_peak_idx:end) - x_sq(first_peak_idx:end - 1) < 0);
 
   if ~isempty(max_idx)
@@ -262,7 +252,7 @@ while ~no_more_peak
 
   % find all peaks after the initial peak
   peak_idx_after_initial = find((x_sq(2 + first_peak_idx:end) < x_sq(1 + first_peak_idx:end - 1)) & ...
-    (x_sq(1 + first_peak_idx:end - 1) > x_sq(first_peak_idx:end - 2)));
+    (x_sq(1 + first_peak_idx:end - 1) >= x_sq(first_peak_idx:end - 2)));
 
   scan_peaks_idx     = first_peak_idx + peak_idx_after_initial(peak_idx_after_initial <= total_scan_time);
   all_scan_peaks_idx = [all_scan_peaks_idx; scan_peaks_idx]; % only for debugging
@@ -289,19 +279,15 @@ while ~no_more_peak
 % TODO use the maximum of x_filt in scantime+masktime region instead
 decay_factor = x_sq(peak_idx);
 
-  if above_thresh_start + decay_est_delay + decay_est_len - 1 <= length(x_filt)
+  % average power measured right after the two main peaks (it showed for high level hits
+  % close to the pad center the decay has much lower power right after the main peaks) in
+  % a predefined time intervall, but never use a higher decay factor than derived from the
+  % main peak (in case a second hit is right behind our main peaks to avoid very high
+  % decay curve placement)
+  decay_power  = mean(x_filt(above_thresh_start + decay_est_delay + (0:decay_est_len - 1)));
+  decay_factor = min(decay_factor, decay_est_fact * decay_power);
 
-    % average power measured right after the two main peaks (it showed for high level hits
-    % close to the pad center the decay has much lower power right after the main peaks) in
-    % a predefined time intervall, but never use a higher decay factor than derived from the
-    % main peak (in case a second hit is right behind our main peaks to avoid very high
-    % decay curve placement)
-    decay_power  = mean(x_filt(above_thresh_start + decay_est_delay + (0:decay_est_len - 1)));
-    decay_factor = min(decay_factor, decay_est_fact * decay_power);
-
-    decay_est_rng(above_thresh_start + decay_est_delay + (0:decay_est_len - 1)) = decay_power; % only for debugging
-
-  end
+  decay_est_rng(above_thresh_start + decay_est_delay + (0:decay_est_len - 1)) = decay_power; % only for debugging
 
   % store the new detected peak
   all_peaks     = [all_peaks; peak_idx];
