@@ -41,13 +41,13 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd120_pos_sense.wav");%x = x(2900:10000, :);%x = x(55400:58000, :);%
 %x = audioread("signals/pd120_pos_sense2.wav");
 %x = audioread("signals/pd120_single_hits.wav");
-x = audioread("signals/pd120_roll.wav");x=x(1600:5000);%%x = x(1:20000, :);%%x = x(292410:294749, :);%x = x(311500:317600, :);
+%x = audioread("signals/pd120_roll.wav");x=x(1600:5000);%%x = x(1:20000, :);%%x = x(292410:294749, :);%x = x(311500:317600, :);
 %x = audioread("signals/pd120_middle_velocity.wav");
 %x = audioread("signals/pd120_hot_spot.wav");
 %x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
-%x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);
+x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);
 %x = audioread("signals/pd6.wav");
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
@@ -66,7 +66,8 @@ pad.threshold_db        = 17;%6;%
 pad.mask_time_ms        = 6;
 pad.energy_win_len_ms   = 2;
 pad.scan_time_ms        = 2.5;
-pad.decay_est_delay_ms  = 4.5;
+pad.pre_scan_time_ms    = 2.5;
+pad.decay_est_delay_ms  = 8;
 pad.decay_est_len_ms    = 3;
 pad.decay_est_fact_db   = 15;
 pad.decay_fact_db       = 1;
@@ -90,7 +91,7 @@ switch padtype
     pad.decay_grad_fact3   = 100;
   case 'pd8'
     pad.scan_time_ms       = 1.3;
-    pad.decay_est_delay_ms = 8;
+    pad.decay_est_delay_ms = 10;
     pad.mask_time_ms       = 7;
     pad.decay_fact_db      = 5;
     pad.decay_len_ms2      = 30;
@@ -99,7 +100,7 @@ switch padtype
     pad.decay_grad_fact3   = 120;
   case 'tp80'
     pad.scan_time_ms       = 2.75;
-    pad.decay_est_delay_ms = 9;
+    pad.decay_est_delay_ms = 11;
     pad.decay_len_ms1      = 3;
     pad.decay_grad_fact1   = 30;
     pad.decay_len_ms2      = 60;
@@ -111,7 +112,7 @@ switch padtype
 % TODO if the Hi-Hat is open just a little bit, we get double triggers
     pad.threshold_db       = 16;
     pad.scan_time_ms       = 4;
-    pad.decay_est_delay_ms = 7;
+    pad.decay_est_delay_ms = 9;
     pad.decay_fact_db      = 5;
     pad.decay_len_ms1      = 4;
     pad.decay_grad_fact1   = 30;
@@ -121,7 +122,7 @@ switch padtype
     pad.decay_grad_fact3   = 75;
   case 'kd7'
     pad.scan_time_ms       = 3.5;
-    pad.decay_est_delay_ms = 6;
+    pad.decay_est_delay_ms = 8;
     pad.decay_fact_db      = 5;
     pad.decay_len_ms1      = 4;
     pad.decay_grad_fact1   = 30;
@@ -200,7 +201,9 @@ mask_region = nan(size(x_filt));
 energy_window_len      = round(pad.energy_win_len_ms * 1e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
 first_peak_diff_thresh = 10 ^ (8 / 10); % 8 dB difference allowed
 mask_time              = round(pad.mask_time_ms * 1e-3 * Fs); % mask time (e.g. 10 ms)
-scan_time              = round(pad.scan_time_ms * 1e-3 * Fs); % scan time from first detected peak
+scan_time              = round(pad.scan_time_ms * 1e-3 * Fs); % scan time from above threshold
+pre_scan_time          = round(pad.pre_scan_time_ms * 1e-3 * Fs); % scan time before above threshold for detecting first peak
+total_scan_time        = scan_time + pre_scan_time; % includes pre-scan time
 
 % the following settings are trigger pad-specific
 decay_len1      = round(pad.decay_len_ms1 * 1e-3 * Fs); % decay time (e.g. 250 ms)
@@ -243,12 +246,6 @@ while ~no_more_peak
   end
 
   above_thresh_start = above_thresh_start(1);
-
-
-% TEST extended scan time before threshold start
-pre_scan_time   = scan_time; % TEST How long should it be?
-total_scan_time = scan_time + pre_scan_time;
-
 
   % It has shown that using the filtered signal for velocity
   % estimation, the detected velocity drops significantly if a mesh pad is hit
@@ -293,17 +290,17 @@ total_scan_time = scan_time + pre_scan_time;
 % TODO use the maximum of x_filt in scantime+masktime region instead
 decay_factor = x_sq(peak_idx);
 
-  if first_peak_idx + decay_est_delay + decay_est_len - 1 <= length(x_filt)
+  if above_thresh_start + decay_est_delay + decay_est_len - 1 <= length(x_filt)
 
     % average power measured right after the two main peaks (it showed for high level hits
     % close to the pad center the decay has much lower power right after the main peaks) in
     % a predefined time intervall, but never use a higher decay factor than derived from the
     % main peak (in case a second hit is right behind our main peaks to avoid very high
     % decay curve placement)
-    decay_power  = mean(x_filt(first_peak_idx + decay_est_delay + (0:decay_est_len - 1)));
+    decay_power  = mean(x_filt(above_thresh_start + decay_est_delay + (0:decay_est_len - 1)));
     decay_factor = min(decay_factor, decay_est_fact * decay_power);
 
-    decay_est_rng(first_peak_idx + decay_est_delay + (0:decay_est_len - 1)) = decay_power; % only for debugging
+    decay_est_rng(above_thresh_start + decay_est_delay + (0:decay_est_len - 1)) = decay_power; % only for debugging
 
   end
 
