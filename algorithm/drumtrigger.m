@@ -18,13 +18,6 @@
 function drumtrigger
 global pad;
 
-
-disp('TODO thres/sense does not work since threshold test works on filtered signal and peak max on unfiltered signal');
-disp('     -> noise floor should match');
-disp('TODO decay initial start amplitude based on max of filtered signal in scan time+mask time');
-disp('TODO remove latency compensation for band-pass filtered signal -> we already have a FIFO because of the pre-scan time');
-
-
 % Edrumulus algorithm development
 
 close all;
@@ -47,7 +40,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
-x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(52000:60000, :);
+x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(264000:320000, :);%
 %x = audioread("signals/pd6.wav");
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
@@ -156,7 +149,7 @@ processing(x * 25000, Fs); % scale to the ESP32 input range
 end
 
 
-function [x, x_filt] = filter_input_signal(x, Fs)
+function [x, x_filt, x_filt_delay] = filter_input_signal(x, Fs)
 global pad;
 
 % different band-pass filter designs for testing
@@ -173,20 +166,16 @@ x_filt = filter(b, a, x(:, 1)) .^ 2;
 [~, x_filt_delay] = max(impz(b, a));
 x_filt_delay      = x_filt_delay;
 
-% TODO Latency optimization: To have a simple implementation, we delay the input
-%      signal by the latency of the band-pass filter so that the peaks are
-%      matched (which is important for, e.g., the threshold check for the
-%      filtered signal which is applied to the unfiltered signal as well.
-x = circshift(x, x_filt_delay); % note that we delay both channels of x
-
 end
 
 
-function [all_peaks, all_first_peaks, scan_region, mask_region, decay_all, decay_est_rng] = calc_peak_detection(x, x_filt, Fs)
+function [all_peaks, all_first_peaks, scan_region, mask_region, pre_scan_region, decay_all, decay_est_rng] = ...
+           calc_peak_detection(x, x_filt, x_filt_delay, Fs)
 global pad;
 
-scan_region = nan(size(x_filt));
-mask_region = nan(size(x_filt));
+scan_region     = nan(size(x_filt));
+mask_region     = nan(size(x_filt));
+pre_scan_region = nan(size(x_filt));
 
 first_peak_diff_thresh = 10 ^ (pad.first_peak_diff_thresh_db / 10); % difference between peaks to find first peak
 mask_time              = round(pad.mask_time_ms * 1e-3 * Fs); % mask time (e.g. 10 ms)
@@ -234,7 +223,8 @@ while ~no_more_peak
     continue;
   end
 
-  above_thresh_start = above_thresh_start(1);
+  org_above_thresh_start = above_thresh_start(1); % store original unmodifed value
+  above_thresh_start     = max(1, org_above_thresh_start - x_filt_delay);
 
   % It has shown that using the filtered signal for velocity
   % estimation, the detected velocity drops significantly if a mesh pad is hit
@@ -268,16 +258,19 @@ while ~no_more_peak
 
   all_first_peaks = [all_first_peaks; first_peak_idx];
 
-  % search in a pre-defined scan time for the highest peak
-  scan_indexes              = above_thresh_start:min(1 + above_thresh_start + scan_time - 1, length(x_sq));
+  % search in a pre-defined scan time for the highest peak in unfiltered signal
+  scan_indexes              = above_thresh_start + (0:scan_time - 1);
   [~, max_idx]              = max(x_sq(scan_indexes));
   peak_idx                  = above_thresh_start + max_idx - 1;
-  scan_region(scan_indexes) = x_sq(peak_idx); % mark scan time region
+
+  % search from above threshold to corrected scan+mask time for highest peak in
+  % filtered signal, needed for decay power estimation
+  scan_indexes_filt = org_above_thresh_start:above_thresh_start + scan_time + mask_time;
+  [~, max_idx]      = max(x_filt(scan_indexes_filt));
+  peak_idx_filt     = org_above_thresh_start + max_idx - 1;
 
   % estimate current decay power
-
-% TODO use the maximum of x_filt in scantime+masktime region instead
-decay_factor = x_sq(peak_idx);
+  decay_factor = x_filt(peak_idx_filt);
 
   % average power measured right after the two main peaks (it showed for high level hits
   % close to the pad center the decay has much lower power right after the main peaks) in
@@ -291,12 +284,16 @@ decay_factor = x_sq(peak_idx);
 
   % store the new detected peak
   all_peaks     = [all_peaks; peak_idx];
-  last_peak_idx = min(above_thresh_start + scan_time + mask_time, length(x_filt));
-  mask_region(last_peak_idx + (-mask_time + 1:0)) = x_sq(peak_idx); % mark mask region
+  last_peak_idx = org_above_thresh_start + scan_time + mask_time;
+
+  % debugging outputs
+  scan_region(scan_indexes)                                                   = x_filt(peak_idx_filt); % mark scan time region
+  pre_scan_region(above_thresh_start - pre_scan_time + (0:pre_scan_time - 1)) = x_filt(peak_idx_filt); % mark pre-scan time region
+  mask_region(last_peak_idx + (-mask_time - x_filt_delay:0))                  = x_filt(peak_idx_filt); % mark mask region
 
   % exponential decay assumption
   decay           = decay_factor * decay_curve;
-  decay_x         = above_thresh_start + scan_time + mask_time + (0:decay_len - 1);
+  decay_x         = org_above_thresh_start + scan_time + mask_time + (0:decay_len - 1);
   valid_decay_idx = decay_x <= length(x_filt_decay);
   decay           = decay(valid_decay_idx);
   decay_x         = decay_x(valid_decay_idx);
@@ -309,8 +306,8 @@ decay_factor = x_sq(peak_idx);
   x_filt_decay(decay_x) = x_filt_new;
   i                     = i + 1;
 
-  decay_all(decay_x)                                            = decay; % only for debugging
-  decay_all(above_thresh_start + (0:scan_time + mask_time - 1)) = nan;   % only for debugging
+  decay_all(decay_x)                                                           = decay; % only for debugging
+  decay_all(above_thresh_start + (0:scan_time + mask_time + x_filt_delay - 1)) = nan;   % only for debugging
 
 end
 
@@ -421,14 +418,15 @@ function processing(x, Fs)
 global pad;
 
 % calculate peak detection and positional sensing
-[x, x_filt] = filter_input_signal(x, Fs);
-[all_peaks, all_first_peaks, scan_region, mask_region, decay_all, decay_est_rng] = calc_peak_detection(x(:, 1), x_filt, Fs);
+[x, x_filt, x_filt_delay] = filter_input_signal(x, Fs);
+[all_peaks, all_first_peaks, scan_region, mask_region, pre_scan_region, decay_all, decay_est_rng] = ...
+  calc_peak_detection(x(:, 1), x_filt, x_filt_delay, Fs);
 is_rim_shot = detect_rim_shot(x, all_peaks, Fs);
 pos_sense_metric = calc_pos_sense_metric(x(:, 1), Fs, all_first_peaks);
 
 % plot results
 figure
-plot(10 * log10([x(:, 1) .^ 2, x_filt, mask_region, scan_region, decay_all, decay_est_rng])); grid on; hold on;
+plot(10 * log10([x(:, 1) .^ 2, x_filt, mask_region, scan_region, pre_scan_region, decay_all, decay_est_rng])); grid on; hold on;
 plot(all_first_peaks, 10 * log10(x(all_first_peaks, 1) .^ 2), 'b*');
 plot(all_peaks, 10 * log10(x(all_peaks, 1) .^ 2), 'g*');
 plot(all_first_peaks, pos_sense_metric + 40, 'k*');
