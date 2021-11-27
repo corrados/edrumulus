@@ -62,23 +62,23 @@ x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(5
 
 
 % pad PRESET settings first, then overwrite these with pad specific properties
-pad.threshold_db        = 17;%6;%
-pad.mask_time_ms        = 6;
-pad.energy_win_len_ms   = 2;
-pad.scan_time_ms        = 2.5;
-pad.pre_scan_time_ms    = 2.5;
-pad.decay_est_delay_ms  = 8;
-pad.decay_est_len_ms    = 3;
-pad.decay_est_fact_db   = 15;
-pad.decay_fact_db       = 1;
-pad.decay_len_ms1       = 0; % not used
-pad.decay_len_ms2       = 250;
-pad.decay_len_ms3       = 0; % not used
-pad.decay_grad_fact1    = 200;
-pad.decay_grad_fact2    = 200;
-pad.decay_grad_fact3    = 200;
-pad.pos_low_pass_cutoff = 150; % Hz
-pad.pos_invert          = false;
+pad.threshold_db              = 17;%6;%
+pad.mask_time_ms              = 6;
+pad.first_peak_diff_thresh_db = 8;
+pad.scan_time_ms              = 2.5;
+pad.pre_scan_time_ms          = 2.5;
+pad.decay_est_delay_ms        = 8;
+pad.decay_est_len_ms          = 3;
+pad.decay_est_fact_db         = 15;
+pad.decay_fact_db             = 1;
+pad.decay_len_ms1             = 0; % not used
+pad.decay_len_ms2             = 250;
+pad.decay_len_ms3             = 0; % not used
+pad.decay_grad_fact1          = 200;
+pad.decay_grad_fact2          = 200;
+pad.decay_grad_fact3          = 200;
+pad.pos_low_pass_cutoff       = 150; % Hz
+pad.pos_invert                = false;
 
 switch padtype
   case 'pd120'
@@ -198,8 +198,7 @@ global pad;
 scan_region = nan(size(x_filt));
 mask_region = nan(size(x_filt));
 
-energy_window_len      = round(pad.energy_win_len_ms * 1e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
-first_peak_diff_thresh = 10 ^ (8 / 10); % 8 dB difference allowed
+first_peak_diff_thresh = 10 ^ (pad.first_peak_diff_thresh_db / 10); % difference between peaks to find first peak
 mask_time              = round(pad.mask_time_ms * 1e-3 * Fs); % mask time (e.g. 10 ms)
 scan_time              = round(pad.scan_time_ms * 1e-3 * Fs); % scan time from above threshold
 pre_scan_time          = round(pad.pre_scan_time_ms * 1e-3 * Fs); % scan time before above threshold for detecting first peak
