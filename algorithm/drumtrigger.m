@@ -21,8 +21,8 @@ global pad;
 
 disp('TODO thres/sense does not work since threshold test works on filtered signal and peak max on unfiltered signal');
 disp('     -> noise floor should match');
-disp('TODO fast rolls: second peak is detected but first peak needed for pos -> start scan time earlier (use FIFO)');
 disp('TODO decay initial start amplitude based on max of filtered signal in scan time+mask time');
+disp('TODO remove latency compensation for band-pass filtered signal -> we already have a FIFO because of the pre-scan time');
 
 
 % Edrumulus algorithm development
