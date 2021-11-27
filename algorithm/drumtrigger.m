@@ -37,10 +37,10 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd120_roll.wav");%x = x(1:20000, :);%x = x(292410:294749, :);%x = x(311500:317600, :);
 %x = audioread("signals/pd120_middle_velocity.wav");
 %x = audioread("signals/pd120_hot_spot.wav");
-%x = audioread("signals/pd120_rimshot.wav");%x = x(168000:171000, :);%x = x(1:34000, :);%x = x(1:100000, :);
+%x = audioread("signals/pd120_rimshot.wav");x = x(1:100000, :);%x = x(168000:171000, :);%x = x(1:34000, :);%
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
-x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(1:265000, :);%x = x(264000:320000, :);%
+x = audioread("signals/pd80r.wav");x=x(:,1);padtype='pd80r';x = x(1:265000, :);%x = x(264000:320000, :);%
 %x = audioread("signals/pd6.wav");
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
@@ -224,7 +224,7 @@ while ~no_more_peak
   end
 
   org_above_thresh_start = above_thresh_start(1); % store original unmodifed value
-  above_thresh_start     = max(1, org_above_thresh_start - x_filt_delay);
+  above_thresh_start     = max(1, org_above_thresh_start - x_filt_delay); % consider filter delay
 
   % It has shown that using the filtered signal for velocity
   % estimation, the detected velocity drops significantly if a mesh pad is hit
@@ -234,7 +234,7 @@ while ~no_more_peak
 
   % climb to the maximum of the first peak
   first_peak_idx = max(1, above_thresh_start - pre_scan_time);
-  max_idx  = find(x_sq(1 + first_peak_idx:end) - x_sq(first_peak_idx:end - 1) < 0);
+  max_idx        = find(x_sq(1 + first_peak_idx:end) - x_sq(first_peak_idx:end - 1) < 0);
 
   if ~isempty(max_idx)
     first_peak_idx = first_peak_idx + max_idx(1) - 1;
@@ -381,33 +381,35 @@ end
 function is_rim_shot = detect_rim_shot(x, all_peaks_x, Fs)
 
 is_rim_shot          = false(size(all_peaks_x));
-rim_shot_window_len  = round(5e-3 * Fs); % scan time (e.g. 6 ms)
-rim_shot_treshold_dB = 2.3; % dB
+rim_shot_window_len  = round(7e-3 * Fs); % scan time (e.g. 6 ms)
+rim_shot_treshold_dB = -5; % dB
+rim_max_pow_index    = zeros(size(all_peaks_x));
+rim_win_region       = nan(size(x));
 
 if size(x, 2) > 1
 
-  % one pole IIR high pass filter
-  [b, a]     = butter(1, 0.02, 'high');
-  rim_x_high = filter(b, a, x(:, 2));
+  rim_x = x(:, 2);
 
   for i = 1:length(all_peaks_x)
 
-    win_idx           = (all_peaks_x(i):all_peaks_x(i) + rim_shot_window_len - 1) - rim_shot_window_len / 2;
-    win_idx           = win_idx((win_idx <= length(rim_x_high)) & (win_idx > 0));
-    rim_max_pow(i)    = max(rim_x_high(win_idx) .^ 2);
-    x_filt_max_pow(i) = x(all_peaks_x(i), 1) .^ 2;
+    win_idx                     = (all_peaks_x(i):all_peaks_x(i) + rim_shot_window_len - 1) - rim_shot_window_len / 2;
+    win_idx                     = win_idx((win_idx <= length(rim_x)) & (win_idx > 0));
+    [rim_max_pow(i), max_index] = max(rim_x(win_idx) .^ 2);
+    x_filt_max_pow(i)           = x(all_peaks_x(i), 1) .^ 2;
+    rim_max_pow_index(i)        = win_idx(1) + max_index - 1; % only for debugging
+    rim_win_region(win_idx)     = rim_max_pow(i);             % only for debugging
 
   end
 
   rim_metric_db = 10 * log10(rim_max_pow ./ x_filt_max_pow);
   is_rim_shot   = rim_metric_db > rim_shot_treshold_dB;
 
-%figure;
-%plot(10 * log10([x(:, 1) .^ 2, rim_x_high .^ 2])); hold on; grid on;
-%plot(all_peaks_x, 10 * log10(x(all_peaks_x, 1) .^ 2), 'y*');
-%plot(all_peaks_x, rim_metric_db, '*-');
-%plot(all_peaks_x(is_rim_shot), rim_metric_db(is_rim_shot), '*');
-%plot(all_peaks_x(~is_rim_shot), rim_metric_db(~is_rim_shot), '*');
+%figure; plot(10 * log10([x(:, 1) .^ 2, rim_x .^ 2, rim_win_region])); hold on; grid on;
+%        plot(all_peaks_x, 10 * log10(x(all_peaks_x, 1) .^ 2), 'y*');
+%        plot(rim_max_pow_index, 10 * log10(rim_x(rim_max_pow_index) .^ 2), 'b*');
+%        plot(all_peaks_x, rim_metric_db, '*-');
+%        plot(all_peaks_x(is_rim_shot), rim_metric_db(is_rim_shot), '*');
+%        plot(all_peaks_x(~is_rim_shot), rim_metric_db(~is_rim_shot), '*');
 
 end
 
@@ -421,7 +423,7 @@ global pad;
 [x, x_filt, x_filt_delay] = filter_input_signal(x, Fs);
 [all_peaks, all_first_peaks, scan_region, mask_region, pre_scan_region, decay_all, decay_est_rng] = ...
   calc_peak_detection(x(:, 1), x_filt, x_filt_delay, Fs);
-is_rim_shot = detect_rim_shot(x, all_peaks, Fs);
+is_rim_shot = detect_rim_shot(x, all_first_peaks, Fs);
 pos_sense_metric = calc_pos_sense_metric(x(:, 1), Fs, all_first_peaks);
 
 % plot results
