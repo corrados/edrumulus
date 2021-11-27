@@ -402,8 +402,8 @@ if size(x, 2) > 1
 
     win_idx           = (all_peaks_x(i):all_peaks_x(i) + rim_shot_window_len - 1) - rim_shot_window_len / 2;
     win_idx           = win_idx((win_idx <= length(rim_x_high)) & (win_idx > 0));
-    rim_max_pow(i)    = max(abs(rim_x_high(win_idx)) .^ 2);
-    x_filt_max_pow(i) = abs(x(all_peaks_x(i), 1)) .^ 2;
+    rim_max_pow(i)    = max(rim_x_high(win_idx) .^ 2);
+    x_filt_max_pow(i) = x(all_peaks_x(i), 1) .^ 2;
 
   end
 
@@ -411,8 +411,8 @@ if size(x, 2) > 1
   is_rim_shot   = rim_metric_db > rim_shot_treshold_dB;
 
 %figure;
-%plot(10 * log10(abs([abs(x(:, 1)) .^ 2, rim_x_high]))); hold on; grid on;
-%plot(all_peaks_x, 20 * log10(abs(x(all_peaks_x, 1))), 'y*');
+%plot(10 * log10([x(:, 1) .^ 2, rim_x_high .^ 2])); hold on; grid on;
+%plot(all_peaks_x, 10 * log10(x(all_peaks_x, 1) .^ 2), 'y*');
 %plot(all_peaks_x, rim_metric_db, '*-');
 %plot(all_peaks_x(is_rim_shot), rim_metric_db(is_rim_shot), '*');
 %plot(all_peaks_x(~is_rim_shot), rim_metric_db(~is_rim_shot), '*');
@@ -433,9 +433,9 @@ pos_sense_metric = calc_pos_sense_metric(x(:, 1), Fs, all_first_peaks);
 
 % plot results
 figure
-plot(10 * log10([abs(x(:, 1)) .^ 2, x_filt, mask_region, scan_region, decay_all, decay_est_rng])); grid on; hold on;
-plot(all_first_peaks, 10 * log10(abs(x(all_first_peaks, 1)) .^ 2), 'y*');
-plot(all_peaks, 10 * log10(abs(x(all_peaks, 1)) .^ 2), 'g*');
+plot(10 * log10([x(:, 1) .^ 2, x_filt, mask_region, scan_region, decay_all, decay_est_rng])); grid on; hold on;
+plot(all_first_peaks, 10 * log10(x(all_first_peaks, 1) .^ 2), 'y*');
+plot(all_peaks, 10 * log10(x(all_peaks, 1) .^ 2), 'g*');
 plot(all_first_peaks, pos_sense_metric + 40, 'k*');
 plot([1, length(x_filt)], [pad.threshold_db, pad.threshold_db], '--');
 title('Green marker: level; Black marker: position');
