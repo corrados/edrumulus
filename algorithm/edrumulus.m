@@ -39,9 +39,8 @@ x = x * 25000;
 Setup();
 
 % loop
-hil_debug                 = zeros(size(x, 1), 1);
-hil_filt                  = zeros(size(x, 1), 1);
-hil_filt_decay_debug      = zeros(size(x, 1), 1);
+x_filt                    = zeros(size(x, 1), 1);
+x_filt_decay_debug        = zeros(size(x, 1), 1);
 cur_decay_debug           = zeros(size(x, 1), 1);
 rim_max_pow_debug         = zeros(size(x, 1), 1);
 x_rim_high_debug          = zeros(size(x, 1), 1);
@@ -56,9 +55,8 @@ is_left_main_peak         = false(size(x, 1), 1);
 
 for i = 1:size(x, 1)
 
-  [hil_debug(i), ...
-   hil_filt(i), ...
-   hil_filt_decay_debug(i), ...
+  [x_filt, ...
+   x_filt_decay_debug(i), ...
    cur_decay_debug(i), ...
    rim_max_pow_debug(i), ...
    x_rim_high_debug(i), ...
@@ -69,7 +67,8 @@ for i = 1:size(x, 1)
    was_pos_sense_ready(i), ...
    pos_sense_metric(i), ...
    is_rim_shot(i), ...
-   is_left_main_peak(i)] = process_sample(x(i, :));
+   is_left_main_peak(i)] = process_sample(x(i, :), i, ...
+                                          x_filt);
 
 end
 
@@ -85,12 +84,12 @@ figure; plot(10 * log10([pos_sense_peak_energy, pos_sense_peak_energy_low * 100]
         plot(find(was_pos_sense_ready), 10 * log10(pos_sense_peak_energy(was_pos_sense_ready)), 'k*');
         ylim([0, 90]); title('checking pos sense high/low signals for metric');
 
-figure; plot(10 * log10(abs([hil_filt, hil_filt_decay_debug, cur_decay_debug, x_rim_high_debug]))); hold on; grid on;
+figure; plot(10 * log10(abs([x_filt, x_filt_decay_debug, cur_decay_debug, x_rim_high_debug]))); hold on; grid on;
         plot(10 * log10(rim_max_pow_debug), 'y*');
-        plot(find(peak_found_corrected),  10 * log10(hil_filt(peak_found_corrected)), 'g*');
-        plot(find(is_rim_shot_corrected), 10 * log10(hil_filt(is_rim_shot_corrected)), 'b*');
+        plot(find(peak_found_corrected),  10 * log10(x_filt(peak_found_corrected)), 'g*');
+        plot(find(is_rim_shot_corrected), 10 * log10(x_filt(is_rim_shot_corrected)), 'b*');
         plot(find(peak_found_corrected),  10 * log10(pos_sense_metric(peak_found)) + 40, 'k*');
-        plot(find(is_left_main_peak),     10 * log10(hil_filt(is_left_main_peak)), 'y*');
+        plot(find(is_left_main_peak),     10 * log10(x_filt(is_left_main_peak)), 'y*');
         ylim([-10, 90]);
 
 end
@@ -213,9 +212,8 @@ function fifo_memory = update_fifo ( input, ...
 end
 
 
-function [hil_debug, ...
-          hil_filt, ...
-          hil_filt_decay_debug, ...
+function [x_filt_debug, ...
+          x_filt_decay_debug, ...
           cur_decay_debug, ...
           rim_max_pow_debug, ...
           x_rim_high_debug, ...
@@ -226,7 +224,8 @@ function [hil_debug, ...
           was_pos_sense_ready, ...
           pos_sense_metric, ...
           is_rim_shot, ...
-          is_left_main_peak] = process_sample(x)
+          is_left_main_peak] = process_sample(x, i, ...
+                                              x_filt_debug)
 
 global Fs a_re a_im;
 global hil_filt_len hil_hist hil_hist_velocity hil_hist_velocity_len;
@@ -262,10 +261,9 @@ x_rim_high_debug  = 0; % just for debugging
 
 % Calculate peak detection -----------------------------------------------------
 % hilbert filter
-hil_hist  = update_fifo(x(1), hil_filt_len, hil_hist);
-hil_re    = sum(hil_hist .* a_re);
-hil_im    = sum(hil_hist .* a_im);
-hil_debug = complex(hil_re, hil_im); % just for debugging
+hil_hist = update_fifo(x(1), hil_filt_len, hil_hist);
+hil_re   = sum(hil_hist .* a_re);
+hil_im   = sum(hil_hist .* a_im);
 
 % hilbert filtered signal storage for velocity estimation
 hil_magsq         = hil_re * hil_re + hil_im * hil_im;
@@ -276,7 +274,7 @@ mov_av_hist_re = update_fifo(hil_re, energy_window_len, mov_av_hist_re);
 mov_av_hist_im = update_fifo(hil_im, energy_window_len, mov_av_hist_im);
 mov_av_re      = sum(mov_av_hist_re) * mov_av_norm_fact;
 mov_av_im      = sum(mov_av_hist_im) * mov_av_norm_fact;
-hil_filt       = mov_av_re * mov_av_re + mov_av_im * mov_av_im;
+x_filt         = mov_av_re * mov_av_re + mov_av_im * mov_av_im;
 
 % exponential decay assumption
 if decay_back_cnt > 0
@@ -284,29 +282,29 @@ if decay_back_cnt > 0
   % subtract decay (with clipping at zero)
   cur_decay       = decay_scaling * decay(1 + decay_len - decay_back_cnt);
   cur_decay_debug = cur_decay; % just for debugging
-  hil_filt_decay  = hil_filt - cur_decay;
+  x_filt_decay    = x_filt - cur_decay;
   decay_back_cnt  = decay_back_cnt - 1;
 
-  if hil_filt_decay < 0
-    hil_filt_decay = 0;
+  if x_filt_decay < 0
+    x_filt_decay = 0;
   end
 
 else
-  hil_filt_decay = hil_filt;
+  x_filt_decay = x_filt;
 end
 
 % threshold test
-if ((hil_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
+if ((x_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
 
   was_above_threshold = true;
 
   % climb to the maximum of the first peak
-  if (first_peak_val < hil_filt) && (scan_time_cnt == 0)
-    first_peak_val = hil_filt;
+  if (first_peak_val < x_filt) && (scan_time_cnt == 0)
+    first_peak_val = x_filt;
   else
 
     % check if there is a much larger first peak
-    if (prev_hil_filt_val > hil_filt) && (first_peak_val * first_peak_diff_thresh < prev_hil_filt_val)
+    if (prev_hil_filt_val > x_filt) && (first_peak_val * first_peak_diff_thresh < prev_hil_filt_val)
 
       % reset first peak detection and restart scan time
       first_peak_val = prev_hil_filt_val;
@@ -331,16 +329,16 @@ if ((hil_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
     end
 
     % search for a maximum in the scan time interval
-    if hil_filt > max_hil_filt_val
+    if x_filt > max_hil_filt_val
 
-      max_hil_filt_val  = hil_filt;                   % we need to store the origianl Hilbert filtered signal for the decay
+      max_hil_filt_val  = x_filt;                     % we need to store the origianl Hilbert filtered signal for the decay
       peak_found_offset = scan_time_cnt - 1;          % update position of detected peak ("-1" because peak is current sample not previous)
       power_hypo_left   = hist_main_peak_pow_left(1); % for left/right main peak detection
 
     end
 
     scan_time_cnt     = scan_time_cnt - 1;
-    prev_hil_filt_val = hil_filt;
+    prev_hil_filt_val = x_filt;
 
     % end condition of scan time
     if scan_time_cnt <= 0
@@ -372,7 +370,7 @@ if mask_back_cnt > 0
 end
 
 % manage left/right main peak detection by power comparision
-hist_main_peak_pow_left = update_fifo(hil_filt, main_peak_dist, hist_main_peak_pow_left);
+hist_main_peak_pow_left = update_fifo(x_filt, main_peak_dist, hist_main_peak_pow_left);
 
 if power_hypo_right_cnt > 0
 
@@ -385,7 +383,7 @@ if power_hypo_right_cnt > 0
     % now start the counter for the decay power estimation interval start (note
     % that we have to add one because we first decrement and then we check for
     % end condition)
-    if power_hypo_left > hil_filt
+    if power_hypo_left > x_filt
       decay_pow_est_start_cnt = decay_est_delay2nd - main_peak_dist + 1; % detected peak is right main peak
     else
 
@@ -413,7 +411,7 @@ end
 
 if decay_pow_est_cnt > 0
 
-  decay_pow_est_sum = decay_pow_est_sum + hil_filt; % sum up the powers in pre-defined interval
+  decay_pow_est_sum = decay_pow_est_sum + x_filt; % sum up the powers in pre-defined interval
   decay_pow_est_cnt = decay_pow_est_cnt - 1;
 
   % end condition
@@ -426,8 +424,6 @@ if decay_pow_est_cnt > 0
   end
 
 end
-
-hil_filt_decay_debug = hil_filt_decay; % just for debugging
 
 
 % Calculate positional sensing -------------------------------------------------
@@ -546,6 +542,10 @@ if was_peak_found && (~pos_sense_is_used || was_pos_sense_ready) && (~rim_shot_i
   was_rim_shot_ready  = false;
 
 end
+
+% debug outputs
+x_filt_decay_debug = x_filt_decay;
+x_filt_debug(i)    = x_filt;
 
 end
 
