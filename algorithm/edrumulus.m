@@ -99,11 +99,9 @@ end
 
 function Setup
 
-global Fs a_re a_im bp_filt_a bp_filt_b bp_filt_len bp_filt_hist_x bp_filt_hist_y;
-global hil_filt_len hil_hist hil_hist_velocity hil_hist_velocity_len;
+global Fs bp_filt_a bp_filt_b bp_filt_len bp_filt_hist_x bp_filt_hist_y;
 global b_rim_high a_rim_high rim_high_prev_x rim_x_high;
-global energy_window_len pos_energy_window_len scan_time scan_time_cnt;
-global mov_av_hist_re mov_av_hist_im mov_av_norm_fact;
+global pos_energy_window_len scan_time scan_time_cnt;
 global mask_time mask_back_cnt threshold first_peak_diff_thresh was_above_threshold;
 global first_peak_val prev_hil_filt_val;
 global main_peak_dist hist_main_peak_pow_left;
@@ -118,13 +116,7 @@ global hil_filt_max_pow stored_pos_sense_metric stored_is_rimshot;
 global max_hil_filt_val peak_found_offset;
 global was_peak_found was_pos_sense_ready was_rim_shot_ready;
 
-Fs           = 8000;
-hil_filt_len = 7;
-hil_hist     = zeros(hil_filt_len, 1); % memory allocation for hilbert filter history
-a_re = [-0.037749783581601, -0.069256807147465, -1.443799477299919,  2.473967088799056, ...
-         0.551482327389238, -0.224119735833791, -0.011665324660691]';
-a_im = [ 0,                  0.213150535195075, -1.048981722170302, -1.797442302898130, ...
-         1.697288080048948,  0,                  0.035902177664014]';
+Fs                      = 8000;
 bp_filt_len             = 5;
 bp_filt_a               = [6.704579059531744e-01, -2.930427216820138, 4.846289804288025, -3.586239808116909]';
 bp_filt_b               = [1.658193166930305e-02, 0, -3.316386333860610e-02, 0, 1.658193166930305e-02]';
@@ -132,12 +124,8 @@ rim_high_prev_x         = 0;
 rim_x_high              = 0;
 b_rim_high              = [0.969531252908746, -0.969531252908746];
 a_rim_high              = -0.939062505817492;
-energy_window_len       = round(2e-3 * Fs); % hit energy estimation time window length (e.g. 2 ms)
-mov_av_norm_fact        = 1 / sqrt(energy_window_len);
 scan_time               = round(2.5e-3 * Fs); % scan time from first detected peak
 scan_time_cnt           = 0;
-mov_av_hist_re          = zeros(energy_window_len, 1); % real part memory for moving average filter history
-mov_av_hist_im          = zeros(energy_window_len, 1); % imaginary part memory for moving average filter history
 mask_time               = round(6e-3 * Fs); % mask time (e.g. 10 ms)
 mask_back_cnt           = 0;
 threshold               = power(10, 35 / 10); % 35 dB threshold
@@ -163,8 +151,6 @@ hil_low_re              = 0;
 hil_low_im              = 0;
 pos_energy_window_len   = round(2e-3 * Fs); % positional sensing energy estimation time window length (e.g. 2 ms)
 pos_sense_cnt           = 0;
-hil_hist_velocity_len   = scan_time + energy_window_len;
-hil_hist_velocity       = zeros(hil_hist_velocity_len, 1);
 bp_filt_hist_x          = zeros(bp_filt_len, 1);
 bp_filt_hist_y          = zeros(bp_filt_len - 1, 1);
 hil_hist_re             = zeros(pos_energy_window_len, 1);
@@ -234,11 +220,9 @@ function [x_filt_debug, ...
           is_left_main_peak] = process_sample(x, i, ...
                                               x_filt_debug)
 
-global Fs a_re a_im bp_filt_a bp_filt_b bp_filt_len bp_filt_hist_x bp_filt_hist_y;
-global hil_filt_len hil_hist hil_hist_velocity hil_hist_velocity_len;
+global Fs bp_filt_a bp_filt_b bp_filt_len bp_filt_hist_x bp_filt_hist_y;
 global b_rim_high a_rim_high rim_high_prev_x rim_x_high;
-global energy_window_len pos_energy_window_len scan_time scan_time_cnt;
-global mov_av_hist_re mov_av_hist_im mov_av_norm_fact;
+global pos_energy_window_len scan_time scan_time_cnt;
 global mask_time mask_back_cnt threshold first_peak_diff_thresh was_above_threshold;
 global first_peak_val prev_hil_filt_val;
 global main_peak_dist hist_main_peak_pow_left;
@@ -271,28 +255,7 @@ x_rim_high_debug  = 0; % just for debugging
 bp_filt_hist_x = update_fifo(x(1), bp_filt_len, bp_filt_hist_x);
 x_filt         = sum(bp_filt_hist_x .* bp_filt_b) - sum(bp_filt_hist_y .* bp_filt_a);
 bp_filt_hist_y = update_fifo(x_filt, bp_filt_len - 1, bp_filt_hist_y);
-x_filt         = x_filt * x_filt;
-
-
-
-% TO BE REMOVED:
-% hilbert filter
-hil_hist = update_fifo(x(1), hil_filt_len, hil_hist);
-hil_re   = sum(hil_hist .* a_re);
-hil_im   = sum(hil_hist .* a_im);
-
-% hilbert filtered signal storage for velocity estimation
-hil_magsq         = hil_re * hil_re + hil_im * hil_im;
-hil_hist_velocity = update_fifo(hil_magsq, hil_hist_velocity_len, hil_hist_velocity);
-
-% moving average filter
-mov_av_hist_re = update_fifo(hil_re, energy_window_len, mov_av_hist_re);
-mov_av_hist_im = update_fifo(hil_im, energy_window_len, mov_av_hist_im);
-mov_av_re      = sum(mov_av_hist_re) * mov_av_norm_fact;
-mov_av_im      = sum(mov_av_hist_im) * mov_av_norm_fact;
-%x_filt         = mov_av_re * mov_av_re + mov_av_im * mov_av_im;
-
-
+x_filt         = x_filt * x_filt; % calculate power of filter result
 
 % exponential decay assumption
 if decay_back_cnt > 0
@@ -362,6 +325,10 @@ if ((x_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
     if scan_time_cnt <= 0
 
       % get the maximum velocity in the scan time using the hilbert filtered signal
+
+% TEST
+hil_hist_velocity = first_peak_val;
+
       peak_velocity = max(hil_hist_velocity);
 
       % scan time expired
@@ -447,6 +414,10 @@ end
 % Calculate positional sensing -------------------------------------------------
 if pos_sense_is_used
 
+% TEST
+hil_re = 0;
+hil_im = 0;
+
   % low pass filter of the Hilbert signal
   hil_low_re = (1 - alpha) * hil_low_re + alpha * hil_re;
   hil_low_im = (1 - alpha) * hil_low_im + alpha * hil_im;
@@ -513,8 +484,8 @@ if length(x) > 1 % rim piezo signal is in second dimension
 
     % a peak was found, we now have to start the delay process to fill up the
     % required buffer length for our metric
-    rim_shot_cnt     = rim_shot_window_len / 2 - 1;
-    hil_filt_max_pow = first_peak_val;
+    rim_shot_cnt = rim_shot_window_len / 2 - 1;
+    x_max_pow    = first_peak_val;
 
   end
 
@@ -528,7 +499,7 @@ if length(x) > 1 % rim piezo signal is in second dimension
       % the buffers are filled, now calculate the metric
       rim_max_pow        = max(rim_x_high_hist .* rim_x_high_hist);
       rim_max_pow_debug  = rim_max_pow; % just for debugging
-      rim_metric_db      = 10 * log10(rim_max_pow / hil_filt_max_pow);
+      rim_metric_db      = 10 * log10(rim_max_pow / x_max_pow);
       stored_is_rimshot  = rim_metric_db > rim_shot_treshold_dB;
       rim_shot_cnt       = 0;
       was_rim_shot_ready = true;

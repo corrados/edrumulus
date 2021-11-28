@@ -327,7 +327,7 @@ end
 function pos_sense_metric = calc_pos_sense_metric(x, Fs, all_first_peaks)
 global pad;
 
-% low pass filter of the Hilbert signal
+% low pass filter of the input signal
 % moving average cut off frequency approximation according to:
 % https://dsp.stackexchange.com/questions/9966/what-is-the-cut-off-frequency-of-a-moving-average-filter
 lp_cutoff_norm        = pad.pos_low_pass_cutoff / Fs;
@@ -405,13 +405,13 @@ if size(x, 2) > 1
     win_idx                     = (all_peaks_x(i):all_peaks_x(i) + rim_shot_window_len - 1) - rim_shot_window_len / 2;
     win_idx                     = win_idx((win_idx <= length(rim_x)) & (win_idx > 0));
     [rim_max_pow(i), max_index] = max(rim_x(win_idx) .^ 2);
-    x_filt_max_pow(i)           = x(all_peaks_x(i), 1) .^ 2;
+    x_max_pow(i)                = x(all_peaks_x(i), 1) .^ 2;
     rim_max_pow_index(i)        = win_idx(1) + max_index - 1; % only for debugging
     rim_win_region(win_idx)     = rim_max_pow(i);             % only for debugging
 
   end
 
-  rim_metric_db = 10 * log10(rim_max_pow ./ x_filt_max_pow);
+  rim_metric_db = 10 * log10(rim_max_pow ./ x_max_pow);
   is_rim_shot   = rim_metric_db > rim_shot_treshold_dB;
 
 %figure; plot(10 * log10([x(:, 1) .^ 2, rim_x .^ 2, rim_win_region])); hold on; grid on;
