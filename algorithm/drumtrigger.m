@@ -157,6 +157,9 @@ global pad;
 %[b, a] = ellip(2, 0.9, 40, [40 400] / 4e3); % optimized for detecting peaks in noise
 [b, a] = butter(2, [40 400] / 4e3); % seems to be a good trade-off
 
+% TEST adjust filtered signal amplification so that the noise floor matches the unfiltered signal (depends on hardware noise spectrum)
+%f = 8; b = b * f; pad.threshold_db = pad.threshold_db + 20 * log10(f);
+
 x_filt = filter(b, a, x(:, 1)) .^ 2;
 %close all;freqz(b, a, 512, 8000);f(3)
 %subplot(2,1,1), plot(20 * log10(abs([x(:, 1) y]))); axis([-1809.80310, 142862.72867, -130.11254, 96.47492]);
@@ -200,7 +203,7 @@ decay_curve3 = 10 .^ (-(0:decay_len3 - 1) / 10 * decay_grad3);
 decay_curve  = [decay_curve1(1:end - 1), decay_curve1(end) * decay_curve2(1:end - 1), decay_curve1(end) * decay_curve2(end) * decay_curve3];
 decay_len    = decay_len1 + decay_len2 + decay_len3;
 
-last_peak_idx      = 0;
+last_peak_idx      = pre_scan_time;
 all_peaks          = [];
 all_first_peaks    = [];
 i                  = 1;
@@ -224,7 +227,7 @@ while ~no_more_peak
   end
 
   org_above_thresh_start = above_thresh_start(1); % store original unmodifed value
-  above_thresh_start     = max(1, org_above_thresh_start - x_filt_delay); % consider filter delay
+  above_thresh_start     = org_above_thresh_start - x_filt_delay; % consider filter delay
 
   % It has shown that using the filtered signal for velocity
   % estimation, the detected velocity drops significantly if a mesh pad is hit
@@ -233,7 +236,7 @@ while ~no_more_peak
   % have to use the unfiltered signal.
 
   % climb to the maximum of the first peak
-  first_peak_idx = max(1, above_thresh_start - pre_scan_time);
+  first_peak_idx = above_thresh_start - pre_scan_time;
   max_idx        = find(x_sq(1 + first_peak_idx:end) - x_sq(first_peak_idx:end - 1) < 0);
 
   if ~isempty(max_idx)
@@ -259,9 +262,9 @@ while ~no_more_peak
   all_first_peaks = [all_first_peaks; first_peak_idx];
 
   % search in a pre-defined scan time for the highest peak in unfiltered signal
-  scan_indexes              = above_thresh_start + (0:scan_time - 1);
-  [~, max_idx]              = max(x_sq(scan_indexes));
-  peak_idx                  = above_thresh_start + max_idx - 1;
+  scan_indexes = above_thresh_start + (0:scan_time - 1);
+  [~, max_idx] = max(x_sq(scan_indexes));
+  peak_idx     = above_thresh_start + max_idx - 1;
 
   % search from above threshold to corrected scan+mask time for highest peak in
   % filtered signal, needed for decay power estimation
@@ -428,7 +431,8 @@ pos_sense_metric = calc_pos_sense_metric(x(:, 1), Fs, all_first_peaks);
 
 % plot results
 figure
-plot(10 * log10([mask_region, scan_region, pre_scan_region, decay_est_rng]), 'LineWidth', 20); grid on; hold on; set(gca, 'ColorOrderIndex', 1)
+plot(10 * log10([mask_region, scan_region, pre_scan_region, decay_est_rng]), 'LineWidth', 20);
+grid on; hold on; set(gca, 'ColorOrderIndex', 1); % reset color order so that x trace is blue and so on
 plot(10 * log10([x(:, 1) .^ 2, x_filt, decay_all]));
 plot(all_first_peaks, 10 * log10(x(all_first_peaks, 1) .^ 2), 'b*');
 plot(all_peaks, 10 * log10(x(all_peaks, 1) .^ 2), 'g*');
