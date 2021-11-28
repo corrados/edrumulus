@@ -449,6 +449,9 @@ title('Green marker: level; Black marker: position; Blue marker: first peak');
 xlabel('samples'); ylabel('dB');
 ylim([-10, 90]);
 
+% TEST for edrumulus porting...
+axis([61, 293, 14, 71]);
+
 end
 
 

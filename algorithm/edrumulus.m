@@ -42,6 +42,8 @@ Setup();
 
 % loop
 x_filt                    = zeros(size(x, 1), 1);
+decay_est_rng             = zeros(size(x, 1), 1);
+
 x_filt_decay_debug        = zeros(size(x, 1), 1);
 cur_decay_debug           = zeros(size(x, 1), 1);
 rim_max_pow_debug         = zeros(size(x, 1), 1);
@@ -53,11 +55,11 @@ pos_sense_peak_energy_low = zeros(size(x, 1), 1);
 was_pos_sense_ready       = false(size(x, 1), 1);
 pos_sense_metric          = zeros(size(x, 1), 1);
 is_rim_shot               = false(size(x, 1), 1);
-is_left_main_peak         = false(size(x, 1), 1);
 
 for i = 1:size(x, 1)
 
   [x_filt, ...
+   decay_est_rng, ...
    x_filt_decay_debug(i), ...
    cur_decay_debug(i), ...
    rim_max_pow_debug(i), ...
@@ -68,9 +70,9 @@ for i = 1:size(x, 1)
    pos_sense_peak_energy_low(i), ...
    was_pos_sense_ready(i), ...
    pos_sense_metric(i), ...
-   is_rim_shot(i), ...
-   is_left_main_peak(i)] = process_sample(x(i, :), i, ...
-                                          x_filt);
+   is_rim_shot(i)] = process_sample(x(i, :), i, ...
+                                    x_filt, ...
+                                    decay_est_rng);
 
 end
 
@@ -86,28 +88,31 @@ is_rim_shot_corrected(is_rim_shot_idx) = true;
 %        plot(find(was_pos_sense_ready), 10 * log10(pos_sense_peak_energy(was_pos_sense_ready)), 'k*');
 %        ylim([0, 90]); title('checking pos sense high/low signals for metric');
 
-figure; plot(10 * log10([x(:, 1) .^ 2, x_filt, x_filt_decay_debug, cur_decay_debug, x_rim_high_debug])); hold on; grid on;
-        plot(10 * log10(rim_max_pow_debug), 'y*');
-        plot(find(peak_found_corrected),  10 * log10(x_filt(peak_found_corrected)), 'g*');
-        plot(find(is_rim_shot_corrected), 10 * log10(x_filt(is_rim_shot_corrected)), 'b*');
-        plot(find(peak_found_corrected),  10 * log10(pos_sense_metric(peak_found)) + 40, 'k*');
-        plot(find(is_left_main_peak),     10 * log10(x_filt(is_left_main_peak)), 'y*');
-        ylim([-10, 90]);
+figure;
+plot(10 * log10([decay_est_rng]), 'LineWidth', 20);
+grid on; hold on; set(gca, 'ColorOrderIndex', 1); % reset color order so that x trace is blue and so on
+plot(10 * log10([x(:, 1) .^ 2, x_filt, x_filt_decay_debug, cur_decay_debug, x_rim_high_debug]));
+plot(10 * log10(rim_max_pow_debug), 'y*');
+plot(find(peak_found_corrected),  10 * log10(x_filt(peak_found_corrected)), 'g*');
+plot(find(is_rim_shot_corrected), 10 * log10(x_filt(is_rim_shot_corrected)), 'b*');
+plot(find(peak_found_corrected),  10 * log10(pos_sense_metric(peak_found)) + 40, 'k*');
+ylim([-10, 90]);
+
+% TEST for edrumulus porting...
+axis([61, 293, 14, 71]);
 
 end
 
 
 function Setup
 
-global Fs bp_filt_a bp_filt_b bp_filt_len bp_filt_hist_x bp_filt_hist_y;
+global Fs bp_filt_a bp_filt_b bp_filt_len bp_filt_hist_x bp_filt_hist_y x_filt_delay;
 global b_rim_high a_rim_high rim_high_prev_x rim_x_high;
 global pos_energy_window_len scan_time scan_time_cnt;
 global mask_time mask_back_cnt threshold first_peak_diff_thresh was_above_threshold;
 global first_peak_val prev_hil_filt_val;
-global main_peak_dist hist_main_peak_pow_left;
-global power_hypo_left power_hypo_right_cnt;
 global decay_pow_est_start_cnt decay_pow_est_cnt decay_pow_est_sum;
-global decay_est_delay2nd decay_est_len decay_est_fact decay_fact decay_len;
+global decay_est_delay decay_est_len decay_est_fact decay_fact decay_len;
 global decay decay_back_cnt decay_scaling alpha;
 global hil_low_re hil_low_im hil_hist_re hil_hist_im;
 global hil_low_hist_re hil_low_hist_im pos_sense_cnt;
@@ -120,6 +125,7 @@ Fs                      = 8000;
 bp_filt_len             = 5;
 bp_filt_a               = [6.704579059531744e-01, -2.930427216820138, 4.846289804288025, -3.586239808116909]';
 bp_filt_b               = [1.658193166930305e-02, 0, -3.316386333860610e-02, 0, 1.658193166930305e-02]';
+x_filt_delay            = 5;
 rim_high_prev_x         = 0;
 rim_x_high              = 0;
 b_rim_high              = [0.969531252908746, -0.969531252908746];
@@ -133,14 +139,11 @@ first_peak_diff_thresh  = 10 ^ (20 / 10); % 20 dB difference allowed between fir
 was_above_threshold     = false;
 first_peak_val          = 0;
 prev_hil_filt_val       = 0;
-main_peak_dist          = round(2.25e-3 * Fs);
-hist_main_peak_pow_left = zeros(main_peak_dist, 1); % memory for left main peak power
-power_hypo_left         = 0;
-power_hypo_right_cnt    = 0;
 decay_pow_est_start_cnt = 0;
 decay_pow_est_cnt       = 0;
 decay_pow_est_sum       = 0;
-decay_est_delay2nd      = round(2.5e-3 * Fs);
+decay_est_delay_ms      = 8;
+decay_est_delay         = round(decay_est_delay_ms * 1e-3 * Fs);
 decay_est_len           = round(3e-3 * Fs);
 decay_est_fact          = 10 ^ (15 / 10);
 decay_fact              = power(10, 1 / 10); % decay factor of 1 dB
@@ -206,6 +209,7 @@ end
 
 
 function [x_filt_debug, ...
+          decay_est_rng_debug, ...
           x_filt_decay_debug, ...
           cur_decay_debug, ...
           rim_max_pow_debug, ...
@@ -216,19 +220,17 @@ function [x_filt_debug, ...
           peak_energy_low, ...
           was_pos_sense_ready, ...
           pos_sense_metric, ...
-          is_rim_shot, ...
-          is_left_main_peak] = process_sample(x, i, ...
-                                              x_filt_debug)
+          is_rim_shot] = process_sample(x, i, ...
+                                        x_filt_debug, ...
+                                        decay_est_rng_debug)
 
-global Fs bp_filt_a bp_filt_b bp_filt_len bp_filt_hist_x bp_filt_hist_y;
+global Fs bp_filt_a bp_filt_b bp_filt_len bp_filt_hist_x bp_filt_hist_y x_filt_delay;
 global b_rim_high a_rim_high rim_high_prev_x rim_x_high;
 global pos_energy_window_len scan_time scan_time_cnt;
 global mask_time mask_back_cnt threshold first_peak_diff_thresh was_above_threshold;
 global first_peak_val prev_hil_filt_val;
-global main_peak_dist hist_main_peak_pow_left;
-global power_hypo_left power_hypo_right_cnt;
 global decay_pow_est_start_cnt decay_pow_est_cnt decay_pow_est_sum;
-global decay_est_delay2nd decay_est_len decay_est_fact decay_fact decay_len;
+global decay_est_delay decay_est_len decay_est_fact decay_fact decay_len;
 global decay decay_back_cnt decay_scaling alpha;
 global hil_low_re hil_low_im hil_hist_re hil_hist_im;
 global hil_low_hist_re hil_low_hist_im pos_sense_cnt;
@@ -241,7 +243,6 @@ global was_peak_found was_pos_sense_ready was_rim_shot_ready;
 peak_found        = false;
 pos_sense_metric  = 0;
 is_rim_shot       = false;
-is_left_main_peak = false;
 first_peak_found  = false; % only used internally
 pos_sense_is_used = true;  % only used internally to enable/disable positional sensing
 rim_shot_is_used  = false; % only used internally
@@ -277,7 +278,21 @@ end
 % threshold test
 if ((x_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
 
+  % start counter for decay power estimation (must be started only once at the
+  % first time the signal was above threshold)
+  if ~was_above_threshold
+    decay_pow_est_start_cnt = max(1, decay_est_delay - x_filt_delay);
+  end
+
+  % this flag ensures that we always enter the if condition after the very first
+  % time the signal was above the threshold (this flag is then reset when the
+  % scan time is expired)
   was_above_threshold = true;
+
+
+
+
+% TODO from here...
 
   % climb to the maximum of the first peak
   if (first_peak_val < x_filt) && (scan_time_cnt == 0)
@@ -300,7 +315,6 @@ if ((x_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
       scan_time_cnt       = scan_time;                  % initialize scan time counter
       max_hil_filt_val    = first_peak_val;             % initialize maximum value with first peak
       peak_found_offset   = scan_time;                  % position of first peak after scan time expired (no "-1" because peak is previous sample)
-      power_hypo_left     = hist_main_peak_pow_left(1); % for left/right main peak detection
       first_peak_found    = true;
       pos_sense_cnt       = 0;                          % needed if we reset the first peak
       was_pos_sense_ready = false;                      % needed if we reset the first peak
@@ -314,7 +328,6 @@ if ((x_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
 
       max_hil_filt_val  = x_filt;                     % we need to store the origianl Hilbert filtered signal for the decay
       peak_found_offset = scan_time_cnt - 1;          % update position of detected peak ("-1" because peak is current sample not previous)
-      power_hypo_left   = hist_main_peak_pow_left(1); % for left/right main peak detection
 
     end
 
@@ -340,10 +353,6 @@ hil_hist_velocity = first_peak_val;
       mask_back_cnt       = mask_time - scan_time; % start is first peak (i.e. scan_time instead of peak_found_offset)
       was_peak_found      = true;
 
-      % for left/right main peak detection (note that we have to add one because
-      % we first decrement and then we check for end condition)
-      power_hypo_right_cnt = max(1, main_peak_dist - peak_found_offset + 1);
-
     end
 
   end
@@ -354,41 +363,13 @@ if mask_back_cnt > 0
   mask_back_cnt = mask_back_cnt - 1;
 end
 
-% manage left/right main peak detection by power comparision
-hist_main_peak_pow_left = update_fifo(x_filt, main_peak_dist, hist_main_peak_pow_left);
-
-if power_hypo_right_cnt > 0
-
-  power_hypo_right_cnt = power_hypo_right_cnt - 1;
-
-  % end condition
-  if power_hypo_right_cnt <= 0
-
-    % now we can detect if the main peak was the left/right main peak and we can
-    % now start the counter for the decay power estimation interval start (note
-    % that we have to add one because we first decrement and then we check for
-    % end condition)
-    if power_hypo_left > x_filt
-      decay_pow_est_start_cnt = decay_est_delay2nd - main_peak_dist + 1; % detected peak is right main peak
-    else
-
-      % detected peak is left main peak
-      is_left_main_peak       = true;
-      decay_pow_est_start_cnt = decay_est_delay2nd + 1;
-
-    end
-
-  end
-
-end
-
 % decay power estimation
 if decay_pow_est_start_cnt > 0
 
   decay_pow_est_start_cnt = decay_pow_est_start_cnt - 1;
 
   % end condition
-  if decay_pow_est_start_cnt <= 0
+  if decay_pow_est_start_cnt == 0
     decay_pow_est_cnt = decay_est_len; % now the power estimation can start
   end
 
@@ -400,11 +381,13 @@ if decay_pow_est_cnt > 0
   decay_pow_est_cnt = decay_pow_est_cnt - 1;
 
   % end condition
-  if decay_pow_est_cnt <= 0
+  if decay_pow_est_cnt == 0
 
     decay_power       = decay_pow_est_sum / decay_est_len;                % calculate average power
     decay_pow_est_sum = 0;                                                % we have to reset the sum for the next calculation
     decay_scaling     = min(decay_scaling, decay_est_fact * decay_power); % adjust the decay curve
+
+    decay_est_rng_debug(i + (-decay_est_len + 1:0)) = decay_power; % only for debugging
 
   end
 
