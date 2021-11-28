@@ -82,7 +82,7 @@ switch padtype
     pad.decay_grad_fact3   = 100;
   case 'pd8'
     pad.scan_time_ms       = 1.3;
-    pad.decay_est_delay_ms = 10;
+    pad.decay_est_delay_ms = 6;
     pad.mask_time_ms       = 7;
     pad.decay_fact_db      = 5;
     pad.decay_len_ms2      = 30;
@@ -158,7 +158,7 @@ global pad;
 [b, a] = butter(2, [40 400] / 4e3); % seems to be a good trade-off
 
 % TEST adjust filtered signal amplification so that the noise floor matches the unfiltered signal (depends on hardware noise spectrum)
-%f = 8; b = b * f; pad.threshold_db = pad.threshold_db + 20 * log10(f);
+%f = 4; b = b * f; pad.threshold_db = pad.threshold_db + 20 * log10(f);
 
 x_filt = filter(b, a, x(:, 1)) .^ 2;
 %close all;freqz(b, a, 512, 8000);f(3)
@@ -206,7 +206,6 @@ decay_len    = decay_len1 + decay_len2 + decay_len3;
 last_peak_idx      = pre_scan_time;
 all_peaks          = [];
 all_first_peaks    = [];
-i                  = 1;
 no_more_peak       = false;
 x_sq               = x .^ 2;
 x_filt_decay       = x_filt;
@@ -234,8 +233,14 @@ while ~no_more_peak
   % close to the edge. This is because the main lope is much smaller at the edge
   % and therefore the collected energy is much smaller. To solve this issue, we
   % have to use the unfiltered signal.
+  %
+  % Caused by the impulse response of the band-pass filter, the peaks usually
+  % look like three peaks: two smaller peaks left/right and a large in the
+  % middle. For fast rolls only the middle peak might be over the threshold.
+  % Therefore we introduce a pre-scan region to make sure we can detect the
+  % correct firt peak (which is important for the positional sensing).
 
-  % climb to the maximum of the first peak
+  % climb to the maximum of the first peak (using the unfiltered signal)
   first_peak_idx = above_thresh_start - pre_scan_time;
   max_idx        = find(x_sq(1 + first_peak_idx:end) - x_sq(first_peak_idx:end - 1) < 0);
 
@@ -243,7 +248,7 @@ while ~no_more_peak
     first_peak_idx = first_peak_idx + max_idx(1) - 1;
   end
 
-  % find all peaks after the initial peak
+  % find all peaks after the initial peak (using the unfiltered signal)
   peak_idx_after_initial = find((x_sq(2 + first_peak_idx:end) < x_sq(1 + first_peak_idx:end - 1)) & ...
     (x_sq(1 + first_peak_idx:end - 1) >= x_sq(first_peak_idx:end - 2)));
 
@@ -275,24 +280,18 @@ while ~no_more_peak
   % estimate current decay power
   decay_factor = x_filt(peak_idx_filt);
 
-  % average power measured right after the two main peaks (it showed for high level hits
-  % close to the pad center the decay has much lower power right after the main peaks) in
-  % a predefined time intervall, but never use a higher decay factor than derived from the
-  % main peak (in case a second hit is right behind our main peaks to avoid very high
-  % decay curve placement)
-  decay_power  = mean(x_filt(above_thresh_start + decay_est_delay + (0:decay_est_len - 1)));
-  decay_factor = min(decay_factor, decay_est_fact * decay_power);
-
-  decay_est_rng(above_thresh_start + decay_est_delay + (0:decay_est_len - 1)) = decay_power; % only for debugging
+  % average power measured right after the two main peaks (it showed for high
+  % level hits close to the pad center the decay has much lower power right
+  % after the main peaks) in a predefined time intervall, but never use a higher
+  % decay factor than derived from the main peak (in case a second hit is right
+  % behind our main peaks to avoid very high decay curve placement)
+  decay_power_win = above_thresh_start + decay_est_delay + (0:decay_est_len - 1);
+  decay_power     = mean(x_filt(decay_power_win));
+  decay_factor    = min(decay_factor, decay_est_fact * decay_power);
 
   % store the new detected peak
   all_peaks     = [all_peaks; peak_idx];
   last_peak_idx = org_above_thresh_start + scan_time + mask_time;
-
-  % debugging outputs
-  scan_region(scan_indexes)                                                   = x_filt(peak_idx_filt); % mark scan time region
-  pre_scan_region(above_thresh_start - pre_scan_time + (0:pre_scan_time - 1)) = x_filt(peak_idx_filt); % mark pre-scan time region
-  mask_region(last_peak_idx + (-mask_time - x_filt_delay:0))                  = x_filt(peak_idx_filt); % mark mask region
 
   % exponential decay assumption
   decay           = decay_factor * decay_curve;
@@ -307,10 +306,14 @@ while ~no_more_peak
 
   % update filtered signal
   x_filt_decay(decay_x) = x_filt_new;
-  i                     = i + 1;
 
-  decay_all(decay_x)                                                           = decay; % only for debugging
-  decay_all(above_thresh_start + (0:scan_time + mask_time + x_filt_delay - 1)) = nan;   % only for debugging
+  % debugging outputs
+  scan_region(scan_indexes)                                                    = x_filt(peak_idx_filt); % mark scan time region
+  pre_scan_region(above_thresh_start - pre_scan_time + (0:pre_scan_time - 1))  = x_filt(peak_idx_filt); % mark pre-scan time region
+  mask_region(last_peak_idx + (-mask_time - x_filt_delay:0))                   = x_filt(peak_idx_filt); % mark mask region
+  decay_est_rng(decay_power_win)                                               = decay_power;           % mark decay power estimation region
+  decay_all(decay_x)                                                           = decay;                 % store decay curve
+  decay_all(above_thresh_start + (0:scan_time + mask_time + x_filt_delay - 1)) = nan;                   % remove previous decay curve during observation region
 
 end
 
