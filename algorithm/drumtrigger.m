@@ -160,6 +160,10 @@ global pad;
 % TEST adjust filtered signal amplification so that the noise floor matches the unfiltered signal (depends on hardware noise spectrum)
 %f = 4; b = b * f; pad.threshold_db = pad.threshold_db + 20 * log10(f);
 
+% TEST to export coefficients to edrumulus.m:
+%fliplr(a(2:end))
+%fliplr(b)
+
 x_filt = filter(b, a, x(:, 1)) .^ 2;
 %close all;freqz(b, a, 512, 8000);f(3)
 %subplot(2,1,1), plot(20 * log10(abs([x(:, 1) y]))); axis([-1809.80310, 142862.72867, -130.11254, 96.47492]);

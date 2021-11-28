@@ -86,7 +86,7 @@ is_rim_shot_corrected(is_rim_shot_idx) = true;
 %        plot(find(was_pos_sense_ready), 10 * log10(pos_sense_peak_energy(was_pos_sense_ready)), 'k*');
 %        ylim([0, 90]); title('checking pos sense high/low signals for metric');
 
-figure; plot(10 * log10(abs([x_filt, x_filt_decay_debug, cur_decay_debug, x_rim_high_debug]))); hold on; grid on;
+figure; plot(10 * log10([x(:, 1) .^ 2, x_filt, x_filt_decay_debug, cur_decay_debug, x_rim_high_debug])); hold on; grid on;
         plot(10 * log10(rim_max_pow_debug), 'y*');
         plot(find(peak_found_corrected),  10 * log10(x_filt(peak_found_corrected)), 'g*');
         plot(find(is_rim_shot_corrected), 10 * log10(x_filt(is_rim_shot_corrected)), 'b*');
@@ -99,7 +99,7 @@ end
 
 function Setup
 
-global Fs a_re a_im;
+global Fs a_re a_im bp_filt_a bp_filt_b bp_filt_len bp_filt_hist_x bp_filt_hist_y;
 global hil_filt_len hil_hist hil_hist_velocity hil_hist_velocity_len;
 global b_rim_high a_rim_high rim_high_prev_x rim_x_high;
 global energy_window_len pos_energy_window_len scan_time scan_time_cnt;
@@ -125,6 +125,9 @@ a_re = [-0.037749783581601, -0.069256807147465, -1.443799477299919,  2.473967088
          0.551482327389238, -0.224119735833791, -0.011665324660691]';
 a_im = [ 0,                  0.213150535195075, -1.048981722170302, -1.797442302898130, ...
          1.697288080048948,  0,                  0.035902177664014]';
+bp_filt_len             = 5;
+bp_filt_a               = [6.704579059531744e-01, -2.930427216820138, 4.846289804288025, -3.586239808116909]';
+bp_filt_b               = [1.658193166930305e-02, 0, -3.316386333860610e-02, 0, 1.658193166930305e-02]';
 rim_high_prev_x         = 0;
 rim_x_high              = 0;
 b_rim_high              = [0.969531252908746, -0.969531252908746];
@@ -162,6 +165,8 @@ pos_energy_window_len   = round(2e-3 * Fs); % positional sensing energy estimati
 pos_sense_cnt           = 0;
 hil_hist_velocity_len   = scan_time + energy_window_len;
 hil_hist_velocity       = zeros(hil_hist_velocity_len, 1);
+bp_filt_hist_x          = zeros(bp_filt_len, 1);
+bp_filt_hist_y          = zeros(bp_filt_len - 1, 1);
 hil_hist_re             = zeros(pos_energy_window_len, 1);
 hil_hist_im             = zeros(pos_energy_window_len, 1);
 hil_low_hist_re         = zeros(pos_energy_window_len, 1);
@@ -229,7 +234,7 @@ function [x_filt_debug, ...
           is_left_main_peak] = process_sample(x, i, ...
                                               x_filt_debug)
 
-global Fs a_re a_im;
+global Fs a_re a_im bp_filt_a bp_filt_b bp_filt_len bp_filt_hist_x bp_filt_hist_y;
 global hil_filt_len hil_hist hil_hist_velocity hil_hist_velocity_len;
 global b_rim_high a_rim_high rim_high_prev_x rim_x_high;
 global energy_window_len pos_energy_window_len scan_time scan_time_cnt;
@@ -262,6 +267,15 @@ x_rim_high_debug  = 0; % just for debugging
 
 
 % Calculate peak detection -----------------------------------------------------
+% IIR band-pass filter
+bp_filt_hist_x = update_fifo(x(1), bp_filt_len, bp_filt_hist_x);
+x_filt         = sum(bp_filt_hist_x .* bp_filt_b) - sum(bp_filt_hist_y .* bp_filt_a);
+bp_filt_hist_y = update_fifo(x_filt, bp_filt_len - 1, bp_filt_hist_y);
+x_filt         = x_filt * x_filt;
+
+
+
+% TO BE REMOVED:
 % hilbert filter
 hil_hist = update_fifo(x(1), hil_filt_len, hil_hist);
 hil_re   = sum(hil_hist .* a_re);
@@ -276,7 +290,9 @@ mov_av_hist_re = update_fifo(hil_re, energy_window_len, mov_av_hist_re);
 mov_av_hist_im = update_fifo(hil_im, energy_window_len, mov_av_hist_im);
 mov_av_re      = sum(mov_av_hist_re) * mov_av_norm_fact;
 mov_av_im      = sum(mov_av_hist_im) * mov_av_norm_fact;
-x_filt         = mov_av_re * mov_av_re + mov_av_im * mov_av_im;
+%x_filt         = mov_av_re * mov_av_re + mov_av_im * mov_av_im;
+
+
 
 % exponential decay assumption
 if decay_back_cnt > 0
