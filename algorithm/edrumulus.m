@@ -22,7 +22,9 @@ function edrumulus(x)
 global energy_window_len;
 global rim_shot_window_len;
 
-close all
+%close all
+% TEST
+drumtrigger
 
 % load test data
 %x = audioread("signals/pd120_roll.wav");x = x(292410:294749, :);
@@ -80,9 +82,9 @@ is_rim_shot_idx                        = find(is_rim_shot) - peak_found_offset(i
 is_rim_shot_corrected                  = false(size(is_rim_shot));
 is_rim_shot_corrected(is_rim_shot_idx) = true;
 
-figure; plot(10 * log10([pos_sense_peak_energy, pos_sense_peak_energy_low * 100])); hold on; grid on;
-        plot(find(was_pos_sense_ready), 10 * log10(pos_sense_peak_energy(was_pos_sense_ready)), 'k*');
-        ylim([0, 90]); title('checking pos sense high/low signals for metric');
+%figure; plot(10 * log10([pos_sense_peak_energy, pos_sense_peak_energy_low * 100])); hold on; grid on;
+%        plot(find(was_pos_sense_ready), 10 * log10(pos_sense_peak_energy(was_pos_sense_ready)), 'k*');
+%        ylim([0, 90]); title('checking pos sense high/low signals for metric');
 
 figure; plot(10 * log10(abs([x_filt, x_filt_decay_debug, cur_decay_debug, x_rim_high_debug]))); hold on; grid on;
         plot(10 * log10(rim_max_pow_debug), 'y*');
