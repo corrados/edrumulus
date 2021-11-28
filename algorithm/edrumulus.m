@@ -33,7 +33,6 @@ x = audioread("signals/pd120_pos_sense.wav");x = x(2900:10000, :);%x = x(55400:5
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(57500:59000, :);%x = x(1:265000, :);%
 
-
 % match the signal level of the ESP32
 x = x * 25000;
 
@@ -94,146 +93,29 @@ figure; plot(10 * log10(abs([hil_filt, hil_filt_decay_debug, cur_decay_debug, x_
         plot(find(is_left_main_peak),     10 * log10(hil_filt(is_left_main_peak)), 'y*');
         ylim([-10, 90]);
 
-% figure; plot(20 * log10(abs([x, hil_debug, hil_filt])));
-
-return;
-
-
-% TEST
-pkg load instrument-control
-
-% prepare serial port
-try
-  a = serialport("COM7", 115200);
-catch
 end
-flush(a);
-
-bReturnIsComplex = false;
-
-% send the input data vector
-for i = 1:length(x)
-
-  % write sample
-  write(a, sprintf('%f.6\n', x(i)), 'char');
-
-  % receive the return sample
-  if bReturnIsComplex
-
-    for j = 1:2
-
-      % get number from string
-      readready = false;
-      bytearray = uint8([]);
-
-      while ~readready
-
-        val = fread(a, 1);
-
-        if val == 13
-          readready = true;
-        end
-
-        bytearray = [bytearray, uint8(val)];
-
-      end
-
-      y(2 * (i - 1) + j) = str2double(char(bytearray));
-
-    end
-
-  else
-
-      % get number from string
-      readready = false;
-      bytearray = uint8([]);
-
-      while ~readready
-
-        val = fread(a, 1);
-
-        if val == 13
-          readready = true;
-        end
-
-        bytearray = [bytearray, uint8(val)];
-
-      end
-
-      y(i) = str2double(char(bytearray));
-
-  end
-
-end
-
-if bReturnIsComplex
-  y = complex(y(1:2:2 * length(x)), y(2:2:2 * length(x)));
-end
-
-% figure; plot([peak_found, y.'], '*');
-figure; plot(20 * log10(abs([hil_filt_debug, y.'])));
-% figure; plot(20 * log10(abs([x, y.'])));
-% figure; plot(abs(x.' - y));
-
-end
-
 
 
 function Setup
 
-global Fs;
-global a_re a_im;
-global hil_filt_len;
-global hil_hist;
-global hil_hist_velocity hil_hist_velocity_len;
-global b_rim_high a_rim_high;
-global rim_high_prev_x;
-global rim_x_high;
-global energy_window_len;
-global pos_energy_window_len;
-global scan_time;
-global scan_time_cnt;
-global mov_av_hist_re mov_av_hist_im;
-global mov_av_norm_fact;
-global mask_time;
-global mask_back_cnt;
-global threshold;
-global first_peak_diff_thresh;
-global was_above_threshold;
-global first_peak_val;
-global prev_hil_filt_val;
-global main_peak_dist;
-global hist_main_peak_pow_left;
-global power_hypo_left;
-global power_hypo_right_cnt;
-global decay_pow_est_start_cnt;
-global decay_pow_est_cnt;
-global decay_pow_est_sum;
-global decay_est_delay2nd;
-global decay_est_len;
-global decay_est_fact;
-global decay_fact;
-global decay_len;
-global decay;
-global decay_back_cnt;
-global decay_scaling;
-global alpha;
-global hil_low_re hil_low_im;
-global hil_hist_re hil_hist_im;
-global hil_low_hist_re hil_low_hist_im;
-global pos_sense_cnt;
-global rim_shot_window_len;
-global rim_shot_treshold_dB;
-global rim_x_high_hist;
-global rim_shot_cnt;
-global hil_filt_max_pow;
-global stored_pos_sense_metric;
-global stored_is_rimshot;
-global max_hil_filt_val;
-global peak_found_offset;
-global was_peak_found;
-global was_pos_sense_ready;
-global was_rim_shot_ready;
+global Fs a_re a_im;
+global hil_filt_len hil_hist hil_hist_velocity hil_hist_velocity_len;
+global b_rim_high a_rim_high rim_high_prev_x rim_x_high;
+global energy_window_len pos_energy_window_len scan_time scan_time_cnt;
+global mov_av_hist_re mov_av_hist_im mov_av_norm_fact;
+global mask_time mask_back_cnt threshold first_peak_diff_thresh was_above_threshold;
+global first_peak_val prev_hil_filt_val;
+global main_peak_dist hist_main_peak_pow_left;
+global power_hypo_left power_hypo_right_cnt;
+global decay_pow_est_start_cnt decay_pow_est_cnt decay_pow_est_sum;
+global decay_est_delay2nd decay_est_len decay_est_fact decay_fact decay_len;
+global decay decay_back_cnt decay_scaling alpha;
+global hil_low_re hil_low_im hil_hist_re hil_hist_im;
+global hil_low_hist_re hil_low_hist_im pos_sense_cnt;
+global rim_shot_window_len rim_shot_treshold_dB rim_x_high_hist rim_shot_cnt;
+global hil_filt_max_pow stored_pos_sense_metric stored_is_rimshot;
+global max_hil_filt_val peak_found_offset;
+global was_peak_found was_pos_sense_ready was_rim_shot_ready;
 
 Fs           = 8000;
 hil_filt_len = 7;
@@ -346,59 +228,24 @@ function [hil_debug, ...
           is_rim_shot, ...
           is_left_main_peak] = process_sample(x)
 
-global Fs;
-global a_re a_im;
-global hil_filt_len;
-global hil_hist;
-global hil_hist_velocity hil_hist_velocity_len;
-global b_rim_high a_rim_high;
-global rim_high_prev_x;
-global rim_x_high;
-global energy_window_len;
-global pos_energy_window_len;
-global scan_time;
-global scan_time_cnt;
-global mov_av_hist_re mov_av_hist_im;
-global mov_av_norm_fact;
-global mask_time;
-global mask_back_cnt;
-global threshold;
-global first_peak_diff_thresh;
-global was_above_threshold;
-global first_peak_val;
-global prev_hil_filt_val;
-global main_peak_dist;
-global hist_main_peak_pow_left;
-global power_hypo_left;
-global power_hypo_right_cnt;
-global decay_pow_est_start_cnt;
-global decay_pow_est_cnt;
-global decay_pow_est_sum;
-global decay_est_delay2nd;
-global decay_est_len;
-global decay_est_fact;
-global decay_fact;
-global decay_len;
-global decay;
-global decay_back_cnt;
-global decay_scaling;
-global alpha;
-global hil_low_re hil_low_im;
-global hil_hist_re hil_hist_im;
-global hil_low_hist_re hil_low_hist_im;
-global pos_sense_cnt;
-global rim_shot_window_len;
-global rim_shot_treshold_dB;
-global rim_x_high_hist;
-global rim_shot_cnt;
-global hil_filt_max_pow;
-global stored_pos_sense_metric;
-global stored_is_rimshot;
-global max_hil_filt_val;
-global peak_found_offset;
-global was_peak_found;
-global was_pos_sense_ready;
-global was_rim_shot_ready;
+global Fs a_re a_im;
+global hil_filt_len hil_hist hil_hist_velocity hil_hist_velocity_len;
+global b_rim_high a_rim_high rim_high_prev_x rim_x_high;
+global energy_window_len pos_energy_window_len scan_time scan_time_cnt;
+global mov_av_hist_re mov_av_hist_im mov_av_norm_fact;
+global mask_time mask_back_cnt threshold first_peak_diff_thresh was_above_threshold;
+global first_peak_val prev_hil_filt_val;
+global main_peak_dist hist_main_peak_pow_left;
+global power_hypo_left power_hypo_right_cnt;
+global decay_pow_est_start_cnt decay_pow_est_cnt decay_pow_est_sum;
+global decay_est_delay2nd decay_est_len decay_est_fact decay_fact decay_len;
+global decay decay_back_cnt decay_scaling alpha;
+global hil_low_re hil_low_im hil_hist_re hil_hist_im;
+global hil_low_hist_re hil_low_hist_im pos_sense_cnt;
+global rim_shot_window_len rim_shot_treshold_dB rim_x_high_hist rim_shot_cnt;
+global hil_filt_max_pow stored_pos_sense_metric stored_is_rimshot;
+global max_hil_filt_val peak_found_offset;
+global was_peak_found was_pos_sense_ready was_rim_shot_ready;
 
 % initialize return parameter
 peak_found        = false;
