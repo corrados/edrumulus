@@ -428,7 +428,8 @@ pos_sense_metric = calc_pos_sense_metric(x(:, 1), Fs, all_first_peaks);
 
 % plot results
 figure
-plot(10 * log10([x(:, 1) .^ 2, x_filt, mask_region, scan_region, pre_scan_region, decay_all, decay_est_rng])); grid on; hold on;
+plot(10 * log10([mask_region, scan_region, pre_scan_region, decay_est_rng]), 'LineWidth', 20); grid on; hold on; set(gca, 'ColorOrderIndex', 1)
+plot(10 * log10([x(:, 1) .^ 2, x_filt, decay_all]));
 plot(all_first_peaks, 10 * log10(x(all_first_peaks, 1) .^ 2), 'b*');
 plot(all_peaks, 10 * log10(x(all_peaks, 1) .^ 2), 'g*');
 plot(all_first_peaks, pos_sense_metric + 40, 'k*');
