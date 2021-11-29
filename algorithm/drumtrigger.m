@@ -31,7 +31,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/teensy4_0_pd80r.wav");x=(x-mean(x))*4;padtype = 'pd80r';%x = x(1:390000, :);%
 %x = audioread("signals/esp32_pd120.wav");x=x/8;
 %x = audioread("signals/esp32_pd8.wav");x=x/8;padtype = 'pd8';
-x = audioread("signals/pd120_pos_sense.wav");x = x(2900:10000, :);%x = x(55400:58000, :);%
+x = audioread("signals/pd120_pos_sense.wav");x=x(10600:15000);%x = x(2900:10000, :);%x = x(55400:58000, :);%
 %x = audioread("signals/pd120_pos_sense2.wav");
 %x = audioread("signals/pd120_single_hits.wav");
 %x = audioread("signals/pd120_roll.wav");%x = x(1:20000, :);%x = x(292410:294749, :);%x = x(311500:317600, :);
@@ -278,7 +278,7 @@ while ~no_more_peak
 
   % search from above threshold to corrected scan+mask time for highest peak in
   % filtered signal, needed for decay power estimation
-  scan_indexes_filt = org_above_thresh_start:above_thresh_start + scan_time + mask_time;
+  scan_indexes_filt = org_above_thresh_start:org_above_thresh_start + scan_time + mask_time;
   [~, max_idx]      = max(x_filt(scan_indexes_filt));
   peak_idx_filt     = org_above_thresh_start + max_idx - 1;
 
@@ -450,7 +450,8 @@ title('Green marker: level; Black marker: position; Blue marker: first peak'); x
 ylim([-10, 90]);
 
 % TEST for edrumulus porting...
-axis([61, 293, 14, 71]);
+%axis([61, 293, 14, 71]);
+axis([2871, 3098, 12, 67]);
 
 end
 
