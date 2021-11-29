@@ -33,7 +33,6 @@ x = audioread("signals/pd120_pos_sense.wav");x = x(2900:10000, :);%x = x(55400:5
 %x = audioread("signals/pd120_pos_sense2.wav");
 %x = audioread("signals/pd120_rimshot.wav");x = x(168000:171000, :);%x = x(1:8000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
-%x = audioread("signals/pd80r.wav");padtype = 'pd80r';x = x(57500:59000, :);%x = x(1:265000, :);%
 
 % match the signal level of the ESP32
 x = x * 25000;
@@ -41,11 +40,11 @@ x = x * 25000;
 Setup();
 
 % loop
-x_filt                    = zeros(size(x, 1), 1);
-decay_est_rng             = zeros(size(x, 1), 1);
+x_filt                    = nan(size(x, 1), 1);
+decay_est_rng             = nan(size(x, 1), 1);
+decay_all                 = nan(size(x, 1), 1);
 
 x_filt_decay_debug        = zeros(size(x, 1), 1);
-cur_decay_debug           = zeros(size(x, 1), 1);
 rim_max_pow_debug         = zeros(size(x, 1), 1);
 x_rim_high_debug          = zeros(size(x, 1), 1);
 peak_found                = false(size(x, 1), 1);
@@ -60,8 +59,8 @@ for i = 1:size(x, 1)
 
   [x_filt, ...
    decay_est_rng, ...
+   decay_all, ...
    x_filt_decay_debug(i), ...
-   cur_decay_debug(i), ...
    rim_max_pow_debug(i), ...
    x_rim_high_debug(i), ...
    peak_found(i), ...
@@ -72,7 +71,8 @@ for i = 1:size(x, 1)
    pos_sense_metric(i), ...
    is_rim_shot(i)] = process_sample(x(i, :), i, ...
                                     x_filt, ...
-                                    decay_est_rng);
+                                    decay_est_rng, ...
+                                    decay_all);
 
 end
 
@@ -91,11 +91,12 @@ is_rim_shot_corrected(is_rim_shot_idx) = true;
 figure;
 plot(10 * log10([decay_est_rng]), 'LineWidth', 20);
 grid on; hold on; set(gca, 'ColorOrderIndex', 1); % reset color order so that x trace is blue and so on
-plot(10 * log10([x(:, 1) .^ 2, x_filt, x_filt_decay_debug, cur_decay_debug, x_rim_high_debug]));
+plot(10 * log10([x(:, 1) .^ 2, x_filt, decay_all, x_filt_decay_debug, x_rim_high_debug]));
 plot(10 * log10(rim_max_pow_debug), 'y*');
 plot(find(peak_found_corrected),  10 * log10(x_filt(peak_found_corrected)), 'g*');
 plot(find(is_rim_shot_corrected), 10 * log10(x_filt(is_rim_shot_corrected)), 'b*');
 plot(find(peak_found_corrected),  10 * log10(pos_sense_metric(peak_found)) + 40, 'k*');
+title('Green marker: level; Black marker: position; Blue marker: first peak'); xlabel('samples'); ylabel('dB');
 ylim([-10, 90]);
 
 % TEST for edrumulus porting...
@@ -111,7 +112,7 @@ global b_rim_high a_rim_high rim_high_prev_x rim_x_high;
 global pos_energy_window_len scan_time scan_time_cnt;
 global mask_time mask_back_cnt threshold first_peak_diff_thresh was_above_threshold;
 global first_peak_val prev_hil_filt_val;
-global decay_pow_est_start_cnt decay_pow_est_cnt decay_pow_est_sum;
+global decay_pow_est_start_cnt decay_pow_est_cnt decay_pow_est_sum decay_back_cnt_start_cnt;
 global decay_est_delay decay_est_len decay_est_fact decay_fact decay_len;
 global decay decay_back_cnt decay_scaling alpha;
 global hil_low_re hil_low_im hil_hist_re hil_hist_im;
@@ -121,63 +122,67 @@ global hil_filt_max_pow stored_pos_sense_metric stored_is_rimshot;
 global max_hil_filt_val peak_found_offset;
 global was_peak_found was_pos_sense_ready was_rim_shot_ready;
 
-Fs                      = 8000;
-bp_filt_len             = 5;
-bp_filt_a               = [6.704579059531744e-01, -2.930427216820138, 4.846289804288025, -3.586239808116909]';
-bp_filt_b               = [1.658193166930305e-02, 0, -3.316386333860610e-02, 0, 1.658193166930305e-02]';
-x_filt_delay            = 5;
-rim_high_prev_x         = 0;
-rim_x_high              = 0;
-b_rim_high              = [0.969531252908746, -0.969531252908746];
-a_rim_high              = -0.939062505817492;
-scan_time               = round(2.5e-3 * Fs); % scan time from first detected peak
-scan_time_cnt           = 0;
-mask_time               = round(6e-3 * Fs); % mask time (e.g. 10 ms)
-mask_back_cnt           = 0;
-threshold               = power(10, 35 / 10); % 35 dB threshold
-first_peak_diff_thresh  = 10 ^ (20 / 10); % 20 dB difference allowed between first peak and later peak in scan time
-was_above_threshold     = false;
-first_peak_val          = 0;
-prev_hil_filt_val       = 0;
-decay_pow_est_start_cnt = 0;
-decay_pow_est_cnt       = 0;
-decay_pow_est_sum       = 0;
-decay_est_delay_ms      = 8;
-decay_est_delay         = round(decay_est_delay_ms * 1e-3 * Fs);
-decay_est_len           = round(3e-3 * Fs);
-decay_est_fact          = 10 ^ (15 / 10);
-decay_fact              = power(10, 1 / 10); % decay factor of 1 dB
-decay_back_cnt          = 0;
-decay_scaling           = 1;
-alpha                   = 200 / Fs;
-hil_low_re              = 0;
-hil_low_im              = 0;
-pos_energy_window_len   = round(2e-3 * Fs); % positional sensing energy estimation time window length (e.g. 2 ms)
-pos_sense_cnt           = 0;
-bp_filt_hist_x          = zeros(bp_filt_len, 1);
-bp_filt_hist_y          = zeros(bp_filt_len - 1, 1);
-hil_hist_re             = zeros(pos_energy_window_len, 1);
-hil_hist_im             = zeros(pos_energy_window_len, 1);
-hil_low_hist_re         = zeros(pos_energy_window_len, 1);
-hil_low_hist_im         = zeros(pos_energy_window_len, 1);
-rim_shot_window_len     = round(5e-3 * Fs); % window length (e.g. 6 ms)
-rim_shot_treshold_dB    = 2.3; % dB
-rim_x_high_hist         = zeros(rim_shot_window_len, 1);
-rim_shot_cnt            = 0;
-hil_filt_max_pow        = 0;
-stored_pos_sense_metric = 0;
-stored_is_rimshot       = false;
-max_hil_filt_val        = 0;
-peak_found_offset       = 0;
-was_peak_found          = false;
-was_pos_sense_ready     = false;
-was_rim_shot_ready      = false;
-decay_len1              = round(0 * Fs); % not used
-decay_grad1             = 200 / Fs;
-decay_len2              = round(0.25 * Fs);% decay time (e.g. 250 ms)
-decay_grad2             = 200 / Fs; % decay gradient factor
-decay_len3              = round(0 * Fs); % not used
-decay_grad3             = 200 / Fs;
+Fs                       = 8000;
+bp_filt_len              = 5;
+bp_filt_a                = [6.704579059531744e-01, -2.930427216820138, 4.846289804288025, -3.586239808116909]';
+bp_filt_b                = [1.658193166930305e-02, 0, -3.316386333860610e-02, 0, 1.658193166930305e-02]';
+x_filt_delay             = 5;
+rim_high_prev_x          = 0;
+rim_x_high               = 0;
+b_rim_high               = [0.969531252908746, -0.969531252908746];
+a_rim_high               = -0.939062505817492;
+scan_time                = round(2.5e-3 * Fs); % scan time from first detected peak
+scan_time_cnt            = 0;
+mask_time                = round(6e-3 * Fs); % mask time (e.g. 10 ms)
+mask_back_cnt            = 0;
+threshold_db             = 17;
+threshold                = power(10, threshold_db / 10);
+first_peak_diff_thresh   = 10 ^ (20 / 10); % 20 dB difference allowed between first peak and later peak in scan time
+was_above_threshold      = false;
+first_peak_val           = 0;
+prev_hil_filt_val        = 0;
+decay_back_cnt_start_cnt = 0;
+decay_pow_est_start_cnt  = 0;
+decay_pow_est_cnt        = 0;
+decay_pow_est_sum        = 0;
+decay_est_delay_ms       = 8;
+decay_est_delay          = round(decay_est_delay_ms * 1e-3 * Fs);
+decay_est_len            = round(3e-3 * Fs);
+decay_est_fact_db        = 15;
+decay_est_fact           = 10 ^ (decay_est_fact_db / 10);
+decay_fact_db            = 1;
+decay_fact               = power(10, decay_fact_db / 10);
+decay_back_cnt           = 0;
+decay_scaling            = 1;
+alpha                    = 200 / Fs;
+hil_low_re               = 0;
+hil_low_im               = 0;
+pos_energy_window_len    = round(2e-3 * Fs); % positional sensing energy estimation time window length (e.g. 2 ms)
+pos_sense_cnt            = 0;
+bp_filt_hist_x           = zeros(bp_filt_len, 1);
+bp_filt_hist_y           = zeros(bp_filt_len - 1, 1);
+hil_hist_re              = zeros(pos_energy_window_len, 1);
+hil_hist_im              = zeros(pos_energy_window_len, 1);
+hil_low_hist_re          = zeros(pos_energy_window_len, 1);
+hil_low_hist_im          = zeros(pos_energy_window_len, 1);
+rim_shot_window_len      = round(5e-3 * Fs); % window length (e.g. 6 ms)
+rim_shot_treshold_dB     = 2.3; % dB
+rim_x_high_hist          = zeros(rim_shot_window_len, 1);
+rim_shot_cnt             = 0;
+hil_filt_max_pow         = 0;
+stored_pos_sense_metric  = 0;
+stored_is_rimshot        = false;
+max_hil_filt_val         = 0;
+peak_found_offset        = 0;
+was_peak_found           = false;
+was_pos_sense_ready      = false;
+was_rim_shot_ready       = false;
+decay_len1               = round(0 * Fs); % not used
+decay_grad1              = 200 / Fs;
+decay_len2               = round(0.25 * Fs);% decay time (e.g. 250 ms)
+decay_grad2              = 200 / Fs; % decay gradient factor
+decay_len3               = round(0 * Fs); % not used
+decay_grad3              = 200 / Fs;
 
 % calculate the decay curve
 decay_len = decay_len1 + decay_len2 + decay_len3;
@@ -210,8 +215,8 @@ end
 
 function [x_filt_debug, ...
           decay_est_rng_debug, ...
+          decay_all_debug, ...
           x_filt_decay_debug, ...
-          cur_decay_debug, ...
           rim_max_pow_debug, ...
           x_rim_high_debug, ...
           peak_found, ...
@@ -222,14 +227,15 @@ function [x_filt_debug, ...
           pos_sense_metric, ...
           is_rim_shot] = process_sample(x, i, ...
                                         x_filt_debug, ...
-                                        decay_est_rng_debug)
+                                        decay_est_rng_debug, ...
+                                        decay_all_debug)
 
 global Fs bp_filt_a bp_filt_b bp_filt_len bp_filt_hist_x bp_filt_hist_y x_filt_delay;
 global b_rim_high a_rim_high rim_high_prev_x rim_x_high;
 global pos_energy_window_len scan_time scan_time_cnt;
 global mask_time mask_back_cnt threshold first_peak_diff_thresh was_above_threshold;
 global first_peak_val prev_hil_filt_val;
-global decay_pow_est_start_cnt decay_pow_est_cnt decay_pow_est_sum;
+global decay_pow_est_start_cnt decay_pow_est_cnt decay_pow_est_sum decay_back_cnt_start_cnt;
 global decay_est_delay decay_est_len decay_est_fact decay_fact decay_len;
 global decay decay_back_cnt decay_scaling alpha;
 global hil_low_re hil_low_im hil_hist_re hil_hist_im;
@@ -246,7 +252,6 @@ is_rim_shot       = false;
 first_peak_found  = false; % only used internally
 pos_sense_is_used = true;  % only used internally to enable/disable positional sensing
 rim_shot_is_used  = false; % only used internally
-cur_decay_debug   = 0; % just for debugging
 rim_max_pow_debug = 0; % just for debugging
 x_rim_high_debug  = 0; % just for debugging
 
@@ -259,13 +264,24 @@ bp_filt_hist_y = update_fifo(x_filt, bp_filt_len - 1, bp_filt_hist_y);
 x_filt         = x_filt * x_filt; % calculate power of filter result
 
 % exponential decay assumption
+if decay_back_cnt_start_cnt > 0
+
+  decay_back_cnt_start_cnt = decay_back_cnt_start_cnt - 1;
+
+  % end condition
+  if decay_back_cnt_start_cnt == 0
+    decay_back_cnt = decay_len; % now the decay back count can start
+  end
+
+end
+
 if decay_back_cnt > 0
 
   % subtract decay (with clipping at zero)
-  cur_decay       = decay_scaling * decay(1 + decay_len - decay_back_cnt);
-  cur_decay_debug = cur_decay; % just for debugging
-  x_filt_decay    = x_filt - cur_decay;
-  decay_back_cnt  = decay_back_cnt - 1;
+  cur_decay          = decay_scaling * decay(1 + decay_len - decay_back_cnt);
+  decay_all_debug(i) = cur_decay; % just for debugging
+  x_filt_decay       = x_filt - cur_decay;
+  decay_back_cnt     = decay_back_cnt - 1;
 
   if x_filt_decay < 0
     x_filt_decay = 0;
@@ -278,10 +294,13 @@ end
 % threshold test
 if ((x_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
 
-  % start counter for decay power estimation (must be started only once at the
-  % first time the signal was above threshold)
+  % start counter for decay power estimation and decay back count (must be
+  % started only once at the first time the signal was above threshold)
   if ~was_above_threshold
-    decay_pow_est_start_cnt = max(1, decay_est_delay - x_filt_delay);
+
+    decay_pow_est_start_cnt  = max(1, decay_est_delay - x_filt_delay + 1);
+    decay_back_cnt_start_cnt = scan_time + mask_time - 1;
+
   end
 
   % this flag ensures that we always enter the if condition after the very first
@@ -304,7 +323,7 @@ if ((x_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
 
       % reset first peak detection and restart scan time
       first_peak_val = prev_hil_filt_val;
-      scan_time_cnt  = 0;
+%      scan_time_cnt  = 0;
 
     end
 
@@ -349,8 +368,7 @@ hil_hist_velocity = first_peak_val;
       prev_hil_filt_val   = 0;
       was_above_threshold = false;
       decay_scaling       = max_hil_filt_val * decay_fact;
-      decay_back_cnt      = decay_len - scan_time; % start is first peak (i.e. scan_time instead of peak_found_offset)
-      mask_back_cnt       = mask_time - scan_time; % start is first peak (i.e. scan_time instead of peak_found_offset)
+      mask_back_cnt       = mask_time;
       was_peak_found      = true;
 
     end
