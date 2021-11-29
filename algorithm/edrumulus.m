@@ -313,7 +313,7 @@ if ((x_filt_decay > threshold) || was_above_threshold) && (mask_back_cnt == 0)
   if ~was_above_threshold
 
     decay_pow_est_start_cnt  = max(1, decay_est_delay - x_filt_delay + 1);
-    decay_back_cnt_start_cnt = scan_time + mask_time - 1;
+    decay_back_cnt_start_cnt = scan_time + mask_time;
 
   end
 
