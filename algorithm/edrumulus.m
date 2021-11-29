@@ -19,8 +19,7 @@
 
 function edrumulus(x)
 
-global energy_window_len;
-global rim_shot_window_len;
+global pad energy_window_len rim_shot_window_len;
 
 %close all
 % TEST
@@ -96,6 +95,7 @@ plot(10 * log10(rim_max_pow_debug), 'y*');
 plot(find(peak_found_corrected),  10 * log10(x_filt(peak_found_corrected)), 'g*');
 plot(find(is_rim_shot_corrected), 10 * log10(x_filt(is_rim_shot_corrected)), 'b*');
 plot(find(peak_found_corrected),  10 * log10(pos_sense_metric(peak_found)) + 40, 'k*');
+plot([1, length(x_filt)], [pad.threshold_db, pad.threshold_db], '--');
 title('Green marker: level; Black marker: position; Blue marker: first peak'); xlabel('samples'); ylabel('dB');
 ylim([-10, 90]);
 
@@ -107,7 +107,7 @@ end
 
 function Setup
 
-global Fs bp_filt_a bp_filt_b bp_filt_len bp_filt_hist_x bp_filt_hist_y x_filt_delay;
+global pad Fs bp_filt_a bp_filt_b bp_filt_len bp_filt_hist_x bp_filt_hist_y x_filt_delay;
 global b_rim_high a_rim_high rim_high_prev_x rim_x_high;
 global pos_energy_window_len scan_time scan_time_cnt;
 global mask_time mask_back_cnt threshold first_peak_diff_thresh was_above_threshold;
