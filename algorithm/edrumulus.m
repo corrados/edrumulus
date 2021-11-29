@@ -129,7 +129,7 @@ pad.scan_time_ms              = 2.5;
 %pad.pre_scan_time_ms          = 3;
 pad.decay_est_delay_ms        = 8;
 pad.decay_est_len_ms          = 3;
-pad.decay_est_fact_db         = 15;
+pad.decay_est_fact_db         = 16;
 pad.decay_fact_db             = 1;
 pad.decay_len_ms1             = 0; % not used
 pad.decay_len_ms2             = 250;
@@ -381,7 +381,7 @@ hil_hist_velocity = first_peak_val;
       first_peak_val      = 0;
       prev_hil_filt_val   = 0;
       was_above_threshold = false;
-      decay_scaling       = max_hil_filt_val * decay_fact;
+      decay_scaling       = decay_fact * max_hil_filt_val;
       mask_back_cnt       = mask_time;
       was_peak_found      = true;
 

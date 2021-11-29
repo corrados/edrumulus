@@ -60,7 +60,7 @@ pad.scan_time_ms              = 2.5;
 pad.pre_scan_time_ms          = 3;
 pad.decay_est_delay_ms        = 8;
 pad.decay_est_len_ms          = 3;
-pad.decay_est_fact_db         = 15;
+pad.decay_est_fact_db         = 16;
 pad.decay_fact_db             = 1;
 pad.decay_len_ms1             = 0; % not used
 pad.decay_len_ms2             = 250;
@@ -200,8 +200,9 @@ decay_grad3     = pad.decay_grad_fact3 / Fs;
 decay_est_delay = round(pad.decay_est_delay_ms * 1e-3 * Fs);
 decay_est_len   = round(pad.decay_est_len_ms * 1e-3 * Fs);
 decay_est_fact  = 10 ^ (pad.decay_est_fact_db / 10);
+decay_fact      = 10 ^ (pad.decay_fact_db / 10);
 
-decay_curve1 = 10 ^ (pad.decay_fact_db / 10) * 10 .^ (-(0:decay_len1) / 10 * decay_grad1);
+decay_curve1 = 10 .^ (-(0:decay_len1) / 10 * decay_grad1);
 decay_curve2 = 10 .^ (-(0:decay_len2) / 10 * decay_grad2);
 decay_curve3 = 10 .^ (-(0:decay_len3 - 1) / 10 * decay_grad3);
 decay_curve  = [decay_curve1(1:end - 1), decay_curve1(end) * decay_curve2(1:end - 1), decay_curve1(end) * decay_curve2(end) * decay_curve3];
@@ -282,7 +283,7 @@ while ~no_more_peak
   peak_idx_filt     = org_above_thresh_start + max_idx - 1;
 
   % estimate current decay power
-  decay_factor = x_filt(peak_idx_filt);
+  decay_scaling = decay_fact * x_filt(peak_idx_filt);
 
   % average power measured right after the two main peaks (it showed for high
   % level hits close to the pad center the decay has much lower power right
@@ -291,14 +292,14 @@ while ~no_more_peak
   % behind our main peaks to avoid very high decay curve placement)
   decay_power_win = above_thresh_start + decay_est_delay + (0:decay_est_len - 1);
   decay_power     = mean(x_filt(decay_power_win));
-  decay_factor    = min(decay_factor, decay_est_fact * decay_power);
+  decay_scaling   = min(decay_scaling, decay_est_fact * decay_power);
 
   % store the new detected peak
   all_peaks     = [all_peaks; peak_idx];
   last_peak_idx = org_above_thresh_start + scan_time + mask_time;
 
   % exponential decay assumption
-  decay           = decay_factor * decay_curve;
+  decay           = decay_scaling * decay_curve;
   decay_x         = org_above_thresh_start + scan_time + mask_time + (0:decay_len - 1);
   valid_decay_idx = decay_x <= length(x_filt_decay);
   decay           = decay(valid_decay_idx);
