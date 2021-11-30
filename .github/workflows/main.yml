@@ -38,3 +38,4 @@ jobs:
       run: pio ci --lib="." --board=teensy36
       env:
         PLATFORMIO_CI_SRC: ${{ matrix.example }}
+        PLATFORMIO_BUILD_FLAGS: -D USB_MIDI
