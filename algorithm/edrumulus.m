@@ -46,6 +46,8 @@ mask_region               = nan(size(x, 1), 1);
 decay_est_rng             = nan(size(x, 1), 1);
 decay_all                 = nan(size(x, 1), 1);
 all_peaks                 = [];
+all_first_peaks           = [];
+all_peaks_filt            = [];
 
 x_filt_decay_debug        = zeros(size(x, 1), 1);
 rim_max_pow_debug         = zeros(size(x, 1), 1);
@@ -67,6 +69,8 @@ for i = 1:size(x, 1)
    decay_est_rng, ...
    decay_all, ...
    all_peaks, ...
+   all_first_peaks, ...
+   all_peaks_filt, ...
    x_filt_decay_debug(i), ...
    rim_max_pow_debug(i), ...
    x_rim_high_debug(i), ...
@@ -83,7 +87,9 @@ for i = 1:size(x, 1)
                                     mask_region, ...
                                     decay_est_rng, ...
                                     decay_all, ...
-                                    all_peaks);
+                                    all_peaks, ...
+                                    all_first_peaks, ...
+                                    all_peaks_filt);
 
 end
 
@@ -104,7 +110,9 @@ plot(10 * log10([mask_region, scan_region, pre_scan_region, decay_est_rng]), 'Li
 grid on; hold on; set(gca, 'ColorOrderIndex', 1); % reset color order so that x trace is blue and so on
 plot(10 * log10([x(:, 1) .^ 2, x_filt, decay_all, x_filt_decay_debug, x_rim_high_debug]));
 plot(10 * log10(rim_max_pow_debug), 'y*');
+plot(all_first_peaks, 10 * log10(x(all_first_peaks, 1) .^ 2), 'b*');
 plot(all_peaks,  10 * log10(x(all_peaks, 1) .^ 2), 'g*');
+plot(all_peaks_filt, 10 * log10(x_filt(all_peaks_filt)), 'y*');
 plot(find(is_rim_shot_corrected), 10 * log10(x_filt(is_rim_shot_corrected)), 'b*');
 plot(find(peak_found_corrected),  10 * log10(pos_sense_metric(peak_found)) + 40, 'k*');
 plot([1, length(x_filt)], [pad.threshold_db, pad.threshold_db], '--');
@@ -132,7 +140,7 @@ global hil_low_re hil_low_im x_sq_hist x_sq_hist_len;
 global hil_low_hist_re hil_low_hist_im pos_sense_cnt;
 global rim_shot_window_len rim_shot_treshold_dB rim_x_high_hist rim_shot_cnt;
 global hil_filt_max_pow stored_pos_sense_metric stored_is_rimshot;
-global max_x_filt_val peak_found_offset;
+global max_x_filt_val max_x_filt_idx_debug peak_found_offset;
 global was_peak_found was_pos_sense_ready was_rim_shot_ready;
 
 pad.threshold_db              = 17;
@@ -201,6 +209,7 @@ hil_filt_max_pow         = 0;
 stored_pos_sense_metric  = 0;
 stored_is_rimshot        = false;
 max_x_filt_val           = 0;
+max_x_filt_idx_debug     = 0;
 peak_found_offset        = 0;
 was_peak_found           = false;
 was_pos_sense_ready      = false;
@@ -248,6 +257,8 @@ function [x_filt_debug, ...
           decay_est_rng_debug, ...
           decay_all_debug, ...
           all_peaks_debug, ...
+          all_first_peaks_debug, ...
+          all_peaks_filt_debug, ...
           x_filt_decay_debug, ...
           rim_max_pow_debug, ...
           x_rim_high_debug, ...
@@ -264,7 +275,9 @@ function [x_filt_debug, ...
                                         mask_region_debug, ...
                                         decay_est_rng_debug, ...
                                         decay_all_debug, ...
-                                        all_peaks_debug)
+                                        all_peaks_debug, ...
+                                        all_first_peaks_debug, ...
+                                        all_peaks_filt_debug)
 
 global Fs bp_filt_a bp_filt_b bp_filt_len bp_filt_hist_x bp_filt_hist_y x_filt_delay;
 global b_rim_high a_rim_high rim_high_prev_x rim_x_high;
@@ -278,28 +291,26 @@ global hil_low_re hil_low_im x_sq_hist x_sq_hist_len;
 global hil_low_hist_re hil_low_hist_im pos_sense_cnt;
 global rim_shot_window_len rim_shot_treshold_dB rim_x_high_hist rim_shot_cnt;
 global hil_filt_max_pow stored_pos_sense_metric stored_is_rimshot;
-global max_x_filt_val peak_found_offset;
+global max_x_filt_val max_x_filt_idx_debug peak_found_offset;
 global was_peak_found was_pos_sense_ready was_rim_shot_ready;
 
 % initialize return parameter
-peak_found        = false;
-pos_sense_metric  = 0;
-is_rim_shot       = false;
-first_peak_found  = false; % only used internally
-pos_sense_is_used = true;  % only used internally to enable/disable positional sensing
-rim_shot_is_used  = false; % only used internally
-rim_max_pow_debug = 0; % just for debugging
-x_rim_high_debug  = 0; % just for debugging
-peak_energy       = 0;
-peak_energy_low   = 0;
-
+peak_found           = false;
+pos_sense_metric     = 0;
+peak_energy          = 0;
+peak_energy_low      = 0;
+is_rim_shot          = false;
+first_peak_found     = false; % only used internally
+pos_sense_is_used    = true;  % only used internally to enable/disable positional sensing
+rim_shot_is_used     = false; % only used internally
+rim_max_pow_debug    = 0; % only for debugging
+x_rim_high_debug     = 0; % only for debugging
 
 
 
 % TEST!!!!!!!!!! disable positional sensing and rim shot detection for now...
 pos_sense_is_used = false;
 rim_shot_is_used  = false;
-
 
 
 
@@ -343,6 +354,7 @@ if ((x_filt_decay > threshold) || was_above_threshold)
     scan_time_cnt           = max(1, scan_time - x_filt_delay);
     mask_back_cnt           = scan_time + mask_time;
     max_x_filt_val          = x_filt; % initialize maximum value with first value
+    max_x_filt_idx_debug    = i; % only for debugging
 
   end
 
@@ -352,9 +364,12 @@ if ((x_filt_decay > threshold) || was_above_threshold)
   was_above_threshold = true;
 
   % search from above threshold to corrected scan+mask time for highest peak in
-  % filtered signal, needed for decay power estimation
+  % filtered signal (needed for decay power estimation)
   if x_filt > max_x_filt_val
-    max_x_filt_val = x_filt;
+
+    max_x_filt_val       = x_filt;
+    max_x_filt_idx_debug = i; % only for debugging
+
   end
 
   scan_time_cnt = scan_time_cnt - 1;
@@ -400,9 +415,11 @@ if ((x_filt_decay > threshold) || was_above_threshold)
 
     % get the maximum velocity in the scan time using the unfiltered signal
     [peak_velocity, peak_velocity_idx] = max(x_sq_hist(x_sq_hist_len + (-scan_time + 1:0)));
-    all_peaks_debug                    = [all_peaks_debug; i - scan_time + peak_velocity_idx];
 
-scan_region_debug(i + (-scan_time + 1:0)) = max_x_filt_val; % TODO use correct maximum value
+    % debugging outputs
+    all_first_peaks_debug                     = [all_first_peaks_debug; i - total_scan_time + first_peak_idx];
+    all_peaks_debug                           = [all_peaks_debug;       i - scan_time + peak_velocity_idx];
+    scan_region_debug(i + (-scan_time + 1:0)) = first_peak_val;
 
     was_peak_found = true;
 
@@ -414,6 +431,9 @@ scan_region_debug(i + (-scan_time + 1:0)) = max_x_filt_val; % TODO use correct m
     decay_back_cnt      = decay_len; % per definition decay starts right after mask time
     decay_scaling       = decay_fact * max_x_filt_val; % take maximum of filtered signal in scan+mask time
     was_above_threshold = false;
+
+    % debugging output
+    all_peaks_filt_debug  = [all_peaks_filt_debug; max_x_filt_idx_debug];
 
   end
 
@@ -525,10 +545,6 @@ end
 
 % Calculate positional sensing -------------------------------------------------
 if pos_sense_is_used
-
-% TEST
-hil_re = 0;
-hil_im = 0;
 
   % low pass filter of the Hilbert signal
   hil_low_re = (1 - alpha) * hil_low_re + alpha * hil_re;

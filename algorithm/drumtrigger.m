@@ -176,7 +176,7 @@ x_filt_delay      = x_filt_delay;
 end
 
 
-function [all_peaks, all_first_peaks, scan_region, mask_region, pre_scan_region, decay_all, decay_est_rng] = ...
+function [all_peaks, all_first_peaks, all_peaks_filt, scan_region, mask_region, pre_scan_region, decay_all, decay_est_rng] = ...
            calc_peak_detection(x, x_filt, x_filt_delay, Fs)
 global pad;
 
@@ -211,6 +211,7 @@ decay_len    = decay_len1 + decay_len2 + decay_len3;
 last_peak_idx      = pre_scan_time;
 all_peaks          = [];
 all_first_peaks    = [];
+all_peaks_filt     = [];
 no_more_peak       = false;
 x_sq               = x .^ 2;
 x_filt_decay       = x_filt;
@@ -294,9 +295,10 @@ while ~no_more_peak
   decay_power     = mean(x_filt(decay_power_win));
   decay_scaling   = min(decay_scaling, decay_est_fact * decay_power);
 
-  % store the new detected peak
-  all_peaks     = [all_peaks; peak_idx];
-  last_peak_idx = org_above_thresh_start + scan_time + mask_time;
+  % store the new detected peaks
+  all_peaks      = [all_peaks; peak_idx];
+  all_peaks_filt = [all_peaks_filt; peak_idx_filt];
+  last_peak_idx  = org_above_thresh_start + scan_time + mask_time;
 
   % exponential decay assumption
   decay           = decay_scaling * decay_curve;
@@ -313,12 +315,12 @@ while ~no_more_peak
   x_filt_decay(decay_x) = x_filt_new;
 
   % debugging outputs
-  scan_region(scan_indexes)                                                    = x_filt(peak_idx_filt); % mark scan time region
-  pre_scan_region(above_thresh_start - pre_scan_time + (0:pre_scan_time - 1))  = x_filt(peak_idx_filt); % mark pre-scan time region
-  mask_region(last_peak_idx + (-mask_time - x_filt_delay:0))                   = x_filt(peak_idx_filt); % mark mask region
-  decay_est_rng(decay_power_win)                                               = decay_power;           % mark decay power estimation region
-  decay_all(decay_x)                                                           = decay;                 % store decay curve
-  decay_all(above_thresh_start + (0:scan_time + mask_time + x_filt_delay - 1)) = nan;                   % remove previous decay curve during observation region
+  scan_region(scan_indexes)                                                    = x_sq(first_peak_idx); % mark scan time region
+  pre_scan_region(above_thresh_start - pre_scan_time + (0:pre_scan_time - 1))  = x_sq(first_peak_idx); % mark pre-scan time region
+  mask_region(last_peak_idx + (-mask_time - x_filt_delay:0))                   = x_sq(first_peak_idx); % mark mask region
+  decay_est_rng(decay_power_win)                                               = decay_power;            % mark decay power estimation region
+  decay_all(decay_x)                                                           = decay;                  % store decay curve
+  decay_all(above_thresh_start + (0:scan_time + mask_time + x_filt_delay - 1)) = nan;                    % remove previous decay curve during observation region
 
 end
 
@@ -432,7 +434,7 @@ global pad;
 
 % calculate peak detection and positional sensing
 [x, x_filt, x_filt_delay] = filter_input_signal(x, Fs);
-[all_peaks, all_first_peaks, scan_region, mask_region, pre_scan_region, decay_all, decay_est_rng] = ...
+[all_peaks, all_first_peaks, all_peaks_filt, scan_region, mask_region, pre_scan_region, decay_all, decay_est_rng] = ...
   calc_peak_detection(x(:, 1), x_filt, x_filt_delay, Fs);
 is_rim_shot = detect_rim_shot(x, all_first_peaks, Fs);
 pos_sense_metric = calc_pos_sense_metric(x(:, 1), Fs, all_first_peaks);
@@ -444,6 +446,7 @@ grid on; hold on; set(gca, 'ColorOrderIndex', 1); % reset color order so that x 
 plot(10 * log10([x(:, 1) .^ 2, x_filt, decay_all]));
 plot(all_first_peaks, 10 * log10(x(all_first_peaks, 1) .^ 2), 'b*');
 plot(all_peaks, 10 * log10(x(all_peaks, 1) .^ 2), 'g*');
+plot(all_peaks_filt, 10 * log10(x_filt(all_peaks_filt)), 'y*');
 plot(all_first_peaks, pos_sense_metric + 40, 'k*');
 plot([1, length(x_filt)], [pad.threshold_db, pad.threshold_db], '--');
 title('Green marker: level; Black marker: position; Blue marker: first peak'); xlabel('samples'); ylabel('dB');
