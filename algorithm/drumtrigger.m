@@ -31,10 +31,10 @@ padtype = 'pd120'; % default
 %x = audioread("signals/teensy4_0_pd80r.wav");x=(x-mean(x))*4;padtype = 'pd80r';%x = x(1:390000, :);%
 %x = audioread("signals/esp32_pd120.wav");x=x/8;
 %x = audioread("signals/esp32_pd8.wav");x=x/8;padtype = 'pd8';
-x = audioread("signals/pd120_pos_sense.wav");x=x(10600:15000);%x = x(2900:10000, :);%x = x(55400:58000, :);%
+%x = audioread("signals/pd120_pos_sense.wav");%x=x(10600:15000);%x = x(2900:10000, :);%x = x(55400:58000, :);%
 %x = audioread("signals/pd120_pos_sense2.wav");
 %x = audioread("signals/pd120_single_hits.wav");
-%x = audioread("signals/pd120_roll.wav");%x = x(1:20000, :);%x = x(292410:294749, :);%x = x(311500:317600, :);
+x = audioread("signals/pd120_roll.wav");%x = x(1:20000, :);%x = x(292410:294749, :);%x = x(311500:317600, :);
 %x = audioread("signals/pd120_middle_velocity.wav");
 %x = audioread("signals/pd120_hot_spot.wav");
 %x = audioread("signals/pd120_rimshot.wav");x = x(1:100000, :);%x = x(168000:171000, :);%x = x(1:34000, :);%
@@ -176,7 +176,7 @@ x_filt_delay      = x_filt_delay;
 end
 
 
-function [all_peaks, all_first_peaks, all_peaks_filt, scan_region, mask_region, pre_scan_region, decay_all, decay_est_rng] = ...
+function [all_peaks, all_first_peaks, all_peaks_filt, scan_region, mask_region, pre_scan_region, decay_all, decay_est_rng, x_filt_decay] = ...
            calc_peak_detection(x, x_filt, x_filt_delay, Fs)
 global pad;
 
@@ -308,7 +308,7 @@ while ~no_more_peak
   decay_x         = decay_x(valid_decay_idx);
 
   % subtract decay (with clipping at zero)
-  x_filt_new                 = x_filt_decay(decay_x) - decay.';
+  x_filt_new                 = x_filt(decay_x) - decay.';
   x_filt_new(x_filt_new < 0) = 0;
 
   % update filtered signal
@@ -434,7 +434,7 @@ global pad;
 
 % calculate peak detection and positional sensing
 [x, x_filt, x_filt_delay] = filter_input_signal(x, Fs);
-[all_peaks, all_first_peaks, all_peaks_filt, scan_region, mask_region, pre_scan_region, decay_all, decay_est_rng] = ...
+[all_peaks, all_first_peaks, all_peaks_filt, scan_region, mask_region, pre_scan_region, decay_all, decay_est_rng, x_filt_decay] = ...
   calc_peak_detection(x(:, 1), x_filt, x_filt_delay, Fs);
 is_rim_shot = detect_rim_shot(x, all_first_peaks, Fs);
 pos_sense_metric = calc_pos_sense_metric(x(:, 1), Fs, all_first_peaks);
@@ -443,7 +443,7 @@ pos_sense_metric = calc_pos_sense_metric(x(:, 1), Fs, all_first_peaks);
 figure
 plot(10 * log10([mask_region, scan_region, pre_scan_region, decay_est_rng]), 'LineWidth', 20);
 grid on; hold on; set(gca, 'ColorOrderIndex', 1); % reset color order so that x trace is blue and so on
-plot(10 * log10([x(:, 1) .^ 2, x_filt, decay_all]));
+plot(10 * log10([x(:, 1) .^ 2, x_filt, decay_all, x_filt_decay]));
 plot(all_first_peaks, 10 * log10(x(all_first_peaks, 1) .^ 2), 'b*');
 plot(all_peaks, 10 * log10(x(all_peaks, 1) .^ 2), 'g*');
 plot(all_peaks_filt, 10 * log10(x_filt(all_peaks_filt)), 'y*');
@@ -451,10 +451,6 @@ plot(all_first_peaks, pos_sense_metric + 40, 'k*');
 plot([1, length(x_filt)], [pad.threshold_db, pad.threshold_db], '--');
 title('Green marker: level; Black marker: position; Blue marker: first peak'); xlabel('samples'); ylabel('dB');
 ylim([-10, 90]);
-
-% TEST for edrumulus porting...
-%axis([61, 293, 14, 71]);
-axis([2871, 3098, 12, 67]);
 
 end
 
