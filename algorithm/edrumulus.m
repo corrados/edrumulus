@@ -417,9 +417,10 @@ if ((x_filt_decay > threshold) || was_above_threshold)
     [peak_velocity, peak_velocity_idx] = max(x_sq_hist(x_sq_hist_len + (-scan_time + 1:0)));
 
     % debugging outputs
-    all_first_peaks_debug                     = [all_first_peaks_debug; i - total_scan_time + first_peak_idx];
-    all_peaks_debug                           = [all_peaks_debug;       i - scan_time + peak_velocity_idx];
-    scan_region_debug(i + (-scan_time + 1:0)) = first_peak_val;
+    pre_scan_region_debug(i - total_scan_time + (1:pre_scan_time)) = first_peak_val;
+    scan_region_debug(i + (-scan_time + 1:0))                      = first_peak_val;
+    all_first_peaks_debug = [all_first_peaks_debug; i - total_scan_time + first_peak_idx];
+    all_peaks_debug       = [all_peaks_debug;       i - scan_time + peak_velocity_idx];
 
     was_peak_found = true;
 
