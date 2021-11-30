@@ -432,8 +432,9 @@ if ((x_filt_decay > threshold) || was_above_threshold)
     decay_scaling       = decay_fact * max_x_filt_val; % take maximum of filtered signal in scan+mask time
     was_above_threshold = false;
 
-    % debugging output
-    all_peaks_filt_debug  = [all_peaks_filt_debug; max_x_filt_idx_debug];
+    % debugging outputs
+    all_peaks_filt_debug = [all_peaks_filt_debug; max_x_filt_idx_debug];
+    mask_region_debug(i - mask_time - x_filt_delay + (1:mask_time + x_filt_delay)) = first_peak_val;
 
   end
 
