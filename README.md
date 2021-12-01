@@ -33,7 +33,8 @@ Find all important updates of the Edrumulus project in the [change log file](Cha
 
   A circuit diagram of my test setup is given in the following picture:
   <br/><img src="algorithm/images/edrumulus_testing.png" width="400"><br/>
-  *WARNING* This circuit diagram is only intended for my initial tests. Use it at your own risk.
+  *DISCLAIMER* This circuit diagram is used for my first prototypes and works fine for me. Use it
+  at your own risk.
 
 
 ## Algorithm
