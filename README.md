@@ -4,6 +4,8 @@
 
 The aim of the Edrumulus project is to create a high quality Open Source e-drum trigger module software.
 
+[![PlatformIO CI](https://github.com/corrados/edrumulus/actions/workflows/main.yml/badge.svg)](https://github.com/corrados/edrumulus/actions/workflows/main.yml)
+
 
 ## News
 
