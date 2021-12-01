@@ -23,12 +23,12 @@ global pad energy_window_len rim_shot_window_len;
 
 %close all
 % TEST
-drumtrigger
+%drumtrigger
 
 % load test data
 %x = audioread("signals/pd120_roll.wav");x = x(292410:294749, :);
 %x = audioread("signals/pd120_single_hits.wav");
-x = audioread("signals/pd120_pos_sense.wav");x=x(10600:15000);%x = x(2900:10000, :);%x = x(55400:58000, :);%
+%x = audioread("signals/pd120_pos_sense.wav");x=x(10600:15000);%x = x(2900:10000, :);%x = x(55400:58000, :);%
 %x = audioread("signals/pd120_pos_sense2.wav");
 %x = audioread("signals/pd120_rimshot.wav");x = x(168000:171000, :);%x = x(1:8000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
@@ -378,10 +378,6 @@ if ((x_filt_decay > threshold) || was_above_threshold)
   % end condition of scan time
   if scan_time_cnt == 0
 
-
-% TODO the following code is not yet verified...
-
-
     % climb to the maximum of the first peak (using the unfiltered signal)
     first_peak_found = false;
     first_peak_val   = x_sq_hist(x_sq_hist_len - total_scan_time + 1);
@@ -417,10 +413,12 @@ if ((x_filt_decay > threshold) || was_above_threshold)
     [peak_velocity, peak_velocity_idx] = max(x_sq_hist(x_sq_hist_len + (-scan_time + 1:0)));
 
     % debugging outputs
-    pre_scan_region_debug(i - total_scan_time + (1:pre_scan_time)) = first_peak_val;
-    scan_region_debug(i + (-scan_time + 1:0))                      = first_peak_val;
-    all_first_peaks_debug = [all_first_peaks_debug; i - total_scan_time + first_peak_idx];
-    all_peaks_debug       = [all_peaks_debug;       i - scan_time + peak_velocity_idx];
+    if i - total_scan_time > 0
+      pre_scan_region_debug(i - total_scan_time + (1:pre_scan_time)) = first_peak_val;
+      scan_region_debug(i + (-scan_time + 1:0))                      = first_peak_val;
+      all_first_peaks_debug = [all_first_peaks_debug; i - total_scan_time + first_peak_idx];
+      all_peaks_debug       = [all_peaks_debug;       i - scan_time + peak_velocity_idx];
+    end
 
     was_peak_found = true;
 
