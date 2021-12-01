@@ -189,10 +189,10 @@ protected:
         bool       pos_sense_is_used;    // switches positional sensing support on or off
         bool       rim_shot_is_used;     // switches rim shot detection on or off
         Ecurvetype curve_type;
-        float      energy_win_len_ms;
+        float      first_peak_diff_thresh_db;
         float      scan_time_ms;
-        float      main_peak_dist_ms;
-        float      decay_est_delay2nd_ms;
+        float      pre_scan_time_ms;
+        float      decay_est_delay_ms;
         float      decay_est_len_ms;
         float      decay_est_fact_db;
         float      decay_fact_db;
@@ -207,40 +207,35 @@ protected:
 
       void initialize();
 
-      // Hilbert filter coefficients (they are constant and must not be changed)
-      const int   hil_filt_len = 7;
-      const float a_re[7]      = { -0.037749783581601f, -0.069256807147465f, -1.443799477299919f,  2.473967088799056f,
-                                    0.551482327389238f, -0.224119735833791f, -0.011665324660691f };
-      const float a_im[7]      = {  0.0f,                0.213150535195075f, -1.048981722170302f, -1.797442302898130f,
-                                    1.697288080048948f,  0.0f,                0.035902177664014f };
+      // band-pass filter coefficients (they are constant and must not be changed)
+      const int   bp_filt_len  = 5;
+      const float bp_filt_a[4] = { 0.6704579059531744f, -2.930427216820138f, 4.846289804288025f, -3.586239808116909f };
+      const float bp_filt_b[5] = { 0.01658193166930305f, 0.0f, -0.0331638633386061f, 0.0f, 0.01658193166930305f };
+      const int   x_filt_delay = 5;
 
       // high pass filter coefficients used for rim shot detection (they are constant and must not be changed)
       const float b_rim_high[2] = { 0.969531252908746f, -0.969531252908746f };
       const float a_rim_high    = -0.939062505817492f;
 
-      float* hil_hist                = nullptr;
-      float* mov_av_hist_re          = nullptr;
-      float* mov_av_hist_im          = nullptr;
-      float* decay                   = nullptr;
-      float* hist_main_peak_pow_left = nullptr;
-      float* hil_hist_re             = nullptr;
-      float* hil_hist_im             = nullptr;
-      float* hil_hist_velocity       = nullptr;
-      float* hil_low_hist_re         = nullptr;
-      float* hil_low_hist_im         = nullptr;
-      float* rim_x_high_hist         = nullptr;
-      float* ctrl_hist               = nullptr;
+      float* bp_filt_hist_x  = nullptr;
+      float* bp_filt_hist_y  = nullptr;
+      float* x_sq_hist       = nullptr;
+      float* decay           = nullptr;
+      float* hil_low_hist_re = nullptr;
+      float* hil_low_hist_im = nullptr;
+      float* rim_x_high_hist = nullptr;
+      float* ctrl_hist       = nullptr;
 
       int          Fs;
       int          number_inputs;
-      int          energy_window_len;
-      int          hil_hist_velocity_len;
-      float        mov_av_norm_fact;
       int          scan_time;
       int          scan_time_cnt;
+      int          pre_scan_time;
+      int          total_scan_time;
       int          decay_len, decay_len1, decay_len2, decay_len3;
       int          mask_time;
       int          mask_back_cnt;
+      int          x_sq_hist_len;
       float        threshold;
       float        velocity_factor;
       float        velocity_exponent;
@@ -253,12 +248,9 @@ protected:
       float        first_peak_val;
       bool         was_above_threshold;
       float        prev_hil_filt_val;
-      int          main_peak_dist;
-      int          decay_est_delay2nd;
+      int          decay_est_delay;
       int          decay_est_len;
       float        decay_est_fact;
-      float        power_hypo_left;
-      int          power_hypo_right_cnt;
       int          decay_pow_est_start_cnt;
       int          decay_pow_est_cnt;
       float        decay_pow_est_sum;
@@ -280,7 +272,7 @@ protected:
       int          stored_midi_velocity;
       int          stored_midi_pos;
       bool         stored_is_rimshot;
-      float        max_hil_filt_val;
+      float        max_x_filt_val;
       int          peak_found_offset;
       bool         was_peak_found;
       bool         was_pos_sense_ready;

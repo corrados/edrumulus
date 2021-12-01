@@ -293,34 +293,34 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.pad_type = new_pad_type;
 
   // apply PRESET settings (might be overwritten by pad-specific properties)
-  pad_settings.velocity_threshold       = 2;  // 0..31
-  pad_settings.velocity_sensitivity     = 9;  // 0..31
-  pad_settings.mask_time_ms             = 6;  // 0..31 (ms)
-  pad_settings.pos_threshold            = 9;  // 0..31
-  pad_settings.pos_sensitivity          = 14; // 0..31
-  pad_settings.rim_shot_treshold        = 12; // 0..31
-  pad_settings.cancellation             = 0;  // 0..31
-  pad_settings.curve_type               = LINEAR;
-  pad_settings.pos_sense_is_used        = false;  // must be explicitely enabled if it shall be used
-  pad_settings.rim_shot_is_used         = false;  // must be explicitely enabled if it shall be used
-  pad_settings.energy_win_len_ms        = 2.0f;   // pad specific parameter: hit energy estimation time window length
-  pad_settings.scan_time_ms             = 2.5f;   // pad specific parameter: scan time after first detected peak
-  pad_settings.main_peak_dist_ms        = 2.25f;  // pad specific parameter: distance between the two main peaks
-  pad_settings.decay_est_delay2nd_ms    = 2.5f;   // pad specific parameter: delay after second main peak until decay power estimation starts
-  pad_settings.decay_est_len_ms         = 3.0f;   // pad specific parameter: decay power estimation window length
-  pad_settings.decay_est_fact_db        = 15.0f;  // pad specific parameter: decay power estimation factor (to get over decay ripple)
-  pad_settings.decay_fact_db            = 1.0f;   // pad specific parameter: vertical shift of the decay function in dB
-  pad_settings.decay_len1_ms            = 0.0f;   // pad specific parameter: length of the decay 1
-  pad_settings.decay_grad_fact1         = 200.0f; // pad specific parameter: decay function gradient factor 1
-  pad_settings.decay_len2_ms            = 250.0f; // pad specific parameter: length of the decay 2
-  pad_settings.decay_grad_fact2         = 200.0f; // pad specific parameter: decay function gradient factor 2
-  pad_settings.decay_len3_ms            = 0.0f;   // pad specific parameter: length of the decay 3
-  pad_settings.decay_grad_fact3         = 200.0f; // pad specific parameter: decay function gradient factor 3
-  pad_settings.pos_energy_win_len_ms    = 2.0f;   // pad specific parameter: pos sense energy estimation time window length
-  pad_settings.pos_iir_alpha            = 200.0f; // pad specific parameter: IIR low-pass alpha value for positional sensing
-  pad_settings.pos_invert               = false;  // pad specific parameter: invert the positional sensing metric
-  pad_settings.rim_shot_window_len_ms   = 5.0f;   // pad specific parameter: window length for rim shot detection
-  pad_settings.rim_shot_velocity_thresh = 0;      // pad specific parameter: velocity threshold for rim shots -> disabled per default
+  pad_settings.velocity_threshold        = 2;  // 0..31
+  pad_settings.velocity_sensitivity      = 9;  // 0..31
+  pad_settings.mask_time_ms              = 6;  // 0..31 (ms)
+  pad_settings.pos_threshold             = 9;  // 0..31
+  pad_settings.pos_sensitivity           = 14; // 0..31
+  pad_settings.rim_shot_treshold         = 12; // 0..31
+  pad_settings.cancellation              = 0;  // 0..31
+  pad_settings.curve_type                = LINEAR;
+  pad_settings.pos_sense_is_used         = false;  // must be explicitely enabled if it shall be used
+  pad_settings.rim_shot_is_used          = false;  // must be explicitely enabled if it shall be used
+  pad_settings.first_peak_diff_thresh_db = 8.0f;   // pad specific parameter: allowed difference between first peak and later peak in scan time
+  pad_settings.scan_time_ms              = 2.5f;   // pad specific parameter: scan time after first detected peak
+  pad_settings.pre_scan_time_ms          = 3.0f;   // pad specific parameter: pre-scan time to search for first peak
+  pad_settings.decay_est_delay_ms        = 8.0f;   // pad specific parameter: delay after second main peak until decay power estimation starts
+  pad_settings.decay_est_len_ms          = 3.0f;   // pad specific parameter: decay power estimation window length
+  pad_settings.decay_est_fact_db         = 16.0f;  // pad specific parameter: decay power estimation factor (to get over decay ripple)
+  pad_settings.decay_fact_db             = 1.0f;   // pad specific parameter: vertical shift of the decay function in dB
+  pad_settings.decay_len1_ms             = 0.0f;   // pad specific parameter: length of the decay 1
+  pad_settings.decay_grad_fact1          = 200.0f; // pad specific parameter: decay function gradient factor 1
+  pad_settings.decay_len2_ms             = 250.0f; // pad specific parameter: length of the decay 2
+  pad_settings.decay_grad_fact2          = 200.0f; // pad specific parameter: decay function gradient factor 2
+  pad_settings.decay_len3_ms             = 0.0f;   // pad specific parameter: length of the decay 3
+  pad_settings.decay_grad_fact3          = 200.0f; // pad specific parameter: decay function gradient factor 3
+  pad_settings.pos_energy_win_len_ms     = 2.0f;   // pad specific parameter: pos sense energy estimation time window length
+  pad_settings.pos_iir_alpha             = 200.0f; // pad specific parameter: IIR low-pass alpha value for positional sensing
+  pad_settings.pos_invert                = false;  // pad specific parameter: invert the positional sensing metric
+  pad_settings.rim_shot_window_len_ms    = 5.0f;   // pad specific parameter: window length for rim shot detection
+  pad_settings.rim_shot_velocity_thresh  = 0;      // pad specific parameter: velocity threshold for rim shots -> disabled per default
 
   switch ( new_pad_type )
   {
@@ -334,7 +334,6 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       pad_settings.pos_threshold            = 13;
       pad_settings.pos_sensitivity          = 20;
       pad_settings.scan_time_ms             = 3.0f;
-      pad_settings.main_peak_dist_ms        = 2.4f;
       pad_settings.decay_len2_ms            = 75.0f;
       pad_settings.decay_grad_fact2         = 300.0f;
       pad_settings.decay_len3_ms            = 300.0f;
@@ -344,37 +343,31 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       break;
 
     case PD8:
-      pad_settings.velocity_sensitivity  = 8;
-      pad_settings.pos_threshold         = 26;
-      pad_settings.pos_sensitivity       = 11;
-      pad_settings.rim_shot_treshold     = 16;
-      pad_settings.mask_time_ms          = 7;
-      pad_settings.scan_time_ms          = 1.3f;
-      pad_settings.main_peak_dist_ms     = 0.75f;
-      pad_settings.decay_est_delay2nd_ms = 6.0f;
-      pad_settings.decay_fact_db         = 5.0f;
-      pad_settings.decay_len1_ms         = 10.0f;
-      pad_settings.decay_grad_fact1      = 30.0f;
-      pad_settings.decay_len2_ms         = 30.0f;
-      pad_settings.decay_grad_fact2      = 600.0f;
-      pad_settings.decay_len3_ms         = 150.0f;
-      pad_settings.decay_grad_fact3      = 120.0f;
+      pad_settings.velocity_sensitivity = 8;
+      pad_settings.pos_threshold        = 26;
+      pad_settings.pos_sensitivity      = 11;
+      pad_settings.rim_shot_treshold    = 16;
+      pad_settings.mask_time_ms         = 7;
+      pad_settings.scan_time_ms         = 1.3f;
+      pad_settings.decay_est_delay_ms   = 6.0f;
+      pad_settings.decay_fact_db        = 5.0f;
+      pad_settings.decay_len2_ms        = 30.0f;
+      pad_settings.decay_grad_fact2     = 600.0f;
+      pad_settings.decay_len3_ms        = 150.0f;
+      pad_settings.decay_grad_fact3     = 120.0f;
       break;
 
     case TP80:
-      pad_settings.velocity_sensitivity  = 14;
-      pad_settings.pos_threshold         = 22;
-      pad_settings.pos_sensitivity       = 23;
-      pad_settings.scan_time_ms          = 2.75f;
-      pad_settings.main_peak_dist_ms     = 2.0f;
-      pad_settings.decay_est_delay2nd_ms = 7.0f;
-      pad_settings.decay_len1_ms         = 10.0f;
-      pad_settings.decay_grad_fact1      = 30.0f;
-      pad_settings.decay_len2_ms         = 30.0f;
-      pad_settings.decay_grad_fact2      = 600.0f;
-      pad_settings.decay_len3_ms         = 700.0f;
-      pad_settings.decay_grad_fact3      = 60.0f;
-      pad_settings.pos_invert            = true;
+      pad_settings.velocity_sensitivity = 14;
+      pad_settings.pos_threshold        = 22;
+      pad_settings.pos_sensitivity      = 23;
+      pad_settings.scan_time_ms         = 2.75f;
+      pad_settings.decay_est_delay_ms   = 11.0f;
+      pad_settings.decay_len2_ms        = 60.0f;
+      pad_settings.decay_grad_fact2     = 400.0f;
+      pad_settings.decay_len3_ms        = 700.0f;
+      pad_settings.decay_grad_fact3     = 60.0f;
+      pad_settings.pos_invert           = true;
       break;
 
     case FD8:
@@ -384,16 +377,13 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
 
     case VH12:
 // TODO if the Hi-Hat is open just a little bit, we get double triggers
-      pad_settings.scan_time_ms          = 4.0f;
-      pad_settings.main_peak_dist_ms     = 0.75f;
-      pad_settings.decay_est_delay2nd_ms = 5.0f;
-      pad_settings.decay_fact_db         = 5.0f;
-      pad_settings.decay_len1_ms         = 4.0f;
-      pad_settings.decay_grad_fact1      = 30.0f;
-      pad_settings.decay_len2_ms         = 27.0f;
-      pad_settings.decay_grad_fact2      = 700.0f;
-      pad_settings.decay_len3_ms         = 600.0f; // must be long because of open Hi-Hat ringing
-      pad_settings.decay_grad_fact3      = 75.0f;
+      pad_settings.scan_time_ms       = 4.0f;
+      pad_settings.decay_est_delay_ms = 9.0f;
+      pad_settings.decay_fact_db      = 5.0f;
+      pad_settings.decay_len2_ms      = 27.0f;
+      pad_settings.decay_grad_fact2   = 700.0f;
+      pad_settings.decay_len3_ms      = 600.0f; // must be long because of open Hi-Hat ringing
+      pad_settings.decay_grad_fact3   = 75.0f;
       break;
 
     case VH12CTRL:
@@ -402,30 +392,25 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       break;
 
     case KD7:
-      pad_settings.velocity_threshold    = 9;
-      pad_settings.velocity_sensitivity  = 12;
-      pad_settings.scan_time_ms          = 3.5f;
-      pad_settings.main_peak_dist_ms     = 2.0f;
-      pad_settings.decay_est_delay2nd_ms = 4.0f;
-      pad_settings.decay_fact_db         = 5.0f;
-      pad_settings.decay_len1_ms         = 4.0f;
-      pad_settings.decay_grad_fact1      = 30.0f;
-      pad_settings.decay_len2_ms         = 30.0f;
-      pad_settings.decay_grad_fact2      = 450.0f;
-      pad_settings.decay_len3_ms         = 500.0f;
-      pad_settings.decay_grad_fact3      = 45.0f;
+      pad_settings.velocity_threshold   = 9;
+      pad_settings.velocity_sensitivity = 12;
+      pad_settings.scan_time_ms         = 3.5f;
+      pad_settings.decay_est_delay_ms   = 8.0f;
+      pad_settings.decay_fact_db        = 5.0f;
+      pad_settings.decay_len1_ms        = 4.0f;
+      pad_settings.decay_grad_fact1     = 30.0f;
+      pad_settings.decay_len2_ms        = 30.0f;
+      pad_settings.decay_grad_fact2     = 450.0f;
+      pad_settings.decay_len3_ms        = 500.0f;
+      pad_settings.decay_grad_fact3     = 45.0f;
       break;
 
     case CY6:
-      pad_settings.scan_time_ms      = 6.0f;
-      pad_settings.main_peak_dist_ms = 2.0f;
-      pad_settings.decay_fact_db     = 4.0f;
-      pad_settings.decay_len1_ms     = 20.0f;
-      pad_settings.decay_grad_fact1  = 400.0f;
-      pad_settings.decay_len2_ms     = 150.0f;
-      pad_settings.decay_grad_fact2  = 120.0f;
-      pad_settings.decay_len3_ms     = 450.0f;
-      pad_settings.decay_grad_fact3  = 30.0f;
+      pad_settings.scan_time_ms     = 6.0f;
+      pad_settings.decay_len2_ms    = 150.0f;
+      pad_settings.decay_grad_fact2 = 120.0f;
+      pad_settings.decay_len3_ms    = 450.0f;
+      pad_settings.decay_grad_fact3 = 30.0f;
       break;
 
     case CY8:
@@ -434,12 +419,10 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       pad_settings.rim_shot_treshold    = 30;
       pad_settings.curve_type           = LOG2;
       pad_settings.scan_time_ms         = 6.0f;
-      pad_settings.main_peak_dist_ms    = 2.0f;
-      pad_settings.decay_fact_db        = 7.0f;
-      pad_settings.decay_len1_ms        = 40.0f;
+      pad_settings.decay_len1_ms        = 10.0f;
       pad_settings.decay_grad_fact1     = 10.0f;
       pad_settings.decay_len2_ms        = 100.0f;
-      pad_settings.decay_grad_fact2     = 120.0f;
+      pad_settings.decay_grad_fact2     = 200.0f;
       pad_settings.decay_len3_ms        = 450.0f;
       pad_settings.decay_grad_fact3     = 30.0f;
       break;
@@ -452,25 +435,24 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
 void Edrumulus::Pad::initialize()
 {
   // set algorithm parameters
-  const float threshold_db = 21.0f + pad_settings.velocity_threshold;           // gives us a threshold range of 21..52 dB
-  threshold                = pow   ( 10.0f, threshold_db / 10 );                // linear power threshold
-  first_peak_diff_thresh   = pow   ( 10.0f, 20.0f / 10 );                       // 20 dB difference allowed between first peak and later peak in scan time
-  energy_window_len        = round ( pad_settings.energy_win_len_ms * 1e-3f * Fs ); // hit energy estimation time window length (e.g. 2 ms)
-  mov_av_norm_fact         = 1.0f / sqrt ( static_cast<float> ( energy_window_len ) );
-  scan_time                = round ( pad_settings.scan_time_ms  * 1e-3f * Fs ); // scan time from first detected peak
+  const float threshold_db = 21.0f + pad_settings.velocity_threshold;              // gives us a threshold range of 21..52 dB
+  threshold                = pow   ( 10.0f, threshold_db / 10 );                   // linear power threshold
+  first_peak_diff_thresh   = pow   ( 10.0f, 20.0f / 10 );                          // 20 dB difference allowed between first peak and later peak in scan time
+  scan_time                = round ( pad_settings.scan_time_ms     * 1e-3f * Fs ); // scan time from first detected peak
+  pre_scan_time            = round ( pad_settings.pre_scan_time_ms * 1e-3f * Fs );
+  total_scan_time          = scan_time + pre_scan_time;                         // includes pre-scan time
   mask_time                = round ( pad_settings.mask_time_ms  * 1e-3f * Fs ); // mask time (e.g. 10 ms)
   decay_len1               = round ( pad_settings.decay_len1_ms * 1e-3f * Fs ); // decay time 1 (e.g. 250 ms)
   decay_len2               = round ( pad_settings.decay_len2_ms * 1e-3f * Fs ); // decay time 2 (e.g. 250 ms)
   decay_len3               = round ( pad_settings.decay_len3_ms * 1e-3f * Fs ); // decay time 3 (e.g. 250 ms)
   decay_len                = decay_len1 + decay_len2 + decay_len3;
-  decay_fact               = pow   ( 10.0f, pad_settings.decay_fact_db / 10 );  // decay factor of 1 dB
-  const float decay_grad1  = pad_settings.decay_grad_fact1 / Fs;                // decay gradient factor 1
-  const float decay_grad2  = pad_settings.decay_grad_fact2 / Fs;                // decay gradient factor 2
-  const float decay_grad3  = pad_settings.decay_grad_fact3 / Fs;                // decay gradient factor 3
-  hil_hist_velocity_len    = scan_time + energy_window_len;
-  main_peak_dist           = round ( pad_settings.main_peak_dist_ms     * 1e-3f * Fs );
-  decay_est_delay2nd       = round ( pad_settings.decay_est_delay2nd_ms * 1e-3f * Fs );
-  decay_est_len            = round ( pad_settings.decay_est_len_ms      * 1e-3f * Fs );
+  decay_fact               = pow   ( 10.0f, pad_settings.decay_fact_db / 10 ); // decay factor of 1 dB
+  const float decay_grad1  = pad_settings.decay_grad_fact1 / Fs;               // decay gradient factor 1
+  const float decay_grad2  = pad_settings.decay_grad_fact2 / Fs;               // decay gradient factor 2
+  const float decay_grad3  = pad_settings.decay_grad_fact3 / Fs;               // decay gradient factor 3
+  x_sq_hist_len            = total_scan_time;
+  decay_est_delay          = round ( pad_settings.decay_est_delay_ms * 1e-3f * Fs );
+  decay_est_len            = round ( pad_settings.decay_est_len_ms   * 1e-3f * Fs );
   decay_est_fact           = pow ( 10.0f, pad_settings.decay_est_fact_db / 10 );
   pos_energy_window_len    = round ( pad_settings.pos_energy_win_len_ms * 1e-3f * Fs );         // positional sensing energy estimation time window length (e.g. 2 ms)
   alpha                    = pad_settings.pos_iir_alpha / Fs;                                   // IIR low pass filter coefficient
@@ -527,14 +509,10 @@ void Edrumulus::Pad::initialize()
   control_range     = ( ADC_MAX_RANGE - control_threshold ) * ( 32 - pad_settings.velocity_sensitivity ) / 32;
 
   // allocate and initialize memory for vectors
-  allocate_initialize ( &hil_hist,                hil_filt_len );          // memory for Hilbert filter history
-  allocate_initialize ( &mov_av_hist_re,          energy_window_len );     // real part memory for moving average filter history
-  allocate_initialize ( &mov_av_hist_im,          energy_window_len );     // imaginary part memory for moving average filter history
+  allocate_initialize ( &x_sq_hist,               x_sq_hist_len );         // memory for sqr(x) history
+  allocate_initialize ( &bp_filt_hist_x,          bp_filt_len );           // band-pass filter x-signal history
+  allocate_initialize ( &bp_filt_hist_y,          bp_filt_len - 1 );       // band-pass filter y-signal history
   allocate_initialize ( &decay,                   decay_len );             // memory for decay function
-  allocate_initialize ( &hist_main_peak_pow_left, main_peak_dist );        // memory for left main peak power
-  allocate_initialize ( &hil_hist_velocity,       hil_hist_velocity_len ); // memory for Hilbert filtered signal for maximum velocity estimation
-  allocate_initialize ( &hil_hist_re,             pos_energy_window_len ); // real part of memory for moving average of Hilbert filtered signal
-  allocate_initialize ( &hil_hist_im,             pos_energy_window_len ); // imaginary part of memory for moving average of Hilbert filtered signal
   allocate_initialize ( &hil_low_hist_re,         pos_energy_window_len ); // real part of memory for moving average of low-pass filtered Hilbert signal
   allocate_initialize ( &hil_low_hist_im,         pos_energy_window_len ); // imaginary part of memory for moving average of low-pass filtered Hilbert signal
   allocate_initialize ( &rim_x_high_hist,         rim_shot_window_len );   // memory for rim shot detection
@@ -547,8 +525,6 @@ void Edrumulus::Pad::initialize()
   decay_back_cnt          = 0;
   decay_scaling           = 1.0f;
   scan_time_cnt           = 0;
-  power_hypo_left         = 0.0f;
-  power_hypo_right_cnt    = 0;
   decay_pow_est_start_cnt = 0;
   decay_pow_est_cnt       = 0;
   decay_pow_est_sum       = 0.0f;
@@ -560,7 +536,7 @@ void Edrumulus::Pad::initialize()
   rim_x_high              = 0.0f;
   rim_switch_on_cnt       = 0;
   hil_filt_max_pow        = 0.0f;
-  max_hil_filt_val        = 0.0f;
+  max_x_filt_val          = 0.0f;
   peak_found_offset       = 0;
   was_peak_found          = false;
   was_pos_sense_ready     = false;
