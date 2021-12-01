@@ -26,12 +26,14 @@ global pad energy_window_len rim_shot_window_len;
 %drumtrigger
 
 % load test data
+if ~exist('x', 'var')
 %x = audioread("signals/pd120_roll.wav");x = x(292410:294749, :);
 %x = audioread("signals/pd120_single_hits.wav");
-%x = audioread("signals/pd120_pos_sense.wav");x=x(10600:15000);%x = x(2900:10000, :);%x = x(55400:58000, :);%
+x = audioread("signals/pd120_pos_sense.wav");x=x(10600:15000);%x = x(2900:10000, :);%x = x(55400:58000, :);%
 %x = audioread("signals/pd120_pos_sense2.wav");
 %x = audioread("signals/pd120_rimshot.wav");x = x(168000:171000, :);%x = x(1:8000, :);%x = x(1:34000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
+end
 
 % match the signal level of the ESP32
 x = x * 25000;
@@ -147,7 +149,7 @@ pad.threshold_db              = 17;
 pad.mask_time_ms              = 6;
 pad.first_peak_diff_thresh_db = 8;
 pad.scan_time_ms              = 2.5;
-%pad.pre_scan_time_ms          = 3;
+pad.pre_scan_time_ms          = 3;
 pad.decay_est_delay_ms        = 8;
 pad.decay_est_len_ms          = 3;
 pad.decay_est_fact_db         = 16;
