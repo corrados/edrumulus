@@ -220,6 +220,7 @@ protected:
       float* bp_filt_hist_x  = nullptr;
       float* bp_filt_hist_y  = nullptr;
       float* x_sq_hist       = nullptr;
+      float* x_rim_sq_hist   = nullptr;
       float* decay           = nullptr;
       float* hil_low_hist_re = nullptr;
       float* hil_low_hist_im = nullptr;

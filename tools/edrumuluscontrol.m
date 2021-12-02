@@ -362,6 +362,7 @@ function update_pad_selection(midi_message, midi_note1, midi_note2, pad_index)
 
 global GUI;
 if ((midi_message.note == midi_note1) || (midi_message.note == midi_note2)) && ...
+    (midi_message.velocity > 10) && ... % introduce velocity limit until we switch the pad
     (round(get(GUI.slider1, 'value')) ~= pad_index)
 
   set(GUI.slider1, 'value', pad_index);
