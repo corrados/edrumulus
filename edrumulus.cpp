@@ -152,6 +152,11 @@ Serial.println ( serial_print );
     peak_found[i]       = false;
     control_found[i]    = false;
 
+// TEST for Teensy speed tests with a Teensy where we do not have the front end connected, we
+//      simply add a constant to the captured input to emulate the analog front end
+sample_org_pad[0] += 2048;
+sample_org_pad[1] += 2048;
+
     if ( pad[i].get_is_control() )
     {
       // process sample for control input

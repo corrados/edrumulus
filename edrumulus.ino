@@ -35,7 +35,7 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 #endif
 
 Edrumulus edrumulus;
-const int number_pads       = 8;
+const int number_pads       = 1; // <- TODO change this number from 1 to 8 and check the board LED
 const int status_LED_pin    = BOARD_LED_PIN; // internal LED used for overload indicator
 const int midi_channel      = 10; // default for edrums is 10
 const int hihat_pad_idx     = 2;
