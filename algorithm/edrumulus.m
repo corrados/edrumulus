@@ -50,6 +50,7 @@ decay_all                 = nan(size(x, 1), 1);
 all_peaks                 = [];
 all_first_peaks           = [];
 all_peaks_filt            = [];
+pos_sense_metric          = [];
 
 x_filt_decay_debug        = zeros(size(x, 1), 1);
 rim_max_pow_debug         = zeros(size(x, 1), 1);
@@ -58,7 +59,6 @@ peak_found                = false(size(x, 1), 1);
 pos_sense_peak_energy     = zeros(size(x, 1), 1);
 pos_sense_peak_energy_low = zeros(size(x, 1), 1);
 was_pos_sense_ready       = false(size(x, 1), 1);
-pos_sense_metric          = zeros(size(x, 1), 1);
 is_rim_shot               = false(size(x, 1), 1);
 
 for i = 1:size(x, 1)
@@ -72,6 +72,7 @@ for i = 1:size(x, 1)
    all_peaks, ...
    all_first_peaks, ...
    all_peaks_filt, ...
+   pos_sense_metric, ...
    x_filt_decay_debug(i), ...
    rim_max_pow_debug(i), ...
    x_rim_high_debug(i), ...
@@ -79,7 +80,6 @@ for i = 1:size(x, 1)
    pos_sense_peak_energy(i), ...
    pos_sense_peak_energy_low(i), ...
    was_pos_sense_ready(i), ...
-   pos_sense_metric(i), ...
    is_rim_shot(i)] = process_sample(x(i, :), i, ...
                                     x_filt, ...
                                     pre_scan_region, ...
@@ -89,7 +89,8 @@ for i = 1:size(x, 1)
                                     decay_all, ...
                                     all_peaks, ...
                                     all_first_peaks, ...
-                                    all_peaks_filt);
+                                    all_peaks_filt, ...
+                                    pos_sense_metric);
 
 end
 
@@ -108,8 +109,7 @@ plot(all_peaks_filt, 10 * log10(x_filt(all_peaks_filt)), 'y*');
 
 %plot(find(is_rim_shot_corrected), 10 * log10(x_filt(is_rim_shot_corrected)), 'b*');
 
-%plot(find(peak_found_corrected),  10 * log10(pos_sense_metric(peak_found)) + 40, 'k*');
-
+plot(all_first_peaks,  10 * log10(pos_sense_metric) + 40, 'k*');
 plot([1, length(x_filt)], [pad.threshold_db, pad.threshold_db], '--');
 title('Green marker: level; Black marker: position; Blue marker: first peak'); xlabel('samples'); ylabel('dB');
 ylim([-10, 90]);
@@ -270,6 +270,7 @@ function [x_filt_debug, ...
           all_peaks_debug, ...
           all_first_peaks_debug, ...
           all_peaks_filt_debug, ...
+          pos_sense_metric, ...
           x_filt_decay_debug, ...
           rim_max_pow_debug, ...
           x_rim_high_debug, ...
@@ -277,7 +278,6 @@ function [x_filt_debug, ...
           peak_energy, ...
           peak_energy_low, ...
           was_pos_sense_ready, ...
-          pos_sense_metric, ...
           is_rim_shot] = process_sample(x, i, ...
                                         x_filt_debug, ...
                                         pre_scan_region_debug, ...
@@ -287,7 +287,8 @@ function [x_filt_debug, ...
                                         decay_all_debug, ...
                                         all_peaks_debug, ...
                                         all_first_peaks_debug, ...
-                                        all_peaks_filt_debug)
+                                        all_peaks_filt_debug, ...
+                                        pos_sense_metric)
 
 global Fs bp_filt_a bp_filt_b bp_filt_len bp_filt_hist_x bp_filt_hist_y x_filt_delay;
 global b_rim_high a_rim_high rim_high_prev_x rim_x_high;
@@ -305,17 +306,16 @@ global max_x_filt_val max_x_filt_idx_debug;
 global was_peak_found was_pos_sense_ready was_rim_shot_ready;
 
 % initialize return parameter
-peak_found           = false;
-pos_sense_metric     = 0;
-peak_energy          = 0;
-peak_energy_low      = 0;
-is_rim_shot          = false;
-first_peak_found     = false; % only used internally
-first_peak_delay     = 0;     % only used internally
-pos_sense_is_used    = true;  % only used internally to enable/disable positional sensing
-rim_shot_is_used     = false; % only used internally
-rim_max_pow_debug    = 0; % only for debugging
-x_rim_high_debug     = 0; % only for debugging
+peak_found        = false;
+peak_energy       = 0;
+peak_energy_low   = 0;
+is_rim_shot       = false;
+first_peak_found  = false; % only used internally
+first_peak_delay  = 0;     % only used internally
+pos_sense_is_used = true;  % only used internally to enable/disable positional sensing
+rim_shot_is_used  = false; % only used internally
+rim_max_pow_debug = 0; % only for debugging
+x_rim_high_debug  = 0; % only for debugging
 
 
 
@@ -419,10 +419,13 @@ if ((x_filt_decay > threshold) || was_above_threshold)
 
     end
 
-    first_peak_delay = total_scan_time - first_peak_idx;
-
     % get the maximum velocity in the scan time using the unfiltered signal
     [peak_velocity, peak_velocity_idx] = max(x_sq_hist(x_sq_hist_len + (-scan_time + 1:0)));
+
+    % peak detection results
+    first_peak_delay = total_scan_time - first_peak_idx;
+    first_peak_found = true; % for special case signal only increments, the peak found would be false -> correct this
+    was_peak_found   = true;
 
     % debugging outputs
     if i - total_scan_time > 0
@@ -431,8 +434,6 @@ if ((x_filt_decay > threshold) || was_above_threshold)
       all_first_peaks_debug = [all_first_peaks_debug; i - total_scan_time + first_peak_idx];
       all_peaks_debug       = [all_peaks_debug;       i - scan_time + peak_velocity_idx];
     end
-
-    was_peak_found = true;
 
   end
 
@@ -488,15 +489,15 @@ if pos_sense_is_used
   % low pass filter of the input signal and store results in a FIFO
   lp_filt_hist = update_fifo(x(1), lp_filt_len, lp_filt_hist);
   x_low        = sum(lp_filt_hist .* lp_filt_b);
-  x_low_hist   = update_fifo(x_low, x_low_hist_len, x_low_hist);
+  x_low_hist   = update_fifo(x_low * x_low, x_low_hist_len, x_low_hist);
 
   % start condition of delay process to fill up the required buffers
   if first_peak_found && (~was_pos_sense_ready) && (pos_sense_cnt == 0)
 
     % a peak was found, we now have to start the delay process to fill up the
     % required buffer length for our metric
-    pos_sense_cnt  = lp_filt_len + first_peak_delay;
-    x_low_hist_idx = x_low_hist_len - lp_filt_len - first_peak_delay + 1;
+    pos_sense_cnt  = max(1, lp_filt_len - first_peak_delay);
+    x_low_hist_idx = x_low_hist_len - lp_filt_len - max(0, first_peak_delay - lp_filt_len + 1) + 1;
 
   end
 
@@ -508,7 +509,7 @@ if pos_sense_is_used
     if pos_sense_cnt == 0
 
       % the buffers are filled, now calculate the metric
-      peak_energy_low         = x_low_hist(x_low_hist_idx);
+      peak_energy_low         = max(x_low_hist(x_low_hist_idx + (0:lp_filt_len - 1)));
       stored_pos_sense_metric = first_peak_val / peak_energy_low;
       was_pos_sense_ready     = true;
 
@@ -576,7 +577,7 @@ end
 % return all results
 if was_peak_found && (~pos_sense_is_used || was_pos_sense_ready) && (~rim_shot_is_used || was_rim_shot_ready)
 
-  pos_sense_metric = stored_pos_sense_metric;
+  pos_sense_metric = [pos_sense_metric; stored_pos_sense_metric];
   peak_found       = true;
   is_rim_shot      = stored_is_rimshot;
 
