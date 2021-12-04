@@ -122,8 +122,7 @@ protected:
                             int&         midi_pos,
                             bool&        is_rim_shot,
                             bool&        is_choke_on,
-                            bool&        is_choke_off,
-                            float&       debug );
+                            bool&        is_choke_off );
 
       void process_control_sample ( const int* input,
                                     bool&      change_found,
@@ -198,8 +197,7 @@ protected:
         float      decay_fact_db;
         float      decay_len1_ms,    decay_len2_ms,    decay_len3_ms;
         float      decay_grad_fact1, decay_grad_fact2, decay_grad_fact3;
-        float      pos_energy_win_len_ms;
-        float      pos_iir_alpha;
+        float      pos_low_pass_cutoff;
         bool       pos_invert;
         float      rim_shot_window_len_ms;
         int        rim_shot_velocity_thresh;
@@ -222,8 +220,9 @@ protected:
       float* x_sq_hist       = nullptr;
       float* x_rim_sq_hist   = nullptr;
       float* decay           = nullptr;
-      float* hil_low_hist_re = nullptr;
-      float* hil_low_hist_im = nullptr;
+      float* lp_filt_b       = nullptr;
+      float* x_low_hist      = nullptr;
+      float* lp_filt_hist    = nullptr;
       float* rim_x_high_hist = nullptr;
       float* ctrl_hist       = nullptr;
 
@@ -248,7 +247,6 @@ protected:
       float        first_peak_diff_thresh;
       float        first_peak_val;
       bool         was_above_threshold;
-      float        prev_hil_filt_val;
       int          decay_est_delay;
       int          decay_est_len;
       float        decay_est_fact;
@@ -258,7 +256,6 @@ protected:
       float        decay_fact;
       int          decay_back_cnt;
       float        decay_scaling;
-      float        alpha;
       float        rim_high_prev_x;
       float        rim_x_high;
       int          rim_shot_window_len;
@@ -266,7 +263,9 @@ protected:
       float        rim_switch_treshold;
       int          rim_switch_on_cnt;
       int          rim_switch_on_cnt_thresh;
-      int          pos_energy_window_len;
+      int          lp_filt_len;
+      int          x_low_hist_len;
+      int          x_low_hist_idx;
       int          pos_sense_cnt;
       int          rim_shot_cnt;
       float        hil_filt_max_pow;
@@ -274,12 +273,9 @@ protected:
       int          stored_midi_pos;
       bool         stored_is_rimshot;
       float        max_x_filt_val;
-      int          peak_found_offset;
       bool         was_peak_found;
       bool         was_pos_sense_ready;
       bool         was_rim_shot_ready;
-      float        hil_low_re;
-      float        hil_low_im;
       Epadsettings pad_settings;
       int          midi_note;
       int          midi_note_rim;

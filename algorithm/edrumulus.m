@@ -244,7 +244,7 @@ for i = 1:lp_filt_len
   end
 end
 lp_filt_hist   = zeros(lp_filt_len, 1);
-x_low_hist_len = max(lp_filt_len, x_sq_hist_len + lp_filt_len);
+x_low_hist_len = x_sq_hist_len + lp_filt_len;
 x_low_hist     = zeros(x_low_hist_len, 1);
 
 end
