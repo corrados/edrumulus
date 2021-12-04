@@ -292,7 +292,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.pad_type = new_pad_type;
 
   // apply PRESET settings (might be overwritten by pad-specific properties)
-  pad_settings.velocity_threshold        = 4;  // 0..31
+  pad_settings.velocity_threshold        = 6;  // 0..31
   pad_settings.velocity_sensitivity      = 9;  // 0..31
   pad_settings.mask_time_ms              = 6;  // 0..31 (ms)
   pad_settings.pos_threshold             = 9;  // 0..31
@@ -327,10 +327,10 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       break;
 
     case PD80R:
-      pad_settings.velocity_sensitivity     = 3;
+      pad_settings.velocity_sensitivity     = 4;
       pad_settings.rim_shot_treshold        = 10;
-      pad_settings.pos_threshold            = 13;
-      pad_settings.pos_sensitivity          = 20;
+      pad_settings.pos_threshold            = 11;
+      pad_settings.pos_sensitivity          = 10;
       pad_settings.scan_time_ms             = 3.0f;
       pad_settings.decay_len2_ms            = 75.0f;
       pad_settings.decay_grad_fact2         = 300.0f;
