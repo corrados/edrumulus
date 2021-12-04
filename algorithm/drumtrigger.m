@@ -333,18 +333,17 @@ global pad;
 % low pass filter of the input signal
 % moving average cut off frequency approximation according to:
 % https://dsp.stackexchange.com/questions/9966/what-is-the-cut-off-frequency-of-a-moving-average-filter
-lp_cutoff_norm        = pad.pos_low_pass_cutoff / Fs;
-lp_moving_average_len = round(sqrt(0.196202 + lp_cutoff_norm ^ 2) / lp_cutoff_norm);
-if mod(lp_moving_average_len, 2) == 0
-  lp_moving_average_len = lp_moving_average_len + 1; % make sure we have an odd length
+lp_cutoff_norm = pad.pos_low_pass_cutoff / Fs;
+lp_filt_len    = round(sqrt(0.196202 + lp_cutoff_norm ^ 2) / lp_cutoff_norm);
+if mod(lp_filt_len, 2) == 0
+  lp_filt_len = lp_filt_len + 1; % make sure we have an odd length
 endif
+lp_half_len = (lp_filt_len - 1) / 2;
+lp_filt_b   = [0.5:0.5 / lp_half_len:(1 - 0.5 / lp_half_len) 1 (1 - 0.5 / lp_half_len):-0.5 / lp_half_len:0.5] / lp_filt_len;
+%lp_filt_b = ones(lp_filt_len, 1) / lp_filt_len; % TEST
+x_low = filter(lp_filt_b, 1, x) .^ 2; % moving average
 
-l = (lp_moving_average_len - 1) / 2;
-b = [0.5:0.5 / l:(1 - 0.5 / l) 1 (1 - 0.5 / l):-0.5 / l:0.5] / lp_moving_average_len;
-%b = ones(lp_moving_average_len, 1) / lp_moving_average_len; % TEST
-x_low = filter(b, 1, x) .^ 2; % moving average
-
-%disp(['low-pass filter delay: ' num2str(lp_moving_average_len / 2 / 8) ' ms, ' num2str(lp_moving_average_len) ' samples']);
+%disp(['low-pass filter delay: ' num2str(lp_filt_len / 2 / 8) ' ms, ' num2str(lp_filt_len) ' samples']);
 
 x_sq            = x .^ 2;
 num_peaks       = length(all_first_peaks);
@@ -352,7 +351,7 @@ peak_energy     = zeros(num_peaks, 1);
 peak_energy_low = zeros(num_peaks, 1);
 all_peaks_low   = zeros(num_peaks, 1);
 
-win_len     = length(b);
+win_len     = lp_filt_len;
 win_low_all = nan(length(x_low), 1);
 
 for i = 1:num_peaks
