@@ -123,7 +123,7 @@ global decay decay_back_cnt decay_scaling;
 global x_sq_hist x_sq_hist_len lp_filt_b lp_filt_hist lp_filt_len;
 global x_low_hist x_low_hist_len pos_sense_cnt x_low_hist_idx;
 global rim_shot_window_len rim_shot_treshold_dB x_rim_hist x_rim_hist_len rim_shot_cnt x_rim_hist_idx;
-global hil_filt_max_pow stored_pos_sense_metric stored_is_rimshot;
+global stored_pos_sense_metric stored_is_rimshot;
 global max_x_filt_val max_x_filt_idx_debug;
 global was_peak_found was_pos_sense_ready was_rim_shot_ready;
 
@@ -181,7 +181,6 @@ x_rim_hist_idx           = 1;
 rim_shot_treshold_dB     = -5; % dB
 x_rim_hist               = zeros(x_rim_hist_len, 1);
 rim_shot_cnt             = 0;
-hil_filt_max_pow         = 0;
 stored_pos_sense_metric  = 0;
 stored_is_rimshot        = false;
 max_x_filt_val           = 0;
@@ -285,7 +284,7 @@ global decay decay_back_cnt decay_scaling;
 global x_sq_hist x_sq_hist_len lp_filt_b lp_filt_hist lp_filt_len;
 global x_low_hist x_low_hist_len pos_sense_cnt x_low_hist_idx;
 global rim_shot_window_len rim_shot_treshold_dB x_rim_hist x_rim_hist_len rim_shot_cnt x_rim_hist_idx;
-global hil_filt_max_pow stored_pos_sense_metric stored_is_rimshot;
+global stored_pos_sense_metric stored_is_rimshot;
 global max_x_filt_val max_x_filt_idx_debug;
 global was_peak_found was_pos_sense_ready was_rim_shot_ready;
 

@@ -328,7 +328,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
 
     case PD80R:
       pad_settings.velocity_sensitivity     = 4;
-      pad_settings.rim_shot_treshold        = 10;
+      pad_settings.rim_shot_treshold        = 31;
       pad_settings.pos_threshold            = 11;
       pad_settings.pos_sensitivity          = 10;
       pad_settings.scan_time_ms             = 3.0f;
@@ -455,6 +455,7 @@ void Edrumulus::Pad::initialize()
   rim_shot_treshold_dB     = static_cast<float> ( pad_settings.rim_shot_treshold ) / 2 - 28;    // gives us a rim shot threshold range of -28..-12.5 dB
   rim_switch_treshold      = -ADC_MAX_NOISE_AMPL + 9 * ( pad_settings.rim_shot_treshold - 31 ); // rim switch linear threshold
   rim_switch_on_cnt_thresh = round ( 10.0f * 1e-3f * Fs );                                      // number of on samples until we detect a choke
+  x_rim_hist_len           = x_sq_hist_len + rim_shot_window_len;
   cancellation_factor      = static_cast<float> ( pad_settings.cancellation ) / 31.0f;          // cancellation factor: range of 0.0..1.0
   ctrl_history_len         = 10;   // (MUST BE AN EVEN VALUE) control history length, use a fixed value
   ctrl_velocity_range_fact = 4.0f; // use a fixed value (TODO make it adjustable)
@@ -516,16 +517,17 @@ void Edrumulus::Pad::initialize()
   x_low_hist_len        = x_sq_hist_len + lp_filt_len;
 
   // allocate and initialize memory for vectors
-  allocate_initialize ( &x_sq_hist,       x_sq_hist_len );       // memory for sqr(x) history
-  allocate_initialize ( &x_rim_sq_hist,   x_sq_hist_len );       // memory for sqr(x_rim) history
-  allocate_initialize ( &bp_filt_hist_x,  bp_filt_len );         // band-pass filter x-signal history
-  allocate_initialize ( &bp_filt_hist_y,  bp_filt_len - 1 );     // band-pass filter y-signal history
-  allocate_initialize ( &decay,           decay_len );           // memory for decay function
-  allocate_initialize ( &lp_filt_b,       lp_filt_len );         // memory for low-pass filter coefficients
-  allocate_initialize ( &lp_filt_hist,    lp_filt_len );         // memory for low-pass filter input
-  allocate_initialize ( &x_low_hist,      x_low_hist_len );      // memory for low-pass filter result
-  allocate_initialize ( &rim_x_high_hist, rim_shot_window_len ); // memory for rim shot detection
-  allocate_initialize ( &ctrl_hist,       ctrl_history_len );    // memory for Hi-Hat control pad hit detection
+  allocate_initialize ( &x_sq_hist,         x_sq_hist_len );       // memory for sqr(x) history
+  allocate_initialize ( &x_rim_sq_hist,     x_sq_hist_len );       // memory for sqr(x_rim) history
+  allocate_initialize ( &bp_filt_hist_x,    bp_filt_len );         // band-pass filter x-signal history
+  allocate_initialize ( &bp_filt_hist_y,    bp_filt_len - 1 );     // band-pass filter y-signal history
+  allocate_initialize ( &decay,             decay_len );           // memory for decay function
+  allocate_initialize ( &lp_filt_b,         lp_filt_len );         // memory for low-pass filter coefficients
+  allocate_initialize ( &lp_filt_hist,      lp_filt_len );         // memory for low-pass filter input
+  allocate_initialize ( &x_low_hist,        x_low_hist_len );      // memory for low-pass filter result
+  allocate_initialize ( &x_rim_hist,        x_rim_hist_len );      // memory for rim shot detection
+  allocate_initialize ( &x_rim_switch_hist, rim_shot_window_len ); // memory for rim switch detection
+  allocate_initialize ( &ctrl_hist,         ctrl_history_len );    // memory for Hi-Hat control pad hit detection
 
   mask_back_cnt           = 0;
   was_above_threshold     = false;
@@ -539,10 +541,7 @@ void Edrumulus::Pad::initialize()
   pos_sense_cnt           = 0;
   x_low_hist_idx          = 0;
   rim_shot_cnt            = 0;
-  rim_high_prev_x         = 0.0f;
-  rim_x_high              = 0.0f;
   rim_switch_on_cnt       = 0;
-  hil_filt_max_pow        = 0.0f;
   max_x_filt_val          = 0.0f;
   was_peak_found          = false;
   was_pos_sense_ready     = false;
@@ -602,14 +601,9 @@ void Edrumulus::Pad::process_sample ( const float* input,
   is_choke_off                  = false;
   bool       first_peak_found   = false; // only used internally
   int        first_peak_delay   = 0;     // only used internally
-  /*const*/ bool pos_sense_is_used  = pad_settings.pos_sense_is_used;                         // can be applied directly without calling initialize()
-  /*const*/ bool rim_shot_is_used   = pad_settings.rim_shot_is_used && ( number_inputs > 1 ); // can be applied directly without calling initialize()
+  const bool pos_sense_is_used  = pad_settings.pos_sense_is_used;                         // can be applied directly without calling initialize()
+  const bool rim_shot_is_used   = pad_settings.rim_shot_is_used && ( number_inputs > 1 ); // can be applied directly without calling initialize()
   const bool pos_sense_inverted = pad_settings.pos_invert;                                // can be applied directly without calling initialize()
-
-
-// TEST!!!!!!!!!! disable rim shot detection for now...
-rim_shot_is_used = false; // TODO enabled "const" again
-
 
   // square input signal and store in FIFO buffer
   const float x_sq     = input[0] * input[0];
@@ -830,13 +824,12 @@ rim_shot_is_used = false; // TODO enabled "const" again
   // Calculate rim shot/choke detection -------------------------------------------
   if ( rim_shot_is_used )
   {
-#if 0
     if ( get_is_rim_switch() )
     {
       const bool rim_switch_on = ( input[1] < rim_switch_treshold );
 
-      // as a quick hack we re-use the rim_x_high memory and length parameter for the switch on detection
-      update_fifo ( rim_switch_on, rim_shot_window_len, rim_x_high_hist );
+      // as a quick hack we re-use the length parameter for the switch on detection
+      update_fifo ( rim_switch_on, rim_shot_window_len, x_rim_switch_hist );
 
       // at the end of the scan time search the history buffer for any switch on
       if ( was_peak_found )
@@ -845,7 +838,7 @@ rim_shot_is_used = false; // TODO enabled "const" again
 
         for ( int i = 0; i < rim_shot_window_len; i++ )
         {
-          if ( rim_x_high_hist[i] > 0 )
+          if ( x_rim_switch_hist[i] > 0 )
           {
             stored_is_rimshot = true;
           }
@@ -878,12 +871,8 @@ rim_shot_is_used = false; // TODO enabled "const" again
     }
     else
     {
-      // one pole IIR high pass filter (y1 = (b0 * x1 + b1 * x0 - a1 * y0) / a0)
-      // note that rim input signal is in second dimension of the input vector
-      rim_x_high      = ( b_rim_high[0] * input[1] + b_rim_high[1] * rim_high_prev_x - a_rim_high * rim_x_high );
-      rim_high_prev_x = input[1]; // store previous x
-
-      update_fifo ( rim_x_high, rim_shot_window_len, rim_x_high_hist );
+      const float x_rim = input[1];
+      update_fifo ( x_rim * x_rim, x_rim_hist_len, x_rim_hist );
 
       // start condition of delay process to fill up the required buffers
       // note that rim_shot_window_len must be larger than energy_window_len,
@@ -892,8 +881,8 @@ rim_shot_is_used = false; // TODO enabled "const" again
       {
         // a peak was found, we now have to start the delay process to fill up the
         // required buffer length for our metric
-        rim_shot_cnt     = rim_shot_window_len / 2 - 1;
-        hil_filt_max_pow = first_peak_val;
+        rim_shot_cnt   = max ( 1, rim_shot_window_len - first_peak_delay );
+        x_rim_hist_idx = x_rim_hist_len - rim_shot_window_len - max ( 0, first_peak_delay - rim_shot_window_len + 1 );
       }
 
       if ( rim_shot_cnt > 0 )
@@ -901,28 +890,19 @@ rim_shot_is_used = false; // TODO enabled "const" again
         rim_shot_cnt--;
 
         // end condition
-        if ( rim_shot_cnt <= 0 )
+        if ( rim_shot_cnt == 0 )
         {
           // the buffers are filled, now calculate the metric
           float rim_max_pow = 0;
           for ( int i = 0; i < rim_shot_window_len; i++ )
           {
-            rim_max_pow = max ( rim_max_pow, rim_x_high_hist[i] * rim_x_high_hist[i] );
+            rim_max_pow = max ( rim_max_pow, x_rim_hist[x_rim_hist_idx + i] );
           }
 
-          const float rim_metric_db = 10 * log10 ( rim_max_pow / hil_filt_max_pow );
+          const float rim_metric_db = 10 * log10 ( rim_max_pow / first_peak_val );
           stored_is_rimshot         = rim_metric_db > rim_shot_treshold_dB;
           rim_shot_cnt              = 0;
           was_rim_shot_ready        = true;
-        }
-        else
-        {
-          // we need a further delay for the positional sensing estimation, consider
-          // this additional delay for the overall peak found offset
-          if ( was_peak_found && ( !pos_sense_is_used || was_pos_sense_ready ) )
-          {
-            peak_found_offset++;
-          }
         }
       }
     }
@@ -936,7 +916,6 @@ if ( stored_is_rimshot )
 {
   stored_midi_pos = 0; // as a quick hack, disable positional sensing if a rim shot is detected
 }
-#endif
   }
 
   // check for all estimations are ready and we can set the peak found flag and

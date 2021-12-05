@@ -211,20 +211,17 @@ protected:
       const float bp_filt_b[5] = { 0.01658193166930305f, 0.0f, -0.0331638633386061f, 0.0f, 0.01658193166930305f };
       const int   x_filt_delay = 5;
 
-      // high pass filter coefficients used for rim shot detection (they are constant and must not be changed)
-      const float b_rim_high[2] = { 0.969531252908746f, -0.969531252908746f };
-      const float a_rim_high    = -0.939062505817492f;
-
-      float* bp_filt_hist_x  = nullptr;
-      float* bp_filt_hist_y  = nullptr;
-      float* x_sq_hist       = nullptr;
-      float* x_rim_sq_hist   = nullptr;
-      float* decay           = nullptr;
-      float* lp_filt_b       = nullptr;
-      float* x_low_hist      = nullptr;
-      float* lp_filt_hist    = nullptr;
-      float* rim_x_high_hist = nullptr;
-      float* ctrl_hist       = nullptr;
+      float* bp_filt_hist_x    = nullptr;
+      float* bp_filt_hist_y    = nullptr;
+      float* x_sq_hist         = nullptr;
+      float* x_rim_sq_hist     = nullptr;
+      float* decay             = nullptr;
+      float* lp_filt_b         = nullptr;
+      float* x_low_hist        = nullptr;
+      float* lp_filt_hist      = nullptr;
+      float* x_rim_hist        = nullptr;
+      float* x_rim_switch_hist = nullptr;
+      float* ctrl_hist         = nullptr;
 
       int          Fs;
       int          number_inputs;
@@ -256,8 +253,8 @@ protected:
       float        decay_fact;
       int          decay_back_cnt;
       float        decay_scaling;
-      float        rim_high_prev_x;
-      float        rim_x_high;
+      int          x_rim_hist_len;
+      int          x_rim_hist_idx;
       int          rim_shot_window_len;
       float        rim_shot_treshold_dB;
       float        rim_switch_treshold;
@@ -268,7 +265,6 @@ protected:
       int          x_low_hist_idx;
       int          pos_sense_cnt;
       int          rim_shot_cnt;
-      float        hil_filt_max_pow;
       int          stored_midi_velocity;
       int          stored_midi_pos;
       bool         stored_is_rimshot;
