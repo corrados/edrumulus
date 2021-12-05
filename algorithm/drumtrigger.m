@@ -37,9 +37,9 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd120_roll.wav");%x = x(1:20000, :);%x = x(292410:294749, :);%x = x(311500:317600, :);
 %x = audioread("signals/pd120_middle_velocity.wav");
 %x = audioread("signals/pd120_hot_spot.wav");
-%x = audioread("signals/pd120_rimshot.wav");x = x(1:100000, :);%x = x(168000:171000, :);%x = x(1:34000, :);%
+x = audioread("signals/pd120_rimshot.wav");x=x(7000:25000,:);%x = x(1:100000, :);%x = x(168000:171000, :);%x = x(1:34000, :);%
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
-x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
+%x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
 %x = audioread("signals/pd80r.wav");x=x(:,1);padtype='pd80r';x = x(1:265000, :);%x = x(264000:320000, :);%
 %x = audioread("signals/pd6.wav");
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
@@ -390,24 +390,24 @@ end
 end
 
 
-function is_rim_shot = detect_rim_shot(x, all_peaks_x, Fs)
+function is_rim_shot = detect_rim_shot(x, all_first_peaks, Fs)
 
-is_rim_shot          = false(size(all_peaks_x));
-rim_shot_window_len  = round(7e-3 * Fs); % scan time (e.g. 6 ms)
+is_rim_shot          = false(size(all_first_peaks));
+rim_shot_window_len  = round(3.5e-3 * Fs); % scan time (e.g. 6 ms)
 rim_shot_treshold_dB = -5; % dB
-rim_max_pow_index    = zeros(size(all_peaks_x));
+rim_max_pow_index    = zeros(size(all_first_peaks));
 rim_win_region       = nan(size(x));
 
 if size(x, 2) > 1
 
-  rim_x = x(:, 2);
+  x_rim = x(:, 2);
 
-  for i = 1:length(all_peaks_x)
+  for i = 1:length(all_first_peaks)
 
-    win_idx                     = (all_peaks_x(i):all_peaks_x(i) + rim_shot_window_len - 1) - rim_shot_window_len / 2;
-    win_idx                     = win_idx((win_idx <= length(rim_x)) & (win_idx > 0));
-    [rim_max_pow(i), max_index] = max(rim_x(win_idx) .^ 2);
-    x_max_pow(i)                = x(all_peaks_x(i), 1) .^ 2;
+    win_idx                     = (all_first_peaks(i):all_first_peaks(i) + rim_shot_window_len - 1);
+    win_idx                     = win_idx((win_idx <= length(x_rim)) & (win_idx > 0));
+    [rim_max_pow(i), max_index] = max(x_rim(win_idx) .^ 2);
+    x_max_pow(i)                = x(all_first_peaks(i), 1) .^ 2;
     rim_max_pow_index(i)        = win_idx(1) + max_index - 1; % only for debugging
     rim_win_region(win_idx)     = rim_max_pow(i);             % only for debugging
 
@@ -416,12 +416,12 @@ if size(x, 2) > 1
   rim_metric_db = 10 * log10(rim_max_pow ./ x_max_pow);
   is_rim_shot   = rim_metric_db > rim_shot_treshold_dB;
 
-%figure; plot(10 * log10([x(:, 1) .^ 2, rim_x .^ 2, rim_win_region])); hold on; grid on;
-%        plot(all_peaks_x, 10 * log10(x(all_peaks_x, 1) .^ 2), 'y*');
-%        plot(rim_max_pow_index, 10 * log10(rim_x(rim_max_pow_index) .^ 2), 'b*');
-%        plot(all_peaks_x, rim_metric_db, '*-');
-%        plot(all_peaks_x(is_rim_shot), rim_metric_db(is_rim_shot), '*');
-%        plot(all_peaks_x(~is_rim_shot), rim_metric_db(~is_rim_shot), '*');
+%figure; plot(10 * log10([x(:, 1) .^ 2, x_rim .^ 2, rim_win_region])); hold on; grid on;
+%        plot(all_first_peaks, 10 * log10(x(all_first_peaks, 1) .^ 2), 'y*');
+%        plot(rim_max_pow_index, 10 * log10(x_rim(rim_max_pow_index) .^ 2), 'b*');
+%        plot(all_first_peaks, rim_metric_db, '*-');
+%        plot(all_first_peaks(is_rim_shot), rim_metric_db(is_rim_shot), '*');
+%        plot(all_first_peaks(~is_rim_shot), rim_metric_db(~is_rim_shot), '*');
 
 end
 

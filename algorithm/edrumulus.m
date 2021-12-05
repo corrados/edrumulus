@@ -29,9 +29,10 @@ global pad energy_window_len rim_shot_window_len;
 if ~exist('x', 'var')
 %x = audioread("signals/pd120_roll.wav");x = x(292410:294749, :);
 %x = audioread("signals/pd120_single_hits.wav");
-x = audioread("signals/pd120_pos_sense.wav");x=x(10600:15000);%x = x(2900:10000, :);%x = x(55400:58000, :);%
+%x = audioread("signals/pd120_pos_sense.wav");x=x(10600:15000);%x = x(2900:10000, :);%x = x(55400:58000, :);%
 %x = audioread("signals/pd120_pos_sense2.wav");
 %x = audioread("signals/pd120_rimshot.wav");x = x(168000:171000, :);%x = x(1:8000, :);%x = x(1:34000, :);%x = x(1:100000, :);
+x = audioread("signals/pd120_rimshot.wav");x=x(7000:25000,:);
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 end
 
@@ -54,7 +55,6 @@ pos_sense_metric          = [];
 
 x_filt_decay_debug        = zeros(size(x, 1), 1);
 rim_max_pow_debug         = zeros(size(x, 1), 1);
-x_rim_high_debug          = zeros(size(x, 1), 1);
 peak_found                = false(size(x, 1), 1);
 pos_sense_peak_energy     = zeros(size(x, 1), 1);
 pos_sense_peak_energy_low = zeros(size(x, 1), 1);
@@ -75,7 +75,6 @@ for i = 1:size(x, 1)
    pos_sense_metric, ...
    x_filt_decay_debug(i), ...
    rim_max_pow_debug(i), ...
-   x_rim_high_debug(i), ...
    peak_found(i), ...
    pos_sense_peak_energy(i), ...
    pos_sense_peak_energy_low(i), ...
@@ -101,7 +100,7 @@ end
 figure;
 plot(10 * log10([mask_region, scan_region, pre_scan_region, decay_est_rng]), 'LineWidth', 20);
 grid on; hold on; set(gca, 'ColorOrderIndex', 1); % reset color order so that x trace is blue and so on
-plot(10 * log10([x(:, 1) .^ 2, x_filt, decay_all, x_filt_decay_debug, x_rim_high_debug]));
+plot(10 * log10([x(:, 1) .^ 2, x_filt, decay_all, x_filt_decay_debug]));
 plot(10 * log10(rim_max_pow_debug), 'y*');
 plot(all_first_peaks, 10 * log10(x(all_first_peaks, 1) .^ 2), 'b*');
 plot(all_peaks,  10 * log10(x(all_peaks, 1) .^ 2), 'g*');
@@ -116,7 +115,7 @@ ylim([-10, 90]);
 
 % TEST for edrumulus porting...
 %axis([61, 293, 14, 71]);
-axis([2871, 3098, 12, 67]);
+%axis([2871, 3098, 12, 67]);
 
 end
 
@@ -124,7 +123,6 @@ end
 function Setup
 
 global pad Fs bp_filt_a bp_filt_b bp_filt_len bp_filt_hist_x bp_filt_hist_y x_filt_delay;
-global b_rim_high a_rim_high rim_high_prev_x rim_x_high;
 global scan_time scan_time_cnt pre_scan_time total_scan_time;
 global mask_time mask_back_cnt threshold first_peak_diff_thresh was_above_threshold;
 global first_peak_val;
@@ -133,7 +131,7 @@ global decay_est_delay decay_est_len decay_est_fact decay_fact decay_len;
 global decay decay_back_cnt decay_scaling;
 global x_sq_hist x_sq_hist_len lp_filt_b lp_filt_hist lp_filt_len;
 global x_low_hist x_low_hist_len pos_sense_cnt x_low_hist_idx;
-global rim_shot_window_len rim_shot_treshold_dB rim_x_high_hist rim_shot_cnt;
+global rim_shot_window_len rim_shot_treshold_dB x_rim_hist x_rim_hist_len rim_shot_cnt x_rim_hist_idx;
 global hil_filt_max_pow stored_pos_sense_metric stored_is_rimshot;
 global max_x_filt_val max_x_filt_idx_debug;
 global was_peak_found was_pos_sense_ready was_rim_shot_ready;
@@ -154,17 +152,13 @@ pad.decay_grad_fact1          = 200;
 pad.decay_grad_fact2          = 200;
 pad.decay_grad_fact3          = 200;
 pad.pos_low_pass_cutoff       = 150; % Hz
-%pad.pos_invert                = false;
+pad.rim_shot_window_len_ms    = 3.5;
 
 Fs                       = 8000;
 bp_filt_len              = 5;
 bp_filt_a                = [6.704579059531744e-01, -2.930427216820138, 4.846289804288025, -3.586239808116909]';
 bp_filt_b                = [1.658193166930305e-02, 0, -3.316386333860610e-02, 0, 1.658193166930305e-02]';
 x_filt_delay             = 5;
-rim_high_prev_x          = 0;
-rim_x_high               = 0;
-b_rim_high               = [0.969531252908746, -0.969531252908746];
-a_rim_high               = -0.939062505817492;
 scan_time                = round(pad.scan_time_ms * 1e-3 * Fs);
 scan_time_cnt            = 0;
 pre_scan_time            = round(pad.pre_scan_time_ms * 1e-3 * Fs);
@@ -190,9 +184,11 @@ bp_filt_hist_x           = zeros(bp_filt_len, 1);
 bp_filt_hist_y           = zeros(bp_filt_len - 1, 1);
 x_sq_hist_len            = total_scan_time;
 x_sq_hist                = zeros(x_sq_hist_len, 1);
-rim_shot_window_len      = round(7e-3 * Fs); % window length (e.g. 6 ms)
-rim_shot_treshold_dB     = 2.3; % dB
-rim_x_high_hist          = zeros(rim_shot_window_len, 1);
+rim_shot_window_len      = round(pad.rim_shot_window_len_ms * 1e-3 * Fs);
+x_rim_hist_len           = x_sq_hist_len + rim_shot_window_len;
+x_rim_hist_idx           = 1;
+rim_shot_treshold_dB     = -5; % dB
+x_rim_hist               = zeros(x_rim_hist_len, 1);
 rim_shot_cnt             = 0;
 hil_filt_max_pow         = 0;
 stored_pos_sense_metric  = 0;
@@ -273,7 +269,6 @@ function [x_filt_debug, ...
           pos_sense_metric, ...
           x_filt_decay_debug, ...
           rim_max_pow_debug, ...
-          x_rim_high_debug, ...
           peak_found, ...
           peak_energy, ...
           peak_energy_low, ...
@@ -291,7 +286,6 @@ function [x_filt_debug, ...
                                         pos_sense_metric)
 
 global Fs bp_filt_a bp_filt_b bp_filt_len bp_filt_hist_x bp_filt_hist_y x_filt_delay;
-global b_rim_high a_rim_high rim_high_prev_x rim_x_high;
 global scan_time scan_time_cnt pre_scan_time total_scan_time;
 global mask_time mask_back_cnt threshold first_peak_diff_thresh was_above_threshold;
 global first_peak_val;
@@ -300,7 +294,7 @@ global decay_est_delay decay_est_len decay_est_fact decay_fact decay_len;
 global decay decay_back_cnt decay_scaling;
 global x_sq_hist x_sq_hist_len lp_filt_b lp_filt_hist lp_filt_len;
 global x_low_hist x_low_hist_len pos_sense_cnt x_low_hist_idx;
-global rim_shot_window_len rim_shot_treshold_dB rim_x_high_hist rim_shot_cnt;
+global rim_shot_window_len rim_shot_treshold_dB x_rim_hist x_rim_hist_len rim_shot_cnt x_rim_hist_idx;
 global hil_filt_max_pow stored_pos_sense_metric stored_is_rimshot;
 global max_x_filt_val max_x_filt_idx_debug;
 global was_peak_found was_pos_sense_ready was_rim_shot_ready;
@@ -315,14 +309,6 @@ first_peak_delay  = 0;     % only used internally
 pos_sense_is_used = true;  % only used internally to enable/disable positional sensing
 rim_shot_is_used  = false; % only used internally
 rim_max_pow_debug = 0; % only for debugging
-x_rim_high_debug  = 0; % only for debugging
-
-
-
-% TEST!!!!!!!!!! disable rim shot detection for now...
-rim_shot_is_used = false;
-
-
 
 % square input signal and store in FIFO buffer
 x_sq      = x .^ 2;
@@ -524,13 +510,8 @@ end
 if length(x) > 1 % rim piezo signal is in second dimension
 
   rim_shot_is_used = true;
-
-  % one pole IIR high pass filter (y1 = (b0 * x1 + b1 * x0 - a1 * y0) / a0)
-  rim_x_high       = (b_rim_high(1) * x(2) + b_rim_high(2) * rim_high_prev_x - a_rim_high * rim_x_high);
-  rim_high_prev_x  = x(2); % store previous x
-  x_rim_high_debug = rim_x_high; % just for debugging
-
-  rim_x_high_hist = update_fifo(rim_x_high, rim_shot_window_len, rim_x_high_hist);
+  x_rim            = x(2);
+  x_rim_hist       = update_fifo(x_rim * x_rim, x_rim_hist_len, x_rim_hist);
 
   % start condition of delay process to fill up the required buffers
   % note that rim_shot_window_len must be larger than energy_window_len,
@@ -539,8 +520,8 @@ if length(x) > 1 % rim piezo signal is in second dimension
 
     % a peak was found, we now have to start the delay process to fill up the
     % required buffer length for our metric
-    rim_shot_cnt = rim_shot_window_len / 2 - 1;
-    x_max_pow    = first_peak_val;
+    rim_shot_cnt   = max(1, rim_shot_window_len - first_peak_delay);
+    x_rim_hist_idx = x_rim_hist_len - rim_shot_window_len - max(0, first_peak_delay - rim_shot_window_len + 1) + 1;
 
   end
 
@@ -549,23 +530,15 @@ if length(x) > 1 % rim piezo signal is in second dimension
     rim_shot_cnt = rim_shot_cnt - 1;
 
     % end condition
-    if rim_shot_cnt <= 0
+    if rim_shot_cnt == 0
 
       % the buffers are filled, now calculate the metric
-      rim_max_pow        = max(rim_x_high_hist .* rim_x_high_hist);
+      rim_max_pow        = max(x_rim_hist(x_rim_hist_idx + (0:rim_shot_window_len - 1)));
       rim_max_pow_debug  = rim_max_pow; % just for debugging
-      rim_metric_db      = 10 * log10(rim_max_pow / x_max_pow);
+      rim_metric_db      = 10 * log10(rim_max_pow / first_peak_val);
       stored_is_rimshot  = rim_metric_db > rim_shot_treshold_dB;
       rim_shot_cnt       = 0;
       was_rim_shot_ready = true;
-
-    else
-
-      % we need a further delay for the positional sensing estimation, consider
-      % this additional delay for the overall peak found offset
-      if was_peak_found && (~pos_sense_is_used || was_pos_sense_ready)
-        peak_found_offset = peak_found_offset + 1;
-      end
 
     end
 
