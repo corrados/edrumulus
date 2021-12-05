@@ -390,8 +390,8 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
 
     case KD7:
       pad_settings.velocity_threshold   = 11;
-      pad_settings.velocity_sensitivity = 6;
-      pad_settings.scan_time_ms         = 3.5f;
+      pad_settings.velocity_sensitivity = 10;
+      pad_settings.scan_time_ms         = 2.0f;
       pad_settings.decay_est_delay_ms   = 8.0f;
       pad_settings.decay_fact_db        = 5.0f;
       pad_settings.decay_len1_ms        = 4.0f;

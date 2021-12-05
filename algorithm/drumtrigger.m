@@ -109,7 +109,7 @@ switch padtype
     pad.decay_len_ms3      = 600; % must be long because of open Hi-Hat ringing
     pad.decay_grad_fact3   = 75;
   case 'kd7'
-    pad.scan_time_ms       = 3.5;
+    pad.scan_time_ms       = 2;
     pad.decay_est_delay_ms = 8;
     pad.decay_fact_db      = 5;
     pad.decay_len_ms1      = 4;
