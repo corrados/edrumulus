@@ -1,6 +1,10 @@
 name: PlatformIO CI
 
-on: [push]
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
@@ -35,7 +39,7 @@ jobs:
         pip install --upgrade platformio
         
     - name: Run PlatformIO
-      run: pio ci --lib="." --board=teensy36 --board=teensy40
+      run: pio ci --lib="." --board=teensy36 --board=teensy40 --board=teensy41
       env:
         PLATFORMIO_CI_SRC: ${{ matrix.example }}
         PLATFORMIO_BUILD_FLAGS: -D USB_MIDI
