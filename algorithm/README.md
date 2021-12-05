@@ -12,23 +12,11 @@ this step we can also detect if we have a cross stick situation.
 
 ### Signal filtering
 
-If you calculate the power of the recorded real-valued audio signal, the resulting power curve has
-significant power drops caused by the nature of a sinusoidal signal. A filtering can smooth the
-curve. As a possible filter we can use a Hilbert transform to convert the real-valued signal in a
-complex signal. As a result, the magnitude of that complex signal is much smoother already without
-having modified the actual spectrum of the signal (real-valued signals have mirror symmetric spectrum).
-This effect is shown in the following picture:
-<br/>![Hilbert filter](images/hilbert.jpg)
-
-As can be seen in the graph, the default Hilbert filter in Octave uses a long impulse response which
-would introduce a large delay. To get to a more practical implementation, we use our own Hilbert filter
-design which has a very short impulse response. Using that simplified Hilbert filter leads to less
-power drop cancellation. To improve the situation, we apply a moving average filter after the simplified
-Hilbert filter. This is not only to reduce the power drops but to improve the velocity estimation. The
-idea of the velocity estimation is to estimate the energy of the drum stick hit on the mesh head. To
-estimate the energy of a signal, it makes sense to integrate the measured powers over a period of time,
-which is basically a moving average filter. The resulting trace can be seen on the next picture:
-<br/>![Simplified Hilbert filter with moving average](images/simplehilbertwithmovav.jpg)
+The noise of cheap ADCs is usually not equally distributed over the entire frequency spectrum. To
+improve the peak detection, it makes sense to apply a band-pass filter to filter out ADC noise in
+spectrum parts which are not used by the pad piezo signal like very low frequencies and high
+frequencies. Therefore, a band-pass filter is applied. The pass-band width is a trade-off between
+noise cancellation and filter delay. A good compromise is a pass-band of 40 Hz to 400 Hz.
 
 ### Retrigger cancellation
 

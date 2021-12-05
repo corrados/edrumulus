@@ -1,6 +1,12 @@
 # Edrumulus Project Log
 
 
+## 12/05/2021 New algorithms ready
+
+  The improved peak detection and positional sensing algorithms are now ready and the code
+  was merge from a Git side branch to the main branch. With these improvements, the source
+  code was heavily changed. Thus, a lot of fine tuning has to be done to, e.g., tweak the
+  pad parameters for the new algorithms.
 
 ## 11/21/2021 Time to say goodbye, Hilbert...
 
