@@ -292,7 +292,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.pad_type = new_pad_type;
 
   // apply PRESET settings (might be overwritten by pad-specific properties)
-  pad_settings.velocity_threshold        = 6;  // 0..31
+  pad_settings.velocity_threshold        = 8;  // 0..31
   pad_settings.velocity_sensitivity      = 9;  // 0..31
   pad_settings.mask_time_ms              = 6;  // 0..31 (ms)
   pad_settings.pos_threshold             = 9;  // 0..31
@@ -327,8 +327,8 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       break;
 
     case PD80R:
-      pad_settings.velocity_sensitivity     = 4;
-      pad_settings.rim_shot_treshold        = 31;
+      pad_settings.velocity_sensitivity     = 9;
+      pad_settings.rim_shot_treshold        = 14;
       pad_settings.pos_threshold            = 11;
       pad_settings.pos_sensitivity          = 10;
       pad_settings.scan_time_ms             = 3.0f;
@@ -340,7 +340,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       break;
 
     case PD8:
-      pad_settings.velocity_sensitivity = 4;
+      pad_settings.velocity_sensitivity = 9;
       pad_settings.pos_threshold        = 26;
       pad_settings.pos_sensitivity      = 11;
       pad_settings.rim_shot_treshold    = 16;
@@ -355,7 +355,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       break;
 
     case TP80:
-      pad_settings.velocity_sensitivity = 8;
+      pad_settings.velocity_sensitivity = 13;
       pad_settings.pos_threshold        = 22;
       pad_settings.pos_sensitivity      = 23;
       pad_settings.scan_time_ms         = 2.75f;
@@ -389,7 +389,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       break;
 
     case KD7:
-      pad_settings.velocity_threshold   = 9;
+      pad_settings.velocity_threshold   = 11;
       pad_settings.velocity_sensitivity = 6;
       pad_settings.scan_time_ms         = 3.5f;
       pad_settings.decay_est_delay_ms   = 8.0f;
@@ -411,7 +411,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       break;
 
     case CY8:
-      pad_settings.velocity_threshold   = 11;
+      pad_settings.velocity_threshold   = 13;
       pad_settings.velocity_sensitivity = 8;
       pad_settings.rim_shot_treshold    = 30;
       pad_settings.curve_type           = LOG2;
@@ -452,7 +452,7 @@ void Edrumulus::Pad::initialize()
   decay_est_len            = round ( pad_settings.decay_est_len_ms   * 1e-3f * Fs );
   decay_est_fact           = pow ( 10.0f, pad_settings.decay_est_fact_db / 10 );
   rim_shot_window_len      = round ( pad_settings.rim_shot_window_len_ms * 1e-3f * Fs );        // window length (e.g. 5 ms)
-  rim_shot_treshold_dB     = static_cast<float> ( pad_settings.rim_shot_treshold ) / 2 - 28;    // gives us a rim shot threshold range of -28..-12.5 dB
+  rim_shot_treshold_dB     = static_cast<float> ( pad_settings.rim_shot_treshold ) / 2 - 25;    // gives us a rim shot threshold range of -25..-9.5 dB
   rim_switch_treshold      = -ADC_MAX_NOISE_AMPL + 9 * ( pad_settings.rim_shot_treshold - 31 ); // rim switch linear threshold
   rim_switch_on_cnt_thresh = round ( 10.0f * 1e-3f * Fs );                                      // number of on samples until we detect a choke
   x_rim_hist_len           = x_sq_hist_len + rim_shot_window_len;
@@ -716,7 +716,7 @@ void Edrumulus::Pad::process_sample ( const float* input,
       }
 
       // calculate the MIDI velocity value with clipping to allowed MIDI value range
-      stored_midi_velocity = velocity_factor * pow ( peak_velocity, velocity_exponent ) + velocity_offset;
+      stored_midi_velocity = velocity_factor * pow ( peak_velocity * ADC_noise_peak_velocity_scaling, velocity_exponent ) + velocity_offset;
       stored_midi_velocity = max ( 1, min ( 127, stored_midi_velocity ) );
 
       // peak detection results

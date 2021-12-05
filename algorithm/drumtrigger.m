@@ -158,7 +158,7 @@ global pad;
 [b, a] = butter(2, [40 400] / 4e3); % seems to be a good trade-off
 
 % TEST adjust filtered signal amplification so that the noise floor matches the unfiltered signal (depends on hardware noise spectrum)
-%f = 4; b = b * f; pad.threshold_db = pad.threshold_db + 20 * log10(f);
+%f = 3; b = b * f; pad.threshold_db = pad.threshold_db + 20 * log10(f);
 
 % TEST to export coefficients to edrumulus.m:
 %format long g; fliplr(a(2:end))

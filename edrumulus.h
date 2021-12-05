@@ -211,6 +211,15 @@ protected:
       const float bp_filt_b[5] = { 0.01658193166930305f, 0.0f, -0.0331638633386061f, 0.0f, 0.01658193166930305f };
       const int   x_filt_delay = 5;
 
+      // ADC noise scaling after band-pass filtering (e.g., for the Teensy ADC the noise has high
+      // energy at high frequencies which are cut by the band-pass filter) -> hardware dependend parameter
+#ifdef TEENSYDUINO
+      const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
+#else
+// TODO set the correct value for the ESP32 hardware -> as a first approximation, use the Teensy value...
+const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
+#endif
+
       float* bp_filt_hist_x    = nullptr;
       float* bp_filt_hist_y    = nullptr;
       float* x_sq_hist         = nullptr;
