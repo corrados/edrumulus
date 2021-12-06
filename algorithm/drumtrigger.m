@@ -57,6 +57,7 @@ x = audioread("signals/kd7_hard_hits.wav");padtype = 'kd7';%x = x(1:3000, :);
 pad.threshold_db              = 17;
 pad.mask_time_ms              = 6;
 pad.first_peak_diff_thresh_db = 8;
+pad.mask_time_decay_fact_db   = 10;
 pad.scan_time_ms              = 2.5;
 pad.pre_scan_time_ms          = 3;
 pad.decay_est_delay_ms        = 8;
@@ -278,9 +279,9 @@ while ~no_more_peak
   [~, max_idx] = max(x_sq(scan_indexes));
   peak_idx     = above_thresh_start + max_idx - 1;
 
-  % search from above threshold to corrected scan+mask time for highest peak in
+  % search from above threshold to corrected scan time for highest peak in
   % filtered signal, needed for decay power estimation
-  scan_indexes_filt = org_above_thresh_start:org_above_thresh_start + scan_time + mask_time;
+  scan_indexes_filt = org_above_thresh_start:org_above_thresh_start + scan_time - 1;
   [~, max_idx]      = max(x_filt(scan_indexes_filt));
   peak_idx_filt     = org_above_thresh_start + max_idx - 1;
 
@@ -299,11 +300,17 @@ while ~no_more_peak
   % store the new detected peaks
   all_peaks      = [all_peaks; peak_idx];
   all_peaks_filt = [all_peaks_filt; peak_idx_filt];
-  last_peak_idx  = org_above_thresh_start + scan_time + mask_time;
+  last_peak_idx  = org_above_thresh_start + scan_time;
 
   % exponential decay assumption
+  % during the mask time we apply a constant value to the decay way above the
+  % detected peak to avoid missing a loud hit which is preceeded with a very
+  % low volume hit which mask period would delete the loud hit
   decay           = decay_scaling * decay_curve;
-  decay_x         = org_above_thresh_start + scan_time + mask_time + (0:decay_len - 1);
+  decay_mask_fact = 10 ^ (pad.mask_time_decay_fact_db / 10);
+  decay           = [ones(1, mask_time) * x_filt(peak_idx_filt) * decay_mask_fact, decay];
+  decay_x         = org_above_thresh_start + scan_time + (0:mask_time + decay_len - 1);
+
   valid_decay_idx = decay_x <= length(x_filt_decay);
   decay           = decay(valid_decay_idx);
   decay_x         = decay_x(valid_decay_idx);
@@ -316,12 +323,15 @@ while ~no_more_peak
   x_filt_decay(decay_x) = x_filt_new;
 
   % debugging outputs
-  scan_region(scan_indexes)                                                    = x_sq(first_peak_idx); % mark scan time region
-  pre_scan_region(above_thresh_start - pre_scan_time + (0:pre_scan_time - 1))  = x_sq(first_peak_idx); % mark pre-scan time region
-  mask_region(last_peak_idx - 1 + (-mask_time - x_filt_delay + 1:0))           = x_sq(first_peak_idx); % mark mask region
-  decay_est_rng(decay_power_win)                                               = decay_power;          % mark decay power estimation region
-  decay_all(decay_x)                                                           = decay;                % store decay curve
-  decay_all(above_thresh_start + (0:scan_time + mask_time + x_filt_delay - 1)) = nan;                  % remove previous decay curve during observation region
+  mask_region_idx                      = org_above_thresh_start + scan_time + mask_time - 1 + (-mask_time - x_filt_delay + 1:0);
+  pre_scan_region_idx                  = above_thresh_start - pre_scan_time + (0:pre_scan_time - 1);
+  decay_all_mask_region_idx            = above_thresh_start + (0:scan_time + x_filt_delay - 1);
+  scan_region(scan_indexes)            = x_sq(first_peak_idx); % mark scan time region
+  pre_scan_region(pre_scan_region_idx) = x_sq(first_peak_idx); % mark pre-scan time region
+  mask_region(mask_region_idx)         = x_sq(first_peak_idx); % mark mask region
+  decay_est_rng(decay_power_win)       = decay_power;          % mark decay power estimation region
+  decay_all(decay_x)                   = decay;                % store decay curve
+  decay_all(decay_all_mask_region_idx) = nan;                  % remove previous decay curve during observation region
 
 end
 
