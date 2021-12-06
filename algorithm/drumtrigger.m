@@ -48,7 +48,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/cy8.wav");padtype = 'cy8';%x = x(1:200000, :);
 %x = audioread("signals/kd8.wav");
 %x = audioread("signals/kd7.wav");padtype = 'kd7';%x = x(1:170000, :);
-x = audioread("signals/kd7_hard_hits.wav");padtype = 'kd7';%x = x(1:170000, :);
+x = audioread("signals/kd7_hard_hits.wav");padtype = 'kd7';%x = x(1:3000, :);
 %x = audioread("signals/tp80.wav");padtype = 'tp80';
 %x = audioread("signals/vh12.wav");padtype = 'vh12';%x = x(900000:end, :);%x = x(376000:420000, :);%x = x(1:140000, :);
 
@@ -299,7 +299,14 @@ while ~no_more_peak
   % store the new detected peaks
   all_peaks      = [all_peaks; peak_idx];
   all_peaks_filt = [all_peaks_filt; peak_idx_filt];
+
+%% TEST
+%if 10 * log10(x_filt(peak_idx_filt)) - 10 * log10(x_sq(peak_idx)) > 25
+%  last_peak_idx  = org_above_thresh_start + scan_time;
+%else
   last_peak_idx  = org_above_thresh_start + scan_time + mask_time;
+%end
+
 
   % exponential decay assumption
   decay           = decay_scaling * decay_curve;
