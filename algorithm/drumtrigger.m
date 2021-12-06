@@ -299,14 +299,7 @@ while ~no_more_peak
   % store the new detected peaks
   all_peaks      = [all_peaks; peak_idx];
   all_peaks_filt = [all_peaks_filt; peak_idx_filt];
-
-%% TEST
-%if 10 * log10(x_filt(peak_idx_filt)) - 10 * log10(x_sq(peak_idx)) > 25
-%  last_peak_idx  = org_above_thresh_start + scan_time;
-%else
   last_peak_idx  = org_above_thresh_start + scan_time + mask_time;
-%end
-
 
   % exponential decay assumption
   decay           = decay_scaling * decay_curve;
