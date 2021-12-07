@@ -307,7 +307,7 @@ x_filt_decay_debug(i) = x_filt_decay; % just for debugging
 % during the mask time we apply a constant value to the decay way above the
 % detected peak to avoid missing a loud hit which is preceeded with a very
 % low volume hit which mask period would delete the loud hit
-if (mask_back_cnt > 0) && (mask_back_cnt <= mask_time + x_filt_delay)
+if (mask_back_cnt > 0) && (mask_back_cnt <= mask_time)
 
   decay_all_debug(i) = max_mask_x_filt_val * decay_mask_fact; % just for debugging
 
@@ -357,7 +357,7 @@ if (x_filt_decay > threshold) || was_above_threshold
   end
 
   % search from above threshold in scan time region needed for decay mask factor
-  if (mask_back_cnt > mask_time + x_filt_delay) && (x_filt > max_mask_x_filt_val)
+  if (mask_back_cnt > mask_time) && (x_filt > max_mask_x_filt_val)
     max_mask_x_filt_val = x_filt;
   end
 

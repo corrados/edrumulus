@@ -179,7 +179,7 @@ while ~no_more_peak
   [~, max_idx]      = max(x_filt(scan_indexes_filt));
   peak_idx_filt     = org_above_thresh_start + max_idx - 1;
 
-  scan_indexes_filt  = org_above_thresh_start:org_above_thresh_start + scan_time - x_filt_delay - 1;
+  scan_indexes_filt  = org_above_thresh_start:org_above_thresh_start + scan_time - 1;
   [~, max_idx]       = max(x_filt(scan_indexes_filt));
   peak_mask_idx_filt = org_above_thresh_start + max_idx - 1;
 
@@ -206,8 +206,8 @@ while ~no_more_peak
   % low volume hit which mask period would delete the loud hit
   decay           = decay_scaling * decay_curve;
   decay_mask_fact = 10 ^ (pad.mask_time_decay_fact_db / 10);
-  decay           = [ones(1, mask_time + x_filt_delay) * x_filt(peak_mask_idx_filt) * decay_mask_fact, decay];
-  decay_x         = above_thresh_start + scan_time + (0:mask_time + x_filt_delay + decay_len - 1);
+  decay           = [ones(1, mask_time) * x_filt(peak_mask_idx_filt) * decay_mask_fact, decay];
+  decay_x         = org_above_thresh_start + scan_time + (0:mask_time + decay_len - 1);
 
   valid_decay_idx = decay_x <= length(x_filt_decay);
   decay           = decay(valid_decay_idx);
