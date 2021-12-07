@@ -17,44 +17,35 @@
 
 % reference code for the C++ implementation on the actual hardware
 
-function edrumulus(x)
+function edrumulus(x, pad_input)
 
-global pad energy_window_len rim_shot_window_len;
+global pad;
 
 %close all
-% TEST
-%drumtrigger
 
-% load test data
-if ~exist('x', 'var')
-%x = audioread("signals/pd120_roll.wav");x = x(292410:294749, :);
-%x = audioread("signals/pd120_single_hits.wav");
-x = audioread("signals/pd120_pos_sense.wav");x=x(10600:15000);%x = x(2900:10000, :);%x = x(55400:58000, :);%
-%x = audioread("signals/pd120_pos_sense2.wav");
-%x = audioread("signals/pd120_rimshot.wav");x = x(168000:171000, :);%x = x(1:8000, :);%x = x(1:34000, :);%x = x(1:100000, :);
-%x = audioread("signals/pd120_rimshot.wav");x=x(7000:15000,:);
-%x = audioread("signals/pd120_rimshot_hardsoft.wav");
+% load signal and pad settings
+if ~exist('x', 'var') || ~exist('pad_input', 'var')
+  [x, pad] = signalsandsettings;
+else
+  pad = pad_input;
 end
-
-% match the signal level of the ESP32
-x = x * 25000;
 
 Setup();
 
 % loop
-x_filt                    = nan(size(x, 1), 1);
-pre_scan_region           = nan(size(x, 1), 1);
-scan_region               = nan(size(x, 1), 1);
-mask_region               = nan(size(x, 1), 1);
-decay_est_rng             = nan(size(x, 1), 1);
-decay_all                 = nan(size(x, 1), 1);
-x_filt_decay              = nan(size(x, 1), 1);
-all_peaks                 = [];
-all_first_peaks           = [];
-all_peaks_filt            = [];
-pos_sense_metric          = [];
-is_rim_shot               = logical([]);
-rim_metric_db             = [];
+x_filt           = nan(size(x, 1), 1);
+pre_scan_region  = nan(size(x, 1), 1);
+scan_region      = nan(size(x, 1), 1);
+mask_region      = nan(size(x, 1), 1);
+decay_est_rng    = nan(size(x, 1), 1);
+decay_all        = nan(size(x, 1), 1);
+x_filt_decay     = nan(size(x, 1), 1);
+all_peaks        = [];
+all_first_peaks  = [];
+all_peaks_filt   = [];
+pos_sense_metric = [];
+is_rim_shot      = logical([]);
+rim_metric_db    = [];
 
 for i = 1:size(x, 1)
 
@@ -94,12 +85,14 @@ plot(10 * log10([x(:, 1) .^ 2, x_filt, decay_all, x_filt_decay]));
 plot(all_first_peaks, 10 * log10(x(all_first_peaks, 1) .^ 2), 'b*');
 plot(all_peaks,  10 * log10(x(all_peaks, 1) .^ 2), 'g*');
 plot(all_peaks_filt, 10 * log10(x_filt(all_peaks_filt)), 'y*');
-if ~isempty(rim_metric_db)
+if ~isempty(rim_metric_db) && (length(all_first_peaks) == length(rim_metric_db))
   plot(all_first_peaks, rim_metric_db + 70, '*-');
   plot(all_first_peaks(is_rim_shot), rim_metric_db(is_rim_shot) + 70, '*');
   plot(all_first_peaks(~is_rim_shot), rim_metric_db(~is_rim_shot) + 70, '*');
 end
-plot(all_first_peaks,  10 * log10(pos_sense_metric) + 40, 'k*');
+if length(all_first_peaks) == length(pos_sense_metric)
+  plot(all_first_peaks,  10 * log10(pos_sense_metric) + 40, 'k*');
+end
 plot([1, length(x_filt)], [pad.threshold_db, pad.threshold_db], '--');
 title('Green marker: level; Black marker: position; Blue marker: first peak'); xlabel('samples'); ylabel('dB');
 ylim([-10, 90]);
@@ -126,24 +119,6 @@ global rim_shot_window_len rim_shot_treshold_dB x_rim_hist x_rim_hist_len rim_sh
 global stored_pos_sense_metric stored_is_rimshot;
 global max_x_filt_val max_x_filt_idx_debug;
 global was_peak_found was_pos_sense_ready was_rim_shot_ready;
-
-pad.threshold_db              = 17;
-pad.mask_time_ms              = 6;
-pad.first_peak_diff_thresh_db = 8;
-pad.scan_time_ms              = 2.5;
-pad.pre_scan_time_ms          = 3;
-pad.decay_est_delay_ms        = 8;
-pad.decay_est_len_ms          = 3;
-pad.decay_est_fact_db         = 16;
-pad.decay_fact_db             = 1;
-pad.decay_len_ms1             = 0; % not used
-pad.decay_len_ms2             = 250;
-pad.decay_len_ms3             = 0; % not used
-pad.decay_grad_fact1          = 200;
-pad.decay_grad_fact2          = 200;
-pad.decay_grad_fact3          = 200;
-pad.pos_low_pass_cutoff       = 150; % Hz
-pad.rim_shot_window_len_ms    = 3.5;
 
 Fs                       = 8000;
 bp_filt_len              = 5;
