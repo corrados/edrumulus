@@ -61,9 +61,9 @@ The algorithms are described in [this document](algorithm/README.md).
 
 ## Links
 
-- [open e-drums](https://open-e-drums.com) ([Source code](https://github.com/RyoKosaka/HelloDrum-arduino-Library))
+- [eXaDrums](https://exadrums.com) ([Hackaday](https://hackaday.io/project/9350-exadrums), [Source code](https://github.com/SpintroniK/libeXaDrums))
 
-- [eXaDrums](https://hackaday.io/project/9350-exadrums) ([Source code](https://github.com/SpintroniK/libeXaDrums))
+- [open e-drums](https://open-e-drums.com) ([Source code](https://github.com/RyoKosaka/HelloDrum-arduino-Library))
 
 - [Arduino Leanordo Midi Drum Kit](https://hoeser-medien.de/2016/11/arduino-leanordo-midi-drum-kit). Uses some re-trigger cancellation. The source code can be found embedded in the web page.
 
