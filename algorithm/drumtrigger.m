@@ -179,7 +179,7 @@ while ~no_more_peak
   [~, max_idx]      = max(x_filt(scan_indexes_filt));
   peak_idx_filt     = org_above_thresh_start + max_idx - 1;
 
-  scan_indexes_filt  = org_above_thresh_start:org_above_thresh_start + scan_time - 1;
+  scan_indexes_filt  = org_above_thresh_start:org_above_thresh_start + scan_time - x_filt_delay - 1;
   [~, max_idx]       = max(x_filt(scan_indexes_filt));
   peak_mask_idx_filt = org_above_thresh_start + max_idx - 1;
 
@@ -223,13 +223,11 @@ while ~no_more_peak
   % debugging outputs
   mask_region_idx                      = org_above_thresh_start + scan_time + mask_time - 1 + (-mask_time - x_filt_delay + 1:0);
   pre_scan_region_idx                  = above_thresh_start - pre_scan_time + (0:pre_scan_time - 1);
-  decay_all_mask_region_idx            = above_thresh_start + (0:scan_time - 1);
   scan_region(scan_indexes)            = x_sq(first_peak_idx); % mark scan time region
   pre_scan_region(pre_scan_region_idx) = x_sq(first_peak_idx); % mark pre-scan time region
   mask_region(mask_region_idx)         = x_sq(first_peak_idx); % mark mask region
   decay_est_rng(decay_power_win)       = decay_power;          % mark decay power estimation region
   decay_all(decay_x)                   = decay;                % store decay curve
-  decay_all(decay_all_mask_region_idx) = nan;                  % remove previous decay curve during observation region
 
 end
 

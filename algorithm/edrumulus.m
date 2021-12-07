@@ -109,7 +109,7 @@ function Setup
 global pad Fs bp_filt_a bp_filt_b bp_filt_len bp_filt_hist_x bp_filt_hist_y x_filt_delay;
 global scan_time scan_time_cnt pre_scan_time total_scan_time;
 global mask_time mask_back_cnt threshold first_peak_diff_thresh was_above_threshold;
-global first_peak_val;
+global first_peak_val decay_mask_fact;
 global decay_pow_est_start_cnt decay_pow_est_cnt decay_pow_est_sum;
 global decay_est_delay decay_est_len decay_est_fact decay_fact decay_len;
 global decay decay_back_cnt decay_scaling;
@@ -117,7 +117,7 @@ global x_sq_hist x_sq_hist_len lp_filt_b lp_filt_hist lp_filt_len;
 global x_low_hist x_low_hist_len pos_sense_cnt x_low_hist_idx;
 global rim_shot_window_len rim_shot_treshold_dB x_rim_hist x_rim_hist_len rim_shot_cnt x_rim_hist_idx;
 global stored_pos_sense_metric stored_is_rimshot;
-global max_x_filt_val max_x_filt_idx_debug;
+global max_x_filt_val max_mask_x_filt_val max_x_filt_idx_debug;
 global was_peak_found was_pos_sense_ready was_rim_shot_ready;
 
 Fs                       = 8000;
@@ -131,7 +131,7 @@ pre_scan_time            = round(pad.pre_scan_time_ms * 1e-3 * Fs);
 total_scan_time          = scan_time + pre_scan_time; % includes pre-scan time
 mask_time                = round(pad.mask_time_ms * 1e-3 * Fs);
 mask_back_cnt            = 0;
-threshold                = power(10, pad.threshold_db / 10);
+threshold                = 10 ^ (pad.threshold_db / 10);
 first_peak_diff_thresh   = 10 ^ (pad.first_peak_diff_thresh_db / 10);
 was_above_threshold      = false;
 first_peak_val           = 0;
@@ -141,9 +141,10 @@ decay_pow_est_sum        = 0;
 decay_est_delay          = round(pad.decay_est_delay_ms * 1e-3 * Fs);
 decay_est_len            = round(pad.decay_est_len_ms * 1e-3 * Fs);
 decay_est_fact           = 10 ^ (pad.decay_est_fact_db / 10);
-decay_fact               = power(10, pad.decay_fact_db / 10);
+decay_fact               = 10 ^ (pad.decay_fact_db / 10);
 decay_back_cnt           = 0;
 decay_scaling            = 1;
+decay_mask_fact          = 10 ^ (pad.mask_time_decay_fact_db / 10);
 pos_sense_cnt            = 0;
 x_low_hist_idx           = 1;
 bp_filt_hist_x           = zeros(bp_filt_len, 1);
@@ -159,6 +160,7 @@ rim_shot_cnt             = 0;
 stored_pos_sense_metric  = 0;
 stored_is_rimshot        = false;
 max_x_filt_val           = 0;
+max_mask_x_filt_val      = 0;
 max_x_filt_idx_debug     = 0;
 was_peak_found           = false;
 was_pos_sense_ready      = false;
@@ -252,7 +254,7 @@ function [x_filt_debug, ...
 global Fs bp_filt_a bp_filt_b bp_filt_len bp_filt_hist_x bp_filt_hist_y x_filt_delay;
 global scan_time scan_time_cnt pre_scan_time total_scan_time;
 global mask_time mask_back_cnt threshold first_peak_diff_thresh was_above_threshold;
-global first_peak_val;
+global first_peak_val decay_mask_fact;
 global decay_pow_est_start_cnt decay_pow_est_cnt decay_pow_est_sum;
 global decay_est_delay decay_est_len decay_est_fact decay_fact decay_len;
 global decay decay_back_cnt decay_scaling;
@@ -260,7 +262,7 @@ global x_sq_hist x_sq_hist_len lp_filt_b lp_filt_hist lp_filt_len;
 global x_low_hist x_low_hist_len pos_sense_cnt x_low_hist_idx;
 global rim_shot_window_len rim_shot_treshold_dB x_rim_hist x_rim_hist_len rim_shot_cnt x_rim_hist_idx;
 global stored_pos_sense_metric stored_is_rimshot;
-global max_x_filt_val max_x_filt_idx_debug;
+global max_x_filt_val max_mask_x_filt_val max_x_filt_idx_debug;
 global was_peak_found was_pos_sense_ready was_rim_shot_ready;
 
 % initialize return parameter
@@ -302,8 +304,29 @@ else
 end
 x_filt_decay_debug(i) = x_filt_decay; % just for debugging
 
+% during the mask time we apply a constant value to the decay way above the
+% detected peak to avoid missing a loud hit which is preceeded with a very
+% low volume hit which mask period would delete the loud hit
+if (mask_back_cnt > 0) && (mask_back_cnt <= mask_time + x_filt_delay)
+
+  decay_all_debug(i) = max_mask_x_filt_val * decay_mask_fact; % just for debugging
+
+  if x_filt > max_mask_x_filt_val * decay_mask_fact
+
+    was_above_threshold = false;  % reset the peak detection (note that x_filt_decay is always > threshold now)
+    x_filt_decay        = x_filt; % remove decay subtraction
+    pos_sense_cnt       = 0;      % needed since we reset the peak detection
+    was_pos_sense_ready = false;  % needed since we reset the peak detection
+    rim_shot_cnt        = 0;      % needed since we reset the peak detection
+    was_rim_shot_ready  = false;  % needed since we reset the peak detection
+    decay_all_debug(i)  = nan;    % invalided debug value for this special case, just for debugging
+
+  end
+
+end
+
 % threshold test
-if ((x_filt_decay > threshold) || was_above_threshold)
+if (x_filt_decay > threshold) || was_above_threshold
 
   % initializations at the time when the signal was above threshold for the
   % first time for the current peak
@@ -312,8 +335,10 @@ if ((x_filt_decay > threshold) || was_above_threshold)
     decay_pow_est_start_cnt = max(1, decay_est_delay - x_filt_delay + 1);
     scan_time_cnt           = max(1, scan_time - x_filt_delay);
     mask_back_cnt           = scan_time + mask_time;
+    decay_back_cnt          = 0;      % reset in case it was active from previous peak
     max_x_filt_val          = x_filt; % initialize maximum value with first value
-    max_x_filt_idx_debug    = i; % only for debugging
+    max_mask_x_filt_val     = x_filt; % initialize maximum value with first value
+    max_x_filt_idx_debug    = i;      % only for debugging
 
   end
 
@@ -329,6 +354,11 @@ if ((x_filt_decay > threshold) || was_above_threshold)
     max_x_filt_val       = x_filt;
     max_x_filt_idx_debug = i; % only for debugging
 
+  end
+
+  % search from above threshold in scan time region needed for decay mask factor
+  if (mask_back_cnt > mask_time + x_filt_delay) && (x_filt > max_mask_x_filt_val)
+    max_mask_x_filt_val = x_filt;
   end
 
   scan_time_cnt = scan_time_cnt - 1;
