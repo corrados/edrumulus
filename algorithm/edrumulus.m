@@ -25,7 +25,7 @@ global pad;
 
 % load signal and pad settings
 if ~exist('x', 'var') || ~exist('pad_input', 'var')
-  [x, pad] = signalsandsettings;
+  [x, pad] = signalsandsettings(true);
 else
   pad = pad_input;
 end

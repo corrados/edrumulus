@@ -7,7 +7,7 @@ ax = axis
 ax = [round(ax(1)), round(ax(2)), round(ax(3)), round(ax(4))];
 axis(ax);
 
-[x, pad] = signalsandsettings;
+[x, pad] = signalsandsettings(true);
 
 x = x(ax(1) - 1000 + 1:ax(2) + 1000, :);
 

@@ -26,7 +26,7 @@ pkg load signal
 Fs = 8000; % Hz
 
 % load signal and pad settings
-[x, pad] = signalsandsettings;
+[x, pad] = signalsandsettings(true);
 
 % % TEST call reference mode for C++ implementation
 % edrumulus(x);
@@ -172,11 +172,16 @@ while ~no_more_peak
   [~, max_idx] = max(x_sq(scan_indexes));
   peak_idx     = above_thresh_start + max_idx - 1;
 
-  % search from above threshold to corrected scan time for highest peak in
-  % filtered signal, needed for decay power estimation
-  scan_indexes_filt = org_above_thresh_start:org_above_thresh_start + scan_time - 1;
+  % search from above threshold to corrected scan+mask time for highest peak in
+  % filtered signal, needed for decay power estimation, and also only in scan
+  % time region needed for decay mask factor
+  scan_indexes_filt = org_above_thresh_start:org_above_thresh_start + scan_time + mask_time - 1;
   [~, max_idx]      = max(x_filt(scan_indexes_filt));
   peak_idx_filt     = org_above_thresh_start + max_idx - 1;
+
+  scan_indexes_filt  = org_above_thresh_start:org_above_thresh_start + scan_time - 1;
+  [~, max_idx]       = max(x_filt(scan_indexes_filt));
+  peak_mask_idx_filt = org_above_thresh_start + max_idx - 1;
 
   % estimate current decay power
   decay_scaling = decay_fact * x_filt(peak_idx_filt);
@@ -201,8 +206,8 @@ while ~no_more_peak
   % low volume hit which mask period would delete the loud hit
   decay           = decay_scaling * decay_curve;
   decay_mask_fact = 10 ^ (pad.mask_time_decay_fact_db / 10);
-  decay           = [ones(1, mask_time) * x_filt(peak_idx_filt) * decay_mask_fact, decay];
-  decay_x         = org_above_thresh_start + scan_time + (0:mask_time + decay_len - 1);
+  decay           = [ones(1, mask_time + x_filt_delay) * x_filt(peak_mask_idx_filt) * decay_mask_fact, decay];
+  decay_x         = above_thresh_start + scan_time + (0:mask_time + x_filt_delay + decay_len - 1);
 
   valid_decay_idx = decay_x <= length(x_filt_decay);
   decay           = decay(valid_decay_idx);
@@ -218,7 +223,7 @@ while ~no_more_peak
   % debugging outputs
   mask_region_idx                      = org_above_thresh_start + scan_time + mask_time - 1 + (-mask_time - x_filt_delay + 1:0);
   pre_scan_region_idx                  = above_thresh_start - pre_scan_time + (0:pre_scan_time - 1);
-  decay_all_mask_region_idx            = above_thresh_start + (0:scan_time + x_filt_delay - 1);
+  decay_all_mask_region_idx            = above_thresh_start + (0:scan_time - 1);
   scan_region(scan_indexes)            = x_sq(first_peak_idx); % mark scan time region
   pre_scan_region(pre_scan_region_idx) = x_sq(first_peak_idx); % mark pre-scan time region
   mask_region(mask_region_idx)         = x_sq(first_peak_idx); % mark mask region
