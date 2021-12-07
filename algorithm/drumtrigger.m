@@ -103,7 +103,7 @@ decay_curve3 = 10 .^ (-(0:decay_len3 - 1) / 10 * decay_grad3);
 decay_curve  = [decay_curve1(1:end - 1), decay_curve1(end) * decay_curve2(1:end - 1), decay_curve1(end) * decay_curve2(end) * decay_curve3];
 decay_len    = decay_len1 + decay_len2 + decay_len3;
 
-last_peak_idx      = pre_scan_time;
+last_peak_idx      = pre_scan_time + x_filt_delay;
 all_peaks          = [];
 all_first_peaks    = [];
 all_peaks_filt     = [];
