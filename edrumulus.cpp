@@ -443,10 +443,11 @@ void Edrumulus::Pad::initialize()
   decay_len2               = round ( pad_settings.decay_len2_ms * 1e-3f * Fs ); // decay time 2 (e.g. 250 ms)
   decay_len3               = round ( pad_settings.decay_len3_ms * 1e-3f * Fs ); // decay time 3 (e.g. 250 ms)
   decay_len                = decay_len1 + decay_len2 + decay_len3;
-  decay_fact               = pow   ( 10.0f, pad_settings.decay_fact_db / 10 ); // decay factor of 1 dB
-  const float decay_grad1  = pad_settings.decay_grad_fact1 / Fs;               // decay gradient factor 1
-  const float decay_grad2  = pad_settings.decay_grad_fact2 / Fs;               // decay gradient factor 2
-  const float decay_grad3  = pad_settings.decay_grad_fact3 / Fs;               // decay gradient factor 3
+  decay_fact               = pow   ( 10.0f, pad_settings.decay_fact_db / 10 );
+  decay_mask_fact          = pow   ( 10.0f, pad_settings.mask_time_decay_fact_db / 10 );
+  const float decay_grad1  = pad_settings.decay_grad_fact1 / Fs; // decay gradient factor 1
+  const float decay_grad2  = pad_settings.decay_grad_fact2 / Fs; // decay gradient factor 2
+  const float decay_grad3  = pad_settings.decay_grad_fact3 / Fs; // decay gradient factor 3
   x_sq_hist_len            = total_scan_time;
   decay_est_delay          = round ( pad_settings.decay_est_delay_ms * 1e-3f * Fs );
   decay_est_len            = round ( pad_settings.decay_est_len_ms   * 1e-3f * Fs );
@@ -543,6 +544,7 @@ void Edrumulus::Pad::initialize()
   rim_shot_cnt            = 0;
   rim_switch_on_cnt       = 0;
   max_x_filt_val          = 0.0f;
+  max_mask_x_filt_val     = 0.0f;
   was_peak_found          = false;
   was_pos_sense_ready     = false;
   was_rim_shot_ready      = false;
@@ -649,6 +651,23 @@ void Edrumulus::Pad::process_sample ( const float* input,
   }
 
 
+  // during the mask time we apply a constant value to the decay way above the
+  // detected peak to avoid missing a loud hit which is preceeded with a very
+  // low volume hit which mask period would delete the loud hit
+  if ( ( mask_back_cnt > 0 ) && ( mask_back_cnt <= mask_time ) )
+  {
+    if ( x_filt > max_mask_x_filt_val * decay_mask_fact )
+    {
+      was_above_threshold = false;  // reset the peak detection (note that x_filt_decay is always > threshold now)
+      x_filt_decay        = x_filt; // remove decay subtraction
+      pos_sense_cnt       = 0;      // needed since we reset the peak detection
+      was_pos_sense_ready = false;  // needed since we reset the peak detection
+      rim_shot_cnt        = 0;      // needed since we reset the peak detection
+      was_rim_shot_ready  = false;  // needed since we reset the peak detection
+    }
+  }
+
+
   // threshold test
   if ( ( ( x_filt_decay > threshold ) || was_above_threshold ) )
   {
@@ -659,7 +678,9 @@ void Edrumulus::Pad::process_sample ( const float* input,
       decay_pow_est_start_cnt = max ( 1, decay_est_delay - x_filt_delay + 1 );
       scan_time_cnt           = max ( 1, scan_time - x_filt_delay );
       mask_back_cnt           = scan_time + mask_time;
+      decay_back_cnt          = 0;      // reset in case it was active from previous peak
       max_x_filt_val          = x_filt; // initialize maximum value with first value
+      max_mask_x_filt_val     = x_filt; // initialize maximum value with first value
     }
 
     // this flag ensures that we always enter the if condition after the very first
@@ -674,6 +695,12 @@ void Edrumulus::Pad::process_sample ( const float* input,
       max_x_filt_val = x_filt;
     }
 
+    // search from above threshold in scan time region needed for decay mask factor
+    if ( ( mask_back_cnt > mask_time ) && ( x_filt > max_mask_x_filt_val ) )
+    {
+      max_mask_x_filt_val = x_filt;
+    }
+  
     scan_time_cnt--;
     mask_back_cnt--;
 
