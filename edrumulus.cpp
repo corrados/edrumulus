@@ -327,7 +327,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       break;
 
     case PD80R:
-      pad_settings.velocity_sensitivity     = 9;
+      pad_settings.velocity_sensitivity     = 5;
       pad_settings.rim_shot_treshold        = 14;
       pad_settings.pos_threshold            = 11;
       pad_settings.pos_sensitivity          = 10;
@@ -340,7 +340,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       break;
 
     case PD8:
-      pad_settings.velocity_sensitivity = 9;
+      pad_settings.velocity_sensitivity = 5;
       pad_settings.pos_threshold        = 26;
       pad_settings.pos_sensitivity      = 11;
       pad_settings.rim_shot_treshold    = 16;
@@ -355,7 +355,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       break;
 
     case TP80:
-      pad_settings.velocity_sensitivity = 13;
+      pad_settings.velocity_sensitivity = 10;
       pad_settings.pos_threshold        = 22;
       pad_settings.pos_sensitivity      = 23;
       pad_settings.scan_time_ms         = 2.75f;
@@ -390,7 +390,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
 
     case KD7:
       pad_settings.velocity_threshold   = 11;
-      pad_settings.velocity_sensitivity = 10;
+      pad_settings.velocity_sensitivity = 6;
       pad_settings.scan_time_ms         = 2.0f;
       pad_settings.decay_est_delay_ms   = 8.0f;
       pad_settings.decay_fact_db        = 5.0f;
@@ -466,7 +466,7 @@ void Edrumulus::Pad::initialize()
   // The sensitivity parameter shall be in the range of 0..31. This range should then be mapped to the
   // maximum possible dynamic where sensitivity of 31 means that we have no dynamic at all and 0 means
   // that we use the full possible ADC range.
-  const float max_velocity_range_db = 20 * log10 ( ADC_MAX_RANGE / 2 );
+  const float max_velocity_range_db = 20 * log10 ( ADC_MAX_RANGE / 2 ) - threshold_db;
   const float velocity_range_db     = max_velocity_range_db * ( 32 - pad_settings.velocity_sensitivity ) / 32;
 
   // Consider MIDI curve (taken from RyoKosaka HelloDrum-arduino-Library: int HelloDrum::curve() function)
