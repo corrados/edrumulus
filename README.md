@@ -2,7 +2,8 @@
 
 <img width="100" height="100" src="algorithm/images/edrumulus_logo.png"/>
 
-The aim of the Edrumulus project is to create a high quality Open Source e-drum trigger module software.
+The aim of the **Edrumulus** project is to create a high quality Open Source e-drum trigger module software
+which runs on a micro processor.
 
 [![PlatformIO CI](https://github.com/corrados/edrumulus/actions/workflows/main.yml/badge.svg)](https://github.com/corrados/edrumulus/actions/workflows/main.yml)
 
@@ -18,19 +19,17 @@ Find all important updates of the Edrumulus project in the [change log file](Cha
 
 - Overall latency should be as small as possible. The goal is to achieve a latency < 10 ms.
 
-- Positional sensing shall be supported.
+- Positional sensing is supported.
 
-- A ESP32 micro processor development board (similar to the [open e-drums](https://open-e-drums.com)
-  project) or a Teensy 4.0 development board shall be used. It has shown that both boards are
-  powerful enough to fulfill the task of a drum trigger module.
+- Supported micro processors are:
+  - **ESP32 with dual core**
+  - **Teensy 4.0**
+  
+  It has shown that both boards are powerful enough for running an e-drum trigger module.
 
 - The required analog front end design shall be as simple as possible using the fewest number of
-  parts possible.
-
-  Many open drum trigger implementations only use one half of the signal (i.e., only the positive
-  wave) or use a bridge rectifier to capture the analog signal. Since we want to implement more
-  sophisticated algorithms, we want to capture the entire signal without non-linear analog
-  preprocessing. Since micro controllers usually only convert analog signals in the range of 0 to 3.3 V,
+  parts possible. We want to capture the entire signal without non-linear analog preprocessing.
+  Since micro controllers usually only convert analog signals in the range of 0 to 3.3 V,
   we have to move the point of operation in the middle of the voltage range.
 
   A circuit diagram of my test setup is given in the following picture:
