@@ -85,10 +85,10 @@ plot(10 * log10([x(:, 1) .^ 2, x_filt, decay_all, x_filt_decay]));
 plot(all_first_peaks, 10 * log10(x(all_first_peaks, 1) .^ 2), 'b*');
 plot(all_peaks,  10 * log10(x(all_peaks, 1) .^ 2), 'g*');
 plot(all_peaks_filt, 10 * log10(x_filt(all_peaks_filt)), 'y*');
-if ~isempty(rim_metric_db) && (length(all_first_peaks) == length(rim_metric_db))
-  plot(all_first_peaks, rim_metric_db + 70, '*-');
-  plot(all_first_peaks(is_rim_shot), rim_metric_db(is_rim_shot) + 70, '*');
-  plot(all_first_peaks(~is_rim_shot), rim_metric_db(~is_rim_shot) + 70, '*');
+if ~isempty(rim_metric_db) && (length(all_peaks_filt) == length(rim_metric_db))
+  plot(all_peaks_filt, rim_metric_db, '*-');
+  plot(all_peaks_filt(is_rim_shot), rim_metric_db(is_rim_shot), '*');
+  plot(all_peaks_filt(~is_rim_shot), rim_metric_db(~is_rim_shot), '*');
 end
 if length(all_first_peaks) == length(pos_sense_metric)
   plot(all_first_peaks,  10 * log10(pos_sense_metric) + 40, 'k*');
@@ -115,7 +115,7 @@ global decay_est_delay decay_est_len decay_est_fact decay_fact decay_len;
 global decay decay_back_cnt decay_scaling;
 global x_sq_hist x_sq_hist_len lp_filt_b lp_filt_hist lp_filt_len;
 global x_low_hist x_low_hist_len pos_sense_cnt x_low_hist_idx;
-global rim_shot_window_len rim_shot_treshold_dB x_rim_hist x_rim_hist_len rim_shot_cnt x_rim_hist_idx;
+global rim_shot_window_len rim_shot_treshold_dB x_rim_hist x_rim_hist_len rim_shot_cnt x_rim_hist_idx x_rim_low rim_iir_alpha;
 global stored_pos_sense_metric stored_is_rimshot;
 global max_x_filt_val max_mask_x_filt_val max_x_filt_idx_debug;
 global was_peak_found was_pos_sense_ready was_rim_shot_ready;
@@ -151,6 +151,8 @@ bp_filt_hist_x           = zeros(bp_filt_len, 1);
 bp_filt_hist_y           = zeros(bp_filt_len - 1, 1);
 x_sq_hist_len            = total_scan_time;
 x_sq_hist                = zeros(x_sq_hist_len, 1);
+x_rim_low                = 0;
+rim_iir_alpha            = pad.rim_low_pass_iir_alpha / Fs;
 rim_shot_window_len      = round(pad.rim_shot_window_len_ms * 1e-3 * Fs);
 x_rim_hist_len           = x_sq_hist_len + rim_shot_window_len;
 x_rim_hist_idx           = 1;
@@ -260,7 +262,7 @@ global decay_est_delay decay_est_len decay_est_fact decay_fact decay_len;
 global decay decay_back_cnt decay_scaling;
 global x_sq_hist x_sq_hist_len lp_filt_b lp_filt_hist lp_filt_len;
 global x_low_hist x_low_hist_len pos_sense_cnt x_low_hist_idx;
-global rim_shot_window_len rim_shot_treshold_dB x_rim_hist x_rim_hist_len rim_shot_cnt x_rim_hist_idx;
+global rim_shot_window_len rim_shot_treshold_dB x_rim_hist x_rim_hist_len rim_shot_cnt x_rim_hist_idx x_rim_low rim_iir_alpha;
 global stored_pos_sense_metric stored_is_rimshot;
 global max_x_filt_val max_mask_x_filt_val max_x_filt_idx_debug;
 global was_peak_found was_pos_sense_ready was_rim_shot_ready;
@@ -503,8 +505,8 @@ end
 if length(x) > 1 % rim piezo signal is in second dimension
 
   rim_shot_is_used = true;
-  x_rim            = x(2);
-  x_rim_hist       = update_fifo(x_rim * x_rim, x_rim_hist_len, x_rim_hist);
+  x_rim_low        = (1 - rim_iir_alpha) * x_rim_low + rim_iir_alpha * x_sq(2);  
+  x_rim_hist       = update_fifo(x_rim_low, x_rim_hist_len, x_rim_hist);
 
   % start condition of delay process to fill up the required buffers
   % note that rim_shot_window_len must be larger than energy_window_len,
@@ -527,7 +529,8 @@ if length(x) > 1 % rim piezo signal is in second dimension
 
       % the buffers are filled, now calculate the metric
       rim_max_pow         = max(x_rim_hist(x_rim_hist_idx + (0:rim_shot_window_len - 1)));
-      rim_metric_db       = 10 * log10(rim_max_pow / first_peak_val);
+% TODO find out why we get better results if the rim max power is squared compared to non-squared power
+      rim_metric_db       = 10 * log10(rim_max_pow * rim_max_pow / first_peak_val);
       rim_metric_db_debug = [rim_metric_db_debug; rim_metric_db]; % just for debugging
       stored_is_rimshot   = rim_metric_db > rim_shot_treshold_dB;
       rim_shot_cnt        = 0;
