@@ -39,7 +39,28 @@ Fs = 8000; % Hz
 % x        = round(x / quant);
 % x        = x / max(abs(x)) * max_val;
 
-processing(x, Fs);
+% calculate peak detection, positional sensing and rim shot detection
+[x, x_filt, x_filt_delay] = filter_input_signal(x, Fs);
+[all_peaks, all_first_peaks, all_peaks_filt, scan_region, mask_region, pre_scan_region, decay_all, decay_est_rng, x_filt_decay] = ...
+  calc_peak_detection(x(:, 1), x_filt, x_filt_delay, Fs);
+[is_rim_shot, rim_metric_db] = detect_rim_shot(x, all_first_peaks, Fs);
+pos_sense_metric             = calc_pos_sense_metric(x(:, 1), Fs, all_first_peaks);
+
+% plot results
+figure
+plot(10 * log10([mask_region, scan_region, pre_scan_region, decay_est_rng]), 'LineWidth', 20);
+grid on; hold on; set(gca, 'ColorOrderIndex', 1); % reset color order so that x trace is blue and so on
+plot(10 * log10([x(:, 1) .^ 2, x_filt, decay_all, x_filt_decay]));
+plot(all_first_peaks, 10 * log10(x(all_first_peaks, 1) .^ 2), 'b*');
+plot(all_peaks, 10 * log10(x(all_peaks, 1) .^ 2), 'g*');
+plot(all_peaks_filt, 10 * log10(x_filt(all_peaks_filt)), 'y*');
+plot(all_first_peaks, pos_sense_metric + 40, 'k*');
+plot(all_first_peaks, rim_metric_db, '*-');
+plot(all_first_peaks(is_rim_shot), rim_metric_db(is_rim_shot), '*');
+plot(all_first_peaks(~is_rim_shot), rim_metric_db(~is_rim_shot), '*');
+plot([1, length(x_filt)], [pad.threshold_db, pad.threshold_db], '--');
+title('Green marker: level; Black marker: position; Blue marker: first peak'); xlabel('samples'); ylabel('dB');
+ylim([-10, 90]);
 
 end
 
@@ -335,35 +356,6 @@ if size(x, 2) > 1
 %        plot(all_first_peaks(~is_rim_shot), rim_metric_db(~is_rim_shot), '*');
 
 end
-
-end
-
-
-function processing(x, Fs)
-global pad;
-
-% calculate peak detection and positional sensing
-[x, x_filt, x_filt_delay] = filter_input_signal(x, Fs);
-[all_peaks, all_first_peaks, all_peaks_filt, scan_region, mask_region, pre_scan_region, decay_all, decay_est_rng, x_filt_decay] = ...
-  calc_peak_detection(x(:, 1), x_filt, x_filt_delay, Fs);
-[is_rim_shot, rim_metric_db] = detect_rim_shot(x, all_first_peaks, Fs);
-pos_sense_metric             = calc_pos_sense_metric(x(:, 1), Fs, all_first_peaks);
-
-% plot results
-figure
-plot(10 * log10([mask_region, scan_region, pre_scan_region, decay_est_rng]), 'LineWidth', 20);
-grid on; hold on; set(gca, 'ColorOrderIndex', 1); % reset color order so that x trace is blue and so on
-plot(10 * log10([x(:, 1) .^ 2, x_filt, decay_all, x_filt_decay]));
-plot(all_first_peaks, 10 * log10(x(all_first_peaks, 1) .^ 2), 'b*');
-plot(all_peaks, 10 * log10(x(all_peaks, 1) .^ 2), 'g*');
-plot(all_peaks_filt, 10 * log10(x_filt(all_peaks_filt)), 'y*');
-plot(all_first_peaks, pos_sense_metric + 40, 'k*');
-plot(all_first_peaks, rim_metric_db, '*-');
-plot(all_first_peaks(is_rim_shot), rim_metric_db(is_rim_shot), '*');
-plot(all_first_peaks(~is_rim_shot), rim_metric_db(~is_rim_shot), '*');
-plot([1, length(x_filt)], [pad.threshold_db, pad.threshold_db], '--');
-title('Green marker: level; Black marker: position; Blue marker: first peak'); xlabel('samples'); ylabel('dB');
-ylim([-10, 90]);
 
 end
 
