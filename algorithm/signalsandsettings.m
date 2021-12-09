@@ -78,6 +78,7 @@ pad.decay_grad_fact3          = 200;
 pad.pos_low_pass_cutoff       = 150; % Hz
 pad.pos_invert                = false;
 pad.rim_shot_window_len_ms    = 3.5;
+pad.rim_low_pass_iir_alpha    = 700;
 
 switch padtype
   case 'pd120'
