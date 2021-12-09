@@ -100,7 +100,7 @@ public:
   void set_rim_shot_is_used     ( const int pad_idx, const bool new_is_used ) { pad[pad_idx].set_rim_shot_is_used ( new_is_used ); }
   void set_pos_sense_is_used    ( const int pad_idx, const bool new_is_used ) { pad[pad_idx].set_pos_sense_is_used ( new_is_used ); }
   void set_spike_cancel_level   ( const int new_level )                       { spike_cancel_level = new_level; }
-  int get_spike_cancel_level    ()                                            { return spike_cancel_level; }
+  int  get_spike_cancel_level   ()                                            { return spike_cancel_level; }
 
   // overload and error handling
   bool get_status_is_overload() { return status_is_overload; }
@@ -200,6 +200,7 @@ protected:
         float      decay_grad_fact1, decay_grad_fact2, decay_grad_fact3;
         float      pos_low_pass_cutoff;
         bool       pos_invert;
+        float      rim_low_pass_iir_alpha;
         float      rim_shot_window_len_ms;
         int        rim_shot_velocity_thresh;
       };
@@ -264,6 +265,8 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       int          decay_back_cnt;
       float        decay_scaling;
       float        decay_mask_fact;
+      float        rim_iir_alpha;
+      float        x_rim_low;
       int          x_rim_hist_len;
       int          x_rim_hist_idx;
       int          rim_shot_window_len;

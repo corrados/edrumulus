@@ -317,6 +317,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.decay_grad_fact3          = 200.0f; // pad specific parameter: decay function gradient factor 3
   pad_settings.pos_low_pass_cutoff       = 150.0f; // pad specific parameter: low-pass filter cut-off in Hz for positional sensing
   pad_settings.pos_invert                = false;  // pad specific parameter: invert the positional sensing metric
+  pad_settings.rim_low_pass_iir_alpha    = 700;    // pad specific parameter: low-pass filter alpha value for rim shot detection
   pad_settings.rim_shot_window_len_ms    = 5.0f;   // pad specific parameter: window length for rim shot detection
   pad_settings.rim_shot_velocity_thresh  = 0;      // pad specific parameter: velocity threshold for rim shots -> disabled per default
 
@@ -328,7 +329,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
 
     case PD80R:
       pad_settings.velocity_sensitivity     = 5;
-      pad_settings.rim_shot_treshold        = 14;
+      pad_settings.rim_shot_treshold        = 22;
       pad_settings.pos_threshold            = 11;
       pad_settings.pos_sensitivity          = 10;
       pad_settings.scan_time_ms             = 3.0f;
@@ -453,9 +454,10 @@ void Edrumulus::Pad::initialize()
   decay_est_len            = round ( pad_settings.decay_est_len_ms   * 1e-3f * Fs );
   decay_est_fact           = pow ( 10.0f, pad_settings.decay_est_fact_db / 10 );
   rim_shot_window_len      = round ( pad_settings.rim_shot_window_len_ms * 1e-3f * Fs );        // window length (e.g. 5 ms)
-  rim_shot_treshold_dB     = static_cast<float> ( pad_settings.rim_shot_treshold ) / 2 - 25;    // gives us a rim shot threshold range of -25..-9.5 dB
+  rim_shot_treshold_dB     = static_cast<float> ( pad_settings.rim_shot_treshold );             // rim shot threshold
   rim_switch_treshold      = -ADC_MAX_NOISE_AMPL + 9 * ( pad_settings.rim_shot_treshold - 31 ); // rim switch linear threshold
   rim_switch_on_cnt_thresh = round ( 10.0f * 1e-3f * Fs );                                      // number of on samples until we detect a choke
+  rim_iir_alpha            = pad_settings.rim_low_pass_iir_alpha / Fs;
   x_rim_hist_len           = x_sq_hist_len + rim_shot_window_len;
   cancellation_factor      = static_cast<float> ( pad_settings.cancellation ) / 31.0f;          // cancellation factor: range of 0.0..1.0
   ctrl_history_len         = 10;   // (MUST BE AN EVEN VALUE) control history length, use a fixed value
@@ -540,6 +542,7 @@ void Edrumulus::Pad::initialize()
   decay_pow_est_cnt       = 0;
   decay_pow_est_sum       = 0.0f;
   pos_sense_cnt           = 0;
+  x_rim_low               = 0;
   x_low_hist_idx          = 0;
   rim_shot_cnt            = 0;
   rim_switch_on_cnt       = 0;
@@ -899,7 +902,8 @@ void Edrumulus::Pad::process_sample ( const float* input,
     else
     {
       const float x_rim = input[1];
-      update_fifo ( x_rim * x_rim, x_rim_hist_len, x_rim_hist );
+      x_rim_low         = ( 1.0f - rim_iir_alpha ) * x_rim_low + rim_iir_alpha * x_rim_sq;
+      update_fifo ( x_rim_low, x_rim_hist_len, x_rim_hist );
 
       // start condition of delay process to fill up the required buffers
       // note that rim_shot_window_len must be larger than energy_window_len,
@@ -926,7 +930,8 @@ void Edrumulus::Pad::process_sample ( const float* input,
             rim_max_pow = max ( rim_max_pow, x_rim_hist[x_rim_hist_idx + i] );
           }
 
-          const float rim_metric_db = 10 * log10 ( rim_max_pow / first_peak_val );
+// TODO find out why we get better results if the rim max power is squared compared to non-squared power
+          const float rim_metric_db = 10 * log10 ( rim_max_pow * rim_max_pow / first_peak_val );
           stored_is_rimshot         = rim_metric_db > rim_shot_treshold_dB;
           rim_shot_cnt              = 0;
           was_rim_shot_ready        = true;
