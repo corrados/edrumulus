@@ -20,18 +20,18 @@
 #include "edrumulus.h"
 
 #ifdef USE_MIDI
-#ifdef ESP_PLATFORM
-# include <MIDI.h>
+# ifdef ESP_PLATFORM
+#  include <MIDI.h>
 MIDI_CREATE_DEFAULT_INSTANCE();
-# define MYMIDI                     MIDI
-# define MIDI_CONTROL_CHANGE_TYPE   midi::ControlChange
-# define MIDI_SEND_AFTER_TOUCH      sendAfterTouch
-#endif
-#ifdef TEENSYDUINO
-# define MYMIDI                     usbMIDI
-# define MIDI_CONTROL_CHANGE_TYPE   usbMIDI.ControlChange
-# define MIDI_SEND_AFTER_TOUCH      sendAfterTouchPoly
-#endif
+#  define MYMIDI                     MIDI
+#  define MIDI_CONTROL_CHANGE_TYPE   midi::ControlChange
+#  define MIDI_SEND_AFTER_TOUCH      sendAfterTouch
+# endif
+# ifdef TEENSYDUINO
+#  define MYMIDI                     usbMIDI
+#  define MIDI_CONTROL_CHANGE_TYPE   usbMIDI.ControlChange
+#  define MIDI_SEND_AFTER_TOUCH      sendAfterTouchPoly
+# endif
 #endif
 
 Edrumulus edrumulus;
