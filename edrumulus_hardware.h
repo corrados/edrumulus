@@ -31,7 +31,7 @@
 //# undef USE_MIDI
 
 const int debug_buffer_size    = 500;
-const int number_debug_buffers = 3;
+const int number_debug_buffers = 4;
 
 static float debug_buffer[number_debug_buffers][debug_buffer_size];
 static int   debug_buffer_idx = 0;

@@ -18,6 +18,12 @@
 #include "edrumulus.h"
 
 
+
+// TEST
+static int midi_note_filter_debugging = 36;//48;//36;
+
+
+
 Edrumulus::Edrumulus() :
   Fs ( 8000 ) // this is the most fundamental system parameter: system sampling rate
 {
@@ -589,10 +595,6 @@ void Edrumulus::Pad::initialize()
 }
 
 
-// TEST
-static int midi_note_filter_debugging = 36;
-
-
 void Edrumulus::Pad::process_sample ( const float* input,
                                       bool&        peak_found,
                                       int&         midi_velocity,
@@ -676,6 +678,7 @@ if ( midi_note == midi_note_filter_debugging )
   {
     DEBUG_ADD_VALUE ( 2, cur_decay );
   }
+  DEBUG_ADD_VALUE ( 3, threshold );
 }
 
 
