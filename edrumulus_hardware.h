@@ -19,6 +19,85 @@
 
 #include "Arduino.h"
 
+
+
+#define USE_SERIAL_DEBUG_PLOTTING
+
+
+
+// TEST
+#ifdef USE_SERIAL_DEBUG_PLOTTING
+
+//# undef USE_MIDI
+
+const int debug_buffer_size    = 500;
+const int number_debug_buffers = 3;
+
+static float debug_buffer[number_debug_buffers][debug_buffer_size];
+static int   debug_buffer_idx = 0;
+static int   debug_out_cnt    = 0;
+
+static void DEBUG_ADD_VALUE ( const int   buffer_idx,
+                              const float new_value )
+{
+  debug_buffer[buffer_idx][debug_buffer_idx] = new_value;
+
+  if ( buffer_idx == number_debug_buffers - 1 )
+  {
+    debug_buffer_idx++;
+
+    if ( debug_buffer_idx == debug_buffer_size )
+    {
+      debug_buffer_idx = 0;
+    }
+
+    if ( debug_out_cnt == 1 )
+    {
+      for ( int i = debug_buffer_idx; i < debug_buffer_idx + debug_buffer_size; i++ )
+      {
+        String serial_print;
+        for ( int j = 0; j < number_debug_buffers; j++ )
+        {
+          serial_print += String ( 10.0f * log10 ( debug_buffer[j][i % debug_buffer_size] ) ) + "\t";
+        }
+        Serial.println ( serial_print );
+
+// TEST
+if ( i == debug_buffer_idx + debug_buffer_size - 1 )
+{
+  String serial_print;
+  for ( int j = 0; j < number_debug_buffers; j++ )
+  {
+    serial_print += String ( -60 ) + "\t";
+  }
+  Serial.println ( serial_print );
+  String serial_print2;
+  for ( int j = 0; j < number_debug_buffers; j++ )
+  {
+    serial_print2 += String ( 100 ) + "\t";
+  }
+  Serial.println ( serial_print2 );
+}
+      }
+    }
+
+    if ( debug_out_cnt > 0 )
+    {
+      debug_out_cnt--;
+    }
+  }
+}
+
+static void DEBUG_START_PLOTTING()
+{
+// TEST
+  debug_out_cnt = debug_buffer_size-200;// - 25;
+}
+
+#endif
+
+
+
 enum Espikestate
 {
   ST_NOISE,

@@ -589,6 +589,10 @@ void Edrumulus::Pad::initialize()
 }
 
 
+// TEST
+static int midi_note_filter_debugging = 36;
+
+
 void Edrumulus::Pad::process_sample ( const float* input,
                                       bool&        peak_found,
                                       int&         midi_velocity,
@@ -638,13 +642,14 @@ void Edrumulus::Pad::process_sample ( const float* input,
 
 
   // exponential decay assumption
+  float cur_decay    = 1; // initialization value used only for debugging
   float x_filt_decay = x_filt;
 
   if ( decay_back_cnt > 0 )
   {
     // subtract decay (with clipping at zero)
-    const float cur_decay = decay_scaling * decay[decay_len - decay_back_cnt];
-    x_filt_decay          = x_filt - cur_decay;
+    cur_decay    = decay_scaling * decay[decay_len - decay_back_cnt];
+    x_filt_decay = x_filt - cur_decay;
     decay_back_cnt--;
 
     if ( x_filt_decay < 0.0f )
@@ -652,6 +657,26 @@ void Edrumulus::Pad::process_sample ( const float* input,
       x_filt_decay = 0.0f;
     }
   }
+
+
+// TEST
+if ( midi_note == midi_note_filter_debugging )
+{
+  DEBUG_ADD_VALUE ( 0, input[0] * input[0] );
+  DEBUG_ADD_VALUE ( 1, x_filt );
+  if ( scan_time_cnt > 0 )
+  {
+    DEBUG_ADD_VALUE ( 2, 0.5 );
+  }
+  else if ( mask_back_cnt > 0 )
+  {
+    DEBUG_ADD_VALUE ( 2, 0.2 );
+  }
+  else
+  {
+    DEBUG_ADD_VALUE ( 2, cur_decay );
+  }
+}
 
 
   // during the mask time we apply a constant value to the decay way above the
@@ -969,6 +994,13 @@ if ( stored_is_rimshot )
     was_peak_found      = false;
     was_pos_sense_ready = false;
     was_rim_shot_ready  = false;
+
+// TEST
+if ( midi_note == midi_note_filter_debugging )
+{
+  DEBUG_START_PLOTTING();
+}
+
   }
 }
 
