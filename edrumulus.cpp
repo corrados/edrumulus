@@ -303,6 +303,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.pos_sense_is_used         = false;  // must be explicitely enabled if it shall be used
   pad_settings.rim_shot_is_used          = false;  // must be explicitely enabled if it shall be used
   pad_settings.first_peak_diff_thresh_db = 8.0f;   // pad specific parameter: allowed difference between first peak and later peak in scan time
+  pad_settings.mask_time_decay_fact_db   = 15.0f;  // pad specific parameter: during mask time decay factor for maximum peak in scan time
   pad_settings.scan_time_ms              = 2.5f;   // pad specific parameter: scan time after first detected peak
   pad_settings.pre_scan_time_ms          = 3.0f;   // pad specific parameter: pre-scan time to search for first peak
   pad_settings.decay_est_delay_ms        = 8.0f;   // pad specific parameter: delay after second main peak until decay power estimation starts
