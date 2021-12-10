@@ -191,7 +191,9 @@ sample_org_pad[1] += 2048;
         // check for the two lowest/largest possible ADC range values
         if ( ( sample_org_pad[j] >= ( ADC_MAX_RANGE - 2 ) ) || ( sample_org_pad[j] <= 1 ) )
         {
-          overload_LED_cnt = overload_LED_on_time;
+
+// TEST disable overload LED for speed testing
+//          overload_LED_cnt = overload_LED_on_time;
         }
       }
     }
@@ -243,7 +245,7 @@ sample_org_pad[1] += 2048;
     status_is_error            = ( abs ( 1.0f / ( micros() - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f - Fs ) > samplerate_max_error_Hz );
 
 // TEST check the measured sampling rate
-//Serial.println ( 1.0f / ( micros() - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f, 7 );
+Serial.println ( 1.0f / ( micros() - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f, 7 );
 
     samplerate_prev_micros_cnt = 0;
     samplerate_prev_micros     = micros();
@@ -449,6 +451,11 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       pad_settings.decay_grad_fact3     = 30.0f;
       break;
   }
+
+
+// TEST avoid having triggering the pads all the time of no analog front end is connected
+pad_settings.velocity_threshold = 100;
+
 
   initialize();
 }
