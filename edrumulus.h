@@ -17,13 +17,10 @@
 
 #pragma once
 
+//#define USE_SERIAL_DEBUG_PLOTTING
+
 #include "Arduino.h"
 #include "edrumulus_hardware.h"
-
-
-#define USE_SERIAL_DEBUG_PLOTTING
-
-
 
 class Edrumulus
 {
@@ -354,7 +351,7 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       void DEBUG_START_PLOTTING()
       {
         // set debug count to have the peak in the middle of the range
-        debug_out_cnt = debug_buffer_size - debug_buffer_size / 2;;
+        debug_out_cnt = debug_buffer_size - debug_buffer_size / 2;
       }
 #else
       void DEBUG_ADD_VALUES ( const float, const float, const float, const float ) {}

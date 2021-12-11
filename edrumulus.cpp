@@ -17,6 +17,7 @@
 
 #include "edrumulus.h"
 
+
 Edrumulus::Edrumulus() :
   Fs ( 8000 ) // this is the most fundamental system parameter: system sampling rate
 {
@@ -638,7 +639,7 @@ void Edrumulus::Pad::process_sample ( const float* input,
 
 
   // exponential decay assumption
-  float cur_decay    = 1; // initialization value used only for debugging
+  float cur_decay    = 1; // initialization value (0 dB) only used for debugging
   float x_filt_decay = x_filt;
 
   if ( decay_back_cnt > 0 )
