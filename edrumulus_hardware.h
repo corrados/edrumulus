@@ -37,61 +37,47 @@ static float debug_buffer[number_debug_buffers][debug_buffer_size];
 static int   debug_buffer_idx = 0;
 static int   debug_out_cnt    = 0;
 
-static void DEBUG_ADD_VALUE ( const int   buffer_idx,
-                              const float new_value )
+static void DEBUG_ADD_VALUES ( const float value0,
+                               const float value1,
+                               const float value2,
+                               const float value3 )
 {
-  debug_buffer[buffer_idx][debug_buffer_idx] = new_value;
+  debug_buffer[0][debug_buffer_idx] = value0;
+  debug_buffer[1][debug_buffer_idx] = value1;
+  debug_buffer[2][debug_buffer_idx] = value2;
+  debug_buffer[3][debug_buffer_idx] = value3;
 
-  if ( buffer_idx == number_debug_buffers - 1 )
+  debug_buffer_idx++;
+
+  if ( debug_buffer_idx == debug_buffer_size )
   {
-    debug_buffer_idx++;
+    debug_buffer_idx = 0;
+  }
 
-    if ( debug_buffer_idx == debug_buffer_size )
+  if ( debug_out_cnt == 1 )
+  {
+    String serial_print;
+    for ( int i = debug_buffer_idx; i < debug_buffer_idx + debug_buffer_size; i++ )
     {
-      debug_buffer_idx = 0;
-    }
-
-    if ( debug_out_cnt == 1 )
-    {
-      for ( int i = debug_buffer_idx; i < debug_buffer_idx + debug_buffer_size; i++ )
+      for ( int j = 0; j < number_debug_buffers; j++ )
       {
-        String serial_print;
-        for ( int j = 0; j < number_debug_buffers; j++ )
-        {
-          serial_print += String ( 10.0f * log10 ( debug_buffer[j][i % debug_buffer_size] ) ) + "\t";
-        }
-        Serial.println ( serial_print );
-
-// TEST
-if ( i == debug_buffer_idx + debug_buffer_size - 1 )
-{
-  String serial_print;
-  for ( int j = 0; j < number_debug_buffers; j++ )
-  {
-    serial_print += String ( -60 ) + "\t";
-  }
-  Serial.println ( serial_print );
-  String serial_print2;
-  for ( int j = 0; j < number_debug_buffers; j++ )
-  {
-    serial_print2 += String ( 100 ) + "\t";
-  }
-  Serial.println ( serial_print2 );
-}
+        serial_print += String ( 10.0f * log10 ( debug_buffer[j][i % debug_buffer_size] ) ) + "\t";
       }
+      serial_print += "\n";
     }
+    Serial.println ( serial_print );
+  }
 
-    if ( debug_out_cnt > 0 )
-    {
-      debug_out_cnt--;
-    }
+  if ( debug_out_cnt > 0 )
+  {
+    debug_out_cnt--;
   }
 }
 
 static void DEBUG_START_PLOTTING()
 {
-// TEST
-  debug_out_cnt = debug_buffer_size-200;// - 25;
+  // set debug count to have the peak in the middle of the range
+  debug_out_cnt = debug_buffer_size - debug_buffer_size / 2;;
 }
 
 #endif

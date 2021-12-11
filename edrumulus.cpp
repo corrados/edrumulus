@@ -20,7 +20,7 @@
 
 
 // TEST
-static int midi_note_filter_debugging = 36;//48;//36;
+static int midi_note_filter_debugging = 38;//36;//48;//36;
 
 
 
@@ -665,21 +665,7 @@ void Edrumulus::Pad::process_sample ( const float* input,
 // TEST
 if ( midi_note == midi_note_filter_debugging )
 {
-  DEBUG_ADD_VALUE ( 0, input[0] * input[0] );
-  DEBUG_ADD_VALUE ( 1, x_filt );
-  if ( scan_time_cnt > 0 )
-  {
-    DEBUG_ADD_VALUE ( 2, 0.5 );
-  }
-  else if ( mask_back_cnt > 0 )
-  {
-    DEBUG_ADD_VALUE ( 2, 0.2 );
-  }
-  else
-  {
-    DEBUG_ADD_VALUE ( 2, cur_decay );
-  }
-  DEBUG_ADD_VALUE ( 3, threshold );
+  DEBUG_ADD_VALUES ( input[0] * input[0], x_filt, scan_time_cnt > 0 ? 0.5 : mask_back_cnt > 0 ? 0.2 : cur_decay, threshold );
 }
 
 
