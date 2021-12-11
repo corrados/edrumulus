@@ -35,11 +35,11 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd120_pos_sense2.wav");
 %x = audioread("signals/pd120_single_hits.wav");
 %x = audioread("signals/pd120_roll.wav");%x = x(1:20000, :);%x = x(292410:294749, :);%x = x(311500:317600, :);
-%x = audioread("signals/pd120_middle_velocity.wav");
+x = audioread("signals/pd120_middle_velocity.wav");
 %x = audioread("signals/pd120_hot_spot.wav");
 %x = audioread("signals/pd120_rimshot.wav");%x=x(7000:15000,:);%x = x(1:100000, :);%x = x(168000:171000, :);%x = x(1:34000, :);%
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
-x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
+%x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
 %x = audioread("signals/pd80r.wav");x=x(:,1);padtype='pd80r';x = x(1:265000, :);%x = x(264000:320000, :);%
 %x = audioread("signals/pd80r_rimshot_issue.wav");padtype='pd80r';
 %x = audioread("signals/pd6.wav");
@@ -56,8 +56,27 @@ x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_p
 % scale to the ESP32 input range to match the signal level of the ESP32
 x = x * 25000;
 
+c = 1500;
+x = x(27515:27530);
+m = max(x);
+x = min(max(x, -c), c);
+n = length(find(x == c));
+figure;plot(x, '*-');title(['m: ' num2str(m) ' / n: ' num2str(n)]);
 
-  
+y = m - c;
+x = n;
+x
+y
+
+
+%x = [9,    9,    8,    6,    4,    4,   4,   3,   3,   2,   2,   2,   2];
+%y = [2932, 2632, 2432, 1432, 1032, 632, 432, 332, 282, 231, 182, 142, 82];
+%figure; plot(x, y)
+
+return
+
+
+
 % pad PRESET settings first, then overwrite these with pad specific properties
 pad.threshold_db              = 17;
 pad.mask_time_ms              = 6;
