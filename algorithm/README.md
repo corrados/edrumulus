@@ -8,6 +8,7 @@ at the edge of the pad). This is called __positional sensing__. Another step is 
 of a second piezo sensor to detect if we have a rim shot which leads to a __rim shot detection__. In
 this step we can also detect if we have a cross stick situation.
 
+
 ## Peak detection
 
 ### Signal filtering
@@ -18,29 +19,31 @@ spectrum parts which are not used by the pad piezo signal like very low frequenc
 frequencies. Therefore, a band-pass filter is applied. The pass-band width is a trade-off between
 noise cancellation and filter delay. A good compromise is a pass-band of 40 Hz to 400 Hz.
 
+
 ### Retrigger cancellation
 
 To improve the peak detection, we can make use of the known decay curve of the trigger pad in use.
-So, after successfully detecting a peak, we know that this peak causes a slowly decaying power
-curve which has a known shape and we can subtract that known curve from the signal to improve the
+After successfully detecting a peak we know that this peak causes a slowly decaying power
+curve. It has a known shape which we can subtract from the captured signal to improve the
 detection of the next pad hit.
 
 The problem is that the main peak power compared to the mesh head vibration power greatly depends
-on the position of the hit on the pad. I.e. the main peak stands way out of the _noise_ when hitting
-the pad in the middle. So, if we use the detection hit velocity for the start point of the decay
+on the position of the hit on the pad. I.e., the main peak stands way out of the _noise_ when hitting
+the pad in the middle. If we use the detection hit velocity for the start point of the decay
 cancellation, we subtract too much power in case the hit is in the middle of the pad and we may
 subtract too little if the hit is at the edge of the pad.
 
-In the following picture, the effect of the retrigger cancellation algorithm on a press roll signal
+In the following picture, the effect of the retrigger cancellation algorithm on a press roll
 example can be seen. The yellow line shows the exponential decay attenuation we apply to the signal
 after a hit was detected. The blue trace is the original captured signal and the orange trace is
-the captured signal after subtracting the retrigger cancellation:
+the captured signal after applying the retrigger cancellation:
 <br/>![Retrigger cancellation](images/retriggercancellation.jpg)
+
 
 ## Positional sensing
 
 If you hit the pad close to the edge, the resulting sound has less low frequencies
-and sounds more crisp. So, the idea is to low-pass filter the signal and at the detected peak position we
+and sounds more crisp. Thus, the idea is to low-pass filter the signal and at the detected peak position we
 calculate the power ratio of the low-pass filtered signal with the unfiltered signal. This is then
 the metric for the positional sensing.
 
@@ -48,12 +51,13 @@ Further testing showed that it is important to use the very first peak in time f
 a later peak is used, the positional sensing based on the low-pass filtered signal does not yield
 good results.
 
-It has shown that the positional sensing metric must be adjusted if a rim shot is used. So, the
-rim shot detection information has to be used for the positional sensing, too.
+It has shown that the positional sensing metric must be adjusted if a rim shot is used. Therefore, the
+rim shot detection information has to be used for the positional sensing.
+
 
 ## Rim shot detection
 
-To detect a rim shot, a second piezo sensor is typically mounted at the casing of the pad. So, to
+To detect a rim shot, a second piezo sensor is typically mounted at the casing of the pad. To
 support rim shot detection, we need a second input signal. At this point I want to reference this
 [excellent description of piezo sensing](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/docs/sensing.md)
 by [RyoKosaka](https://github.com/RyoKosaka).
@@ -63,11 +67,6 @@ algorithm as proposed by RyoKosaka did not give me the expected performance. Aft
 the rim shot detection is not that straightforward, I did some testing with my Roland TDW-20 and I
 figured out that even this professional module has its problems with rim shot detection. The
 detection results were not perfect either.
-
-The current algorithm design uses a high pass filtered rim piezo signal and the rim shot detection
-metric is the ratio between the peak power of the head piezo compared to the peak power of the high
-pass filtered rim piezo signal where we search for the rim peak power in a predefined time window.
-This window is 5 ms long which will cause an additional trigger delay to the overall algorithm.
 
 
 # Test signals
@@ -114,18 +113,19 @@ If the trigger detection algorithm runs on a microcontroller or DSP and the anal
 is done on a per-sample bases (i.e. not based on blocks like on a regular audio interface on a PC), this
 delay is negligible.
 
-The delay introduced by the trigger detection algorithms is more critical. E.g. if we filter the digital
+The delay introduced by the trigger detection algorithms is more critical. E.g., if we filter the digital
 signal with a FIR filter, this filter will introduce a delay of half the length of the impulse response
-used by the FIR filter. So we are restricted in the length of the impulse response to keep the delay low.
+used by the FIR filter. As a result, we are restricted in the length of the impulse response to keep the delay low.
 The same thing applies to, e.g., moving average filters or scan times. All this introduces delay which we
 want to minimize to get to our goal in the project specifications.
 
 The transmission delay of the MIDI signal depends on the channel. If we use the serial communication channel
 over USB to transmit the MIDI signal, the delay should be negligible. But if we, e.g., use the bluetooth
-of an ESP32 to transmit the MIDI signal, significant delay (about 10 ms) is introduced by this.
+of an ESP32 to transmit the MIDI signal, significant delay is introduced by this (about 10 ms).
 
 The synthesis and digital-to-analog conversion of the drum audio signal shall not be covered by this
 project (at least not right now). So, we can ignore this part for now.
+
 
 ## Comparison of e-drum module latencies
 
@@ -149,5 +149,4 @@ my sound card and recorded the signal with Audacity. I now measured the latency 
 peak of the pad trigger to the first peak of the synthesized signal from the TDW-20. As seen in the
 screen shot, there is a latency of about **7 ms**:
 <br/>![Roland TDW-20 drum module measured latency](images/roland_td20_latency.jpg)
-
 
