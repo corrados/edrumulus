@@ -10,7 +10,8 @@ which runs on a micro processor.
 
 ## News
 
-Find all important updates of the Edrumulus project in the [change log file](ChangeLog.md).
+Find all important updates of the Edrumulus project in the [change log file](ChangeLog.md)
+and in the [discussion forums](https://github.com/corrados/edrumulus/discussions).
 
 
 ## Specifications
