@@ -20,6 +20,11 @@
 #include "Arduino.h"
 #include "edrumulus_hardware.h"
 
+
+#define USE_SERIAL_DEBUG_PLOTTING
+
+
+
 class Edrumulus
 {
 public:
@@ -298,6 +303,63 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       float        ctrl_velocity_range_fact;
       int          prev_ctrl_value;
       float        cancellation_factor;
+
+      // real-time debugging support
+#ifdef USE_SERIAL_DEBUG_PLOTTING
+# ifndef TEENSYDUINO // MIDI+Serial possible with the Teensy
+#  undef USE_MIDI // only MIDI or Serial possible with the ESP32
+# endif
+      static const int debug_buffer_size    = 500;
+      static const int number_debug_buffers = 4;
+      int              debug_buffer_idx     = 0;
+      int              debug_out_cnt        = 0;
+      float            debug_buffer[number_debug_buffers][debug_buffer_size];
+
+      void DEBUG_ADD_VALUES ( const float value0,
+                              const float value1,
+                              const float value2,
+                              const float value3 )
+      {
+        debug_buffer[0][debug_buffer_idx] = value0;
+        debug_buffer[1][debug_buffer_idx] = value1;
+        debug_buffer[2][debug_buffer_idx] = value2;
+        debug_buffer[3][debug_buffer_idx] = value3;
+        debug_buffer_idx++;
+
+        if ( debug_buffer_idx == debug_buffer_size )
+        {
+          debug_buffer_idx = 0;
+        }
+
+        if ( debug_out_cnt == 1 )
+        {
+          String serial_print;
+          for ( int i = debug_buffer_idx; i < debug_buffer_idx + debug_buffer_size; i++ )
+          {
+            for ( int j = 0; j < number_debug_buffers; j++ )
+            {
+              serial_print += String ( 10.0f * log10 ( debug_buffer[j][i % debug_buffer_size] ) ) + "\t";
+            }
+            serial_print += "\n";
+          }
+          Serial.println ( serial_print );
+        }
+
+        if ( debug_out_cnt > 0 )
+        {
+          debug_out_cnt--;
+        }
+      }
+
+      void DEBUG_START_PLOTTING()
+      {
+        // set debug count to have the peak in the middle of the range
+        debug_out_cnt = debug_buffer_size - debug_buffer_size / 2;;
+      }
+#else
+      void DEBUG_ADD_VALUES ( const float, const float, const float, const float ) {}
+      void DEBUG_START_PLOTTING() {}
+#endif
   };
 
   // constant definitions

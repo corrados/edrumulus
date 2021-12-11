@@ -17,13 +17,6 @@
 
 #include "edrumulus.h"
 
-
-
-// TEST
-static int midi_note_filter_debugging = 38;//36;//48;//36;
-
-
-
 Edrumulus::Edrumulus() :
   Fs ( 8000 ) // this is the most fundamental system parameter: system sampling rate
 {
@@ -662,13 +655,6 @@ void Edrumulus::Pad::process_sample ( const float* input,
   }
 
 
-// TEST
-if ( midi_note == midi_note_filter_debugging )
-{
-  DEBUG_ADD_VALUES ( input[0] * input[0], x_filt, scan_time_cnt > 0 ? 0.5 : mask_back_cnt > 0 ? 0.2 : cur_decay, threshold );
-}
-
-
   // during the mask time we apply a constant value to the decay way above the
   // detected peak to avoid missing a loud hit which is preceeded with a very
   // low volume hit which mask period would delete the loud hit
@@ -984,14 +970,10 @@ if ( stored_is_rimshot )
     was_peak_found      = false;
     was_pos_sense_ready = false;
     was_rim_shot_ready  = false;
-
-// TEST
-if ( midi_note == midi_note_filter_debugging )
-{
-  DEBUG_START_PLOTTING();
-}
-
+    DEBUG_START_PLOTTING();
   }
+
+  DEBUG_ADD_VALUES ( input[0] * input[0], x_filt, scan_time_cnt > 0 ? 0.5 : mask_back_cnt > 0 ? 0.2 : cur_decay, threshold );
 }
 
 void Edrumulus::Pad::process_control_sample ( const int* input,

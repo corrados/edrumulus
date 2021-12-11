@@ -20,15 +20,15 @@
 #include "Arduino.h"
 
 
-
+/*
 #define USE_SERIAL_DEBUG_PLOTTING
-
 
 
 // TEST
 #ifdef USE_SERIAL_DEBUG_PLOTTING
-
-//# undef USE_MIDI
+# ifndef TEENSYDUINO
+#  undef USE_MIDI
+# endif
 
 const int debug_buffer_size    = 500;
 const int number_debug_buffers = 4;
@@ -81,7 +81,7 @@ static void DEBUG_START_PLOTTING()
 }
 
 #endif
-
+*/
 
 
 enum Espikestate
