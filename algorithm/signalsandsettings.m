@@ -56,14 +56,25 @@ x = audioread("signals/pd120_middle_velocity.wav");
 % scale to the ESP32 input range to match the signal level of the ESP32
 x = x * 25000;
 
-c = 1500;
-x = x(27515:27530);
-m = max(x);
-x = min(max(x, -c), c);
-n = length(find(x == c));
-figure;plot(x, '*-');title(['m: ' num2str(m) ' / n: ' num2str(n)]);
 
-y = m - c;
+
+% Clipping experiments ---------------------------------------------------------
+%x = x(27515:27530); % select the main peak of one loud hit
+x = x(27500:27550);
+m = max(x); % store the original maximum value for later evaluation
+
+c = 3000;%2500; % select how much shall be clipped
+x_c = min(max(x, -c), c); % here the signal is clipped
+
+
+alpha = 2000 / 8000;
+x_low = filter(alpha, [1, alpha - 1], x_c) * 1.7;%1.4;
+x_low = circshift(x_low, -2);
+
+n = length(find(x_c == c)); % find how many samples are clipped
+figure;plot([x, x_c, x_low], '*-');title(['m: ' num2str(m) ' / n: ' num2str(n)]);
+
+y = m - c; % how much is clipped
 x = n;
 x
 y
