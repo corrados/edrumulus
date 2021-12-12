@@ -321,8 +321,8 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.decay_grad_fact3          = 200.0f; // pad specific parameter: decay function gradient factor 3
   pad_settings.pos_low_pass_cutoff       = 150.0f; // pad specific parameter: low-pass filter cut-off in Hz for positional sensing
   pad_settings.pos_invert                = false;  // pad specific parameter: invert the positional sensing metric
-  pad_settings.rim_low_pass_iir_alpha    = 700;    // pad specific parameter: low-pass filter alpha value for rim shot detection
-  pad_settings.rim_shot_window_len_ms    = 5.0f;   // pad specific parameter: window length for rim shot detection
+  pad_settings.rim_low_pass_iir_alpha    = 1000;   // pad specific parameter: low-pass filter alpha value for rim shot detection
+  pad_settings.rim_shot_window_len_ms    = 3.5f;   // pad specific parameter: window length for rim shot detection
   pad_settings.rim_shot_velocity_thresh  = 0;      // pad specific parameter: velocity threshold for rim shots -> disabled per default
 
   switch ( new_pad_type )
@@ -333,7 +333,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
 
     case PD80R:
       pad_settings.velocity_sensitivity     = 5;
-      pad_settings.rim_shot_treshold        = 22;
+      pad_settings.rim_shot_treshold        = 9;
       pad_settings.pos_threshold            = 11;
       pad_settings.pos_sensitivity          = 10;
       pad_settings.scan_time_ms             = 3.0f;
@@ -458,7 +458,7 @@ void Edrumulus::Pad::initialize()
   decay_est_len            = round ( pad_settings.decay_est_len_ms   * 1e-3f * Fs );
   decay_est_fact           = pow ( 10.0f, pad_settings.decay_est_fact_db / 10 );
   rim_shot_window_len      = round ( pad_settings.rim_shot_window_len_ms * 1e-3f * Fs );        // window length (e.g. 5 ms)
-  rim_shot_treshold_dB     = static_cast<float> ( pad_settings.rim_shot_treshold );             // rim shot threshold
+  rim_shot_treshold_dB     = static_cast<float> ( pad_settings.rim_shot_treshold ) - 30;    // rim shot threshold
   rim_switch_treshold      = -ADC_MAX_NOISE_AMPL + 9 * ( pad_settings.rim_shot_treshold - 31 ); // rim switch linear threshold
   rim_switch_on_cnt_thresh = round ( 10.0f * 1e-3f * Fs );                                      // number of on samples until we detect a choke
   rim_iir_alpha            = pad_settings.rim_low_pass_iir_alpha / Fs;
@@ -543,6 +543,7 @@ void Edrumulus::Pad::initialize()
   was_above_threshold     = false;
   is_overloaded_state     = false;
   first_peak_val          = 0.0f;
+  peak_val                = 0.0f;
   decay_back_cnt          = 0;
   decay_scaling           = 1.0f;
   scan_time_cnt           = 0;
@@ -614,6 +615,7 @@ void Edrumulus::Pad::process_sample ( const float* input,
   is_choke_on                   = false;
   is_choke_off                  = false;
   bool       first_peak_found   = false; // only used internally
+  int        peak_delay         = 0;     // only used internally
   int        first_peak_delay   = 0;     // only used internally
   const bool pos_sense_is_used  = pad_settings.pos_sense_is_used;                         // can be applied directly without calling initialize()
   const bool rim_shot_is_used   = pad_settings.rim_shot_is_used && ( number_inputs > 1 ); // can be applied directly without calling initialize()
@@ -751,17 +753,23 @@ void Edrumulus::Pad::process_sample ( const float* input,
       }
 
       // get the maximum velocity in the scan time using the unfiltered signal
-      float peak_velocity = 0.0f;
+      peak_val              = 0.0f;
+      int peak_velocity_idx = 0;
       for ( int i = 0; i < scan_time; i++ )
       {
-        peak_velocity = max ( peak_velocity, x_sq_hist[x_sq_hist_len - scan_time + i] );
+        if ( x_sq_hist[x_sq_hist_len - scan_time + i] > peak_val )
+        {
+          peak_val          = x_sq_hist[x_sq_hist_len - scan_time + i];
+          peak_velocity_idx = i;
+        }
       }
 
       // calculate the MIDI velocity value with clipping to allowed MIDI value range
-      stored_midi_velocity = velocity_factor * pow ( peak_velocity * ADC_noise_peak_velocity_scaling, velocity_exponent ) + velocity_offset;
+      stored_midi_velocity = velocity_factor * pow ( peak_val * ADC_noise_peak_velocity_scaling, velocity_exponent ) + velocity_offset;
       stored_midi_velocity = max ( 1, min ( 127, stored_midi_velocity ) );
 
       // peak detection results
+      peak_delay       = scan_time - ( peak_velocity_idx + 1 );
       first_peak_delay = total_scan_time - ( first_peak_idx + 1 );
       first_peak_found = true; // for special case signal only increments, the peak found would be false -> correct this
       was_peak_found   = true;
@@ -932,14 +940,12 @@ void Edrumulus::Pad::process_sample ( const float* input,
       update_fifo ( x_rim_low, x_rim_hist_len, x_rim_hist );
 
       // start condition of delay process to fill up the required buffers
-      // note that rim_shot_window_len must be larger than energy_window_len,
-      // pos_energy_window_len and scan_time for this to work
-      if ( first_peak_found && ( !was_rim_shot_ready ) && ( rim_shot_cnt == 0 ) )
+      if ( was_peak_found && ( !was_rim_shot_ready ) && ( rim_shot_cnt == 0 ) )
       {
         // a peak was found, we now have to start the delay process to fill up the
         // required buffer length for our metric
-        rim_shot_cnt   = max ( 1, rim_shot_window_len - first_peak_delay );
-        x_rim_hist_idx = x_rim_hist_len - rim_shot_window_len - max ( 0, first_peak_delay - rim_shot_window_len + 1 );
+        rim_shot_cnt   = max ( 1, rim_shot_window_len - peak_delay );
+        x_rim_hist_idx = x_rim_hist_len - rim_shot_window_len - max ( 0, peak_delay - rim_shot_window_len + 1 );
       }
 
       if ( rim_shot_cnt > 0 )
@@ -956,8 +962,7 @@ void Edrumulus::Pad::process_sample ( const float* input,
             rim_max_pow = max ( rim_max_pow, x_rim_hist[x_rim_hist_idx + i] );
           }
 
-// TODO find out why we get better results if the rim max power is squared compared to non-squared power
-          const float rim_metric_db = 10 * log10 ( rim_max_pow * rim_max_pow / first_peak_val );
+          const float rim_metric_db = 10 * log10 ( rim_max_pow / first_peak_val );
           stored_is_rimshot         = rim_metric_db > rim_shot_treshold_dB;
           rim_shot_cnt              = 0;
           was_rim_shot_ready        = true;

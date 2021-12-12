@@ -261,6 +261,7 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       float        control_range;
       float        first_peak_diff_thresh;
       float        first_peak_val;
+      float        peak_val;
       bool         was_above_threshold;
       int          decay_est_delay;
       int          decay_est_len;
