@@ -308,9 +308,9 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.first_peak_diff_thresh_db = 8.0f;   // pad specific parameter: allowed difference between first peak and later peak in scan time
   pad_settings.mask_time_decay_fact_db   = 15.0f;  // pad specific parameter: during mask time decay factor for maximum peak in scan time
   pad_settings.scan_time_ms              = 2.5f;   // pad specific parameter: scan time after first detected peak
-  pad_settings.pre_scan_time_ms          = 3.0f;   // pad specific parameter: pre-scan time to search for first peak
-  pad_settings.decay_est_delay_ms        = 8.0f;   // pad specific parameter: delay after second main peak until decay power estimation starts
-  pad_settings.decay_est_len_ms          = 3.0f;   // pad specific parameter: decay power estimation window length
+  pad_settings.pre_scan_time_ms          = 2.5f;   // pad specific parameter: pre-scan time to search for first peak
+  pad_settings.decay_est_delay_ms        = 7.0f;   // pad specific parameter: delay after second main peak until decay power estimation starts
+  pad_settings.decay_est_len_ms          = 4.0f;   // pad specific parameter: decay power estimation window length
   pad_settings.decay_est_fact_db         = 16.0f;  // pad specific parameter: decay power estimation factor (to get over decay ripple)
   pad_settings.decay_fact_db             = 1.0f;   // pad specific parameter: vertical shift of the decay function in dB
   pad_settings.decay_len1_ms             = 0.0f;   // pad specific parameter: length of the decay 1
