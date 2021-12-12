@@ -175,19 +175,22 @@ Serial.println ( serial_print );
         }
       }
 
-      // process sample
-      pad[i].process_sample ( sample, peak_found[i], midi_velocity[i], midi_pos[i],
-                              is_rim_shot[i], is_choke_on[i], is_choke_off[i] );
-
       // overload detection
+      bool overload_detected = false;
       for ( int j = 0; j < number_inputs[i]; j++ )
       {
         // check for the two lowest/largest possible ADC range values
         if ( ( sample_org_pad[j] >= ( ADC_MAX_RANGE - 2 ) ) || ( sample_org_pad[j] <= 1 ) )
         {
-          overload_LED_cnt = overload_LED_on_time;
+          overload_LED_cnt  = overload_LED_on_time;
+          overload_detected = true;
         }
       }
+
+      // process sample
+      pad[i].process_sample ( sample, overload_detected,
+                              peak_found[i], midi_velocity[i], midi_pos[i],
+                              is_rim_shot[i], is_choke_on[i], is_choke_off[i] );
     }
   }
 
@@ -464,6 +467,8 @@ void Edrumulus::Pad::initialize()
   ctrl_history_len         = 10;   // (MUST BE AN EVEN VALUE) control history length, use a fixed value
   ctrl_velocity_range_fact = 4.0f; // use a fixed value (TODO make it adjustable)
   ctrl_velocity_threshold  = 5.0f; // use a fixed value (TODO make it adjustable)
+  overload_hist_len        = scan_time + x_filt_delay;
+  max_num_overloads        = 3; // maximum allowed number of overloaded samples until the overload special case is activated
 
   // The ESP32 ADC has 12 bits resulting in a range of 20*log10(2048)=66.2 dB.
   // The sensitivity parameter shall be in the range of 0..31. This range should then be mapped to the
@@ -532,9 +537,11 @@ void Edrumulus::Pad::initialize()
   allocate_initialize ( &x_rim_hist,        x_rim_hist_len );      // memory for rim shot detection
   allocate_initialize ( &x_rim_switch_hist, rim_shot_window_len ); // memory for rim switch detection
   allocate_initialize ( &ctrl_hist,         ctrl_history_len );    // memory for Hi-Hat control pad hit detection
+  allocate_initialize ( &overload_hist,     overload_hist_len );   // memory for overload detection status
 
   mask_back_cnt           = 0;
   was_above_threshold     = false;
+  is_overloaded_state     = false;
   first_peak_val          = 0.0f;
   decay_back_cnt          = 0;
   decay_scaling           = 1.0f;
@@ -591,6 +598,7 @@ void Edrumulus::Pad::initialize()
 
 
 void Edrumulus::Pad::process_sample ( const float* input,
+                                      const bool   overload_detected,
                                       bool&        peak_found,
                                       int&         midi_velocity,
                                       int&         midi_pos,
@@ -614,8 +622,9 @@ void Edrumulus::Pad::process_sample ( const float* input,
   // square input signal and store in FIFO buffer
   const float x_sq     = input[0] * input[0];
   const float x_rim_sq = input[1] * input[1];
-  update_fifo ( x_sq,     x_sq_hist_len, x_sq_hist );
-  update_fifo ( x_rim_sq, x_sq_hist_len, x_rim_sq_hist );
+  update_fifo ( x_sq,                            x_sq_hist_len,     x_sq_hist );
+  update_fifo ( x_rim_sq,                        x_sq_hist_len,     x_rim_sq_hist );
+  update_fifo ( overload_detected ? 1.0f : 0.0f, overload_hist_len, overload_hist );
 
 
   // Calculate peak detection -----------------------------------------------------
@@ -686,12 +695,13 @@ void Edrumulus::Pad::process_sample ( const float* input,
       decay_back_cnt          = 0;      // reset in case it was active from previous peak
       max_x_filt_val          = x_filt; // initialize maximum value with first value
       max_mask_x_filt_val     = x_filt; // initialize maximum value with first value
-    }
+      is_overloaded_state     = false;
 
-    // this flag ensures that we always enter the if condition after the very first
-    // time the signal was above the threshold (this flag is then reset when the
-    // scan time is expired)
-    was_above_threshold = true;
+      // this flag ensures that we always enter the if condition after the very first
+      // time the signal was above the threshold (this flag is then reset when the
+      // scan time is expired)
+      was_above_threshold = true;
+    }
 
     // search from above threshold to corrected scan+mask time for highest peak in
     // filtered signal (needed for decay power estimation)
@@ -755,6 +765,20 @@ void Edrumulus::Pad::process_sample ( const float* input,
       first_peak_delay = total_scan_time - ( first_peak_idx + 1 );
       first_peak_found = true; // for special case signal only increments, the peak found would be false -> correct this
       was_peak_found   = true;
+
+      // check overload status
+      int number_overloaded_samples = 0;
+      for ( int i = 0; i < overload_hist_len; i++ )
+      {
+        if ( overload_hist[i] > 0.0f )
+        {
+          number_overloaded_samples++;
+        }
+      }
+      if ( number_overloaded_samples > max_num_overloads )
+      {
+        is_overloaded_state = true;
+      }
     }
 
     // end condition of mask time
@@ -940,6 +964,19 @@ void Edrumulus::Pad::process_sample ( const float* input,
         }
       }
     }
+  }
+
+  // check for all estimations are ready and we can set the peak found flag and
+  // return all results
+  if ( was_peak_found && ( !pos_sense_is_used || was_pos_sense_ready ) && ( !rim_shot_is_used || was_rim_shot_ready ) )
+  {
+
+// TODO in case of signal clipping, we cannot use the positional sensing and rim shot detection results
+if ( is_overloaded_state )
+{
+  stored_is_rimshot = false; // as a quick hack, assume we do not have a rim shot
+  stored_midi_pos   = 0;     // overloads will only happen if the strike is located near the middle of the pad
+}
 
 // TODO:
 // - positional sensing must be adjusted if a rim shot is detected (note that this must be done BEFORE the MIDI clipping!)
@@ -950,12 +987,7 @@ if ( stored_is_rimshot )
 {
   stored_midi_pos = 0; // as a quick hack, disable positional sensing if a rim shot is detected
 }
-  }
 
-  // check for all estimations are ready and we can set the peak found flag and
-  // return all results
-  if ( was_peak_found && ( !pos_sense_is_used || was_pos_sense_ready ) && ( !rim_shot_is_used || was_rim_shot_ready ) )
-  {
     midi_velocity = stored_midi_velocity;
     midi_pos      = stored_midi_pos;
     peak_found    = true;

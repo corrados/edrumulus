@@ -119,6 +119,7 @@ protected:
                    const int conf_number_inputs = 1 );
 
       void process_sample ( const float* input,
+                            const bool   overload_detected,
                             bool&        peak_found,
                             int&         midi_velocity,
                             int&         midi_pos,
@@ -235,9 +236,13 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       float* x_rim_hist        = nullptr;
       float* x_rim_switch_hist = nullptr;
       float* ctrl_hist         = nullptr;
+      float* overload_hist     = nullptr;
 
       int          Fs;
       int          number_inputs;
+      int          overload_hist_len;
+      int          max_num_overloads;
+      bool         is_overloaded_state;
       int          scan_time;
       int          scan_time_cnt;
       int          pre_scan_time;
