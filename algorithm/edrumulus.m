@@ -85,10 +85,10 @@ plot(10 * log10([x(:, 1) .^ 2, x_filt, decay_all, x_filt_decay]));
 plot(all_first_peaks, 10 * log10(x(all_first_peaks, 1) .^ 2), 'b*');
 plot(all_peaks,  10 * log10(x(all_peaks, 1) .^ 2), 'g*');
 plot(all_peaks_filt, 10 * log10(x_filt(all_peaks_filt)), 'y*');
-if ~isempty(rim_metric_db) && (length(all_peaks_filt) == length(rim_metric_db))
-  plot(all_peaks_filt, rim_metric_db, '*-');
-  plot(all_peaks_filt(is_rim_shot), rim_metric_db(is_rim_shot), '*');
-  plot(all_peaks_filt(~is_rim_shot), rim_metric_db(~is_rim_shot), '*');
+if ~isempty(rim_metric_db) && (length(all_peaks) == length(rim_metric_db))
+  plot(all_peaks, rim_metric_db + 40, '*-');
+  plot(all_peaks(is_rim_shot), rim_metric_db(is_rim_shot) + 40, '*');
+  plot(all_peaks(~is_rim_shot), rim_metric_db(~is_rim_shot) + 40, '*');
 end
 if length(all_first_peaks) == length(pos_sense_metric)
   plot(all_first_peaks,  10 * log10(pos_sense_metric) + 40, 'k*');
@@ -109,7 +109,7 @@ function Setup
 global pad Fs bp_filt_a bp_filt_b bp_filt_len bp_filt_hist_x bp_filt_hist_y x_filt_delay;
 global scan_time scan_time_cnt pre_scan_time total_scan_time;
 global mask_time mask_back_cnt threshold first_peak_diff_thresh was_above_threshold;
-global first_peak_val decay_mask_fact;
+global peak_val first_peak_val decay_mask_fact;
 global decay_pow_est_start_cnt decay_pow_est_cnt decay_pow_est_sum;
 global decay_est_delay decay_est_len decay_est_fact decay_fact decay_len;
 global decay decay_back_cnt decay_scaling;
@@ -134,6 +134,7 @@ mask_back_cnt            = 0;
 threshold                = 10 ^ (pad.threshold_db / 10);
 first_peak_diff_thresh   = 10 ^ (pad.first_peak_diff_thresh_db / 10);
 was_above_threshold      = false;
+peak_val                 = 0;
 first_peak_val           = 0;
 decay_pow_est_start_cnt  = 0;
 decay_pow_est_cnt        = 0;
@@ -156,7 +157,7 @@ rim_iir_alpha            = pad.rim_low_pass_iir_alpha / Fs;
 rim_shot_window_len      = round(pad.rim_shot_window_len_ms * 1e-3 * Fs);
 x_rim_hist_len           = x_sq_hist_len + rim_shot_window_len;
 x_rim_hist_idx           = 1;
-rim_shot_treshold_dB     = -5; % dB
+rim_shot_treshold_dB     = -19; % dB
 x_rim_hist               = zeros(x_rim_hist_len, 1);
 rim_shot_cnt             = 0;
 stored_pos_sense_metric  = 0;
@@ -256,7 +257,7 @@ function [x_filt_debug, ...
 global Fs bp_filt_a bp_filt_b bp_filt_len bp_filt_hist_x bp_filt_hist_y x_filt_delay;
 global scan_time scan_time_cnt pre_scan_time total_scan_time;
 global mask_time mask_back_cnt threshold first_peak_diff_thresh was_above_threshold;
-global first_peak_val decay_mask_fact;
+global peak_val first_peak_val decay_mask_fact;
 global decay_pow_est_start_cnt decay_pow_est_cnt decay_pow_est_sum;
 global decay_est_delay decay_est_len decay_est_fact decay_fact decay_len;
 global decay decay_back_cnt decay_scaling;
@@ -271,6 +272,7 @@ global was_peak_found was_pos_sense_ready was_rim_shot_ready;
 peak_found        = false;
 is_rim_shot       = false;
 first_peak_found  = false; % only used internally
+peak_delay        = 0;     % only used internally
 first_peak_delay  = 0;     % only used internally
 pos_sense_is_used = true;  % only used internally to enable/disable positional sensing
 rim_shot_is_used  = false; % only used internally
@@ -401,19 +403,24 @@ if (x_filt_decay > threshold) || was_above_threshold
     end
 
     % get the maximum velocity in the scan time using the unfiltered signal
-    [peak_velocity, peak_velocity_idx] = max(x_sq_hist(x_sq_hist_len + (-scan_time + 1:0)));
+    [peak_val, peak_velocity_idx] = max(x_sq_hist(x_sq_hist_len + (-scan_time + 1:0)));
 
     % peak detection results
+    peak_delay       = scan_time - peak_velocity_idx;
     first_peak_delay = total_scan_time - first_peak_idx;
     first_peak_found = true; % for special case signal only increments, the peak found would be false -> correct this
     was_peak_found   = true;
 
     % debugging outputs
+    if i - scan_time + peak_velocity_idx > 0
+      all_peaks_debug = [all_peaks_debug; i - scan_time + peak_velocity_idx];
+    end
     if i - total_scan_time > 0
       pre_scan_region_debug(i - total_scan_time + (1:pre_scan_time)) = first_peak_val;
       scan_region_debug(i + (-scan_time + 1:0))                      = first_peak_val;
+    end
+    if i - total_scan_time + first_peak_idx > 0
       all_first_peaks_debug = [all_first_peaks_debug; i - total_scan_time + first_peak_idx];
-      all_peaks_debug       = [all_peaks_debug;       i - scan_time + peak_velocity_idx];
     end
 
   end
@@ -509,14 +516,12 @@ if length(x) > 1 % rim piezo signal is in second dimension
   x_rim_hist       = update_fifo(x_rim_low, x_rim_hist_len, x_rim_hist);
 
   % start condition of delay process to fill up the required buffers
-  % note that rim_shot_window_len must be larger than energy_window_len,
-  % pos_energy_window_len and scan_time for this to work
-  if first_peak_found && (~was_rim_shot_ready) && (rim_shot_cnt == 0)
+  if was_peak_found && (~was_rim_shot_ready) && (rim_shot_cnt == 0)
 
     % a peak was found, we now have to start the delay process to fill up the
     % required buffer length for our metric
-    rim_shot_cnt   = max(1, rim_shot_window_len - first_peak_delay);
-    x_rim_hist_idx = x_rim_hist_len - rim_shot_window_len - max(0, first_peak_delay - rim_shot_window_len + 1) + 1;
+    rim_shot_cnt   = max(1, rim_shot_window_len - peak_delay);
+    x_rim_hist_idx = x_rim_hist_len - rim_shot_window_len - max(0, peak_delay - rim_shot_window_len + 1) + 1;
 
   end
 
@@ -529,8 +534,7 @@ if length(x) > 1 % rim piezo signal is in second dimension
 
       % the buffers are filled, now calculate the metric
       rim_max_pow         = max(x_rim_hist(x_rim_hist_idx + (0:rim_shot_window_len - 1)));
-% TODO find out why we get better results if the rim max power is squared compared to non-squared power
-      rim_metric_db       = 10 * log10(rim_max_pow * rim_max_pow / first_peak_val);
+      rim_metric_db       = 10 * log10(rim_max_pow / peak_val);
       rim_metric_db_debug = [rim_metric_db_debug; rim_metric_db]; % just for debugging
       stored_is_rimshot   = rim_metric_db > rim_shot_treshold_dB;
       rim_shot_cnt        = 0;

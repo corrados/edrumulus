@@ -39,9 +39,9 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd120_hot_spot.wav");
 %x = audioread("signals/pd120_rimshot.wav");%x=x(7000:15000,:);%x = x(1:100000, :);%x = x(168000:171000, :);%x = x(1:34000, :);%
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
-x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
+%x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
 %x = audioread("signals/pd80r.wav");x=x(:,1);padtype='pd80r';x = x(1:265000, :);%x = x(264000:320000, :);%
-%x = audioread("signals/pd80r_rimshot_issue.wav");padtype='pd80r';
+x = audioread("signals/pd80r_rimshot_issue.wav");padtype='pd80r';
 %x = audioread("signals/pd6.wav");
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
@@ -78,7 +78,7 @@ pad.decay_grad_fact3          = 200;
 pad.pos_low_pass_cutoff       = 150; % Hz
 pad.pos_invert                = false;
 pad.rim_shot_window_len_ms    = 3.5;
-pad.rim_low_pass_iir_alpha    = 700;
+pad.rim_low_pass_iir_alpha    = 1000;
 
 switch padtype
   case 'pd120'
