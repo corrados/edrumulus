@@ -212,11 +212,11 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
   // set the ADC properties: averaging 8 samples with high speed sampling gives
   // us the best compromise between ADC speed and spike protection
   adc_obj.adc0->setResolution      ( 12 ); // we want to get the full ADC resolution of the Teensy 4.0
-  adc_obj.adc0->setAveraging       ( 8 );
+  adc_obj.adc0->setAveraging       ( 8 ); // TODO <- adjust this value and check ADC noise
   adc_obj.adc0->setConversionSpeed ( ADC_CONVERSION_SPEED::HIGH_SPEED );
   adc_obj.adc0->setSamplingSpeed   ( ADC_SAMPLING_SPEED::HIGH_SPEED );
   adc_obj.adc1->setResolution      ( 12 ); // we want to get the full ADC resolution of the Teensy 4.0
-  adc_obj.adc1->setAveraging       ( 8 );
+  adc_obj.adc1->setAveraging       ( 8 ); // TODO <- adjust this value and check ADC noise
   adc_obj.adc1->setConversionSpeed ( ADC_CONVERSION_SPEED::HIGH_SPEED );
   adc_obj.adc1->setSamplingSpeed   ( ADC_SAMPLING_SPEED::HIGH_SPEED );
 

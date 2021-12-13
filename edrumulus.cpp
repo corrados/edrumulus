@@ -128,7 +128,7 @@ return;
                                        analog_pin,
                                        sample_org );
 
-/*
+
 // TEST for plotting all captures samples in the serial plotter (but with low sampling rate)
 String serial_print;
 for ( int i = 0; i < number_pads; i++ )
@@ -142,7 +142,7 @@ for ( int i = 0; i < number_pads; i++ )
   }
 }
 Serial.println ( serial_print );
-*/
+
 
 
   // Process samples -----------------------------------------------------------
@@ -151,11 +151,6 @@ Serial.println ( serial_print );
     int* sample_org_pad = sample_org[i];
     peak_found[i]       = false;
     control_found[i]    = false;
-
-// TEST for Teensy speed tests with a Teensy where we do not have the front end connected, we
-//      simply add a constant to the captured input to emulate the analog front end
-sample_org_pad[0] += 2048;
-sample_org_pad[1] += 2048;
 
     if ( pad[i].get_is_control() )
     {
@@ -245,7 +240,7 @@ sample_org_pad[1] += 2048;
     status_is_error            = ( abs ( 1.0f / ( micros() - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f - Fs ) > samplerate_max_error_Hz );
 
 // TEST check the measured sampling rate
-Serial.println ( 1.0f / ( micros() - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f, 7 );
+//Serial.println ( 1.0f / ( micros() - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f, 7 );
 
     samplerate_prev_micros_cnt = 0;
     samplerate_prev_micros     = micros();
