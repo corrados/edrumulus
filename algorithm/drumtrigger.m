@@ -332,12 +332,21 @@ if size(x, 2) > 1
 
   % low-pass filter the squared rim signal
   alpha     = pad.rim_low_pass_iir_alpha / Fs;
+  x_low     = filter(alpha, [1, alpha - 1], (x(:, 1) .^ 2));
   x_rim_low = filter(alpha, [1, alpha - 1], (x(:, 2) .^ 2));
+
+
+%% one pole IIR high pass filter
+%[b, a]     = butter(1, 0.02, 'high');
+%rim_x_high = filter(b, a, x(:, 2)) .^ 2;
+%x_rim_low = rim_x_high;
+
 
   for i = 1:length(all_peaks)
 
     win_idx                     = (all_peaks(i):all_peaks(i) + rim_shot_window_len - 1);
     win_idx                     = win_idx((win_idx <= length(x_rim_low)) & (win_idx > 0));
+    [max_pow(i), max_pow_index] = max(x_low(win_idx));
     [rim_max_pow(i), max_index] = max(x_rim_low(win_idx));
     x_max_pow(i)                = x(all_peaks(i), 1) .^ 2;
     rim_max_pow_index(i)        = win_idx(1) + max_index - 1; % only for debugging
@@ -345,16 +354,23 @@ if size(x, 2) > 1
 
   end
 
-  rim_metric_db = 10 * log10(rim_max_pow ./ x_max_pow);
+  rim_metric_db = 10 * log10(rim_max_pow ./ max_pow);
+
+%rim_metric_db = 10 * log10(rim_max_pow / 100000000);
+
+% TEST original:
+rim_metric_db = 10 * log10(rim_max_pow ./ x_max_pow);
+
   is_rim_shot   = rim_metric_db > rim_shot_treshold_dB;
 
-%figure; plot(10 * log10([x(:, 1) .^ 2, x_rim_low .^ 2, rim_win_region])); hold on; grid on;
-%        plot(all_peaks, 10 * log10(x(all_peaks, 1) .^ 2), 'y*');
-%        plot(rim_max_pow_index, 10 * log10(x_rim_low(rim_max_pow_index) .^ 2), 'b*');
-%        plot(all_peaks, rim_metric_db, '*-');
-%        plot(all_peaks(is_rim_shot), rim_metric_db(is_rim_shot), '*');
-%        plot(all_peaks(~is_rim_shot), rim_metric_db(~is_rim_shot), '*');
-
+figure; %plot(10 * log10([x(:, 1) .^ 2, x_rim_low .^ 2, rim_win_region])); hold on; grid on;
+plot(10 * log10([x_low, x_rim_low, rim_win_region])); hold on; grid on;
+        plot(all_peaks, 10 * log10(x(all_peaks, 1) .^ 2), 'y*');
+        plot(rim_max_pow_index, 10 * log10(x_rim_low(rim_max_pow_index) .^ 2), 'b*');
+        plot(all_peaks, rim_metric_db, '*-');
+        plot(all_peaks(is_rim_shot), rim_metric_db(is_rim_shot), '*');
+        plot(all_peaks(~is_rim_shot), rim_metric_db(~is_rim_shot), '*');
+error
 end
 
 end
