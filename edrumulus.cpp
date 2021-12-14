@@ -321,7 +321,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.decay_grad_fact3          = 200.0f; // pad specific parameter: decay function gradient factor 3
   pad_settings.pos_low_pass_cutoff       = 150.0f; // pad specific parameter: low-pass filter cut-off in Hz for positional sensing
   pad_settings.pos_invert                = false;  // pad specific parameter: invert the positional sensing metric
-  pad_settings.rim_low_pass_iir_alpha    = 1000;   // pad specific parameter: low-pass filter alpha value for rim shot detection
+  pad_settings.rim_use_low_freq_bp       = true;   // pad specific parameter: use low frequency band-pass filter for rim shot detection
   pad_settings.rim_shot_window_len_ms    = 3.5f;   // pad specific parameter: window length for rim shot detection
   pad_settings.rim_shot_velocity_thresh  = 0;      // pad specific parameter: velocity threshold for rim shots -> disabled per default
 
@@ -341,6 +341,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
       pad_settings.decay_grad_fact2         = 300.0f;
       pad_settings.decay_len3_ms            = 300.0f;
       pad_settings.decay_grad_fact3         = 100.0f;
+      pad_settings.rim_use_low_freq_bp      = false;
       pad_settings.rim_shot_velocity_thresh = 10; // suppress incorrect rim shot detections on low velocity hits
       break;
 
@@ -458,10 +459,9 @@ void Edrumulus::Pad::initialize()
   decay_est_len            = round ( pad_settings.decay_est_len_ms   * 1e-3f * Fs );
   decay_est_fact           = pow ( 10.0f, pad_settings.decay_est_fact_db / 10 );
   rim_shot_window_len      = round ( pad_settings.rim_shot_window_len_ms * 1e-3f * Fs );        // window length (e.g. 5 ms)
-  rim_shot_treshold_dB     = static_cast<float> ( pad_settings.rim_shot_treshold ) - 30;    // rim shot threshold
+  rim_shot_treshold_dB     = static_cast<float> ( pad_settings.rim_shot_treshold ) - 44;    // rim shot threshold
   rim_switch_treshold      = -ADC_MAX_NOISE_AMPL + 9 * ( pad_settings.rim_shot_treshold - 31 ); // rim switch linear threshold
   rim_switch_on_cnt_thresh = round ( 10.0f * 1e-3f * Fs );                                      // number of on samples until we detect a choke
-  rim_iir_alpha            = pad_settings.rim_low_pass_iir_alpha / Fs;
   x_rim_hist_len           = x_sq_hist_len + rim_shot_window_len;
   cancellation_factor      = static_cast<float> ( pad_settings.cancellation ) / 31.0f;          // cancellation factor: range of 0.0..1.0
   ctrl_history_len         = 10;   // (MUST BE AN EVEN VALUE) control history length, use a fixed value
@@ -530,6 +530,10 @@ void Edrumulus::Pad::initialize()
   allocate_initialize ( &x_rim_sq_hist,     x_sq_hist_len );       // memory for sqr(x_rim) history
   allocate_initialize ( &bp_filt_hist_x,    bp_filt_len );         // band-pass filter x-signal history
   allocate_initialize ( &bp_filt_hist_y,    bp_filt_len - 1 );     // band-pass filter y-signal history
+  allocate_initialize ( &rim_bp_hist_x,     bp_filt_len );         // rim band-pass filter x-signal history
+  allocate_initialize ( &rim_bp_hist_y,     bp_filt_len - 1 );     // rim band-pass filter y-signal history
+  allocate_initialize ( &rim_bp_filt_b,     bp_filt_len );         // rim band-pass filter coefficients b
+  allocate_initialize ( &rim_bp_filt_a,     bp_filt_len - 1 );     // rim band-pass filter coefficients a
   allocate_initialize ( &decay,             decay_len );           // memory for decay function
   allocate_initialize ( &lp_filt_b,         lp_filt_len );         // memory for low-pass filter coefficients
   allocate_initialize ( &lp_filt_hist,      lp_filt_len );         // memory for low-pass filter input
@@ -551,7 +555,6 @@ void Edrumulus::Pad::initialize()
   decay_pow_est_cnt       = 0;
   decay_pow_est_sum       = 0.0f;
   pos_sense_cnt           = 0;
-  x_rim_low               = 0;
   x_low_hist_idx          = 0;
   rim_shot_cnt            = 0;
   rim_switch_on_cnt       = 0;
@@ -594,6 +597,30 @@ void Edrumulus::Pad::initialize()
   for ( int i = 0; i < decay_len3; i++ )
   {
     decay[decay_len1 + decay_len2 + i] = decay_fact2 * pow ( 10.0f, -i / 10.0f * decay_grad3 );
+  }
+
+  // select rim shot signal band-pass filter coefficients
+  if ( pad_settings.rim_use_low_freq_bp )
+  {
+    for ( int i = 0; i < bp_filt_len - 1; i++ )
+    {
+      rim_bp_filt_a[i] = rim_bp_low_freq_a[i];
+    }
+    for ( int i = 0; i < bp_filt_len; i++ )
+    {
+      rim_bp_filt_b[i] = rim_bp_low_freq_b[i];
+    }
+  }
+  else
+  {
+    for ( int i = 0; i < bp_filt_len - 1; i++ )
+    {
+      rim_bp_filt_a[i] = rim_bp_high_freq_a[i];
+    }
+    for ( int i = 0; i < bp_filt_len; i++ )
+    {
+      rim_bp_filt_b[i] = rim_bp_high_freq_b[i];
+    }
   }
 }
 
@@ -935,9 +962,24 @@ void Edrumulus::Pad::process_sample ( const float* input,
     }
     else
     {
-      const float x_rim = input[1];
-      x_rim_low         = ( 1.0f - rim_iir_alpha ) * x_rim_low + rim_iir_alpha * x_rim_sq;
-      update_fifo ( x_rim_low, x_rim_hist_len, x_rim_hist );
+      // band-pass filter the rim signal (two types are supported)
+      update_fifo ( input[1], bp_filt_len, rim_bp_hist_x );
+
+      float sum_b = 0.0f;
+      float sum_a = 0.0f;
+      for ( int i = 0; i < bp_filt_len; i++ )
+      {
+        sum_b += rim_bp_hist_x[i] * rim_bp_filt_b[i];
+      }
+      for ( int i = 0; i < bp_filt_len - 1; i++ )
+      {
+        sum_a += rim_bp_hist_y[i] * rim_bp_filt_a[i];
+      }
+      float x_rim_bp = sum_b - sum_a;
+
+      update_fifo ( x_rim_bp, bp_filt_len - 1, rim_bp_hist_y );
+      x_rim_bp = x_rim_bp * x_rim_bp; // calculate power of filter result
+      update_fifo(x_rim_bp, x_rim_hist_len, x_rim_hist);
 
       // start condition of delay process to fill up the required buffers
       if ( was_peak_found && ( !was_rim_shot_ready ) && ( rim_shot_cnt == 0 ) )

@@ -115,8 +115,8 @@ global decay_est_delay decay_est_len decay_est_fact decay_fact decay_len;
 global decay decay_back_cnt decay_scaling;
 global x_sq_hist x_sq_hist_len lp_filt_b lp_filt_hist lp_filt_len;
 global x_low_hist x_low_hist_len pos_sense_cnt x_low_hist_idx;
-global rim_shot_window_len rim_shot_treshold_dB x_rim_hist x_rim_hist_len rim_shot_cnt x_rim_hist_idx x_rim_low rim_iir_alpha;
-global stored_pos_sense_metric stored_is_rimshot;
+global rim_shot_window_len rim_shot_treshold_dB x_rim_hist x_rim_hist_len rim_shot_cnt x_rim_hist_idx;
+global stored_pos_sense_metric stored_is_rimshot rim_bp_filt_a rim_bp_filt_b rim_bp_hist_x rim_bp_hist_y;
 global max_x_filt_val max_mask_x_filt_val max_x_filt_idx_debug;
 global was_peak_found was_pos_sense_ready was_rim_shot_ready;
 
@@ -124,6 +124,10 @@ Fs                       = 8000;
 bp_filt_len              = 5;
 bp_filt_a                = [6.704579059531744e-01, -2.930427216820138, 4.846289804288025, -3.586239808116909]';
 bp_filt_b                = [1.658193166930305e-02, 0, -3.316386333860610e-02, 0, 1.658193166930305e-02]';
+rim_bp_low_freq_a        = [0.8008026466657076, -3.348944421626415, 5.292099516163272, -3.743650976941178]';
+rim_bp_low_freq_b        = [0.005542717210280682, 0, -0.01108543442056136, 0, 0.005542717210280682]';
+rim_bp_high_freq_a       = [0.8008026466657077, -3.021126408169798, 4.637919662489649, -3.377196335768073]';
+rim_bp_high_freq_b       = [0.00554271721028068, 0, -0.01108543442056136, 0, 0.00554271721028068]';
 x_filt_delay             = 5;
 scan_time                = round(pad.scan_time_ms * 1e-3 * Fs);
 scan_time_cnt            = 0;
@@ -152,8 +156,8 @@ bp_filt_hist_x           = zeros(bp_filt_len, 1);
 bp_filt_hist_y           = zeros(bp_filt_len - 1, 1);
 x_sq_hist_len            = total_scan_time;
 x_sq_hist                = zeros(x_sq_hist_len, 1);
-x_rim_low                = 0;
-rim_iir_alpha            = pad.rim_low_pass_iir_alpha / Fs;
+rim_bp_hist_x            = zeros(bp_filt_len, 1);
+rim_bp_hist_y            = zeros(bp_filt_len - 1, 1);
 rim_shot_window_len      = round(pad.rim_shot_window_len_ms * 1e-3 * Fs);
 x_rim_hist_len           = x_sq_hist_len + rim_shot_window_len;
 x_rim_hist_idx           = 1;
@@ -213,6 +217,15 @@ lp_filt_hist   = zeros(lp_filt_len, 1);
 x_low_hist_len = x_sq_hist_len + lp_filt_len;
 x_low_hist     = zeros(x_low_hist_len, 1);
 
+% select rim shot signal band-pass filter coefficients
+if pad.rim_use_low_freq_bp
+  rim_bp_filt_a = rim_bp_low_freq_a;
+  rim_bp_filt_b = rim_bp_low_freq_b;
+else
+  rim_bp_filt_a = rim_bp_high_freq_a;
+  rim_bp_filt_b = rim_bp_high_freq_b;
+end
+
 end
 
 
@@ -263,8 +276,8 @@ global decay_est_delay decay_est_len decay_est_fact decay_fact decay_len;
 global decay decay_back_cnt decay_scaling;
 global x_sq_hist x_sq_hist_len lp_filt_b lp_filt_hist lp_filt_len;
 global x_low_hist x_low_hist_len pos_sense_cnt x_low_hist_idx;
-global rim_shot_window_len rim_shot_treshold_dB x_rim_hist x_rim_hist_len rim_shot_cnt x_rim_hist_idx x_rim_low rim_iir_alpha;
-global stored_pos_sense_metric stored_is_rimshot;
+global rim_shot_window_len rim_shot_treshold_dB x_rim_hist x_rim_hist_len rim_shot_cnt x_rim_hist_idx;
+global stored_pos_sense_metric stored_is_rimshot rim_bp_filt_a rim_bp_filt_b rim_bp_hist_x rim_bp_hist_y;
 global max_x_filt_val max_mask_x_filt_val max_x_filt_idx_debug;
 global was_peak_found was_pos_sense_ready was_rim_shot_ready;
 
@@ -512,8 +525,13 @@ end
 if length(x) > 1 % rim piezo signal is in second dimension
 
   rim_shot_is_used = true;
-  x_rim_low        = (1 - rim_iir_alpha) * x_rim_low + rim_iir_alpha * x_sq(2);  
-  x_rim_hist       = update_fifo(x_rim_low, x_rim_hist_len, x_rim_hist);
+
+  % band-pass filter the rim signal (two types are supported)
+  rim_bp_hist_x = update_fifo(x(2), bp_filt_len, rim_bp_hist_x);
+  x_rim_bp      = sum(rim_bp_hist_x .* rim_bp_filt_b) - sum(rim_bp_hist_y .* rim_bp_filt_a);
+  rim_bp_hist_y = update_fifo(x_rim_bp, bp_filt_len - 1, rim_bp_hist_y);
+  x_rim_bp      = x_rim_bp * x_rim_bp; % calculate power of filter result
+  x_rim_hist    = update_fifo(x_rim_bp, x_rim_hist_len, x_rim_hist);
 
   % start condition of delay process to fill up the required buffers
   if was_peak_found && (~was_rim_shot_ready) && (rim_shot_cnt == 0)

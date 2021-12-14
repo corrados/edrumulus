@@ -203,7 +203,7 @@ protected:
         float      decay_grad_fact1, decay_grad_fact2, decay_grad_fact3;
         float      pos_low_pass_cutoff;
         bool       pos_invert;
-        float      rim_low_pass_iir_alpha;
+        bool       rim_use_low_freq_bp;
         float      rim_shot_window_len_ms;
         int        rim_shot_velocity_thresh;
       };
@@ -211,10 +211,14 @@ protected:
       void initialize();
 
       // band-pass filter coefficients (they are constant and must not be changed)
-      const int   bp_filt_len  = 5;
-      const float bp_filt_a[4] = { 0.6704579059531744f, -2.930427216820138f, 4.846289804288025f, -3.586239808116909f };
-      const float bp_filt_b[5] = { 0.01658193166930305f, 0.0f, -0.0331638633386061f, 0.0f, 0.01658193166930305f };
-      const int   x_filt_delay = 5;
+      const int   bp_filt_len           = 5;
+      const float bp_filt_a[4]          = { 0.6704579059531744f, -2.930427216820138f, 4.846289804288025f, -3.586239808116909f };
+      const float bp_filt_b[5]          = { 0.01658193166930305f, 0.0f, -0.0331638633386061f, 0.0f, 0.01658193166930305f };
+      const float rim_bp_low_freq_a[4]  = { 0.8008026466657076f, -3.348944421626415f, 5.292099516163272f, -3.743650976941178f };
+      const float rim_bp_low_freq_b[5]  = { 0.005542717210280682f, 0.0f, -0.01108543442056136f, 0.0f, 0.005542717210280682f };
+      const float rim_bp_high_freq_a[4] = { 0.8008026466657077f, -3.021126408169798f, 4.637919662489649f, -3.377196335768073f };
+      const float rim_bp_high_freq_b[5] = { 0.00554271721028068f, 0.0f, -0.01108543442056136f, 0.0f, 0.00554271721028068f };
+      const int   x_filt_delay          = 5;
 
       // ADC noise scaling after band-pass filtering (e.g., for the Teensy ADC the noise has high
       // energy at high frequencies which are cut by the band-pass filter) -> hardware dependend parameter
@@ -233,6 +237,10 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       float* lp_filt_b         = nullptr;
       float* x_low_hist        = nullptr;
       float* lp_filt_hist      = nullptr;
+      float* rim_bp_hist_x     = nullptr;
+      float* rim_bp_hist_y     = nullptr;
+      float* rim_bp_filt_a     = nullptr;
+      float* rim_bp_filt_b     = nullptr;
       float* x_rim_hist        = nullptr;
       float* x_rim_switch_hist = nullptr;
       float* ctrl_hist         = nullptr;
@@ -273,8 +281,6 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       int          decay_back_cnt;
       float        decay_scaling;
       float        decay_mask_fact;
-      float        rim_iir_alpha;
-      float        x_rim_low;
       int          x_rim_hist_len;
       int          x_rim_hist_idx;
       int          rim_shot_window_len;

@@ -78,17 +78,18 @@ pad.decay_grad_fact3          = 200;
 pad.pos_low_pass_cutoff       = 150; % Hz
 pad.pos_invert                = false;
 pad.rim_shot_window_len_ms    = 3.5;
-pad.rim_low_pass_iir_alpha    = 1000;
+pad.rim_use_low_freq_bp       = true;
 
 switch padtype
   case 'pd120'
     % note: the PRESET settings are from the PD120 pad
   case 'pd80r'
-    pad.scan_time_ms       = 3;
-    pad.decay_len_ms2      = 75;
-    pad.decay_grad_fact2   = 300;
-    pad.decay_len_ms3      = 300;
-    pad.decay_grad_fact3   = 100;
+    pad.scan_time_ms        = 3;
+    pad.decay_len_ms2       = 75;
+    pad.decay_grad_fact2    = 300;
+    pad.decay_len_ms3       = 300;
+    pad.decay_grad_fact3    = 100;
+    pad.rim_use_low_freq_bp = false;
   case 'pd8'
     pad.scan_time_ms       = 1.3;
     pad.decay_est_delay_ms = 6;
