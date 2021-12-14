@@ -43,7 +43,7 @@ Fs = 8000; % Hz
 [x, x_filt, x_filt_delay] = filter_input_signal(x, Fs);
 [all_peaks, all_first_peaks, all_peaks_filt, scan_region, mask_region, pre_scan_region, decay_all, decay_est_rng, x_filt_decay] = ...
   calc_peak_detection(x(:, 1), x_filt, x_filt_delay, Fs);
-[is_rim_shot, rim_metric_db] = detect_rim_shot(x, all_first_peaks, Fs);
+[is_rim_shot, rim_metric_db] = detect_rim_shot(x, all_peaks, Fs);
 pos_sense_metric             = calc_pos_sense_metric(x(:, 1), Fs, all_first_peaks);
 
 % plot results
@@ -318,28 +318,28 @@ end
 end
 
 
-function [is_rim_shot, rim_metric_db] = detect_rim_shot(x, all_first_peaks, Fs)
+function [is_rim_shot, rim_metric_db] = detect_rim_shot(x, all_peaks, Fs)
 global pad;
 
-is_rim_shot          = false(size(all_first_peaks));
-rim_metric_db        = nan(size(all_first_peaks));
+is_rim_shot          = false(size(all_peaks));
+rim_metric_db        = nan(size(all_peaks));
 rim_shot_window_len  = round(pad.rim_shot_window_len_ms * 1e-3 * Fs); % scan time (e.g. 6 ms)
-rim_shot_treshold_dB = 33; % dB
-rim_max_pow_index    = zeros(size(all_first_peaks));
+rim_shot_treshold_dB = -33; % dB
+rim_max_pow_index    = zeros(size(all_peaks));
 rim_win_region       = nan(size(x));
 
 if size(x, 2) > 1
 
-  % low-pass filter the squared rim signal
-  alpha     = pad.rim_low_pass_iir_alpha / Fs;
-  x_rim_low = filter(alpha, [1, alpha - 1], (x(:, 2) .^ 2));
+  % band-pass filter the rim signal
+  [b, a]   = butter(2, (pad.rim_bp_start_hz + [0 200]) / 4e3);
+  x_rim_bp = filter(b, a, x(:, 2)) .^ 2;
 
-  for i = 1:length(all_first_peaks)
+  for i = 1:length(all_peaks)
 
-    win_idx                     = (all_first_peaks(i):all_first_peaks(i) + rim_shot_window_len - 1);
-    win_idx                     = win_idx((win_idx <= length(x_rim_low)) & (win_idx > 0));
-    [rim_max_pow(i), max_index] = max(x_rim_low(win_idx) .^ 2);
-    x_max_pow(i)                = x(all_first_peaks(i), 1) .^ 2;
+    win_idx                     = (all_peaks(i):all_peaks(i) + rim_shot_window_len - 1);
+    win_idx                     = win_idx((win_idx <= length(x_rim_bp)) & (win_idx > 0));
+    [rim_max_pow(i), max_index] = max(x_rim_bp(win_idx));
+    x_max_pow(i)                = x(all_peaks(i), 1) .^ 2;
     rim_max_pow_index(i)        = win_idx(1) + max_index - 1; % only for debugging
     rim_win_region(win_idx)     = rim_max_pow(i);             % only for debugging
 
@@ -348,12 +348,12 @@ if size(x, 2) > 1
   rim_metric_db = 10 * log10(rim_max_pow ./ x_max_pow);
   is_rim_shot   = rim_metric_db > rim_shot_treshold_dB;
 
-%figure; plot(10 * log10([x(:, 1) .^ 2, x_rim_low .^ 2, rim_win_region])); hold on; grid on;
-%        plot(all_first_peaks, 10 * log10(x(all_first_peaks, 1) .^ 2), 'y*');
-%        plot(rim_max_pow_index, 10 * log10(x_rim_low(rim_max_pow_index) .^ 2), 'b*');
-%        plot(all_first_peaks, rim_metric_db, '*-');
-%        plot(all_first_peaks(is_rim_shot), rim_metric_db(is_rim_shot), '*');
-%        plot(all_first_peaks(~is_rim_shot), rim_metric_db(~is_rim_shot), '*');
+%figure; plot(10 * log10([x(:, 1) .^ 2, x_rim_bp, rim_win_region])); hold on; grid on;
+%        plot(all_peaks, 10 * log10(x(all_peaks, 1) .^ 2), 'y*');
+%        plot(rim_max_pow_index, 10 * log10(x_rim_bp(rim_max_pow_index)), 'b*');
+%        plot(all_peaks, rim_metric_db, '*-');
+%        plot(all_peaks(is_rim_shot), rim_metric_db(is_rim_shot), '*');
+%        plot(all_peaks(~is_rim_shot), rim_metric_db(~is_rim_shot), '*');
 
 end
 
