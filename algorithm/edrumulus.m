@@ -113,69 +113,34 @@ catch
 end
 flush(a);
 
-bReturnIsComplex = false;
-
 % send the input data vector
 for i = 1:length(x)
 
   % write sample
-  write(a, sprintf('%f.6\n', x(i)), 'char');
+  write(a, sprintf('%.5f\n', x(i, 1)), 'char');
 
-  % receive the return sample
-  if bReturnIsComplex
+  % receive the return sample, get number from string
+  readready = false;
+  bytearray = uint8([]);
 
-    for j = 1:2
+  while ~readready
 
-      % get number from string
-      readready = false;
-      bytearray = uint8([]);
+    val = fread(a, 1);
 
-      while ~readready
-
-        val = fread(a, 1);
-
-        if val == 13
-          readready = true;
-        end
-
-        bytearray = [bytearray, uint8(val)];
-
-      end
-
-      y(2 * (i - 1) + j) = str2double(char(bytearray));
-
+    if val == 13
+      readready = true;
     end
 
-  else
-
-      % get number from string
-      readready = false;
-      bytearray = uint8([]);
-
-      while ~readready
-
-        val = fread(a, 1);
-
-        if val == 13
-          readready = true;
-        end
-
-        bytearray = [bytearray, uint8(val)];
-
-      end
-
-      y(i) = str2double(char(bytearray));
+    bytearray = [bytearray, uint8(val)];
 
   end
 
+  y(i) = str2double(char(bytearray));
+
 end
 
-if bReturnIsComplex
-  y = complex(y(1:2:2 * length(x)), y(2:2:2 * length(x)));
-end
-
-figure; plot(y);
-
+figure; plot(20 * log10(abs(y)));
+ylim([-10, 90]);
 
 end
 

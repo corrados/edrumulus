@@ -116,7 +116,7 @@ if ( Serial.available() > 0 )
   bool peak_found_debug, is_rim_shot_debug, is_choke_on_debug, is_choke_off_debug;
   int  midi_velocity_debug, midi_pos_debug;
   pad[0].process_sample ( fIn, false, peak_found_debug, midi_velocity_debug, midi_pos_debug, is_rim_shot_debug, is_choke_on_debug, is_choke_off_debug );
-  Serial.println ( midi_velocity_debug, 7 );
+  Serial.println ( fIn[0], 7 );
 }
 return;
 
