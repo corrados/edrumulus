@@ -112,11 +112,11 @@ void Edrumulus::process()
 // TEST for debugging: take samples from Octave, process and return result to Octave
 if ( Serial.available() > 0 )
 {
-  float fIn[2]; fIn[0] = Serial.parseFloat();
+  float fIn[2]; fIn[0] = Serial.parseFloat(); fIn[1] = Serial.parseFloat();
   bool peak_found_debug, is_rim_shot_debug, is_choke_on_debug, is_choke_off_debug;
   int  midi_velocity_debug, midi_pos_debug;
-  pad[0].process_sample ( fIn, false, peak_found_debug, midi_velocity_debug, midi_pos_debug, is_rim_shot_debug, is_choke_on_debug, is_choke_off_debug );
-  Serial.println ( fIn[0], 7 );
+  float y = pad[0].process_sample ( fIn, false, peak_found_debug, midi_velocity_debug, midi_pos_debug, is_rim_shot_debug, is_choke_on_debug, is_choke_off_debug );
+  Serial.println ( y, 7 );
 }
 return;
 
@@ -627,14 +627,14 @@ void Edrumulus::Pad::initialize()
 }
 
 
-void Edrumulus::Pad::process_sample ( const float* input,
-                                      const bool   overload_detected,
-                                      bool&        peak_found,
-                                      int&         midi_velocity,
-                                      int&         midi_pos,
-                                      bool&        is_rim_shot,
-                                      bool&        is_choke_on,
-                                      bool&        is_choke_off )
+float Edrumulus::Pad::process_sample ( const float* input,
+                                       const bool   overload_detected,
+                                       bool&        peak_found,
+                                       int&         midi_velocity,
+                                       int&         midi_pos,
+                                       bool&        is_rim_shot,
+                                       bool&        is_choke_on,
+                                       bool&        is_choke_off )
 {
   // initialize return parameter
   peak_found                    = false;
@@ -1056,6 +1056,10 @@ if ( stored_is_rimshot )
   }
 
   DEBUG_ADD_VALUES ( input[0] * input[0], x_filt, scan_time_cnt > 0 ? 0.5 : mask_back_cnt > 0 ? 0.2 : cur_decay, threshold );
+
+
+// TEST
+return input[1];//input[0];//threshold;//x_filt;//
 }
 
 void Edrumulus::Pad::process_control_sample ( const int* input,

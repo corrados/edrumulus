@@ -21,7 +21,7 @@ function edrumulus(x, pad_input)
 
 global pad;
 
-%close all
+close all
 
 % load signal and pad settings
 if ~exist('x', 'var') || ~exist('pad_input', 'var')
@@ -118,6 +118,9 @@ for i = 1:length(x)
 
   % write sample
   write(a, sprintf('%.5f\n', x(i, 1)), 'char');
+  if ( size(x, 2) > 1 )
+    write(a, sprintf('%.5f\n', x(i, 2)), 'char');
+  end
 
   % receive the return sample, get number from string
   readready = false;
