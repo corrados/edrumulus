@@ -108,16 +108,18 @@ void Edrumulus::process()
 {
   float sample[MAX_NUM_PAD_INPUTS];
 
-/*
+
 // TEST for debugging: take samples from Octave, process and return result to Octave
 if ( Serial.available() > 0 )
 {
-  const float fIn = Serial.parseFloat();
-  pad[0].process_sample ( fIn, peak_found, midi_velocity, midi_pos, is_rim_shot, debug );
-  Serial.println ( debug, 7 );
+  float fIn[2]; fIn[0] = Serial.parseFloat();
+  bool peak_found_debug, is_rim_shot_debug, is_choke_on_debug, is_choke_off_debug;
+  int  midi_velocity_debug, midi_pos_debug;
+  pad[0].process_sample ( fIn, false, peak_found_debug, midi_velocity_debug, midi_pos_debug, is_rim_shot_debug, is_choke_on_debug, is_choke_off_debug );
+  Serial.println ( midi_velocity_debug, 7 );
 }
 return;
-*/
+
 
 
   // Query samples -------------------------------------------------------------

@@ -101,6 +101,82 @@ ylim([-10, 90]);
 %axis([61, 293, 14, 71]);
 %axis([2871, 3098, 12, 67]);
 
+
+
+% TEST
+pkg load instrument-control
+
+% prepare serial port
+try
+  a = serialport("/dev/ttyACM0", 115200);
+catch
+end
+flush(a);
+
+bReturnIsComplex = false;
+
+% send the input data vector
+for i = 1:length(x)
+
+  % write sample
+  write(a, sprintf('%f.6\n', x(i)), 'char');
+
+  % receive the return sample
+  if bReturnIsComplex
+
+    for j = 1:2
+
+      % get number from string
+      readready = false;
+      bytearray = uint8([]);
+
+      while ~readready
+
+        val = fread(a, 1);
+
+        if val == 13
+          readready = true;
+        end
+
+        bytearray = [bytearray, uint8(val)];
+
+      end
+
+      y(2 * (i - 1) + j) = str2double(char(bytearray));
+
+    end
+
+  else
+
+      % get number from string
+      readready = false;
+      bytearray = uint8([]);
+
+      while ~readready
+
+        val = fread(a, 1);
+
+        if val == 13
+          readready = true;
+        end
+
+        bytearray = [bytearray, uint8(val)];
+
+      end
+
+      y(i) = str2double(char(bytearray));
+
+  end
+
+end
+
+if bReturnIsComplex
+  y = complex(y(1:2:2 * length(x)), y(2:2:2 * length(x)));
+end
+
+figure; plot(y);
+
+
 end
 
 
