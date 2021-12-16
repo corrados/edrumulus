@@ -297,7 +297,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.pad_type = new_pad_type;
 
   // apply PRESET settings (might be overwritten by pad-specific properties)
-  pad_settings.velocity_threshold        = 8;  // 0..31
+  pad_settings.velocity_threshold        = 15; // 0..31
   pad_settings.velocity_sensitivity      = 9;  // 0..31
   pad_settings.mask_time_ms              = 6;  // 0..31 (ms)
   pad_settings.pos_threshold             = 9;  // 0..31
@@ -913,6 +913,7 @@ float Edrumulus::Pad::process_sample ( const float* input,
     }
   }
 
+float rim_metric_db=0;
 
   // Calculate rim shot/choke detection -------------------------------------------
   if ( rim_shot_is_used )
@@ -1006,7 +1007,7 @@ float Edrumulus::Pad::process_sample ( const float* input,
             rim_max_pow = max ( rim_max_pow, x_rim_hist[x_rim_hist_idx + i] );
           }
 
-          const float rim_metric_db = 10 * log10 ( rim_max_pow / first_peak_val );
+rim_metric_db = 10 * log10 ( rim_max_pow / first_peak_val );
           stored_is_rimshot         = rim_metric_db > rim_shot_treshold_dB;
           rim_shot_cnt              = 0;
           was_rim_shot_ready        = true;
@@ -1059,7 +1060,9 @@ if ( stored_is_rimshot )
 
 
 // TEST
-return input[1];//input[0];//threshold;//x_filt;//
+float peak_val_debug = peak_val;
+if ( !peak_found ) peak_val_debug = 0;
+return peak_val_debug;//rim_metric_db;//midi_velocity;//threshold;//input[0];//input[1];//x_filt;//
 }
 
 void Edrumulus::Pad::process_control_sample ( const int* input,
