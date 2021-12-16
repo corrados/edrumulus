@@ -142,10 +142,12 @@ for i = 1:length(x)
 
 end
 
-figure; plot(10 * log10(abs(circshift(y, -27))),'*'); grid on;
+%figure; plot(10 * log10(abs(circshift(y, -27)))+40,'*'); grid on;
+figure; plot(10 * log10(y),'*'); grid on;
 %figure; plot(20 * log10(abs(y))); grid on;
 ylim([-10, 90]);
 %figure; plot(y+40, '*'); grid on;
+%figure; plot(y, '*'); grid on;
 
 end
 
@@ -460,6 +462,9 @@ if (x_filt_decay > threshold) || was_above_threshold
       end
 
     end
+
+% TEST
+first_peak_idx
 
     % get the maximum velocity in the scan time using the unfiltered signal
     [peak_val, peak_velocity_idx] = max(x_sq_hist(x_sq_hist_len + (-scan_time + 1:0)));

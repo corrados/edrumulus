@@ -712,6 +712,7 @@ float Edrumulus::Pad::process_sample ( const float* input,
     }
   }
 
+int first_peak_idx = 0;
 
   // threshold test
   if ( ( ( x_filt_decay > threshold ) || was_above_threshold ) )
@@ -754,9 +755,9 @@ float Edrumulus::Pad::process_sample ( const float* input,
     if ( scan_time_cnt == 0 )
     {
       // climb to the maximum of the first peak (using the unfiltered signal)
-      first_peak_found   = false;
-      first_peak_val     = x_sq_hist[x_sq_hist_len - total_scan_time];
-      int first_peak_idx = 0;
+      first_peak_found = false;
+      first_peak_val   = x_sq_hist[x_sq_hist_len - total_scan_time];
+      first_peak_idx   = 0;
 
       for ( int idx = 1; idx < total_scan_time; idx++ )
       {
@@ -856,6 +857,7 @@ float Edrumulus::Pad::process_sample ( const float* input,
 
 
   // Calculate positional sensing -------------------------------------------------
+float pos_sense_metric = 0;
   if ( pos_sense_is_used )
   {
     // low pass filter of the input signal and store results in a FIFO
@@ -891,8 +893,6 @@ float Edrumulus::Pad::process_sample ( const float* input,
         {
           peak_energy_low = max ( peak_energy_low, x_low_hist[x_low_hist_idx + i] );
         }
-
-        float pos_sense_metric;
 
         if ( pos_sense_inverted )
         {
@@ -1059,10 +1059,17 @@ if ( stored_is_rimshot )
   DEBUG_ADD_VALUES ( input[0] * input[0], x_filt, scan_time_cnt > 0 ? 0.5 : mask_back_cnt > 0 ? 0.2 : cur_decay, threshold );
 
 
-// TEST
+// TEST ##################################################################################
+// TEST ##################################################################################
+// TEST ##################################################################################
+
 float peak_val_debug = peak_val;
 if ( !peak_found ) peak_val_debug = 0;
-return peak_val_debug;//rim_metric_db;//midi_velocity;//threshold;//input[0];//input[1];//x_filt;//
+return first_peak_val;//pos_sense_metric;//peak_val_debug;//rim_metric_db;//midi_velocity;//threshold;//input[0];//input[1];//x_filt;//
+
+// TEST ##################################################################################
+// TEST ##################################################################################
+// TEST ##################################################################################
 }
 
 void Edrumulus::Pad::process_control_sample ( const int* input,
