@@ -315,7 +315,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.decay_fact_db             = 1.0f;   // pad specific parameter: vertical shift of the decay function in dB
   pad_settings.decay_len1_ms             = 0.0f;   // pad specific parameter: length of the decay 1
   pad_settings.decay_grad_fact1          = 200.0f; // pad specific parameter: decay function gradient factor 1
-  pad_settings.decay_len2_ms             = 250.0f; // pad specific parameter: length of the decay 2
+  pad_settings.decay_len2_ms             = 350.0f; // pad specific parameter: length of the decay 2
   pad_settings.decay_grad_fact2          = 200.0f; // pad specific parameter: decay function gradient factor 2
   pad_settings.decay_len3_ms             = 0.0f;   // pad specific parameter: length of the decay 3
   pad_settings.decay_grad_fact3          = 200.0f; // pad specific parameter: decay function gradient factor 3
