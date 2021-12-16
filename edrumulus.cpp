@@ -439,7 +439,7 @@ void Edrumulus::Pad::initialize()
   // set algorithm parameters
   const float threshold_db = 2.0f + pad_settings.velocity_threshold;               // define threshold range
   threshold                = pow   ( 10.0f, threshold_db / 10 );                   // linear power threshold
-  first_peak_diff_thresh   = pow   ( 10.0f, 20.0f / 10 );                          // 20 dB difference allowed between first peak and later peak in scan time
+  first_peak_diff_thresh   = pow   ( 10.0f, pad_settings.first_peak_diff_thresh_db / 10 ); // difference allowed between first peak and later peak in scan time
   scan_time                = round ( pad_settings.scan_time_ms     * 1e-3f * Fs ); // scan time from first detected peak
   pre_scan_time            = round ( pad_settings.pre_scan_time_ms * 1e-3f * Fs );
   total_scan_time          = scan_time + pre_scan_time;                         // includes pre-scan time
@@ -527,7 +527,6 @@ void Edrumulus::Pad::initialize()
 
   // allocate and initialize memory for vectors
   allocate_initialize ( &x_sq_hist,         x_sq_hist_len );       // memory for sqr(x) history
-  allocate_initialize ( &x_rim_sq_hist,     x_sq_hist_len );       // memory for sqr(x_rim) history
   allocate_initialize ( &bp_filt_hist_x,    bp_filt_len );         // band-pass filter x-signal history
   allocate_initialize ( &bp_filt_hist_y,    bp_filt_len - 1 );     // band-pass filter y-signal history
   allocate_initialize ( &decay,             decay_len );           // memory for decay function
@@ -623,7 +622,6 @@ void Edrumulus::Pad::process_sample ( const float* input,
   const float x_sq     = input[0] * input[0];
   const float x_rim_sq = input[1] * input[1];
   update_fifo ( x_sq,                            x_sq_hist_len,     x_sq_hist );
-  update_fifo ( x_rim_sq,                        x_sq_hist_len,     x_rim_sq_hist );
   update_fifo ( overload_detected ? 1.0f : 0.0f, overload_hist_len, overload_hist );
 
 
