@@ -1,5 +1,10 @@
 # Edrumulus Project Log
 
+## 2021-12-16 Rim shot detection again
+
+  After fixing a bug with the detection of the first peak and introducing a band-pass filter
+  for the rim piezo signal of the PD-80R, the rim shot detection is now acceptable (but still
+  far from perfect).
 
 ## 2021-12-05 New algorithms ready
 
