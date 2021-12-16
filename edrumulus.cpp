@@ -1063,7 +1063,7 @@ if ( stored_is_rimshot )
 
 float peak_val_debug = peak_val;
 if ( !peak_found ) peak_val_debug = 0;
-return first_peak_val;//pos_sense_metric;//peak_val_debug;//rim_metric_db;//midi_velocity;//threshold;//input[0];//input[1];//x_filt;//
+return rim_metric_db;//input[1];//pos_sense_metric;//first_peak_val;//peak_val_debug;//midi_velocity;//threshold;//input[0];//x_filt;//
 
 // TEST ##################################################################################
 // TEST ##################################################################################
