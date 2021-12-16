@@ -232,7 +232,6 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       float* bp_filt_hist_x    = nullptr;
       float* bp_filt_hist_y    = nullptr;
       float* x_sq_hist         = nullptr;
-      float* x_rim_sq_hist     = nullptr;
       float* decay             = nullptr;
       float* lp_filt_b         = nullptr;
       float* x_low_hist        = nullptr;
