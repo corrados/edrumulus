@@ -36,7 +36,7 @@ tools/mapex_mars/
 *.lai
 *.la
 *.a
-*.lib
+#*.lib
 
 # Executables
 *.exe
