@@ -9,6 +9,10 @@ tools/mod-ttymidi/
 tools/SendMIDI/
 tools/mapex_mars/
 
+hardware/prototype2/edrumulus-cache.lib
+hardware/prototype2/edrumulus.sch-bak
+hardware/prototype2/fp-info-cache
+
 
 # Prerequisites
 *.d
