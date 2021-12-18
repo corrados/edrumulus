@@ -130,25 +130,25 @@ $EndComp
 $Comp
 L doit-esp32-devkit-v1:DOIT-ESP32-DEVKIT-V1 U1
 U 1 1 61B5316D
-P 7900 3150
-F 0 "U1" H 7875 3715 50  0000 C CNN
-F 1 "DOIT-ESP32-DEVKIT-V1" H 7875 3624 50  0000 C CNN
-F 2 "" H 7850 3600 50  0001 C CNN
-F 3 "" H 7850 3600 50  0001 C CNN
-	1    7900 3150
+P 7800 4450
+F 0 "U1" H 7775 5015 50  0000 C CNN
+F 1 "DOIT-ESP32-DEVKIT-V1" H 7775 4924 50  0000 C CNN
+F 2 "" H 7750 4900 50  0001 C CNN
+F 3 "" H 7750 4900 50  0001 C CNN
+	1    7800 4450
 	1    0    0    -1  
 $EndComp
-Text GLabel 8800 4550 2    50   Input ~ 0
+Text GLabel 8700 5850 2    50   Input ~ 0
 3V3
 Wire Wire Line
 	3400 1150 3400 1450
-Text GLabel 6950 4450 0    50   Input ~ 0
+Text GLabel 6850 5750 0    50   Input ~ 0
 GND
-Text GLabel 6950 2950 0    50   Input ~ 0
+Text GLabel 6850 4250 0    50   Input ~ 0
 GPIO36
-Text GLabel 6950 3050 0    50   Input ~ 0
+Text GLabel 6850 4350 0    50   Input ~ 0
 GPIO39
-Text GLabel 6950 3250 0    50   Input ~ 0
+Text GLabel 6850 4550 0    50   Input ~ 0
 GPIO35
 $Comp
 L Diode:BAT85 D1
@@ -874,23 +874,23 @@ Text GLabel 3450 6100 2    50   Input ~ 0
 3V3
 Text Notes 1150 5900 0    50   ~ 0
 Ride Trigger Input
-Text GLabel 6950 3150 0    50   Input ~ 0
+Text GLabel 6850 4450 0    50   Input ~ 0
 GPIO34
-Text GLabel 6950 3350 0    50   Input ~ 0
+Text GLabel 6850 4650 0    50   Input ~ 0
 GPIO32
-Text GLabel 6950 3450 0    50   Input ~ 0
+Text GLabel 6850 4750 0    50   Input ~ 0
 GPIO33
-Text GLabel 6950 3550 0    50   Input ~ 0
+Text GLabel 6850 4850 0    50   Input ~ 0
 GPIO25
-Text GLabel 6950 3650 0    50   Input ~ 0
+Text GLabel 6850 4950 0    50   Input ~ 0
 GPIO26
-Text GLabel 6950 3750 0    50   Input ~ 0
+Text GLabel 6850 5050 0    50   Input ~ 0
 GPIO27
-Text GLabel 6950 3850 0    50   Input ~ 0
+Text GLabel 6850 5150 0    50   Input ~ 0
 GPIO14
-Text GLabel 6950 3950 0    50   Input ~ 0
+Text GLabel 6850 5250 0    50   Input ~ 0
 GPIO12
-Text GLabel 6950 4050 0    50   Input ~ 0
+Text GLabel 6850 5350 0    50   Input ~ 0
 GPIO13
 $Comp
 L pspice:R R33
@@ -1416,14 +1416,8 @@ F 3 "~" H 7000 1600 50  0001 C CNN
 	1    7000 1600
 	1    0    0    -1  
 $EndComp
-Wire Notes Line
-	9000 850  6400 850 
 Text Notes 6450 950  0    50   ~ 0
 Hi-Hat Control Input
-Wire Notes Line
-	9000 850  9000 2450
-Wire Notes Line
-	6400 2450 9000 2450
 Wire Notes Line
 	6400 850  6400 2450
 Wire Wire Line
@@ -1480,6 +1474,176 @@ Wire Wire Line
 	7750 1700 7200 1700
 Wire Wire Line
 	7200 1150 8700 1150
-Text GLabel 8800 4050 2    50   Input ~ 0
+Text GLabel 8700 5350 2    50   Input ~ 0
 GPIO15
+$Comp
+L Isolator:6N138 U2
+U 1 1 61C14EE1
+P 7950 3100
+F 0 "U2" H 7750 3600 50  0000 C CNN
+F 1 "6N138" H 7750 3500 50  0000 C CNN
+F 2 "" H 8240 2800 50  0001 C CNN
+F 3 "http://www.onsemi.com/pub/Collateral/HCPL2731-D.pdf" H 8240 2800 50  0001 C CNN
+	1    7950 3100
+	1    0    0    -1  
+$EndComp
+$Comp
+L pspice:R R39
+U 1 1 61C18FC5
+P 6500 2800
+F 0 "R39" V 6300 2700 50  0000 L CNN
+F 1 "220 Ohm" V 6400 2600 50  0000 L CNN
+F 2 "" H 6500 2800 50  0001 C CNN
+F 3 "~" H 6500 2800 50  0001 C CNN
+	1    6500 2800
+	-1   0    0    1   
+$EndComp
+$Comp
+L pspice:R R42
+U 1 1 61C225F8
+P 8500 2700
+F 0 "R42" V 8700 2650 50  0000 L CNN
+F 1 "220 Ohm" V 8600 2550 50  0000 L CNN
+F 2 "" H 8500 2700 50  0001 C CNN
+F 3 "~" H 8500 2700 50  0001 C CNN
+	1    8500 2700
+	0    1    1    0   
+$EndComp
+$Comp
+L pspice:R R43
+U 1 1 61C2BBEE
+P 8500 3000
+F 0 "R43" V 8600 2750 50  0000 L CNN
+F 1 "4.7 kOhm" V 8600 2900 50  0000 L CNN
+F 2 "" H 8500 3000 50  0001 C CNN
+F 3 "~" H 8500 3000 50  0001 C CNN
+	1    8500 3000
+	0    1    1    0   
+$EndComp
+$Comp
+L Diode:1N914 D27
+U 1 1 61C357CF
+P 7450 3100
+F 0 "D27" V 7800 3100 50  0000 L CNN
+F 1 "1N914" V 7700 3050 50  0000 L CNN
+F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 7450 2925 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/85622/1n914.pdf" H 7450 3100 50  0001 C CNN
+	1    7450 3100
+	0    1    1    0   
+$EndComp
+$Comp
+L Connector:DIN-5_180degree J10
+U 1 1 61C36D48
+P 6800 3150
+F 0 "J10" H 7050 3000 50  0000 C CNN
+F 1 "DIN-5" H 7050 2900 50  0000 C CNN
+F 2 "" H 6800 3150 50  0001 C CNN
+F 3 "http://www.mouser.com/ds/2/18/40_c091_abd_e-75918.pdf" H 6800 3150 50  0001 C CNN
+	1    6800 3150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7650 3200 7550 3200
+Wire Wire Line
+	7550 3200 7550 3250
+Wire Wire Line
+	7550 3250 7450 3250
+Wire Wire Line
+	7650 3000 7550 3000
+Wire Wire Line
+	7550 3000 7550 2950
+Wire Wire Line
+	7550 2950 7450 2950
+Wire Wire Line
+	7450 3250 7350 3250
+Wire Wire Line
+	7350 3250 7350 3050
+Connection ~ 7450 3250
+Connection ~ 7450 2950
+Text GLabel 8750 3000 2    50   Input ~ 0
+GND
+Text GLabel 8900 3300 0    50   Input ~ 0
+UART_RX
+Text GLabel 8250 3300 2    50   Input ~ 0
+GND
+Text GLabel 8150 2700 0    50   Input ~ 0
+3V3
+Wire Wire Line
+	8250 2700 8250 2900
+Wire Wire Line
+	8750 2700 9000 2700
+Wire Wire Line
+	9000 2700 9000 3200
+Wire Wire Line
+	9000 3200 8250 3200
+Wire Wire Line
+	8150 2700 8250 2700
+Connection ~ 8250 2700
+$Comp
+L pspice:R R41
+U 1 1 61D7604A
+P 7050 2800
+F 0 "R41" V 7150 2650 50  0000 L CNN
+F 1 "220 Ohm" V 7150 2800 50  0000 L CNN
+F 2 "" H 7050 2800 50  0001 C CNN
+F 3 "~" H 7050 2800 50  0001 C CNN
+	1    7050 2800
+	0    1    1    0   
+$EndComp
+$Comp
+L pspice:R R40
+U 1 1 61D80C82
+P 6750 3600
+F 0 "R40" V 6550 3550 50  0000 L CNN
+F 1 "220 Ohm" V 6650 3450 50  0000 L CNN
+F 2 "" H 6750 3600 50  0001 C CNN
+F 3 "~" H 6750 3600 50  0001 C CNN
+	1    6750 3600
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	7450 2550 7450 2950
+Wire Wire Line
+	6500 2550 7450 2550
+Text GLabel 7200 2650 0    50   Input ~ 0
+UART_TX
+Wire Wire Line
+	7200 2650 7300 2650
+Wire Wire Line
+	7300 2650 7300 2800
+Wire Wire Line
+	6800 2800 6800 2850
+Wire Wire Line
+	7100 3050 7350 3050
+Text GLabel 7100 3150 2    50   Input ~ 0
+GND
+Text GLabel 7000 3600 2    50   Input ~ 0
+3V3
+Wire Wire Line
+	9000 3200 9000 3300
+Wire Wire Line
+	9000 3300 8900 3300
+Connection ~ 9000 3200
+Wire Wire Line
+	6500 3150 6500 3600
+Text GLabel 8700 5050 2    50   Input ~ 0
+UART_RX
+Text GLabel 8700 4950 2    50   Input ~ 0
+UART_TX
+Wire Notes Line
+	6400 2500 6400 3700
+Wire Notes Line
+	6400 3700 9100 3700
+Wire Notes Line
+	6400 2500 9100 2500
+Wire Notes Line
+	9100 2500 9100 3700
+Text Notes 8550 3650 0    50   ~ 0
+MIDI IN/OUT
+Wire Notes Line
+	6400 2450 9100 2450
+Wire Notes Line
+	6400 850  9100 850 
+Wire Notes Line
+	9100 850  9100 2450
 $EndSCHEMATC
