@@ -1646,4 +1646,28 @@ Wire Notes Line
 	6400 850  9100 850 
 Wire Notes Line
 	9100 850  9100 2450
+NoConn ~ 4550 1600
+NoConn ~ 4550 3250
+NoConn ~ 4550 4900
+NoConn ~ 4550 6550
+NoConn ~ 7200 1600
+NoConn ~ 6850 5450
+NoConn ~ 6850 5550
+NoConn ~ 6850 5650
+NoConn ~ 6850 5850
+NoConn ~ 8700 5750
+NoConn ~ 8700 5650
+NoConn ~ 8700 5550
+NoConn ~ 8700 5450
+NoConn ~ 8700 5250
+NoConn ~ 8700 5150
+NoConn ~ 8700 4850
+NoConn ~ 8700 4750
+NoConn ~ 8700 4650
+NoConn ~ 8700 4550
+NoConn ~ 8700 4450
+NoConn ~ 8700 4350
+NoConn ~ 8700 4250
+NoConn ~ 8700 4150
+NoConn ~ 6850 4150
 $EndSCHEMATC
