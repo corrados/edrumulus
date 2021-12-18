@@ -130,23 +130,23 @@ $EndComp
 $Comp
 L doit-esp32-devkit-v1:ESP32-DEVKIT-V1 U1
 U 1 1 61B5316D
-P 7800 4450
-F 0 "U1" H 7775 5015 50  0000 C CNN
-F 1 "ESP32-DEVKIT-V1" H 7775 4924 50  0000 C CNN
-F 2 "edrumulus:esp32_devkit_v1" H 7750 4900 50  0001 C CNN
-F 3 "" H 7750 4900 50  0001 C CNN
-	1    7800 4450
+P 7750 4900
+F 0 "U1" H 7725 5465 50  0000 C CNN
+F 1 "ESP32-DEVKIT-V1" H 7725 5374 50  0000 C CNN
+F 2 "edrumulus:esp32_devkit_v1" H 7700 5350 50  0001 C CNN
+F 3 "" H 7700 5350 50  0001 C CNN
+	1    7750 4900
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
 	3400 1150 3400 1450
-Text GLabel 6850 5450 0    50   Input ~ 0
+Text GLabel 6800 5900 0    50   Input ~ 0
 GND
-Text GLabel 6850 4250 0    50   Input ~ 0
+Text GLabel 6800 4700 0    50   Input ~ 0
 GPIO36
-Text GLabel 6850 4350 0    50   Input ~ 0
+Text GLabel 6800 4800 0    50   Input ~ 0
 GPIO39
-Text GLabel 6850 4550 0    50   Input ~ 0
+Text GLabel 6800 5000 0    50   Input ~ 0
 GPIO35
 $Comp
 L Diode:BAT85 D1
@@ -872,23 +872,23 @@ Text GLabel 3450 6100 2    50   Input ~ 0
 3V3
 Text Notes 1150 5900 0    50   ~ 0
 Ride Trigger Input
-Text GLabel 6850 4450 0    50   Input ~ 0
+Text GLabel 6800 4900 0    50   Input ~ 0
 GPIO34
-Text GLabel 6850 4650 0    50   Input ~ 0
+Text GLabel 6800 5100 0    50   Input ~ 0
 GPIO32
-Text GLabel 6850 4750 0    50   Input ~ 0
+Text GLabel 6800 5200 0    50   Input ~ 0
 GPIO33
-Text GLabel 6850 4850 0    50   Input ~ 0
+Text GLabel 6800 5300 0    50   Input ~ 0
 GPIO25
-Text GLabel 6850 4950 0    50   Input ~ 0
+Text GLabel 6800 5400 0    50   Input ~ 0
 GPIO26
-Text GLabel 6850 5050 0    50   Input ~ 0
+Text GLabel 6800 5500 0    50   Input ~ 0
 GPIO27
-Text GLabel 6850 5150 0    50   Input ~ 0
+Text GLabel 6800 5600 0    50   Input ~ 0
 GPIO14
-Text GLabel 6850 5250 0    50   Input ~ 0
+Text GLabel 6800 5700 0    50   Input ~ 0
 GPIO12
-Text GLabel 6850 5350 0    50   Input ~ 0
+Text GLabel 6800 5800 0    50   Input ~ 0
 GPIO13
 $Comp
 L pspice:R R33
@@ -1476,8 +1476,8 @@ $Comp
 L Isolator:6N138 U2
 U 1 1 61C14EE1
 P 7950 3100
-F 0 "U2" H 7750 3600 50  0000 C CNN
-F 1 "6N138" H 7750 3500 50  0000 C CNN
+F 0 "U2" H 7800 3550 50  0000 C CNN
+F 1 "6N138" H 7800 3450 50  0000 C CNN
 F 2 "Package_DIP:DIP-8_W7.62mm_Socket" H 8240 2800 50  0001 C CNN
 F 3 "http://www.onsemi.com/pub/Collateral/HCPL2731-D.pdf" H 8240 2800 50  0001 C CNN
 	1    7950 3100
@@ -1486,19 +1486,19 @@ $EndComp
 $Comp
 L pspice:R R39
 U 1 1 61C18FC5
-P 6500 2800
-F 0 "R39" V 6300 2700 50  0000 L CNN
-F 1 "220 Ohm" V 6400 2600 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 6500 2800 50  0001 C CNN
-F 3 "~" H 6500 2800 50  0001 C CNN
-	1    6500 2800
-	-1   0    0    1   
+P 7400 2850
+F 0 "R39" V 7200 2750 50  0000 L CNN
+F 1 "220 Ohm" V 7300 2650 50  0000 L CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 7400 2850 50  0001 C CNN
+F 3 "~" H 7400 2850 50  0001 C CNN
+	1    7400 2850
+	0    1    1    0   
 $EndComp
 $Comp
 L pspice:R R42
 U 1 1 61C225F8
 P 8500 2700
-F 0 "R42" V 8700 2650 50  0000 L CNN
+F 0 "R42" V 8400 2600 50  0000 L CNN
 F 1 "220 Ohm" V 8600 2550 50  0000 L CNN
 F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 8500 2700 50  0001 C CNN
 F 3 "~" H 8500 2700 50  0001 C CNN
@@ -1509,53 +1509,24 @@ $Comp
 L pspice:R R43
 U 1 1 61C2BBEE
 P 8500 3000
-F 0 "R43" V 8600 2750 50  0000 L CNN
-F 1 "4.7 kOhm" V 8600 2900 50  0000 L CNN
+F 0 "R43" V 8400 2900 50  0000 L CNN
+F 1 "4.7 kOhm" V 8600 2850 50  0000 L CNN
 F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 8500 3000 50  0001 C CNN
 F 3 "~" H 8500 3000 50  0001 C CNN
 	1    8500 3000
 	0    1    1    0   
 $EndComp
 $Comp
-L Diode:1N914 D27
-U 1 1 61C357CF
-P 7450 3100
-F 0 "D27" V 7800 3100 50  0000 L CNN
-F 1 "1N914" V 7700 3050 50  0000 L CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 7450 2925 50  0001 C CNN
-F 3 "http://www.vishay.com/docs/85622/1n914.pdf" H 7450 3100 50  0001 C CNN
-	1    7450 3100
-	0    1    1    0   
-$EndComp
-$Comp
 L Connector:DIN-5_180degree J10
 U 1 1 61C36D48
-P 6800 3150
-F 0 "J10" H 7050 3000 50  0000 C CNN
-F 1 "DIN-5" H 7050 2900 50  0000 C CNN
-F 2 "Connector_DIN:DIN41612_B3_2x5_Horizontal" H 6800 3150 50  0001 C CNN
-F 3 "http://www.mouser.com/ds/2/18/40_c091_abd_e-75918.pdf" H 6800 3150 50  0001 C CNN
-	1    6800 3150
-	1    0    0    -1  
+P 6850 2750
+F 0 "J10" H 7200 2700 50  0000 C CNN
+F 1 "DIN-5" H 7150 2600 50  0000 C CNN
+F 2 "Connector_DIN:DIN41612_B3_2x5_Horizontal" H 6850 2750 50  0001 C CNN
+F 3 "http://www.mouser.com/ds/2/18/40_c091_abd_e-75918.pdf" H 6850 2750 50  0001 C CNN
+	1    6850 2750
+	-1   0    0    1   
 $EndComp
-Wire Wire Line
-	7650 3200 7550 3200
-Wire Wire Line
-	7550 3200 7550 3250
-Wire Wire Line
-	7550 3250 7450 3250
-Wire Wire Line
-	7650 3000 7550 3000
-Wire Wire Line
-	7550 3000 7550 2950
-Wire Wire Line
-	7550 2950 7450 2950
-Wire Wire Line
-	7450 3250 7350 3250
-Wire Wire Line
-	7350 3250 7350 3050
-Connection ~ 7450 3250
-Connection ~ 7450 2950
 Text GLabel 8750 3000 2    50   Input ~ 0
 GND
 Text GLabel 8900 3300 0    50   Input ~ 0
@@ -1578,60 +1549,42 @@ Connection ~ 8250 2700
 $Comp
 L pspice:R R41
 U 1 1 61D7604A
-P 7050 2800
-F 0 "R41" V 7150 2650 50  0000 L CNN
-F 1 "220 Ohm" V 7150 2800 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 7050 2800 50  0001 C CNN
-F 3 "~" H 7050 2800 50  0001 C CNN
-	1    7050 2800
+P 7200 3900
+F 0 "R41" V 7300 3800 50  0000 L CNN
+F 1 "220 Ohm" V 7400 3750 50  0000 L CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 7200 3900 50  0001 C CNN
+F 3 "~" H 7200 3900 50  0001 C CNN
+	1    7200 3900
 	0    1    1    0   
 $EndComp
 $Comp
 L pspice:R R40
 U 1 1 61D80C82
-P 6750 3600
-F 0 "R40" V 6550 3550 50  0000 L CNN
-F 1 "220 Ohm" V 6650 3450 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 6750 3600 50  0001 C CNN
-F 3 "~" H 6750 3600 50  0001 C CNN
-	1    6750 3600
+P 8300 3900
+F 0 "R40" V 8100 3850 50  0000 L CNN
+F 1 "220 Ohm" V 8200 3750 50  0000 L CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 8300 3900 50  0001 C CNN
+F 3 "~" H 8300 3900 50  0001 C CNN
+	1    8300 3900
 	0    1    1    0   
 $EndComp
-Wire Wire Line
-	7450 2550 7450 2950
-Wire Wire Line
-	6500 2550 7450 2550
-Text GLabel 7200 2650 0    50   Input ~ 0
+Text GLabel 6950 3900 0    50   Input ~ 0
 UART_TX
-Wire Wire Line
-	7200 2650 7300 2650
-Wire Wire Line
-	7300 2650 7300 2800
-Wire Wire Line
-	6800 2800 6800 2850
-Wire Wire Line
-	7100 3050 7350 3050
-Text GLabel 7100 3150 2    50   Input ~ 0
+Text GLabel 6850 3050 3    50   Input ~ 0
 GND
-Text GLabel 7000 3600 2    50   Input ~ 0
+Text GLabel 8550 3900 2    50   Input ~ 0
 3V3
 Wire Wire Line
 	9000 3200 9000 3300
 Wire Wire Line
 	9000 3300 8900 3300
 Connection ~ 9000 3200
-Wire Wire Line
-	6500 3150 6500 3600
 Wire Notes Line
-	6400 2500 6400 3700
-Wire Notes Line
-	6400 3700 9100 3700
+	6400 3500 9100 3500
 Wire Notes Line
 	6400 2500 9100 2500
-Wire Notes Line
-	9100 2500 9100 3700
-Text Notes 8550 3650 0    50   ~ 0
-MIDI IN/OUT
+Text Notes 8750 3450 0    50   ~ 0
+MIDI IN
 Wire Notes Line
 	6400 2450 9100 2450
 Wire Notes Line
@@ -1643,25 +1596,79 @@ NoConn ~ 4550 3250
 NoConn ~ 4550 4900
 NoConn ~ 4550 6550
 NoConn ~ 7200 1600
-NoConn ~ 8700 5450
-NoConn ~ 8700 5250
-NoConn ~ 8700 4850
-NoConn ~ 8700 4750
-NoConn ~ 8700 4650
-NoConn ~ 8700 4550
-NoConn ~ 8700 4450
-NoConn ~ 8700 4350
-NoConn ~ 8700 4250
-NoConn ~ 8700 4150
-Text GLabel 8700 5550 2    50   Input ~ 0
+NoConn ~ 8650 5900
+NoConn ~ 8650 5700
+NoConn ~ 8650 5300
+NoConn ~ 8650 5200
+NoConn ~ 8650 5100
+NoConn ~ 8650 5000
+NoConn ~ 8650 4900
+NoConn ~ 8650 4800
+NoConn ~ 8650 4700
+NoConn ~ 8650 4600
+Text GLabel 8650 6000 2    50   Input ~ 0
 3V3
-Text GLabel 8700 5350 2    50   Input ~ 0
+Text GLabel 8650 5800 2    50   Input ~ 0
 GPIO15
-Text GLabel 8700 5050 2    50   Input ~ 0
+Text GLabel 8650 5500 2    50   Input ~ 0
 UART_RX
-Text GLabel 8700 4950 2    50   Input ~ 0
+Text GLabel 8650 5400 2    50   Input ~ 0
 UART_TX
-NoConn ~ 8700 5150
-NoConn ~ 6850 4150
-NoConn ~ 6850 5550
+NoConn ~ 8650 5600
+NoConn ~ 6800 4600
+NoConn ~ 6800 6000
+$Comp
+L Connector:DIN-5_180degree J11
+U 1 1 61C161B7
+P 7750 3800
+F 0 "J11" H 8150 3750 50  0000 C CNN
+F 1 "DIN-5" H 8050 3650 50  0000 C CNN
+F 2 "Connector_DIN:DIN41612_B3_2x5_Horizontal" H 7750 3800 50  0001 C CNN
+F 3 "http://www.mouser.com/ds/2/18/40_c091_abd_e-75918.pdf" H 7750 3800 50  0001 C CNN
+	1    7750 3800
+	-1   0    0    1   
+$EndComp
+Text GLabel 7850 4100 2    50   Input ~ 0
+GND
+Wire Wire Line
+	7650 2850 7650 3000
+Wire Wire Line
+	6550 2850 6550 3300
+Wire Wire Line
+	7650 3300 7650 3200
+Wire Wire Line
+	7450 3300 7650 3300
+Wire Wire Line
+	6550 3300 7450 3300
+Connection ~ 7450 3300
+$Comp
+L Diode:1N914 D27
+U 1 1 61C357CF
+P 7450 3150
+F 0 "D27" V 7450 2950 50  0000 L CNN
+F 1 "1N914" V 7350 2900 50  0000 L CNN
+F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 7450 2975 50  0001 C CNN
+F 3 "http://www.vishay.com/docs/85622/1n914.pdf" H 7450 3150 50  0001 C CNN
+	1    7450 3150
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	7450 3000 7650 3000
+Connection ~ 7650 3000
+Wire Notes Line
+	9100 2500 9100 3500
+Wire Notes Line
+	6400 2500 6400 3500
+Wire Notes Line
+	9100 3550 6400 3550
+Text Notes 8700 4150 0    50   ~ 0
+MIDI OUT
+Wire Notes Line
+	9100 3550 9100 4200
+Wire Notes Line
+	9100 4200 6400 4200
+Wire Notes Line
+	6400 4200 6400 3550
+Wire Wire Line
+	7850 4100 7750 4100
 $EndSCHEMATC
