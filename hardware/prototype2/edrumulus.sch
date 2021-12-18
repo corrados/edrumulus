@@ -25,10 +25,10 @@ F 3 "~" H 2150 1600 50  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 $Comp
-L pspice:R R?
+L pspice:R R17
 U 1 1 61BFFA7F
 P 3150 1450
-F 0 "R?" V 2950 1400 50  0000 L CNN
+F 0 "R17" V 2950 1400 50  0000 L CNN
 F 1 "22 kOhm" V 3050 1300 50  0000 L CNN
 F 2 "" H 3150 1450 50  0001 C CNN
 F 3 "~" H 3150 1450 50  0001 C CNN
@@ -50,10 +50,10 @@ Connection ~ 2900 1450
 Wire Wire Line
 	2400 1150 2400 1450
 $Comp
-L pspice:R R?
+L pspice:R R9
 U 1 1 61BFFA9A
 P 2650 1450
-F 0 "R?" V 2450 1400 50  0000 L CNN
+F 0 "R9" V 2450 1400 50  0000 L CNN
 F 1 "22 kOhm" V 2550 1300 50  0000 L CNN
 F 2 "" H 2650 1450 50  0001 C CNN
 F 3 "~" H 2650 1450 50  0001 C CNN
@@ -61,10 +61,10 @@ F 3 "~" H 2650 1450 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L pspice:R R?
+L pspice:R R18
 U 1 1 61C0679C
 P 3150 2150
-F 0 "R?" V 3350 2100 50  0000 L CNN
+F 0 "R18" V 3350 2100 50  0000 L CNN
 F 1 "22 kOhm" V 3250 2000 50  0000 L CNN
 F 2 "" H 3150 2150 50  0001 C CNN
 F 3 "~" H 3150 2150 50  0001 C CNN
@@ -72,10 +72,10 @@ F 3 "~" H 3150 2150 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D2
 U 1 1 61C067A2
 P 2650 1850
-F 0 "D?" H 2700 2050 50  0000 R CNN
+F 0 "D2" H 2700 2050 50  0000 R CNN
 F 1 "BAT85" H 2750 1950 50  0000 R CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 2650 1675 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 2650 1850 50  0001 C CNN
@@ -94,10 +94,10 @@ Wire Wire Line
 Wire Wire Line
 	3400 1850 3400 2150
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D10
 U 1 1 61C067AF
 P 3150 1850
-F 0 "D?" H 3150 2066 50  0000 C CNN
+F 0 "D10" H 3150 2066 50  0000 C CNN
 F 1 "BAT85" H 3150 1975 50  0000 C CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 3150 1675 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 3150 1850 50  0001 C CNN
@@ -106,10 +106,10 @@ F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 3150 1850 50 
 $EndComp
 Connection ~ 2900 2150
 $Comp
-L pspice:R R?
+L pspice:R R10
 U 1 1 61C067B7
 P 2650 2150
-F 0 "R?" V 2850 2100 50  0000 L CNN
+F 0 "R10" V 2850 2100 50  0000 L CNN
 F 1 "22 kOhm" V 2750 2000 50  0000 L CNN
 F 2 "" H 2650 2150 50  0001 C CNN
 F 3 "~" H 2650 2150 50  0001 C CNN
@@ -117,10 +117,10 @@ F 3 "~" H 2650 2150 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L pspice:R R?
+L pspice:R R1
 U 1 1 61C30414
 P 2150 1700
-F 0 "R?" V 2050 1650 50  0000 L CNN
+F 0 "R1" V 2050 1650 50  0000 L CNN
 F 1 "100 kOhm" V 1950 1500 50  0000 L CNN
 F 2 "" H 2150 1700 50  0001 C CNN
 F 3 "~" H 2150 1700 50  0001 C CNN
@@ -151,10 +151,10 @@ GPIO39
 Text GLabel 6950 3250 0    50   Input ~ 0
 GPIO35
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D1
 U 1 1 61BFFA85
 P 2650 1150
-F 0 "D?" H 2700 950 50  0000 R CNN
+F 0 "D1" H 2700 950 50  0000 R CNN
 F 1 "BAT85" H 2750 1050 50  0000 R CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 2650 975 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 2650 1150 50  0001 C CNN
@@ -193,10 +193,10 @@ Connection ~ 3400 1850
 Text GLabel 3450 1150 2    50   Input ~ 0
 3V3
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D9
 U 1 1 61BFFA92
 P 3150 1150
-F 0 "D?" H 3150 950 50  0000 C CNN
+F 0 "D9" H 3150 950 50  0000 C CNN
 F 1 "BAT85" H 3150 1050 50  0000 C CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 3150 975 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 3150 1150 50  0001 C CNN
@@ -215,10 +215,10 @@ Wire Wire Line
 Connection ~ 1900 1150
 Connection ~ 2400 2150
 $Comp
-L Connector:AudioJack3 J?
+L Connector:AudioJack3 J1
 U 1 1 61BCFE99
 P 1700 1600
-F 0 "J?" H 1650 1250 50  0000 C CNN
+F 0 "J1" H 1650 1250 50  0000 C CNN
 F 1 "NMJ6HCD2" H 1650 1350 50  0000 C CNN
 F 2 "edrumulus:Jack_6.35mm_Neutrik_NMJ6HCD2_Horizontal" H 1700 1600 50  0001 C CNN
 F 3 "~" H 1700 1600 50  0001 C CNN
@@ -243,10 +243,10 @@ Wire Notes Line
 Wire Notes Line
 	1100 850  1100 2450
 $Comp
-L pspice:R R?
+L pspice:R R2
 U 1 1 61C8D4A7
 P 2150 3250
-F 0 "R?" V 2250 3200 50  0000 L CNN
+F 0 "R2" V 2250 3200 50  0000 L CNN
 F 1 "100 kOhm" V 2350 3050 50  0000 L CNN
 F 2 "" H 2150 3250 50  0001 C CNN
 F 3 "~" H 2150 3250 50  0001 C CNN
@@ -254,10 +254,10 @@ F 3 "~" H 2150 3250 50  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 $Comp
-L pspice:R R?
+L pspice:R R19
 U 1 1 61C8D4AD
 P 3150 3100
-F 0 "R?" V 2950 3050 50  0000 L CNN
+F 0 "R19" V 2950 3050 50  0000 L CNN
 F 1 "22 kOhm" V 3050 2950 50  0000 L CNN
 F 2 "" H 3150 3100 50  0001 C CNN
 F 3 "~" H 3150 3100 50  0001 C CNN
@@ -279,10 +279,10 @@ Connection ~ 2900 3100
 Wire Wire Line
 	2400 2800 2400 3100
 $Comp
-L pspice:R R?
+L pspice:R R11
 U 1 1 61C8D4BB
 P 2650 3100
-F 0 "R?" V 2450 3050 50  0000 L CNN
+F 0 "R11" V 2450 3050 50  0000 L CNN
 F 1 "22 kOhm" V 2550 2950 50  0000 L CNN
 F 2 "" H 2650 3100 50  0001 C CNN
 F 3 "~" H 2650 3100 50  0001 C CNN
@@ -290,10 +290,10 @@ F 3 "~" H 2650 3100 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L pspice:R R?
+L pspice:R R20
 U 1 1 61C8D4C1
 P 3150 3800
-F 0 "R?" V 3350 3750 50  0000 L CNN
+F 0 "R20" V 3350 3750 50  0000 L CNN
 F 1 "22 kOhm" V 3250 3650 50  0000 L CNN
 F 2 "" H 3150 3800 50  0001 C CNN
 F 3 "~" H 3150 3800 50  0001 C CNN
@@ -301,10 +301,10 @@ F 3 "~" H 3150 3800 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D4
 U 1 1 61C8D4C7
 P 2650 3500
-F 0 "D?" H 2700 3700 50  0000 R CNN
+F 0 "D4" H 2700 3700 50  0000 R CNN
 F 1 "BAT85" H 2750 3600 50  0000 R CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 2650 3325 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 2650 3500 50  0001 C CNN
@@ -323,10 +323,10 @@ Wire Wire Line
 Wire Wire Line
 	3400 3500 3400 3800
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D12
 U 1 1 61C8D4D3
 P 3150 3500
-F 0 "D?" H 3150 3716 50  0000 C CNN
+F 0 "D12" H 3150 3716 50  0000 C CNN
 F 1 "BAT85" H 3150 3625 50  0000 C CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 3150 3325 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 3150 3500 50  0001 C CNN
@@ -335,10 +335,10 @@ F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 3150 3500 50 
 $EndComp
 Connection ~ 2900 3800
 $Comp
-L pspice:R R?
+L pspice:R R12
 U 1 1 61C8D4DA
 P 2650 3800
-F 0 "R?" V 2850 3750 50  0000 L CNN
+F 0 "R12" V 2850 3750 50  0000 L CNN
 F 1 "22 kOhm" V 2750 3650 50  0000 L CNN
 F 2 "" H 2650 3800 50  0001 C CNN
 F 3 "~" H 2650 3800 50  0001 C CNN
@@ -346,10 +346,10 @@ F 3 "~" H 2650 3800 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L pspice:R R?
+L pspice:R R4
 U 1 1 61C8D4E0
 P 2150 3350
-F 0 "R?" V 2050 3300 50  0000 L CNN
+F 0 "R4" V 2050 3300 50  0000 L CNN
 F 1 "100 kOhm" V 1950 3150 50  0000 L CNN
 F 2 "" H 2150 3350 50  0001 C CNN
 F 3 "~" H 2150 3350 50  0001 C CNN
@@ -359,10 +359,10 @@ $EndComp
 Wire Wire Line
 	3400 2800 3400 3100
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D3
 U 1 1 61C8D4E8
 P 2650 2800
-F 0 "D?" H 2700 2600 50  0000 R CNN
+F 0 "D3" H 2700 2600 50  0000 R CNN
 F 1 "BAT85" H 2750 2700 50  0000 R CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 2650 2625 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 2650 2800 50  0001 C CNN
@@ -401,10 +401,10 @@ Wire Wire Line
 Connection ~ 3400 3100
 Connection ~ 3400 3500
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D11
 U 1 1 61C8D501
 P 3150 2800
-F 0 "D?" H 3150 2600 50  0000 C CNN
+F 0 "D11" H 3150 2600 50  0000 C CNN
 F 1 "BAT85" H 3150 2700 50  0000 C CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 3150 2625 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 3150 2800 50  0001 C CNN
@@ -423,10 +423,10 @@ Wire Wire Line
 Connection ~ 1900 2800
 Connection ~ 2400 3800
 $Comp
-L Connector:AudioJack3 J?
+L Connector:AudioJack3 J2
 U 1 1 61C8D50E
 P 1700 3250
-F 0 "J?" H 1650 2900 50  0000 C CNN
+F 0 "J2" H 1650 2900 50  0000 C CNN
 F 1 "NMJ6HCD2" H 1650 3000 50  0000 C CNN
 F 2 "edrumulus:Jack_6.35mm_Neutrik_NMJ6HCD2_Horizontal" H 1700 3250 50  0001 C CNN
 F 3 "~" H 1700 3250 50  0001 C CNN
@@ -455,10 +455,10 @@ GPIO36
 Text GLabel 3450 2800 2    50   Input ~ 0
 3V3
 $Comp
-L pspice:R R?
+L pspice:R R5
 U 1 1 61CA03AF
 P 2150 4900
-F 0 "R?" V 2250 4850 50  0000 L CNN
+F 0 "R5" V 2250 4850 50  0000 L CNN
 F 1 "100 kOhm" V 2350 4700 50  0000 L CNN
 F 2 "" H 2150 4900 50  0001 C CNN
 F 3 "~" H 2150 4900 50  0001 C CNN
@@ -466,10 +466,10 @@ F 3 "~" H 2150 4900 50  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 $Comp
-L pspice:R R?
+L pspice:R R21
 U 1 1 61CA03B5
 P 3150 4750
-F 0 "R?" V 2950 4700 50  0000 L CNN
+F 0 "R21" V 2950 4700 50  0000 L CNN
 F 1 "22 kOhm" V 3050 4600 50  0000 L CNN
 F 2 "" H 3150 4750 50  0001 C CNN
 F 3 "~" H 3150 4750 50  0001 C CNN
@@ -491,10 +491,10 @@ Connection ~ 2900 4750
 Wire Wire Line
 	2400 4450 2400 4750
 $Comp
-L pspice:R R?
+L pspice:R R13
 U 1 1 61CA03C3
 P 2650 4750
-F 0 "R?" V 2450 4700 50  0000 L CNN
+F 0 "R13" V 2450 4700 50  0000 L CNN
 F 1 "22 kOhm" V 2550 4600 50  0000 L CNN
 F 2 "" H 2650 4750 50  0001 C CNN
 F 3 "~" H 2650 4750 50  0001 C CNN
@@ -502,10 +502,10 @@ F 3 "~" H 2650 4750 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L pspice:R R?
+L pspice:R R22
 U 1 1 61CA03C9
 P 3150 5450
-F 0 "R?" V 3350 5400 50  0000 L CNN
+F 0 "R22" V 3350 5400 50  0000 L CNN
 F 1 "22 kOhm" V 3250 5300 50  0000 L CNN
 F 2 "" H 3150 5450 50  0001 C CNN
 F 3 "~" H 3150 5450 50  0001 C CNN
@@ -513,10 +513,10 @@ F 3 "~" H 3150 5450 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D6
 U 1 1 61CA03CF
 P 2650 5150
-F 0 "D?" H 2700 5350 50  0000 R CNN
+F 0 "D6" H 2700 5350 50  0000 R CNN
 F 1 "BAT85" H 2750 5250 50  0000 R CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 2650 4975 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 2650 5150 50  0001 C CNN
@@ -535,10 +535,10 @@ Wire Wire Line
 Wire Wire Line
 	3400 5150 3400 5450
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D14
 U 1 1 61CA03DB
 P 3150 5150
-F 0 "D?" H 3150 5366 50  0000 C CNN
+F 0 "D14" H 3150 5366 50  0000 C CNN
 F 1 "BAT85" H 3150 5275 50  0000 C CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 3150 4975 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 3150 5150 50  0001 C CNN
@@ -547,10 +547,10 @@ F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 3150 5150 50 
 $EndComp
 Connection ~ 2900 5450
 $Comp
-L pspice:R R?
+L pspice:R R14
 U 1 1 61CA03E2
 P 2650 5450
-F 0 "R?" V 2850 5400 50  0000 L CNN
+F 0 "R14" V 2850 5400 50  0000 L CNN
 F 1 "22 kOhm" V 2750 5300 50  0000 L CNN
 F 2 "" H 2650 5450 50  0001 C CNN
 F 3 "~" H 2650 5450 50  0001 C CNN
@@ -558,10 +558,10 @@ F 3 "~" H 2650 5450 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L pspice:R R?
+L pspice:R R6
 U 1 1 61CA03E8
 P 2150 5000
-F 0 "R?" V 2050 4950 50  0000 L CNN
+F 0 "R6" V 2050 4950 50  0000 L CNN
 F 1 "100 kOhm" V 1950 4800 50  0000 L CNN
 F 2 "" H 2150 5000 50  0001 C CNN
 F 3 "~" H 2150 5000 50  0001 C CNN
@@ -571,10 +571,10 @@ $EndComp
 Wire Wire Line
 	3400 4450 3400 4750
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D5
 U 1 1 61CA03EF
 P 2650 4450
-F 0 "D?" H 2700 4250 50  0000 R CNN
+F 0 "D5" H 2700 4250 50  0000 R CNN
 F 1 "BAT85" H 2750 4350 50  0000 R CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 2650 4275 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 2650 4450 50  0001 C CNN
@@ -613,10 +613,10 @@ Wire Wire Line
 Connection ~ 3400 4750
 Connection ~ 3400 5150
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D13
 U 1 1 61CA0407
 P 3150 4450
-F 0 "D?" H 3150 4250 50  0000 C CNN
+F 0 "D13" H 3150 4250 50  0000 C CNN
 F 1 "BAT85" H 3150 4350 50  0000 C CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 3150 4275 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 3150 4450 50  0001 C CNN
@@ -635,10 +635,10 @@ Wire Wire Line
 Connection ~ 1900 4450
 Connection ~ 2400 5450
 $Comp
-L Connector:AudioJack3 J?
+L Connector:AudioJack3 J3
 U 1 1 61CA0414
 P 1700 4900
-F 0 "J?" H 1650 4550 50  0000 C CNN
+F 0 "J3" H 1650 4550 50  0000 C CNN
 F 1 "NMJ6HCD2" H 1650 4650 50  0000 C CNN
 F 2 "edrumulus:Jack_6.35mm_Neutrik_NMJ6HCD2_Horizontal" H 1700 4900 50  0001 C CNN
 F 3 "~" H 1700 4900 50  0001 C CNN
@@ -665,10 +665,10 @@ Wire Notes Line
 Text GLabel 3450 4450 2    50   Input ~ 0
 3V3
 $Comp
-L pspice:R R?
+L pspice:R R7
 U 1 1 61CAD845
 P 2150 6550
-F 0 "R?" V 2250 6500 50  0000 L CNN
+F 0 "R7" V 2250 6500 50  0000 L CNN
 F 1 "100 kOhm" V 2350 6350 50  0000 L CNN
 F 2 "" H 2150 6550 50  0001 C CNN
 F 3 "~" H 2150 6550 50  0001 C CNN
@@ -676,10 +676,10 @@ F 3 "~" H 2150 6550 50  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 $Comp
-L pspice:R R?
+L pspice:R R23
 U 1 1 61CAD84B
 P 3150 6400
-F 0 "R?" V 2950 6350 50  0000 L CNN
+F 0 "R23" V 2950 6350 50  0000 L CNN
 F 1 "22 kOhm" V 3050 6250 50  0000 L CNN
 F 2 "" H 3150 6400 50  0001 C CNN
 F 3 "~" H 3150 6400 50  0001 C CNN
@@ -701,10 +701,10 @@ Connection ~ 2900 6400
 Wire Wire Line
 	2400 6100 2400 6400
 $Comp
-L pspice:R R?
+L pspice:R R15
 U 1 1 61CAD859
 P 2650 6400
-F 0 "R?" V 2450 6350 50  0000 L CNN
+F 0 "R15" V 2450 6350 50  0000 L CNN
 F 1 "22 kOhm" V 2550 6250 50  0000 L CNN
 F 2 "" H 2650 6400 50  0001 C CNN
 F 3 "~" H 2650 6400 50  0001 C CNN
@@ -712,10 +712,10 @@ F 3 "~" H 2650 6400 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L pspice:R R?
+L pspice:R R24
 U 1 1 61CAD85F
 P 3150 7100
-F 0 "R?" V 3350 7050 50  0000 L CNN
+F 0 "R24" V 3350 7050 50  0000 L CNN
 F 1 "22 kOhm" V 3250 6950 50  0000 L CNN
 F 2 "" H 3150 7100 50  0001 C CNN
 F 3 "~" H 3150 7100 50  0001 C CNN
@@ -723,10 +723,10 @@ F 3 "~" H 3150 7100 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D8
 U 1 1 61CAD865
 P 2650 6800
-F 0 "D?" H 2700 7000 50  0000 R CNN
+F 0 "D8" H 2700 7000 50  0000 R CNN
 F 1 "BAT85" H 2750 6900 50  0000 R CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 2650 6625 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 2650 6800 50  0001 C CNN
@@ -745,10 +745,10 @@ Wire Wire Line
 Wire Wire Line
 	3400 6800 3400 7100
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D16
 U 1 1 61CAD871
 P 3150 6800
-F 0 "D?" H 3150 7016 50  0000 C CNN
+F 0 "D16" H 3150 7016 50  0000 C CNN
 F 1 "BAT85" H 3150 6925 50  0000 C CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 3150 6625 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 3150 6800 50  0001 C CNN
@@ -757,10 +757,10 @@ F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 3150 6800 50 
 $EndComp
 Connection ~ 2900 7100
 $Comp
-L pspice:R R?
+L pspice:R R16
 U 1 1 61CAD878
 P 2650 7100
-F 0 "R?" V 2850 7050 50  0000 L CNN
+F 0 "R16" V 2850 7050 50  0000 L CNN
 F 1 "22 kOhm" V 2750 6950 50  0000 L CNN
 F 2 "" H 2650 7100 50  0001 C CNN
 F 3 "~" H 2650 7100 50  0001 C CNN
@@ -768,10 +768,10 @@ F 3 "~" H 2650 7100 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L pspice:R R?
+L pspice:R R8
 U 1 1 61CAD87E
 P 2150 6650
-F 0 "R?" V 2050 6600 50  0000 L CNN
+F 0 "R8" V 2050 6600 50  0000 L CNN
 F 1 "100 kOhm" V 1950 6450 50  0000 L CNN
 F 2 "" H 2150 6650 50  0001 C CNN
 F 3 "~" H 2150 6650 50  0001 C CNN
@@ -781,10 +781,10 @@ $EndComp
 Wire Wire Line
 	3400 6100 3400 6400
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D7
 U 1 1 61CAD885
 P 2650 6100
-F 0 "D?" H 2700 5900 50  0000 R CNN
+F 0 "D7" H 2700 5900 50  0000 R CNN
 F 1 "BAT85" H 2750 6000 50  0000 R CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 2650 5925 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 2650 6100 50  0001 C CNN
@@ -823,10 +823,10 @@ Wire Wire Line
 Connection ~ 3400 6400
 Connection ~ 3400 6800
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D15
 U 1 1 61CAD89D
 P 3150 6100
-F 0 "D?" H 3150 5900 50  0000 C CNN
+F 0 "D15" H 3150 5900 50  0000 C CNN
 F 1 "BAT85" H 3150 6000 50  0000 C CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 3150 5925 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 3150 6100 50  0001 C CNN
@@ -845,10 +845,10 @@ Wire Wire Line
 Connection ~ 1900 6100
 Connection ~ 2400 7100
 $Comp
-L Connector:AudioJack3 J?
+L Connector:AudioJack3 J4
 U 1 1 61CAD8AA
 P 1700 6550
-F 0 "J?" H 1650 6200 50  0000 C CNN
+F 0 "J4" H 1650 6200 50  0000 C CNN
 F 1 "NMJ6HCD2" H 1650 6300 50  0000 C CNN
 F 2 "edrumulus:Jack_6.35mm_Neutrik_NMJ6HCD2_Horizontal" H 1700 6550 50  0001 C CNN
 F 3 "~" H 1700 6550 50  0001 C CNN
@@ -893,10 +893,10 @@ GPIO12
 Text GLabel 6950 4050 0    50   Input ~ 0
 GPIO13
 $Comp
-L pspice:R R?
+L pspice:R R33
 U 1 1 61D09D3E
 P 5800 2150
-F 0 "R?" V 6000 2100 50  0000 L CNN
+F 0 "R33" V 6000 2100 50  0000 L CNN
 F 1 "22 kOhm" V 5900 2000 50  0000 L CNN
 F 2 "" H 5800 2150 50  0001 C CNN
 F 3 "~" H 5800 2150 50  0001 C CNN
@@ -904,10 +904,10 @@ F 3 "~" H 5800 2150 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D17
 U 1 1 61D09D44
 P 5300 1850
-F 0 "D?" H 5350 2050 50  0000 R CNN
+F 0 "D17" H 5350 2050 50  0000 R CNN
 F 1 "BAT85" H 5400 1950 50  0000 R CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 5300 1675 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 5300 1850 50  0001 C CNN
@@ -926,10 +926,10 @@ Wire Wire Line
 Wire Wire Line
 	6050 1850 6050 2150
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D21
 U 1 1 61D09D50
 P 5800 1850
-F 0 "D?" H 5800 2066 50  0000 C CNN
+F 0 "D21" H 5800 2066 50  0000 C CNN
 F 1 "BAT85" H 5800 1975 50  0000 C CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 5800 1675 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 5800 1850 50  0001 C CNN
@@ -938,10 +938,10 @@ F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 5800 1850 50 
 $EndComp
 Connection ~ 5550 2150
 $Comp
-L pspice:R R?
+L pspice:R R29
 U 1 1 61D09D57
 P 5300 2150
-F 0 "R?" V 5500 2100 50  0000 L CNN
+F 0 "R29" V 5500 2100 50  0000 L CNN
 F 1 "22 kOhm" V 5400 2000 50  0000 L CNN
 F 2 "" H 5300 2150 50  0001 C CNN
 F 3 "~" H 5300 2150 50  0001 C CNN
@@ -949,10 +949,10 @@ F 3 "~" H 5300 2150 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L pspice:R R?
+L pspice:R R25
 U 1 1 61D09D5D
 P 4800 1700
-F 0 "R?" V 4700 1650 50  0000 L CNN
+F 0 "R25" V 4700 1650 50  0000 L CNN
 F 1 "100 kOhm" V 4600 1500 50  0000 L CNN
 F 2 "" H 4800 1700 50  0001 C CNN
 F 3 "~" H 4800 1700 50  0001 C CNN
@@ -978,10 +978,10 @@ Wire Wire Line
 	3900 2150 5050 2150
 Connection ~ 5050 2150
 $Comp
-L Connector:AudioJack3 J?
+L Connector:AudioJack3 J5
 U 1 1 61D09D89
 P 4350 1600
-F 0 "J?" H 4300 1250 50  0000 C CNN
+F 0 "J5" H 4300 1250 50  0000 C CNN
 F 1 "NMJ6HCD2" H 4300 1350 50  0000 C CNN
 F 2 "edrumulus:Jack_6.35mm_Neutrik_NMJ6HCD2_Horizontal" H 4350 1600 50  0001 C CNN
 F 3 "~" H 4350 1600 50  0001 C CNN
@@ -1006,10 +1006,10 @@ Wire Wire Line
 	4550 1150 4550 1500
 Connection ~ 4550 1150
 $Comp
-L pspice:R R?
+L pspice:R R34
 U 1 1 61D36A81
 P 5800 3800
-F 0 "R?" V 6000 3750 50  0000 L CNN
+F 0 "R34" V 6000 3750 50  0000 L CNN
 F 1 "22 kOhm" V 5900 3650 50  0000 L CNN
 F 2 "" H 5800 3800 50  0001 C CNN
 F 3 "~" H 5800 3800 50  0001 C CNN
@@ -1017,10 +1017,10 @@ F 3 "~" H 5800 3800 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D18
 U 1 1 61D36A87
 P 5300 3500
-F 0 "D?" H 5350 3700 50  0000 R CNN
+F 0 "D18" H 5350 3700 50  0000 R CNN
 F 1 "BAT85" H 5400 3600 50  0000 R CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 5300 3325 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 5300 3500 50  0001 C CNN
@@ -1039,10 +1039,10 @@ Wire Wire Line
 Wire Wire Line
 	6050 3500 6050 3800
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D22
 U 1 1 61D36A93
 P 5800 3500
-F 0 "D?" H 5800 3716 50  0000 C CNN
+F 0 "D22" H 5800 3716 50  0000 C CNN
 F 1 "BAT85" H 5800 3625 50  0000 C CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 5800 3325 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 5800 3500 50  0001 C CNN
@@ -1051,10 +1051,10 @@ F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 5800 3500 50 
 $EndComp
 Connection ~ 5550 3800
 $Comp
-L pspice:R R?
+L pspice:R R30
 U 1 1 61D36A9A
 P 5300 3800
-F 0 "R?" V 5500 3750 50  0000 L CNN
+F 0 "R30" V 5500 3750 50  0000 L CNN
 F 1 "22 kOhm" V 5400 3650 50  0000 L CNN
 F 2 "" H 5300 3800 50  0001 C CNN
 F 3 "~" H 5300 3800 50  0001 C CNN
@@ -1062,10 +1062,10 @@ F 3 "~" H 5300 3800 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L pspice:R R?
+L pspice:R R26
 U 1 1 61D36AA0
 P 4800 3350
-F 0 "R?" V 4700 3300 50  0000 L CNN
+F 0 "R26" V 4700 3300 50  0000 L CNN
 F 1 "100 kOhm" V 4600 3150 50  0000 L CNN
 F 2 "" H 4800 3350 50  0001 C CNN
 F 3 "~" H 4800 3350 50  0001 C CNN
@@ -1091,10 +1091,10 @@ Wire Wire Line
 	3900 3800 5050 3800
 Connection ~ 5050 3800
 $Comp
-L Connector:AudioJack3 J?
+L Connector:AudioJack3 J6
 U 1 1 61D36AB1
 P 4350 3250
-F 0 "J?" H 4300 2900 50  0000 C CNN
+F 0 "J6" H 4300 2900 50  0000 C CNN
 F 1 "NMJ6HCD2" H 4300 3000 50  0000 C CNN
 F 2 "edrumulus:Jack_6.35mm_Neutrik_NMJ6HCD2_Horizontal" H 4350 3250 50  0001 C CNN
 F 3 "~" H 4350 3250 50  0001 C CNN
@@ -1119,10 +1119,10 @@ Wire Wire Line
 	4550 2800 4550 3150
 Connection ~ 4550 2800
 $Comp
-L pspice:R R?
+L pspice:R R35
 U 1 1 61D3FA03
 P 5800 5450
-F 0 "R?" V 6000 5400 50  0000 L CNN
+F 0 "R35" V 6000 5400 50  0000 L CNN
 F 1 "22 kOhm" V 5900 5300 50  0000 L CNN
 F 2 "" H 5800 5450 50  0001 C CNN
 F 3 "~" H 5800 5450 50  0001 C CNN
@@ -1130,10 +1130,10 @@ F 3 "~" H 5800 5450 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D19
 U 1 1 61D3FA09
 P 5300 5150
-F 0 "D?" H 5350 5350 50  0000 R CNN
+F 0 "D19" H 5350 5350 50  0000 R CNN
 F 1 "BAT85" H 5400 5250 50  0000 R CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 5300 4975 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 5300 5150 50  0001 C CNN
@@ -1152,10 +1152,10 @@ Wire Wire Line
 Wire Wire Line
 	6050 5150 6050 5450
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D23
 U 1 1 61D3FA15
 P 5800 5150
-F 0 "D?" H 5800 5366 50  0000 C CNN
+F 0 "D23" H 5800 5366 50  0000 C CNN
 F 1 "BAT85" H 5800 5275 50  0000 C CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 5800 4975 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 5800 5150 50  0001 C CNN
@@ -1164,10 +1164,10 @@ F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 5800 5150 50 
 $EndComp
 Connection ~ 5550 5450
 $Comp
-L pspice:R R?
+L pspice:R R31
 U 1 1 61D3FA1C
 P 5300 5450
-F 0 "R?" V 5500 5400 50  0000 L CNN
+F 0 "R31" V 5500 5400 50  0000 L CNN
 F 1 "22 kOhm" V 5400 5300 50  0000 L CNN
 F 2 "" H 5300 5450 50  0001 C CNN
 F 3 "~" H 5300 5450 50  0001 C CNN
@@ -1175,10 +1175,10 @@ F 3 "~" H 5300 5450 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L pspice:R R?
+L pspice:R R27
 U 1 1 61D3FA22
 P 4800 5000
-F 0 "R?" V 4700 4950 50  0000 L CNN
+F 0 "R27" V 4700 4950 50  0000 L CNN
 F 1 "100 kOhm" V 4600 4800 50  0000 L CNN
 F 2 "" H 4800 5000 50  0001 C CNN
 F 3 "~" H 4800 5000 50  0001 C CNN
@@ -1204,10 +1204,10 @@ Wire Wire Line
 	3900 5450 5050 5450
 Connection ~ 5050 5450
 $Comp
-L Connector:AudioJack3 J?
+L Connector:AudioJack3 J7
 U 1 1 61D3FA33
 P 4350 4900
-F 0 "J?" H 4300 4550 50  0000 C CNN
+F 0 "J7" H 4300 4550 50  0000 C CNN
 F 1 "NMJ6HCD2" H 4300 4650 50  0000 C CNN
 F 2 "edrumulus:Jack_6.35mm_Neutrik_NMJ6HCD2_Horizontal" H 4350 4900 50  0001 C CNN
 F 3 "~" H 4350 4900 50  0001 C CNN
@@ -1232,10 +1232,10 @@ Wire Wire Line
 	4550 4450 4550 4800
 Connection ~ 4550 4450
 $Comp
-L pspice:R R?
+L pspice:R R36
 U 1 1 61D48FE5
 P 5800 7100
-F 0 "R?" V 6000 7050 50  0000 L CNN
+F 0 "R36" V 6000 7050 50  0000 L CNN
 F 1 "22 kOhm" V 5900 6950 50  0000 L CNN
 F 2 "" H 5800 7100 50  0001 C CNN
 F 3 "~" H 5800 7100 50  0001 C CNN
@@ -1243,10 +1243,10 @@ F 3 "~" H 5800 7100 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D20
 U 1 1 61D48FEB
 P 5300 6800
-F 0 "D?" H 5350 7000 50  0000 R CNN
+F 0 "D20" H 5350 7000 50  0000 R CNN
 F 1 "BAT85" H 5400 6900 50  0000 R CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 5300 6625 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 5300 6800 50  0001 C CNN
@@ -1265,10 +1265,10 @@ Wire Wire Line
 Wire Wire Line
 	6050 6800 6050 7100
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D24
 U 1 1 61D48FF7
 P 5800 6800
-F 0 "D?" H 5800 7016 50  0000 C CNN
+F 0 "D24" H 5800 7016 50  0000 C CNN
 F 1 "BAT85" H 5800 6925 50  0000 C CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 5800 6625 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 5800 6800 50  0001 C CNN
@@ -1277,10 +1277,10 @@ F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 5800 6800 50 
 $EndComp
 Connection ~ 5550 7100
 $Comp
-L pspice:R R?
+L pspice:R R32
 U 1 1 61D48FFE
 P 5300 7100
-F 0 "R?" V 5500 7050 50  0000 L CNN
+F 0 "R32" V 5500 7050 50  0000 L CNN
 F 1 "22 kOhm" V 5400 6950 50  0000 L CNN
 F 2 "" H 5300 7100 50  0001 C CNN
 F 3 "~" H 5300 7100 50  0001 C CNN
@@ -1288,10 +1288,10 @@ F 3 "~" H 5300 7100 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L pspice:R R?
+L pspice:R R28
 U 1 1 61D49004
 P 4800 6650
-F 0 "R?" V 4700 6600 50  0000 L CNN
+F 0 "R28" V 4700 6600 50  0000 L CNN
 F 1 "100 kOhm" V 4600 6450 50  0000 L CNN
 F 2 "" H 4800 6650 50  0001 C CNN
 F 3 "~" H 4800 6650 50  0001 C CNN
@@ -1317,10 +1317,10 @@ Wire Wire Line
 	3900 7100 5050 7100
 Connection ~ 5050 7100
 $Comp
-L Connector:AudioJack3 J?
+L Connector:AudioJack3 J8
 U 1 1 61D49015
 P 4350 6550
-F 0 "J?" H 4300 6200 50  0000 C CNN
+F 0 "J8" H 4300 6200 50  0000 C CNN
 F 1 "NMJ6HCD2" H 4300 6300 50  0000 C CNN
 F 2 "edrumulus:Jack_6.35mm_Neutrik_NMJ6HCD2_Horizontal" H 4350 6550 50  0001 C CNN
 F 3 "~" H 4350 6550 50  0001 C CNN
@@ -1345,10 +1345,10 @@ Wire Wire Line
 	4550 6100 4550 6450
 Connection ~ 4550 6100
 $Comp
-L pspice:R R?
+L pspice:R R38
 U 1 1 61D81CAE
 P 8450 2150
-F 0 "R?" V 8650 2100 50  0000 L CNN
+F 0 "R38" V 8650 2100 50  0000 L CNN
 F 1 "10 kOhm" V 8550 2000 50  0000 L CNN
 F 2 "" H 8450 2150 50  0001 C CNN
 F 3 "~" H 8450 2150 50  0001 C CNN
@@ -1356,10 +1356,10 @@ F 3 "~" H 8450 2150 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D25
 U 1 1 61D81CB4
 P 7950 2150
-F 0 "D?" H 8000 2350 50  0000 R CNN
+F 0 "D25" H 8000 2350 50  0000 R CNN
 F 1 "BAT85" H 8050 2250 50  0000 R CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 7950 1975 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 7950 2150 50  0001 C CNN
@@ -1374,10 +1374,10 @@ Wire Wire Line
 Wire Wire Line
 	8700 1850 8700 2150
 $Comp
-L Diode:BAT85 D?
+L Diode:BAT85 D26
 U 1 1 61D81CC0
 P 8450 1850
-F 0 "D?" H 8450 2066 50  0000 C CNN
+F 0 "D26" H 8450 2066 50  0000 C CNN
 F 1 "BAT85" H 8450 1975 50  0000 C CNN
 F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 8450 1675 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 8450 1850 50  0001 C CNN
@@ -1385,10 +1385,10 @@ F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 8450 1850 50 
 	-1   0    0    1   
 $EndComp
 $Comp
-L pspice:R R?
+L pspice:R R37
 U 1 1 61D81CC7
 P 8000 1550
-F 0 "R?" V 7800 1500 50  0000 L CNN
+F 0 "R37" V 7800 1500 50  0000 L CNN
 F 1 "10 kOhm" V 7900 1400 50  0000 L CNN
 F 2 "" H 8000 1550 50  0001 C CNN
 F 3 "~" H 8000 1550 50  0001 C CNN
@@ -1406,10 +1406,10 @@ Wire Wire Line
 Wire Wire Line
 	6550 1150 6550 2150
 $Comp
-L Connector:AudioJack3 J?
+L Connector:AudioJack3 J9
 U 1 1 61D81CDE
 P 7000 1600
-F 0 "J?" H 6950 1250 50  0000 C CNN
+F 0 "J9" H 6950 1250 50  0000 C CNN
 F 1 "NMJ6HCD2" H 6950 1350 50  0000 C CNN
 F 2 "edrumulus:Jack_6.35mm_Neutrik_NMJ6HCD2_Horizontal" H 7000 1600 50  0001 C CNN
 F 3 "~" H 7000 1600 50  0001 C CNN
