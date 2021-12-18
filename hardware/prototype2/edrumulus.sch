@@ -128,21 +128,19 @@ F 3 "~" H 2150 1700 50  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 $Comp
-L doit-esp32-devkit-v1:DOIT-ESP32-DEVKIT-V1 U1
+L doit-esp32-devkit-v1:ESP32-DEVKIT-V1 U1
 U 1 1 61B5316D
 P 7800 4450
 F 0 "U1" H 7775 5015 50  0000 C CNN
-F 1 "DOIT-ESP32-DEVKIT-V1" H 7775 4924 50  0000 C CNN
+F 1 "ESP32-DEVKIT-V1" H 7775 4924 50  0000 C CNN
 F 2 "" H 7750 4900 50  0001 C CNN
 F 3 "" H 7750 4900 50  0001 C CNN
 	1    7800 4450
 	1    0    0    -1  
 $EndComp
-Text GLabel 8700 5850 2    50   Input ~ 0
-3V3
 Wire Wire Line
 	3400 1150 3400 1450
-Text GLabel 6850 5750 0    50   Input ~ 0
+Text GLabel 6850 5450 0    50   Input ~ 0
 GND
 Text GLabel 6850 4250 0    50   Input ~ 0
 GPIO36
@@ -1474,8 +1472,6 @@ Wire Wire Line
 	7750 1700 7200 1700
 Wire Wire Line
 	7200 1150 8700 1150
-Text GLabel 8700 5350 2    50   Input ~ 0
-GPIO15
 $Comp
 L Isolator:6N138 U2
 U 1 1 61C14EE1
@@ -1626,10 +1622,6 @@ Wire Wire Line
 Connection ~ 9000 3200
 Wire Wire Line
 	6500 3150 6500 3600
-Text GLabel 8700 5050 2    50   Input ~ 0
-UART_RX
-Text GLabel 8700 4950 2    50   Input ~ 0
-UART_TX
 Wire Notes Line
 	6400 2500 6400 3700
 Wire Notes Line
@@ -1651,16 +1643,8 @@ NoConn ~ 4550 3250
 NoConn ~ 4550 4900
 NoConn ~ 4550 6550
 NoConn ~ 7200 1600
-NoConn ~ 6850 5450
-NoConn ~ 6850 5550
-NoConn ~ 6850 5650
-NoConn ~ 6850 5850
-NoConn ~ 8700 5750
-NoConn ~ 8700 5650
-NoConn ~ 8700 5550
 NoConn ~ 8700 5450
 NoConn ~ 8700 5250
-NoConn ~ 8700 5150
 NoConn ~ 8700 4850
 NoConn ~ 8700 4750
 NoConn ~ 8700 4650
@@ -1669,4 +1653,15 @@ NoConn ~ 8700 4450
 NoConn ~ 8700 4350
 NoConn ~ 8700 4250
 NoConn ~ 8700 4150
+Text GLabel 8700 5550 2    50   Input ~ 0
+3V3
+Text GLabel 8700 5350 2    50   Input ~ 0
+GPIO15
+Text GLabel 8700 5050 2    50   Input ~ 0
+UART_RX
+Text GLabel 8700 4950 2    50   Input ~ 0
+UART_TX
+NoConn ~ 8700 5150
+NoConn ~ 6850 4150
+NoConn ~ 6850 5550
 $EndSCHEMATC
