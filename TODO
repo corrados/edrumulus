@@ -1,8 +1,6 @@
 
 
 
-- Record test signal for HD-1 tom pad
-
 - Hot spot suppression on mesh pads with center piezo
   -> striking directly on the piezo results in detected velocity values which are much too high
 
