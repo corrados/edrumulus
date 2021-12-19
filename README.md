@@ -29,13 +29,22 @@ and in the [discussion forums](https://github.com/corrados/edrumulus/discussions
   It has shown that both boards are powerful enough for running an e-drum trigger module.
 
 - The required analog front end design shall be as simple as possible using the fewest number of
-  parts possible. We want to capture the entire signal without non-linear analog preprocessing.
+  parts possible.
+
+
+## Prototype hardware
+
+  We want to capture the entire signal without non-linear analog preprocessing.
   Since micro controllers usually only convert analog signals in the range of 0 to 3.3 V,
   we have to move the point of operation in the middle of the voltage range.
 
-  A circuit diagram of my test setup is given in the following picture:
+  A circuit diagram of a simplified prototype which only supports a mono piezo pad and
+  a hi-hat controller input is given in the following picture:
   <br/><img src="algorithm/images/edrumulus_testing.png" width="400"><br/>
-  *DISCLAIMER* This circuit diagram is used for my first prototypes and works fine for me. Use it
+
+  The full circuit diagram of Prototype2 is given in [this PDF file](hardware/prototype2/edrumulus.pdf).
+
+  *DISCLAIMER* All these circuit diagrams are used for my first prototypes and work fine for me. Use them
   at your own risk.
 
 
