@@ -20,16 +20,18 @@ and in the [discussion forums](https://github.com/corrados/edrumulus/discussions
 
 - Overall latency should be as small as possible. The goal is to achieve a latency < 10 ms.
 
-- Positional sensing is supported.
-
-- Supported micro processors are:
-  - **ESP32 with dual core**
-  - **Teensy 4.0**
-  
-  It has shown that both boards are powerful enough for running an e-drum trigger module.
-
 - The required analog front end design shall be as simple as possible using the fewest number of
   parts possible.
+
+- Features:
+  - Positional sensing
+  - Retrigger cancellation
+  - Rim shot detection
+  - Cross talk cancellation
+
+- Supported micro processors are:
+  - **ESP32 (dual core)**
+  - **Teensy 4.0**
 
 
 ## Prototype hardware
