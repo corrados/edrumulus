@@ -45,6 +45,7 @@ x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_p
 %x = audioread("signals/pd6.wav");
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
+%x = audioread("signals/cy5.wav");
 %x = audioread("signals/cy6.wav");padtype = 'cy6';%x = x(480000:590000, :);%x = x(250000:450000, :);%x = x(1:150000, :);
 %x = audioread("signals/cy8.wav");padtype = 'cy8';%x = x(1:200000, :);
 %x = audioread("signals/kd8.wav");
