@@ -26,11 +26,11 @@ and in the [discussion forums](https://github.com/corrados/edrumulus/discussions
 - Features:
   - Positional sensing
   - Retrigger cancellation
-  - Rim shot detection
+  - Rim shot/cymbol choke detection
   - Cross talk cancellation
 
-- Supported micro processors are:
-  - **ESP32 (dual core)**
+- Supported micro processor developer boards are:
+  - **ESP32 (dual core) DEVKIT V1 or similar**
   - **Teensy 4.0**
 
 
