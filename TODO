@@ -4,10 +4,10 @@
 - Hot spot suppression on mesh pads with center piezo
   -> striking directly on the piezo results in detected velocity values which are much too high
 
-- Create PCB for Prototype2 based on ESP32
-
 - Signal overload correction
   -> maybe based on low-pass filtering as suggested in https://github.com/corrados/edrumulus/discussions/17#discussion-3736264
+
+- Improve dynamics for Drumgizmo (for official drum kits as well as self-recorded kit)
 
 - Create pad parameter set for CY-5
 
@@ -15,13 +15,21 @@
 
 - Create pad parameter set for HD-1 tom pad
 
-- Documentation: Algorithm description
+- Create pad parameter set for PD-6
 
-- Documentation: Edrumulus manual which describes the hardware/software setup, parameter description, HOWTOs, etc.
+- Create pad parameter set for KD-8
+
+- Documentation: Algorithm description
 
 - Attach second piezo on mesh pad and experiment with improved velocity/position detection using the second piezo signal
 
+- Improve Edrumulus/Drumgizmo usage on Raspberry Pi (Pi 3+ and Pi Zero)
+
 - Create Qt application for controlling Edrumulus via MIDI using the rtmidi library
+
+- Create PCB for Prototype2 based on ESP32
+
+- Documentation: Edrumulus manual which describes the hardware/software setup, parameter description, HOWTOs, etc.
 
 - support hardware keyboard/display like Arduino LCD1602 Display Keypad Shield
 
