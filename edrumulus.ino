@@ -35,7 +35,7 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 #endif
 
 Edrumulus edrumulus;
-const int number_pads       = 8;
+const int number_pads       = 6;
 const int status_LED_pin    = BOARD_LED_PIN; // internal LED used for overload indicator
 const int midi_channel      = 10; // default for edrums is 10
 const int hihat_pad_idx     = 2;
@@ -82,19 +82,19 @@ void setup()
   edrumulus.set_midi_notes      ( 8, 43, 58 ); // tom 3
 
 // my prototype setup configuration...
-  edrumulus.set_pad_type          ( 0, Edrumulus::PD80R ); // snare
+  edrumulus.set_pad_type          ( 0, Edrumulus::PD8 ); // snare
   edrumulus.set_rim_shot_is_used  ( 0, true );
   edrumulus.set_pos_sense_is_used ( 0, true );
   edrumulus.set_pad_type          ( 1, Edrumulus::KD7 ); // kick
   edrumulus.set_curve             ( 1, Edrumulus::LOG2 ); // less dynamic on kick (similar to other drum modules)
-  edrumulus.set_pad_type          ( 2, Edrumulus::PD8 ); // Hi-Hat, using rim switch
+  edrumulus.set_pad_type          ( 2, Edrumulus::CY6 ); // Hi-Hat, using rim switch
   edrumulus.set_rim_shot_is_used  ( 2, true );
   edrumulus.set_pad_type          ( 3, Edrumulus::FD8 ); // Hi-Hat-ctrl
-  edrumulus.set_pad_type          ( 4, Edrumulus::CY8 ); // crash, using rim switch
+  edrumulus.set_pad_type          ( 4, Edrumulus::CY6 ); // crash, using rim switch
   edrumulus.set_rim_shot_is_used  ( 4, true );
   edrumulus.set_cancellation      ( 4, 4 ); // avoid that kick triggers crash
-  edrumulus.set_pad_type          ( 5, Edrumulus::TP80 ); // tom 1
-  edrumulus.set_pad_type          ( 6, Edrumulus::PD8 ); // ride, using rim switch
+  edrumulus.set_pad_type          ( 5, Edrumulus::PD8 ); // tom 1
+  edrumulus.set_pad_type          ( 6, Edrumulus::CY6 ); // ride, using rim switch
   edrumulus.set_rim_shot_is_used  ( 6, true );
   edrumulus.set_pad_type          ( 7, Edrumulus::PD8 ); // tom 2
 

@@ -95,7 +95,7 @@ protected:
 #include "soc/sens_reg.h"
 #include "driver/dac.h"
 
-#define BOARD_LED_PIN        2    // pin number of the LED on the ESP32 board
+#define BOARD_LED_PIN        23   // pin number of the LED on the ESP32 board
 #define MAX_NUM_PADS         12   // a maximum of 12 pads are supported
 #define MAX_NUM_PAD_INPUTS   2    // a maximum of 2 sensors per pad is supported
 #define ADC_MAX_RANGE        4096 // ESP32 ADC has 12 bits -> 0..4095
