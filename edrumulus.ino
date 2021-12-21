@@ -56,9 +56,9 @@ void setup()
 #ifdef ESP_PLATFORM
   // NOTE: avoid ESP32 GPIO 25/26 for piezo inputs since they are DAC pins which cause an incorrect DC offset
   //       estimation and DC offset drift which makes the spike cancellation algorithm not working correctly
-  // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
+  // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | tom1  | tom2 |   x  |   x  |   x
   const int analog_pins[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    15 };
-  const int analog_pins_rimshot[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1 };
+  const int analog_pins_rimshot[] = { 35,    -1,     26,       -1,         -1,     -1,    13,    -1,    -1 };
 #endif
 #ifdef TEENSYDUINO
   // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2
@@ -81,22 +81,17 @@ void setup()
   edrumulus.set_midi_notes      ( 7, 45, 47 ); // tom 2
   edrumulus.set_midi_notes      ( 8, 43, 58 ); // tom 3
 
-// my prototype setup configuration...
-  edrumulus.set_pad_type          ( 0, Edrumulus::PD8 ); // snare
+// thijstriemstra prototype setup configuration...
+  edrumulus.set_pad_type          ( 0, Edrumulus::PD120 ); // snare (Drum-tec Diabolo)
   edrumulus.set_rim_shot_is_used  ( 0, true );
   edrumulus.set_pos_sense_is_used ( 0, true );
-  edrumulus.set_pad_type          ( 1, Edrumulus::KD7 ); // kick
+  edrumulus.set_pad_type          ( 1, Edrumulus::PD120 ); // kick (Roland KD-120BK)
   edrumulus.set_curve             ( 1, Edrumulus::LOG2 ); // less dynamic on kick (similar to other drum modules)
-  edrumulus.set_pad_type          ( 2, Edrumulus::CY6 ); // Hi-Hat, using rim switch
+  edrumulus.set_pad_type          ( 2, Edrumulus::CY6 ); // Hi-Hat, using rim switch (Roland CY-5)
   edrumulus.set_rim_shot_is_used  ( 2, true );
   edrumulus.set_pad_type          ( 3, Edrumulus::FD8 ); // Hi-Hat-ctrl
-  edrumulus.set_pad_type          ( 4, Edrumulus::CY6 ); // crash, using rim switch
-  edrumulus.set_rim_shot_is_used  ( 4, true );
-  edrumulus.set_cancellation      ( 4, 4 ); // avoid that kick triggers crash
-  edrumulus.set_pad_type          ( 5, Edrumulus::PD8 ); // tom 1
-  edrumulus.set_pad_type          ( 6, Edrumulus::CY6 ); // ride, using rim switch
-  edrumulus.set_rim_shot_is_used  ( 6, true );
-  edrumulus.set_pad_type          ( 7, Edrumulus::PD8 ); // tom 2
+  edrumulus.set_pad_type          ( 4, Edrumulus::CY6 ); // tom 1 (Roland PD-5)
+  edrumulus.set_pad_type          ( 5, Edrumulus::PD8 ); // tom 2 (Roland PD-5)
 
   // initialize GPIO port for status LED
   pinMode ( status_LED_pin, OUTPUT );
