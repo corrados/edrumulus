@@ -649,7 +649,7 @@ void Edrumulus::Pad::process_sample ( const float* input,
 
   // square input signal and store in FIFO buffer
   const float x_sq     = input[0] * input[0];
-  const float x_rim_sq = input[1] * input[1];
+//  const float x_rim_sq = input[1] * input[1];
   update_fifo ( x_sq,                            x_sq_hist_len,     x_sq_hist );
   update_fifo ( overload_detected ? 1.0f : 0.0f, overload_hist_len, overload_hist );
 
