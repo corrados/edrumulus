@@ -218,7 +218,7 @@ second_peak_range = peak_idx + second_peak_diff + (-(hot_spot_sec_peak_win_len -
 second_peak_idx                      = second_peak_idx + second_peak_range(1) - 1;
 
 middle_range_len    = second_peak_diff / 2;
-middle_range        = peak_idx + ( second_peak_idx - peak_idx ) / 2 + (-middle_range_len / 2:middle_range_len / 2);
+middle_range        = peak_idx + round((second_peak_idx - peak_idx) / 2) + (-middle_range_len / 2:middle_range_len / 2);
 middle_range_power  = mean(x_sq(middle_range));
 middle_range_metric = x_sq(second_peak_idx) / middle_range_power;
 
