@@ -161,7 +161,7 @@ void Edrumulus_hardware::capture_samples ( const int number_pads,
     {
       sample_org[i][j] = input_sample[input_cnt++];
 #if defined(ARDUINO_TEENSY36)  // Teensy 3.6 specific code
-      sample_org[i][i] >>= 4;  // 16-bit to 12-bit hack
+      sample_org[i][i] >>= 5;  // 16-bit to 12-bit hack
 #endif
     }
   }
