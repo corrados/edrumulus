@@ -26,6 +26,7 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 #  define MYMIDI                     MIDI
 #  define MIDI_CONTROL_CHANGE_TYPE   midi::ControlChange
 #  define MIDI_SEND_AFTER_TOUCH      sendAfterTouch
+#  define MIDI_SERIAL                38400
 # endif
 # ifdef TEENSYDUINO
 #  define MYMIDI                     usbMIDI
@@ -46,9 +47,8 @@ int       selected_pad      = 0;
 
 void setup()
 {
-#ifdef USE_MIDI
-  MYMIDI.begin();
-  Serial.begin ( 38400 );
+#ifdef MIDI_SERIAL
+  Serial.begin ( MIDI_SERIAL );
 #else
   Serial.begin ( 115200 );
 #endif
