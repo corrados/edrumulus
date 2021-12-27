@@ -209,9 +209,9 @@ while ~no_more_peak
 
 % TEST hot spot detection testing
 second_peak_diff = round(2.55 * 1e-3 * Fs);
-hot_spot_win_len = 4;%6;
+hot_spot_win_len = 5;
 
-second_peak_range = above_thresh_start + max_idx + second_peak_diff - 1 + (-hot_spot_win_len / 2:hot_spot_win_len / 2);
+second_peak_range = above_thresh_start + max_idx + second_peak_diff - 1 + (-(hot_spot_win_len - 1) / 2:(hot_spot_win_len - 1) / 2);
 [second_peak_value, second_peak_idx] = max(x_sq(second_peak_range));
 second_peak_idx = second_peak_idx + second_peak_range(1) - 1;
 
