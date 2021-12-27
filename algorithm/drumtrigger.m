@@ -216,29 +216,35 @@ second_peak_range = above_thresh_start + max_idx + second_peak_diff - 1 + (-hot_
 second_peak_idx = second_peak_idx + second_peak_range(1) - 1;
 
 middle_range_len   = 6;
-middle_range       = max_idx + ( second_peak_idx - max_idx ) / 2 + (-middle_range_len / 2:middle_range_len / 2);
+middle_range       = peak_idx + ( second_peak_idx - peak_idx ) / 2 + (-middle_range_len / 2:middle_range_len / 2);
 middle_range_power = mean(x_sq(round(middle_range)));
-middle_range_metric = x_sq(peak_idx) / middle_range_power;
+%middle_range_metric = x_sq(peak_idx) / middle_range_power;
+middle_range_metric = x_sq(second_peak_idx) / middle_range_power;
 
 %second_peak_idx  = above_thresh_start + max_idx + second_peak_diff - 1;
 %second_peak_value = x_sq(second_peak_idx);
 
+%peak_idx
+%round(middle_range)
+%10 * log10(x_sq(round(middle_range)))
 
-limit_min = 4; limit_max = 5; % PD80R
-%limit_min = 0.4; limit_max = 2.5; % PD120
+%limit_min = 4; limit_max = 5; % PD80R
+limit_min = 0.4; limit_max = 2.5; % PD120
 
 %hot_spot_metric((10 * log10(hot_spot_metric) < 0.4) | (10 * log10(hot_spot_metric) > 2.5)) = nan;
 %hot_spot_metric((10 * log10(hot_spot_metric) < 4) | (10 * log10(hot_spot_metric) > 5)) = nan;
 
 x11=x_sq(peak_idx) / x_sq(second_peak_idx);
-if ~((10 * log10(x11) < limit_min) | (10 * log10(x11) > limit_max))
-  10 * log10(middle_range_metric)
+10 * log10(x11)
+%if ~((10 * log10(x11) < limit_min) | (10 * log10(x11) > limit_max))
+if 10 * log10(x11) > limit_min % simpler check which only requires one threshold
+  %10 * log10(middle_range_metric)
 
-  if 10 * log10(middle_range_metric) < 50
+  if 10 * log10(middle_range_metric) > 14
 
     all_second_peaks = [all_second_peaks; second_peak_idx];
     hot_spot_metric  = [hot_spot_metric; x_sq(peak_idx) / x_sq(second_peak_idx)];
-
+10 * log10(middle_range_metric)
   end
 
 end
