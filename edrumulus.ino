@@ -59,13 +59,17 @@ void setup()
   // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
   const int analog_pins[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    15 };
   const int analog_pins_rimshot[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1 };
-#endif
-#ifdef TEENSYDUINO
+#elif defined(ARDUINO_TEENSY40) || defined(ARDUINO_TEENSY41) // Teensy 4.0/4.1 specific code
   // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2
   const int analog_pins[]         = { 10,    11,    12,        13,          1,      6,     4,     5 };
   const int analog_pins_rimshot[] = {  9,    -1,     0,        -1,          3,      8,     2,     7 };
+#elif defined(ARDUINO_TEENSY36)  // Teensy 3.6 specific code
+  // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2
+  const int analog_pins[]         = { 9,     7,     6,         5,          4,      2,    20,    18 };
+  const int analog_pins_rimshot[] = { 10,    -1,     0,        -1,          3,      1,    19,    17 };
+#elif
+  #error board not supported.
 #endif
-
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
 
   // some fundamental settings which do not change during operation
