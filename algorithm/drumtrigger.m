@@ -52,10 +52,8 @@ plot(10 * log10([mask_region, scan_region, pre_scan_region, decay_est_rng]), 'Li
 grid on; hold on; set(gca, 'ColorOrderIndex', 1); % reset color order so that x trace is blue and so on
 plot(10 * log10([x(:, 1) .^ 2, x_filt, decay_all, x_filt_decay]));
 plot(all_first_peaks, 10 * log10(x(all_first_peaks, 1) .^ 2), 'b*');
-
 plot(all_second_peaks, 10 * log10(x(all_second_peaks, 1) .^ 2), 'm*');
 plot(all_hot_spots, 10 * log10(x(all_hot_spots, 1) .^ 2) - pad.hot_spot_attenuation_db, 'c*', "markersize", 15);
-
 plot(all_peaks, 10 * log10(x(all_peaks, 1) .^ 2), 'g*');
 plot(all_peaks_filt, 10 * log10(x_filt(all_peaks_filt)), 'y*');
 plot(all_first_peaks, pos_sense_metric + 40, 'k*');
