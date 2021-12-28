@@ -19,6 +19,7 @@
 
 #include "Arduino.h"
 
+
 // Global hardware enums and definitions ---------------------------------------
 enum Espikestate
 {
@@ -37,7 +38,6 @@ enum Espikestate
 // -----------------------------------------------------------------------------
 #ifdef TEENSYDUINO
 
-#include "Arduino.h"
 #include <ADC.h>
 
 #define BOARD_LED_PIN        13    // pin number of the LED on the Teensy 4.0 board
