@@ -208,6 +208,7 @@ protected:
         int        rim_shot_velocity_thresh;
       };
 
+      void apply_preset_pad_settings();
       void initialize();
 
       // band-pass filter coefficients (they are constant and must not be changed)
