@@ -184,7 +184,7 @@ float Edrumulus_hardware::cancel_ADC_spikes ( const float input,
 
 
 // -----------------------------------------------------------------------------
-// Teensy 4.0 ------------------------------------------------------------------
+// Teensy 4.0/4.1/3.6 ----------------------------------------------------------
 // -----------------------------------------------------------------------------
 #ifdef TEENSYDUINO
 
@@ -209,7 +209,28 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
     }
   }
 
-#if defined(ARDUINO_TEENSY40) || defined(ARDUINO_TEENSY41) // Teensy 4.0/4.1 specific code
+#ifdef ARDUINO_TEENSY36 // Teensy 3.6 specific code
+  // A word about conversion time:
+  //  conv_time = SFCAdder + Averages * (BCT + LSTAdder + HSCAdder)
+  //            = 5 ADCK + 5 bus + 1 *(25 ADCK + 0 ADCK + 2 ADCK) = 32 ADCK + 5 bus
+  //            = 13/7.5 MHz + 5/60 MHz = 4.35 us per conversion
+  // For 22 conversions, 22 * 4.35 us = 95.7 us which is still under 125 us.
+  // F_BUS is 60 MHz and F_ADC is max allowed 24 MHz in 12-bit mode and 12 MHz in
+  // 16-bit mode to stay within specs. F_ADC is derived from F_BUS with dividers
+  // 1, 2, 4, 8, or 16. F_BUS of 60 MHz offers 30, 15, and 7.5 MHz options.
+  // For 12-bit mode, 15 and 7.5 can work; for 16-bit mode, only 7.5 can work.
+  // The definition for F_BUS can be found in kinetics.h and it's a function of
+  // the F_CPU. For F_CPU = 180 MHz, F_BUS = 60 MHz. For F_CPU = 192 MHz, F_BUS = 48 MHz.
+  // In other words, overclocking the teensy will affect the conversion rate.
+  adc_obj.adc0->setResolution      ( 16 ); // we want to get the full ADC resolution of the Teensy 3.6
+  adc_obj.adc0->setAveraging       ( 1 );
+  adc_obj.adc0->setConversionSpeed ( ADC_CONVERSION_SPEED::HIGH_SPEED_16BITS );
+  adc_obj.adc0->setSamplingSpeed   ( ADC_SAMPLING_SPEED::VERY_HIGH_SPEED );
+  adc_obj.adc1->setResolution      ( 16 ); // we want to get the full ADC resolution of the Teensy 3.6
+  adc_obj.adc1->setAveraging       ( 1 );
+  adc_obj.adc1->setConversionSpeed ( ADC_CONVERSION_SPEED::HIGH_SPEED_16BITS );
+  adc_obj.adc1->setSamplingSpeed   ( ADC_SAMPLING_SPEED::VERY_HIGH_SPEED );
+#else
   // set the ADC properties: averaging 8 samples with high speed sampling gives
   // us the best compromise between ADC speed and spike protection
   adc_obj.adc0->setResolution      ( 12 ); // we want to get the full ADC resolution of the Teensy 4.0
@@ -220,7 +241,9 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
   adc_obj.adc1->setAveraging       ( 8 );
   adc_obj.adc1->setConversionSpeed ( ADC_CONVERSION_SPEED::HIGH_SPEED );
   adc_obj.adc1->setSamplingSpeed   ( ADC_SAMPLING_SPEED::HIGH_SPEED );
+#endif
 
+#if defined(ARDUINO_TEENSY40) || defined(ARDUINO_TEENSY41) // Teensy 4.0/4.1 specific code
   // disable MIMXRT1062DVL6A "keeper" on all possible Teensy 4.0/4.1 ADC input pins
   IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_02 &= ~( 1 << 12 ); // A0
   IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_03 &= ~( 1 << 12 ); // A1
@@ -236,28 +259,6 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
   IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_13 &= ~( 1 << 12 ); // A11
   IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_14 &= ~( 1 << 12 ); // A12
   IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_15 &= ~( 1 << 12 ); // A13
-#elif defined(ARDUINO_TEENSY36) // Teensy 3.6 specific code
-/* A word about conversion time.
-    conv_time = SFCAdder + Averages*(BCT + LSTAdder + HSCAdder)
-              = 5 ADCK + 5 bus + 1 *(25 ADCK + 0 ADCK + 2 ADCK) = 32 ADCK + 5 bus
-              = 13/7.5MHz + 5/60MHz = 4.35uS per conversion
-    For 22 conversions, 22*4.35us = 95.7uS which is still under 125uS.
-    F_BUS is 60MHz and F_ADC is max allowed 24MHz in 12-bit mode and 12MHz in
-    16-bit mode to stay within specs.  F_ADC is derived from F_BUS with dividers
-    1, 2, 4, 8, or 16.  F_BUS of 60MHz offers 30, 15, and 7.5 MHz options.
-    For 12-bit mode, 15 and 7.5 can work; for 16-bit mode, only 7.5 can work.
-    The definition for F_BUS can be found in kinetics.h and it's a function of
-    the F_CPU.  For F_CPU=180MHz, F_BUS=60MHz.  For F_CPU=192MHz, F_BUS=48MHz.
-    In other words, overclocking the teensy will affect the conversion rate.
-*/  
-  adc_obj.adc0->setResolution      ( 16 ); // we want to get the full ADC resolution of the Teensy 3.6
-  adc_obj.adc0->setAveraging       ( 1 );
-  adc_obj.adc0->setConversionSpeed ( ADC_CONVERSION_SPEED::HIGH_SPEED_16BITS );
-  adc_obj.adc0->setSamplingSpeed   ( ADC_SAMPLING_SPEED::VERY_HIGH_SPEED );
-  adc_obj.adc1->setResolution      ( 16 ); // we want to get the full ADC resolution of the Teensy 3.6
-  adc_obj.adc1->setAveraging       ( 1 );
-  adc_obj.adc1->setConversionSpeed ( ADC_CONVERSION_SPEED::HIGH_SPEED_16BITS );
-  adc_obj.adc1->setSamplingSpeed   ( ADC_SAMPLING_SPEED::VERY_HIGH_SPEED );
 #endif
 
   // initialize timer flag (semaphore)
