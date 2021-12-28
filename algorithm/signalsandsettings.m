@@ -62,26 +62,31 @@ x = x * 25000;
 
   
 % pad PRESET settings first, then overwrite these with pad specific properties
-pad.threshold_db              = 17;
-pad.mask_time_ms              = 6;
-pad.first_peak_diff_thresh_db = 8;
-pad.mask_time_decay_fact_db   = 15;
-pad.scan_time_ms              = 2.5;
-pad.pre_scan_time_ms          = 2.5;
-pad.decay_est_delay_ms        = 7;
-pad.decay_est_len_ms          = 4;
-pad.decay_est_fact_db         = 16;
-pad.decay_fact_db             = 1;
-pad.decay_len_ms1             = 0; % not used
-pad.decay_len_ms2             = 350;
-pad.decay_len_ms3             = 0; % not used
-pad.decay_grad_fact1          = 200;
-pad.decay_grad_fact2          = 200;
-pad.decay_grad_fact3          = 200;
-pad.pos_low_pass_cutoff       = 150; % Hz
-pad.pos_invert                = false;
-pad.rim_shot_window_len_ms    = 3.5;
-pad.rim_use_low_freq_bp       = true;
+pad.threshold_db                    = 17;
+pad.mask_time_ms                    = 6;
+pad.first_peak_diff_thresh_db       = 8;
+pad.mask_time_decay_fact_db         = 15;
+pad.scan_time_ms                    = 2.5;
+pad.pre_scan_time_ms                = 2.5;
+pad.decay_est_delay_ms              = 7;
+pad.decay_est_len_ms                = 4;
+pad.decay_est_fact_db               = 16;
+pad.decay_fact_db                   = 1;
+pad.decay_len_ms1                   = 0; % not used
+pad.decay_len_ms2                   = 350;
+pad.decay_len_ms3                   = 0; % not used
+pad.decay_grad_fact1                = 200;
+pad.decay_grad_fact2                = 200;
+pad.decay_grad_fact3                = 200;
+pad.pos_low_pass_cutoff             = 150; % Hz
+pad.pos_invert                      = false;
+pad.rim_shot_window_len_ms          = 3.5;
+pad.rim_use_low_freq_bp             = true;
+pad.second_peak_diff_ms             = 2.55;
+pad.hot_spot_sec_peak_win_len       = 5;
+pad.hot_spot_peak_diff_limit_min_db = 0.4; % dB minimum difference between first and second peak
+pad.hot_spot_middle_diff_db         = 14;
+pad.hot_spot_attenuation_db         = 3; % 0 dB attenuation means that hot spot suppression is turned off
 
 switch padtype
   case 'pd120'

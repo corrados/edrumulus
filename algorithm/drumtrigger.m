@@ -41,7 +41,7 @@ Fs = 8000; % Hz
 
 % calculate peak detection, positional sensing and rim shot detection
 [x, x_filt, x_filt_delay] = filter_input_signal(x, Fs);
-[all_peaks, all_first_peaks, all_second_peaks, all_peaks_filt, scan_region, mask_region, pre_scan_region, decay_all, decay_est_rng, x_filt_decay, hot_spot_metric] = ...
+[all_peaks, all_first_peaks, all_second_peaks, all_hot_spots, all_peaks_filt, scan_region, mask_region, pre_scan_region, decay_all, decay_est_rng, x_filt_decay] = ...
   calc_peak_detection(x(:, 1), x_filt, x_filt_delay, Fs);
 [is_rim_shot, rim_metric_db] = detect_rim_shot(x, all_peaks, Fs);
 pos_sense_metric             = calc_pos_sense_metric(x(:, 1), Fs, all_first_peaks);
@@ -53,15 +53,8 @@ grid on; hold on; set(gca, 'ColorOrderIndex', 1); % reset color order so that x 
 plot(10 * log10([x(:, 1) .^ 2, x_filt, decay_all, x_filt_decay]));
 plot(all_first_peaks, 10 * log10(x(all_first_peaks, 1) .^ 2), 'b*');
 
-
-% TEST
-%10 * log10(hot_spot_metric)
-%hot_spot_metric((10 * log10(hot_spot_metric) < 0.4) | (10 * log10(hot_spot_metric) > 2.5)) = nan;
-%hot_spot_metric((10 * log10(hot_spot_metric) < 4) | (10 * log10(hot_spot_metric) > 5)) = nan;
-
 plot(all_second_peaks, 10 * log10(x(all_second_peaks, 1) .^ 2), 'm*');
-plot(all_second_peaks, hot_spot_metric + 70, 'c*', "markersize", 15);
-
+plot(all_hot_spots, 10 * log10(x(all_hot_spots, 1) .^ 2) - pad.hot_spot_attenuation_db, 'c*', "markersize", 15);
 
 plot(all_peaks, 10 * log10(x(all_peaks, 1) .^ 2), 'g*');
 plot(all_peaks_filt, 10 * log10(x_filt(all_peaks_filt)), 'y*');
@@ -103,7 +96,7 @@ x_filt_delay      = x_filt_delay;
 end
 
 
-function [all_peaks, all_first_peaks, all_second_peaks, all_peaks_filt, scan_region, mask_region, pre_scan_region, decay_all, decay_est_rng, x_filt_decay, hot_spot_metric] = ...
+function [all_peaks, all_first_peaks, all_second_peaks, all_hot_spots, all_peaks_filt, scan_region, mask_region, pre_scan_region, decay_all, decay_est_rng, x_filt_decay] = ...
            calc_peak_detection(x, x_filt, x_filt_delay, Fs)
 global pad;
 
@@ -139,7 +132,7 @@ last_peak_idx      = pre_scan_time + x_filt_delay;
 all_peaks          = [];
 all_first_peaks    = [];
 all_second_peaks   = [];
-hot_spot_metric    = [];
+all_hot_spots      = [];
 all_peaks_filt     = [];
 no_more_peak       = false;
 x_sq               = x .^ 2;
@@ -208,30 +201,29 @@ while ~no_more_peak
 
 
 % TEST hot spot detection testing
-second_peak_diff                = round(2.55 * 1e-3 * Fs);
-hot_spot_sec_peak_win_len       = 5;
-hot_spot_peak_diff_limit_min_db = 0.4; % dB minimum difference between first and second peak
-hot_spot_middle_diff_db         = 14;
+if pad.hot_spot_attenuation_db > 0
 
-second_peak_range = peak_idx + second_peak_diff + (-(hot_spot_sec_peak_win_len - 1) / 2:(hot_spot_sec_peak_win_len - 1) / 2);
-[second_peak_value, second_peak_idx] = max(x_sq(second_peak_range));
-second_peak_idx                      = second_peak_idx + second_peak_range(1) - 1;
+  second_peak_diff  = round(pad.second_peak_diff_ms * 1e-3 * Fs);
+  second_peak_range = peak_idx + second_peak_diff + (-(pad.hot_spot_sec_peak_win_len - 1) / 2:(pad.hot_spot_sec_peak_win_len - 1) / 2);
+  [second_peak_value, second_peak_idx] = max(x_sq(second_peak_range));
+  second_peak_idx                      = second_peak_idx + second_peak_range(1) - 1;
 
-middle_range_len    = second_peak_diff / 2;
-middle_range        = peak_idx + round((second_peak_idx - peak_idx) / 2) + (-middle_range_len / 2:middle_range_len / 2);
-middle_range_power  = mean(x_sq(middle_range));
-middle_range_metric = x_sq(second_peak_idx) / middle_range_power;
+  middle_range_len    = second_peak_diff / 2;
+  middle_range        = peak_idx + round((second_peak_idx - peak_idx) / 2) + (-middle_range_len / 2:middle_range_len / 2);
+  middle_range_power  = mean(x_sq(middle_range));
+  middle_range_metric = x_sq(second_peak_idx) / middle_range_power;
 
-first_second_peak_diff = x_sq(peak_idx) / x_sq(second_peak_idx);
+  first_second_peak_diff = x_sq(peak_idx) / x_sq(second_peak_idx);
 
-if (10 * log10(first_second_peak_diff) > hot_spot_peak_diff_limit_min_db) && ...
-    (10 * log10(middle_range_metric) > hot_spot_middle_diff_db)
+  if (10 * log10(first_second_peak_diff) > pad.hot_spot_peak_diff_limit_min_db) && ...
+      (10 * log10(middle_range_metric) > pad.hot_spot_middle_diff_db)
 
-  all_second_peaks = [all_second_peaks; second_peak_idx];
-  hot_spot_metric  = [hot_spot_metric; x_sq(peak_idx) / x_sq(second_peak_idx)];
+    all_second_peaks = [all_second_peaks; second_peak_idx];
+    all_hot_spots    = [all_hot_spots; peak_idx];
+
+  end
 
 end
-
 
 
   % search from above threshold to corrected scan+mask time for highest peak in
