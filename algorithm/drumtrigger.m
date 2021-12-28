@@ -199,32 +199,34 @@ while ~no_more_peak
   [~, max_idx] = max(x_sq(scan_indexes));
   peak_idx     = above_thresh_start + max_idx - 1;
 
+  % hot spot detection
+  if pad.hot_spot_attenuation_db > 0
 
-% TEST hot spot detection testing
-if pad.hot_spot_attenuation_db > 0
+    % In case of a hot spot strike, the second main peak is slightly lower than
+    % the first peak and in between these two peaks the level is low. Our
+    % detection metric is therefore the power difference between first and
+    % second peak and also the power difference between the second peak and the
+    % average of the power of the samples in between the two peaks.
+    second_peak_diff  = round(pad.second_peak_diff_ms * 1e-3 * Fs);
+    second_peak_range = peak_idx + second_peak_diff + (-(pad.hot_spot_sec_peak_win_len - 1) / 2:(pad.hot_spot_sec_peak_win_len - 1) / 2);
+    [second_peak_value, second_peak_idx] = max(x_sq(second_peak_range));
+    second_peak_idx                      = second_peak_idx + second_peak_range(1) - 1;
+    first_second_peak_diff               = x_sq(peak_idx) / x_sq(second_peak_idx);
 
-  second_peak_diff  = round(pad.second_peak_diff_ms * 1e-3 * Fs);
-  second_peak_range = peak_idx + second_peak_diff + (-(pad.hot_spot_sec_peak_win_len - 1) / 2:(pad.hot_spot_sec_peak_win_len - 1) / 2);
-  [second_peak_value, second_peak_idx] = max(x_sq(second_peak_range));
-  second_peak_idx                      = second_peak_idx + second_peak_range(1) - 1;
+    middle_range_half_len = round(second_peak_diff / 4); % middle range length is half the distance between main peaks
+    middle_range          = peak_idx + round((second_peak_idx - peak_idx) / 2) + (-middle_range_half_len:middle_range_half_len);
+    middle_range_power    = mean(x_sq(middle_range));
+    middle_range_metric   = x_sq(second_peak_idx) / middle_range_power;
 
-  middle_range_len    = second_peak_diff / 2;
-  middle_range        = peak_idx + round((second_peak_idx - peak_idx) / 2) + (-middle_range_len / 2:middle_range_len / 2);
-  middle_range_power  = mean(x_sq(middle_range));
-  middle_range_metric = x_sq(second_peak_idx) / middle_range_power;
+    if (10 * log10(first_second_peak_diff) > pad.hot_spot_peak_diff_limit_min_db) && ...
+        (10 * log10(middle_range_metric) > pad.hot_spot_middle_diff_db)
 
-  first_second_peak_diff = x_sq(peak_idx) / x_sq(second_peak_idx);
+      all_second_peaks = [all_second_peaks; second_peak_idx];
+      all_hot_spots    = [all_hot_spots; peak_idx];
 
-  if (10 * log10(first_second_peak_diff) > pad.hot_spot_peak_diff_limit_min_db) && ...
-      (10 * log10(middle_range_metric) > pad.hot_spot_middle_diff_db)
-
-    all_second_peaks = [all_second_peaks; second_peak_idx];
-    all_hot_spots    = [all_hot_spots; peak_idx];
+    end
 
   end
-
-end
-
 
   % search from above threshold to corrected scan+mask time for highest peak in
   % filtered signal, needed for decay power estimation, and also only in scan
