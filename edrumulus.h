@@ -419,7 +419,7 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
 
 // Utility functions -----------------------------------------------------------------
 
-static void update_fifo ( const float input,
+inline void update_fifo ( const float input,
                           const int   fifo_length,
                           float*      fifo_memory )
 {
@@ -431,7 +431,7 @@ static void update_fifo ( const float input,
   fifo_memory[fifo_length - 1] = input;
 }
 
-static void allocate_initialize ( float**   array_memory,
+inline void allocate_initialize ( float**   array_memory,
                                   const int array_length )
 {
   // (delete and) allocate memory
