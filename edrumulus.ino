@@ -36,13 +36,13 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 #endif
 
 Edrumulus edrumulus;
-const int number_pads       = 8;
+const int number_pads       = 8;             // note: must not exceed MAX_NUM_PADS
 const int status_LED_pin    = BOARD_LED_PIN; // internal LED used for overload indicator
-const int midi_channel      = 10; // default for edrums is 10
+const int midi_channel      = 10;            // default for edrums is 10
 const int hihat_pad_idx     = 2;
 const int hihatctrl_pad_idx = 3;
-bool      is_status_LED_on  = false;
-int       selected_pad      = 0;
+bool      is_status_LED_on  = false;         // initialization value
+int       selected_pad      = 0;             // initialization value
 
 
 void setup()
@@ -61,9 +61,9 @@ void setup()
   const int analog_pins_rimshot[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1 };
 #endif
 #ifdef TEENSYDUINO
-  // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2
-  const int analog_pins[]         = { 10,    11,    12,        13,          1,      6,     4,     5 };
-  const int analog_pins_rimshot[] = {  9,    -1,     0,        -1,          3,      8,     2,     7 };
+  // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
+  const int analog_pins[]         = { 10,    11,    12,        13,          1,      6,     4,     5,    17 };
+  const int analog_pins_rimshot[] = {  9,    -1,     0,        -1,          3,      8,     2,     7,    18 };
 #endif
 
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
@@ -97,6 +97,7 @@ void setup()
   edrumulus.set_pad_type          ( 6, Edrumulus::PD8 ); // ride, using rim switch
   edrumulus.set_rim_shot_is_used  ( 6, true );
   edrumulus.set_pad_type          ( 7, Edrumulus::PD8 ); // tom 2
+  edrumulus.set_pad_type          ( 8, Edrumulus::PD8 ); // tom 3
 
   // initialize GPIO port for status LED
   pinMode ( status_LED_pin, OUTPUT );
