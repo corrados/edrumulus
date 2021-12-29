@@ -124,7 +124,7 @@ global x_sq_hist x_sq_hist_len lp_filt_b lp_filt_hist lp_filt_len;
 global x_low_hist x_low_hist_len pos_sense_cnt x_low_hist_idx;
 global rim_shot_window_len rim_shot_treshold_dB x_rim_hist x_rim_hist_len rim_shot_cnt x_rim_hist_idx;
 global stored_pos_sense_metric stored_is_rimshot rim_bp_filt_a rim_bp_filt_b rim_bp_hist_x rim_bp_hist_y;
-global max_x_filt_val max_mask_x_filt_val max_x_filt_idx_debug;
+global max_x_filt_val max_mask_x_filt_val max_x_filt_idx_debug hot_spot_peak_diff_limit_min hot_spot_middle_diff;
 global was_peak_found was_pos_sense_ready was_rim_shot_ready was_hot_spot_ready;
 
 Fs                             = 8000;
@@ -153,6 +153,8 @@ hot_spot_cnt                   = 0;
 hot_spot_sec_peak_half_win_len = round(pad.hot_spot_sec_peak_win_len_ms * 1e-3 * Fs / 2);
 hot_spot_hist_len              = hot_spot_sec_peak_half_win_len + second_peak_diff * 3 / 4;
 hot_spot_hist_idx              = 1;
+hot_spot_peak_diff_limit_min   = 10 ^ (pad.hot_spot_peak_diff_limit_min_db / 10);
+hot_spot_middle_diff           = 10 ^ (pad.hot_spot_middle_diff_db / 10);
 decay_pow_est_start_cnt        = 0;
 decay_pow_est_cnt              = 0;
 decay_pow_est_sum              = 0;
@@ -301,7 +303,7 @@ global x_sq_hist x_sq_hist_len lp_filt_b lp_filt_hist lp_filt_len;
 global x_low_hist x_low_hist_len pos_sense_cnt x_low_hist_idx;
 global rim_shot_window_len rim_shot_treshold_dB x_rim_hist x_rim_hist_len rim_shot_cnt x_rim_hist_idx;
 global stored_pos_sense_metric stored_is_rimshot rim_bp_filt_a rim_bp_filt_b rim_bp_hist_x rim_bp_hist_y;
-global max_x_filt_val max_mask_x_filt_val max_x_filt_idx_debug;
+global max_x_filt_val max_mask_x_filt_val max_x_filt_idx_debug hot_spot_peak_diff_limit_min hot_spot_middle_diff;
 global was_peak_found was_pos_sense_ready was_rim_shot_ready was_hot_spot_ready;
 
 % initialize return parameter
@@ -622,53 +624,28 @@ if hot_spot_is_used
 
       end
 
-      second_peak_value = x_sq_hist(second_peak_hist_idx);
+      second_peak_value     = x_sq_hist(second_peak_hist_idx);
+      middle_range_half_len = round(second_peak_diff / 4); % middle range length is half the distance between main peaks
 
-%      middle_range_half_len = round(second_peak_diff / 4); % middle range length is half the distance between main peaks
-%      middle_range_power    = mean(x_sq_hist(hot_spot_hist_idx + (0:2 * middle_range_half_len + 1 - 1)));
+      middle_range_power = 0;
+      for idx_offset = 0:2 * middle_range_half_len
+        middle_range_power = middle_range_power + x_sq_hist(hot_spot_hist_idx + idx_offset);
+      end
+      middle_range_power = middle_range_power / (2 * middle_range_half_len + 1);
 
-%10 * log10(middle_range_power)
-
-
-% debugging outputs
-hot_spot_region_debug(i - x_sq_hist_len + second_peak_hist_start_idx + (0:2 * hot_spot_sec_peak_half_win_len)) = second_peak_value;
-
-% TODO
-stored_is_hotspot  = false;%true;
+      stored_is_hotspot = (peak_val / second_peak_value > hot_spot_peak_diff_limit_min) && ...
+                          (second_peak_value / middle_range_power > hot_spot_middle_diff);
 
       hot_spot_cnt       = 0;
       was_hot_spot_ready = true;
 
+      % debugging outputs
+      hot_spot_region_debug(i - x_sq_hist_len + second_peak_hist_start_idx + (0:2 * hot_spot_sec_peak_half_win_len)) = second_peak_value;
+      hot_spot_region_debug(i - x_sq_hist_len + hot_spot_hist_idx + (0:2 * middle_range_half_len))                   = middle_range_power;
+
     end
 
   end
-
-
-##hot_spot_sec_peak_half_win_len = round(pad.hot_spot_sec_peak_win_len_ms * 1e-3 * Fs / 2);
-##hot_spot_hist_len              = hot_spot_sec_peak_half_win_len + second_peak_diff * 3 / 4;
-##
-##
-##
-##second_peak_diff                     = round(pad.second_peak_diff_ms * 1e-3 * Fs);
-##hot_spot_sec_peak_half_win_len       = round(pad.hot_spot_sec_peak_win_len_ms * 1e-3 * Fs / 2);
-##second_peak_range                    = peak_idx + second_peak_diff + (-hot_spot_sec_peak_half_win_len:hot_spot_sec_peak_half_win_len);
-##[second_peak_value, second_peak_idx] = max(x_sq(second_peak_range));
-##second_peak_idx                      = second_peak_idx + second_peak_range(1) - 1;
-##first_second_peak_diff               = x_sq(peak_idx) / second_peak_value;
-##
-##middle_range_half_len = round(second_peak_diff / 4); % middle range length is half the distance between main peaks
-##middle_range          = peak_idx + round((second_peak_idx - peak_idx) / 2) + (-middle_range_half_len:middle_range_half_len);
-##middle_range_power    = mean(x_sq(middle_range));
-##middle_range_metric   = second_peak_value / middle_range_power;
-##
-##if (10 * log10(first_second_peak_diff) > pad.hot_spot_peak_diff_limit_min_db) && ...
-##    (10 * log10(middle_range_metric) > pad.hot_spot_middle_diff_db)
-##
-##  all_second_peaks = [all_second_peaks; second_peak_idx];
-##  all_hot_spots    = [all_hot_spots; peak_idx];
-##
-##end
-
 
 end
 
