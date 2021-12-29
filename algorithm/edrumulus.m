@@ -40,6 +40,7 @@ mask_region      = nan(size(x, 1), 1);
 decay_est_rng    = nan(size(x, 1), 1);
 decay_all        = nan(size(x, 1), 1);
 x_filt_decay     = nan(size(x, 1), 1);
+hot_spot_region  = nan(size(x, 1), 1);
 all_peaks        = [];
 all_first_peaks  = [];
 all_peaks_filt   = [];
@@ -63,26 +64,28 @@ for i = 1:size(x, 1)
    pos_sense_metric, ...
    is_rim_shot, ...
    rim_metric_db, ...
-   is_hot_spot] = process_sample(x(i, :), i, ...
-                                 x_filt, ...
-                                 pre_scan_region, ...
-                                 scan_region, ...
-                                 mask_region, ...
-                                 decay_est_rng, ...
-                                 decay_all, ...
-                                 x_filt_decay, ...
-                                 all_peaks, ...
-                                 all_first_peaks, ...
-                                 all_peaks_filt, ...
-                                 pos_sense_metric, ...
-                                 is_rim_shot, ...
-                                 rim_metric_db, ...
-                                 is_hot_spot);
+   is_hot_spot, ...
+   hot_spot_region] = process_sample(x(i, :), i, ...
+                                     x_filt, ...
+                                     pre_scan_region, ...
+                                     scan_region, ...
+                                     mask_region, ...
+                                     decay_est_rng, ...
+                                     decay_all, ...
+                                     x_filt_decay, ...
+                                     all_peaks, ...
+                                     all_first_peaks, ...
+                                     all_peaks_filt, ...
+                                     pos_sense_metric, ...
+                                     is_rim_shot, ...
+                                     rim_metric_db, ...
+                                     is_hot_spot, ...
+                                     hot_spot_region);
 
 end
 
 figure;
-plot(10 * log10([mask_region, scan_region, pre_scan_region, decay_est_rng]), 'LineWidth', 20);
+plot(10 * log10([mask_region, scan_region, pre_scan_region, decay_est_rng, hot_spot_region]), 'LineWidth', 20);
 grid on; hold on; set(gca, 'ColorOrderIndex', 1); % reset color order so that x trace is blue and so on
 plot(10 * log10([x(:, 1) .^ 2, x_filt, decay_all, x_filt_decay]));
 plot(all_first_peaks, 10 * log10(x(all_first_peaks, 1) .^ 2), 'b*');
@@ -111,12 +114,12 @@ end
 function Setup
 
 global pad Fs bp_filt_a bp_filt_b bp_filt_len bp_filt_hist_x bp_filt_hist_y x_filt_delay;
-global scan_time scan_time_cnt pre_scan_time total_scan_time;
+global scan_time scan_time_cnt pre_scan_time total_scan_time hot_spot_hist_len hot_spot_hist_idx;
 global mask_time mask_back_cnt threshold first_peak_diff_thresh was_above_threshold;
-global peak_val first_peak_val decay_mask_fact;
+global peak_val first_peak_val decay_mask_fact hot_spot_sec_peak_half_win_len;
 global decay_pow_est_start_cnt decay_pow_est_cnt decay_pow_est_sum;
 global decay_est_delay decay_est_len decay_est_fact decay_fact decay_len;
-global decay decay_back_cnt decay_scaling second_peak_diff stored_is_hotspot hot_spot_cnt;
+global decay decay_back_cnt decay_scaling second_peak_diff stored_is_hotspot hot_spot_cnt hot_spot_is_used;
 global x_sq_hist x_sq_hist_len lp_filt_b lp_filt_hist lp_filt_len;
 global x_low_hist x_low_hist_len pos_sense_cnt x_low_hist_idx;
 global rim_shot_window_len rim_shot_treshold_dB x_rim_hist x_rim_hist_len rim_shot_cnt x_rim_hist_idx;
@@ -124,68 +127,76 @@ global stored_pos_sense_metric stored_is_rimshot rim_bp_filt_a rim_bp_filt_b rim
 global max_x_filt_val max_mask_x_filt_val max_x_filt_idx_debug;
 global was_peak_found was_pos_sense_ready was_rim_shot_ready was_hot_spot_ready;
 
-Fs                       = 8000;
-bp_filt_len              = 5;
-bp_filt_a                = [6.704579059531744e-01, -2.930427216820138, 4.846289804288025, -3.586239808116909]';
-bp_filt_b                = [1.658193166930305e-02, 0, -3.316386333860610e-02, 0, 1.658193166930305e-02]';
-rim_bp_low_freq_a        = [0.8008026466657076, -3.348944421626415, 5.292099516163272, -3.743650976941178]';
-rim_bp_low_freq_b        = [0.005542717210280682, 0, -0.01108543442056136, 0, 0.005542717210280682]';
-rim_bp_high_freq_a       = [0.8008026466657077, -3.021126408169798, 4.637919662489649, -3.377196335768073]';
-rim_bp_high_freq_b       = [0.00554271721028068, 0, -0.01108543442056136, 0, 0.00554271721028068]';
-x_filt_delay             = 5;
-scan_time                = round(pad.scan_time_ms * 1e-3 * Fs);
-scan_time_cnt            = 0;
-pre_scan_time            = round(pad.pre_scan_time_ms * 1e-3 * Fs);
-total_scan_time          = scan_time + pre_scan_time; % includes pre-scan time
-mask_time                = round(pad.mask_time_ms * 1e-3 * Fs);
-mask_back_cnt            = 0;
-threshold                = 10 ^ (pad.threshold_db / 10);
-first_peak_diff_thresh   = 10 ^ (pad.first_peak_diff_thresh_db / 10);
-was_above_threshold      = false;
-peak_val                 = 0;
-first_peak_val           = 0;
-decay_pow_est_start_cnt  = 0;
-decay_pow_est_cnt        = 0;
-decay_pow_est_sum        = 0;
-decay_est_delay          = round(pad.decay_est_delay_ms * 1e-3 * Fs);
-decay_est_len            = round(pad.decay_est_len_ms * 1e-3 * Fs);
-decay_est_fact           = 10 ^ (pad.decay_est_fact_db / 10);
-decay_fact               = 10 ^ (pad.decay_fact_db / 10);
-decay_back_cnt           = 0;
-decay_scaling            = 1;
-decay_mask_fact          = 10 ^ (pad.mask_time_decay_fact_db / 10);
-pos_sense_cnt            = 0;
-x_low_hist_idx           = 1;
-bp_filt_hist_x           = zeros(bp_filt_len, 1);
-bp_filt_hist_y           = zeros(bp_filt_len - 1, 1);
-x_sq_hist_len            = total_scan_time;
-x_sq_hist                = zeros(x_sq_hist_len, 1);
-rim_bp_hist_x            = zeros(bp_filt_len, 1);
-rim_bp_hist_y            = zeros(bp_filt_len - 1, 1);
-rim_shot_window_len      = round(pad.rim_shot_window_len_ms * 1e-3 * Fs);
-x_rim_hist_len           = x_sq_hist_len + rim_shot_window_len;
-x_rim_hist_idx           = 1;
-rim_shot_treshold_dB     = -19; % dB
-x_rim_hist               = zeros(x_rim_hist_len, 1);
-rim_shot_cnt             = 0;
-second_peak_diff         = round(pad.second_peak_diff_ms * 1e-3 * Fs);
-hot_spot_cnt             = 0;
-stored_pos_sense_metric  = 0;
-stored_is_rimshot        = false;
-stored_is_hotspot        = false;
-max_x_filt_val           = 0;
-max_mask_x_filt_val      = 0;
-max_x_filt_idx_debug     = 0;
-was_peak_found           = false;
-was_pos_sense_ready      = false;
-was_rim_shot_ready       = false;
-was_hot_spot_ready       = false;
-decay_len1               = round(pad.decay_len_ms1 * 1e-3 * Fs);
-decay_grad1              = pad.decay_grad_fact1 / Fs;
-decay_len2               = round(pad.decay_len_ms2 * 1e-3 * Fs);
-decay_grad2              = pad.decay_grad_fact2 / Fs; % decay gradient factor
-decay_len3               = round(pad.decay_len_ms3 * 1e-3 * Fs);
-decay_grad3              = pad.decay_grad_fact3 / Fs;
+Fs                             = 8000;
+bp_filt_len                    = 5;
+bp_filt_a                      = [6.704579059531744e-01, -2.930427216820138, 4.846289804288025, -3.586239808116909]';
+bp_filt_b                      = [1.658193166930305e-02, 0, -3.316386333860610e-02, 0, 1.658193166930305e-02]';
+rim_bp_low_freq_a              = [0.8008026466657076, -3.348944421626415, 5.292099516163272, -3.743650976941178]';
+rim_bp_low_freq_b              = [0.005542717210280682, 0, -0.01108543442056136, 0, 0.005542717210280682]';
+rim_bp_high_freq_a             = [0.8008026466657077, -3.021126408169798, 4.637919662489649, -3.377196335768073]';
+rim_bp_high_freq_b             = [0.00554271721028068, 0, -0.01108543442056136, 0, 0.00554271721028068]';
+x_filt_delay                   = 5;
+hot_spot_is_used               = pad.hot_spot_attenuation_db > 0; % if attenuation is 0 dB, hot spot detection is disabled
+scan_time                      = round(pad.scan_time_ms * 1e-3 * Fs);
+scan_time_cnt                  = 0;
+pre_scan_time                  = round(pad.pre_scan_time_ms * 1e-3 * Fs);
+total_scan_time                = scan_time + pre_scan_time; % includes pre-scan time
+mask_time                      = round(pad.mask_time_ms * 1e-3 * Fs);
+mask_back_cnt                  = 0;
+threshold                      = 10 ^ (pad.threshold_db / 10);
+first_peak_diff_thresh         = 10 ^ (pad.first_peak_diff_thresh_db / 10);
+was_above_threshold            = false;
+peak_val                       = 0;
+first_peak_val                 = 0;
+second_peak_diff               = round(pad.second_peak_diff_ms * 1e-3 * Fs);
+hot_spot_cnt                   = 0;
+hot_spot_sec_peak_half_win_len = round(pad.hot_spot_sec_peak_win_len_ms * 1e-3 * Fs / 2);
+hot_spot_hist_len              = hot_spot_sec_peak_half_win_len + second_peak_diff * 3 / 4;
+hot_spot_hist_idx              = 1;
+decay_pow_est_start_cnt        = 0;
+decay_pow_est_cnt              = 0;
+decay_pow_est_sum              = 0;
+decay_est_delay                = round(pad.decay_est_delay_ms * 1e-3 * Fs);
+decay_est_len                  = round(pad.decay_est_len_ms * 1e-3 * Fs);
+decay_est_fact                 = 10 ^ (pad.decay_est_fact_db / 10);
+decay_fact                     = 10 ^ (pad.decay_fact_db / 10);
+decay_back_cnt                 = 0;
+decay_scaling                  = 1;
+decay_mask_fact                = 10 ^ (pad.mask_time_decay_fact_db / 10);
+pos_sense_cnt                  = 0;
+x_low_hist_idx                 = 1;
+bp_filt_hist_x                 = zeros(bp_filt_len, 1);
+bp_filt_hist_y                 = zeros(bp_filt_len - 1, 1);
+if hot_spot_is_used
+  x_sq_hist_len                = max(total_scan_time, hot_spot_hist_len);
+else
+  x_sq_hist_len                = total_scan_time;
+end
+x_sq_hist                      = zeros(x_sq_hist_len, 1);
+rim_bp_hist_x                  = zeros(bp_filt_len, 1);
+rim_bp_hist_y                  = zeros(bp_filt_len - 1, 1);
+rim_shot_window_len            = round(pad.rim_shot_window_len_ms * 1e-3 * Fs);
+x_rim_hist_len                 = x_sq_hist_len + rim_shot_window_len;
+x_rim_hist_idx                 = 1;
+rim_shot_treshold_dB           = -19; % dB
+x_rim_hist                     = zeros(x_rim_hist_len, 1);
+rim_shot_cnt                   = 0;
+stored_pos_sense_metric        = 0;
+stored_is_rimshot              = false;
+stored_is_hotspot              = false;
+max_x_filt_val                 = 0;
+max_mask_x_filt_val            = 0;
+max_x_filt_idx_debug           = 0;
+was_peak_found                 = false;
+was_pos_sense_ready            = false;
+was_rim_shot_ready             = false;
+was_hot_spot_ready             = false;
+decay_len1                     = round(pad.decay_len_ms1 * 1e-3 * Fs);
+decay_grad1                    = pad.decay_grad_fact1 / Fs;
+decay_len2                     = round(pad.decay_len_ms2 * 1e-3 * Fs);
+decay_grad2                    = pad.decay_grad_fact2 / Fs; % decay gradient factor
+decay_len3                     = round(pad.decay_len_ms3 * 1e-3 * Fs);
+decay_grad3                    = pad.decay_grad_fact3 / Fs;
 
 % calculate the decay curve
 decay_len = decay_len1 + decay_len2 + decay_len3;
@@ -261,29 +272,31 @@ function [x_filt_debug, ...
           pos_sense_metric, ...
           is_rim_shot_debug, ...
           rim_metric_db_debug, ...
-          is_hot_spot_debug] = process_sample(x, i, ...
-                                              x_filt_debug, ...
-                                              pre_scan_region_debug, ...
-                                              scan_region_debug, ...
-                                              mask_region_debug, ...
-                                              decay_est_rng_debug, ...
-                                              decay_all_debug, ...
-                                              x_filt_decay_debug, ...
-                                              all_peaks_debug, ...
-                                              all_first_peaks_debug, ...
-                                              all_peaks_filt_debug, ...
-                                              pos_sense_metric, ...
-                                              is_rim_shot_debug, ...
-                                              rim_metric_db_debug, ...
-                                              is_hot_spot_debug)
+          is_hot_spot_debug, ...
+          hot_spot_region_debug] = process_sample(x, i, ...
+                                                  x_filt_debug, ...
+                                                  pre_scan_region_debug, ...
+                                                  scan_region_debug, ...
+                                                  mask_region_debug, ...
+                                                  decay_est_rng_debug, ...
+                                                  decay_all_debug, ...
+                                                  x_filt_decay_debug, ...
+                                                  all_peaks_debug, ...
+                                                  all_first_peaks_debug, ...
+                                                  all_peaks_filt_debug, ...
+                                                  pos_sense_metric, ...
+                                                  is_rim_shot_debug, ...
+                                                  rim_metric_db_debug, ...
+                                                  is_hot_spot_debug, ...
+                                                  hot_spot_region_debug)
 
 global Fs bp_filt_a bp_filt_b bp_filt_len bp_filt_hist_x bp_filt_hist_y x_filt_delay;
-global scan_time scan_time_cnt pre_scan_time total_scan_time;
+global scan_time scan_time_cnt pre_scan_time total_scan_time hot_spot_hist_len hot_spot_hist_idx;
 global mask_time mask_back_cnt threshold first_peak_diff_thresh was_above_threshold;
-global peak_val first_peak_val decay_mask_fact;
+global peak_val first_peak_val decay_mask_fact hot_spot_sec_peak_half_win_len;
 global decay_pow_est_start_cnt decay_pow_est_cnt decay_pow_est_sum;
 global decay_est_delay decay_est_len decay_est_fact decay_fact decay_len;
-global decay decay_back_cnt decay_scaling second_peak_diff stored_is_hotspot hot_spot_cnt;
+global decay decay_back_cnt decay_scaling second_peak_diff stored_is_hotspot hot_spot_cnt hot_spot_is_used;
 global x_sq_hist x_sq_hist_len lp_filt_b lp_filt_hist lp_filt_len;
 global x_low_hist x_low_hist_len pos_sense_cnt x_low_hist_idx;
 global rim_shot_window_len rim_shot_treshold_dB x_rim_hist x_rim_hist_len rim_shot_cnt x_rim_hist_idx;
@@ -299,7 +312,6 @@ peak_delay        = 0;     % only used internally
 first_peak_delay  = 0;     % only used internally
 pos_sense_is_used = true;  % only used internally to enable/disable positional sensing
 rim_shot_is_used  = false; % only used internally
-hot_spot_is_used  = true;  % only used internally
 
 % square input signal and store in FIFO buffer
 x_sq      = x .^ 2;
@@ -586,15 +598,77 @@ if hot_spot_is_used
 
     % a peak was found, we now have to start the delay process to fill up the
     % required buffer length for our metric
-%    hot_spot_cnt   = max(1, TODO);
-%    x_rim_hist_idx = x_rim_hist_len - rim_shot_window_len - max(0, peak_delay - rim_shot_window_len + 1) + 1;
+    hot_spot_cnt      = max(1, second_peak_diff + hot_spot_sec_peak_half_win_len + 1 - peak_delay);
+    hot_spot_hist_idx = x_sq_hist_len - hot_spot_hist_len + max(0, peak_delay - hot_spot_hist_len + 1) + 1;
+
+  end
+
+  if hot_spot_cnt > 0
+
+    hot_spot_cnt = hot_spot_cnt - 1;
+
+    % end condition
+    if hot_spot_cnt == 0
+
+      % the buffers are filled, now calculate the metrics
+      second_peak_hist_start_idx = hot_spot_hist_idx + hot_spot_hist_len - (2 * hot_spot_sec_peak_half_win_len + 1);
+      second_peak_hist_idx       = second_peak_hist_start_idx;
+
+      for idx_offset = 1:2 * hot_spot_sec_peak_half_win_len
+
+        if x_sq_hist(second_peak_hist_idx) < x_sq_hist(second_peak_hist_start_idx + idx_offset)
+          second_peak_hist_idx = second_peak_hist_start_idx + idx_offset;
+        end
+
+      end
+
+      second_peak_value = x_sq_hist(second_peak_hist_idx);
+
+%      middle_range_half_len = round(second_peak_diff / 4); % middle range length is half the distance between main peaks
+%      middle_range_power    = mean(x_sq_hist(hot_spot_hist_idx + (0:2 * middle_range_half_len + 1 - 1)));
+
+%10 * log10(middle_range_power)
+
+
+% debugging outputs
+hot_spot_region_debug(i - x_sq_hist_len + second_peak_hist_start_idx + (0:2 * hot_spot_sec_peak_half_win_len)) = second_peak_value;
+
+% TODO
+stored_is_hotspot  = false;%true;
+
+      hot_spot_cnt       = 0;
+      was_hot_spot_ready = true;
+
+    end
 
   end
 
 
-% TODO
-stored_is_hotspot  = false;%true;
-was_hot_spot_ready = true;
+##hot_spot_sec_peak_half_win_len = round(pad.hot_spot_sec_peak_win_len_ms * 1e-3 * Fs / 2);
+##hot_spot_hist_len              = hot_spot_sec_peak_half_win_len + second_peak_diff * 3 / 4;
+##
+##
+##
+##second_peak_diff                     = round(pad.second_peak_diff_ms * 1e-3 * Fs);
+##hot_spot_sec_peak_half_win_len       = round(pad.hot_spot_sec_peak_win_len_ms * 1e-3 * Fs / 2);
+##second_peak_range                    = peak_idx + second_peak_diff + (-hot_spot_sec_peak_half_win_len:hot_spot_sec_peak_half_win_len);
+##[second_peak_value, second_peak_idx] = max(x_sq(second_peak_range));
+##second_peak_idx                      = second_peak_idx + second_peak_range(1) - 1;
+##first_second_peak_diff               = x_sq(peak_idx) / second_peak_value;
+##
+##middle_range_half_len = round(second_peak_diff / 4); % middle range length is half the distance between main peaks
+##middle_range          = peak_idx + round((second_peak_idx - peak_idx) / 2) + (-middle_range_half_len:middle_range_half_len);
+##middle_range_power    = mean(x_sq(middle_range));
+##middle_range_metric   = second_peak_value / middle_range_power;
+##
+##if (10 * log10(first_second_peak_diff) > pad.hot_spot_peak_diff_limit_min_db) && ...
+##    (10 * log10(middle_range_metric) > pad.hot_spot_middle_diff_db)
+##
+##  all_second_peaks = [all_second_peaks; second_peak_idx];
+##  all_hot_spots    = [all_hot_spots; peak_idx];
+##
+##end
+
 
 end
 
