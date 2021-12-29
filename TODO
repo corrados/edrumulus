@@ -4,8 +4,6 @@
 - Hot spot suppression on mesh pads with center piezo
   -> striking directly on the piezo results in detected velocity values which are much too high
 
-- use ADC_MAX_NOISE_AMPL in threshold_db calculation
-
 - set first_peak_diff_thresh_db to 20 in edrumulus.m and edrumulus.cpp and compare the results to make
   sure we do not have a bug here
 
