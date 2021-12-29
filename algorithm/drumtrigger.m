@@ -209,12 +209,12 @@ while ~no_more_peak
     second_peak_range = peak_idx + second_peak_diff + (-(pad.hot_spot_sec_peak_win_len - 1) / 2:(pad.hot_spot_sec_peak_win_len - 1) / 2);
     [second_peak_value, second_peak_idx] = max(x_sq(second_peak_range));
     second_peak_idx                      = second_peak_idx + second_peak_range(1) - 1;
-    first_second_peak_diff               = x_sq(peak_idx) / x_sq(second_peak_idx);
+    first_second_peak_diff               = x_sq(peak_idx) / second_peak_value;
 
     middle_range_half_len = round(second_peak_diff / 4); % middle range length is half the distance between main peaks
     middle_range          = peak_idx + round((second_peak_idx - peak_idx) / 2) + (-middle_range_half_len:middle_range_half_len);
     middle_range_power    = mean(x_sq(middle_range));
-    middle_range_metric   = x_sq(second_peak_idx) / middle_range_power;
+    middle_range_metric   = second_peak_value / middle_range_power;
 
     if (10 * log10(first_second_peak_diff) > pad.hot_spot_peak_diff_limit_min_db) && ...
         (10 * log10(middle_range_metric) > pad.hot_spot_middle_diff_db)
