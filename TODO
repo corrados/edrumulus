@@ -4,6 +4,8 @@
 - Hot spot suppression on mesh pads with center piezo
   -> striking directly on the piezo results in detected velocity values which are much too high
 
+- use ADC_MAX_NOISE_AMPL in threshold_db calculation
+
 - set first_peak_diff_thresh_db to 20 in edrumulus.m and edrumulus.cpp and compare the results to make
   sure we do not have a bug here
 
@@ -11,6 +13,7 @@
   -> maybe based on low-pass filtering as suggested in https://github.com/corrados/edrumulus/discussions/17#discussion-3736264
 
 - Improve dynamics for Drumgizmo (for official drum kits as well as self-recorded kit)
+  MIDI file 1:10:127 -> reference -> record audio -> DGEdit -> check the estimated powers
 
 - Create pad parameter set for CY-5
 
