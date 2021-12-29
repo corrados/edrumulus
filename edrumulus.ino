@@ -75,11 +75,11 @@ void setup()
   edrumulus.set_midi_notes_open ( hihat_pad_idx, 26 /*46*/, 26 );
   edrumulus.set_midi_notes      ( hihatctrl_pad_idx, 44, 44 ); // Hi-Hat pedal hit
   edrumulus.set_midi_ctrl_ch    ( hihatctrl_pad_idx, 4 ); // Hi-Hat control
-  edrumulus.set_midi_notes      ( 4, 49, 55 ); // crash
-  edrumulus.set_midi_notes      ( 5, 48, 50 ); // tom 1
-  edrumulus.set_midi_notes      ( 6, 51, 53 /*59*/ ); // ride (edge: 59, bell: 53)
-  edrumulus.set_midi_notes      ( 7, 45, 47 ); // tom 2
-  edrumulus.set_midi_notes      ( 8, 43, 58 ); // tom 3
+  edrumulus.set_midi_notes      ( 4, 49, 55 ); // tom 1
+  edrumulus.set_midi_notes      ( 5, 48, 50 ); // tom 2
+  edrumulus.set_midi_notes      ( 6, 51, 53 /*59*/ ); // x
+  edrumulus.set_midi_notes      ( 7, 45, 47 ); // x
+  edrumulus.set_midi_notes      ( 8, 43, 58 ); // x
 
 // thijstriemstra prototype setup configuration...
   edrumulus.set_pad_type          ( 0, Edrumulus::PD120 ); // snare (Drum-tec Diabolo)
