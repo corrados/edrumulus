@@ -41,14 +41,14 @@ Fs = 8000; % Hz
 
 % calculate peak detection, positional sensing and rim shot detection
 [x, x_filt, x_filt_delay] = filter_input_signal(x, Fs);
-[all_peaks, all_first_peaks, all_second_peaks, all_hot_spots, all_peaks_filt, scan_region, mask_region, pre_scan_region, decay_all, decay_est_rng, x_filt_decay] = ...
+[all_peaks, all_first_peaks, all_second_peaks, all_hot_spots, all_peaks_filt, scan_region, mask_region, pre_scan_region, hot_spot_region, decay_all, decay_est_rng, x_filt_decay] = ...
   calc_peak_detection(x(:, 1), x_filt, x_filt_delay, Fs);
 [is_rim_shot, rim_metric_db] = detect_rim_shot(x, all_peaks, Fs);
 pos_sense_metric             = calc_pos_sense_metric(x(:, 1), Fs, all_first_peaks);
 
 % plot results
 figure
-plot(10 * log10([mask_region, scan_region, pre_scan_region, decay_est_rng]), 'LineWidth', 20);
+plot(10 * log10([mask_region, scan_region, pre_scan_region, decay_est_rng, hot_spot_region]), 'LineWidth', 20);
 grid on; hold on; set(gca, 'ColorOrderIndex', 1); % reset color order so that x trace is blue and so on
 plot(10 * log10([x(:, 1) .^ 2, x_filt, decay_all, x_filt_decay]));
 plot(all_first_peaks, 10 * log10(x(all_first_peaks, 1) .^ 2), 'b*');
@@ -94,13 +94,14 @@ x_filt_delay      = x_filt_delay;
 end
 
 
-function [all_peaks, all_first_peaks, all_second_peaks, all_hot_spots, all_peaks_filt, scan_region, mask_region, pre_scan_region, decay_all, decay_est_rng, x_filt_decay] = ...
+function [all_peaks, all_first_peaks, all_second_peaks, all_hot_spots, all_peaks_filt, scan_region, mask_region, pre_scan_region, hot_spot_region, decay_all, decay_est_rng, x_filt_decay] = ...
            calc_peak_detection(x, x_filt, x_filt_delay, Fs)
 global pad;
 
 scan_region     = nan(size(x_filt));
 mask_region     = nan(size(x_filt));
 pre_scan_region = nan(size(x_filt));
+hot_spot_region = nan(size(x_filt));
 
 first_peak_diff_thresh = 10 ^ (pad.first_peak_diff_thresh_db / 10); % difference between peaks to find first peak
 mask_time              = round(pad.mask_time_ms * 1e-3 * Fs); % mask time (e.g. 10 ms)
@@ -205,8 +206,9 @@ while ~no_more_peak
     % detection metric is therefore the power difference between first and
     % second peak and also the power difference between the second peak and the
     % average of the power of the samples in between the two peaks.
-    second_peak_diff  = round(pad.second_peak_diff_ms * 1e-3 * Fs);
-    second_peak_range = peak_idx + second_peak_diff + (-(pad.hot_spot_sec_peak_win_len - 1) / 2:(pad.hot_spot_sec_peak_win_len - 1) / 2);
+    second_peak_diff                     = round(pad.second_peak_diff_ms * 1e-3 * Fs);
+    hot_spot_sec_peak_half_win_len       = round(pad.hot_spot_sec_peak_win_len_ms * 1e-3 * Fs / 2);
+    second_peak_range                    = peak_idx + second_peak_diff + (-hot_spot_sec_peak_half_win_len:hot_spot_sec_peak_half_win_len);
     [second_peak_value, second_peak_idx] = max(x_sq(second_peak_range));
     second_peak_idx                      = second_peak_idx + second_peak_range(1) - 1;
     first_second_peak_diff               = x_sq(peak_idx) / second_peak_value;
@@ -223,6 +225,10 @@ while ~no_more_peak
       all_hot_spots    = [all_hot_spots; peak_idx];
 
     end
+
+    % debugging outputs
+    hot_spot_region(second_peak_range) = second_peak_value;  % mark second peak search range
+    hot_spot_region(middle_range)      = middle_range_power; % mark middle range
 
   end
 
