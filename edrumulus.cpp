@@ -895,6 +895,9 @@ void Edrumulus::Pad::process_sample ( const float* input,
 
 
   // Calculate hot spot detection -------------------------------------------------
+  float hot_spot_debug1 = 0.0f;
+  float hot_spot_debug2 = 0.0f;
+  
   if ( hot_spot_is_used )
   {
     // start condition of delay process to fill up the required buffers
@@ -942,6 +945,10 @@ void Edrumulus::Pad::process_sample ( const float* input,
         // combine both metric to get the final detection result
         stored_is_hotspot = ( peak_val / second_peak_value > hot_spot_peak_diff_limit_min ) &&
                             ( second_peak_value / middle_range_power > hot_spot_middle_diff );
+
+// TEST
+hot_spot_debug1 = peak_val / second_peak_value;
+hot_spot_debug2 = second_peak_value / middle_range_power;
 
         hot_spot_cnt       = 0;
         was_hot_spot_ready = true;
@@ -1011,7 +1018,7 @@ if ( stored_is_rimshot )
     DEBUG_START_PLOTTING();
   }
 
-  DEBUG_ADD_VALUES ( input[0] * input[0], x_filt, scan_time_cnt > 0 ? 0.5 : mask_back_cnt > 0 ? 0.2 : cur_decay, threshold );
+  DEBUG_ADD_VALUES ( input[0] * input[0], x_filt, scan_time_cnt > 0 ? 0.5 : mask_back_cnt > 0 ? 0.2 : cur_decay, threshold, hot_spot_peak_diff_limit_min, hot_spot_middle_diff, hot_spot_debug1, hot_spot_debug2 );
 }
 
 void Edrumulus::Pad::process_control_sample ( const int* input,

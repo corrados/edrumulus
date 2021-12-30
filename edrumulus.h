@@ -17,7 +17,7 @@
 
 #pragma once
 
-//#define USE_SERIAL_DEBUG_PLOTTING
+#define USE_SERIAL_DEBUG_PLOTTING
 
 #include "Arduino.h"
 #include "edrumulus_hardware.h"
@@ -334,7 +334,7 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
 #  undef USE_MIDI // only MIDI or Serial possible with the ESP32
 # endif
       static const int debug_buffer_size    = 500;
-      static const int number_debug_buffers = 4;
+      static const int number_debug_buffers = 8;
       int              debug_buffer_idx     = 0;
       int              debug_out_cnt        = 0;
       float            debug_buffer[number_debug_buffers][debug_buffer_size];
@@ -342,12 +342,20 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       void DEBUG_ADD_VALUES ( const float value0,
                               const float value1,
                               const float value2,
-                              const float value3 )
+                              const float value3,
+                              const float value4,
+                              const float value5,
+                              const float value6,
+                              const float value7 )
       {
         debug_buffer[0][debug_buffer_idx] = value0;
         debug_buffer[1][debug_buffer_idx] = value1;
         debug_buffer[2][debug_buffer_idx] = value2;
         debug_buffer[3][debug_buffer_idx] = value3;
+        debug_buffer[4][debug_buffer_idx] = value4;
+        debug_buffer[5][debug_buffer_idx] = value5;
+        debug_buffer[6][debug_buffer_idx] = value6;
+        debug_buffer[7][debug_buffer_idx] = value7;
         debug_buffer_idx++;
 
         if ( debug_buffer_idx == debug_buffer_size )
