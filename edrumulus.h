@@ -206,6 +206,11 @@ protected:
         bool       rim_use_low_freq_bp;
         float      rim_shot_window_len_ms;
         int        rim_shot_velocity_thresh;
+        float      second_peak_diff_ms;
+        float      hot_spot_sec_peak_win_len_ms;
+        float      hot_spot_peak_diff_limit_min_db;
+        float      hot_spot_middle_diff_db;
+        float      hot_spot_attenuation_db;
       };
 
       void apply_preset_pad_settings();

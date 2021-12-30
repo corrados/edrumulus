@@ -21,35 +21,40 @@
 void Edrumulus::Pad::apply_preset_pad_settings()
 {
   // apply PRESET settings (might be overwritten by pad-specific properties)
-  pad_settings.velocity_threshold        = 8;  // 0..31
-  pad_settings.velocity_sensitivity      = 9;  // 0..31
-  pad_settings.mask_time_ms              = 6;  // 0..31 (ms)
-  pad_settings.pos_threshold             = 9;  // 0..31
-  pad_settings.pos_sensitivity           = 14; // 0..31
-  pad_settings.rim_shot_treshold         = 12; // 0..31
-  pad_settings.cancellation              = 0;  // 0..31
-  pad_settings.curve_type                = LINEAR;
-  pad_settings.pos_sense_is_used         = false;  // must be explicitely enabled if it shall be used
-  pad_settings.rim_shot_is_used          = false;  // must be explicitely enabled if it shall be used
-  pad_settings.first_peak_diff_thresh_db = 8.0f;   // pad specific parameter: allowed difference between first peak and later peak in scan time
-  pad_settings.mask_time_decay_fact_db   = 15.0f;  // pad specific parameter: during mask time decay factor for maximum peak in scan time
-  pad_settings.scan_time_ms              = 2.5f;   // pad specific parameter: scan time after first detected peak
-  pad_settings.pre_scan_time_ms          = 2.5f;   // pad specific parameter: pre-scan time to search for first peak
-  pad_settings.decay_est_delay_ms        = 7.0f;   // pad specific parameter: delay after second main peak until decay power estimation starts
-  pad_settings.decay_est_len_ms          = 4.0f;   // pad specific parameter: decay power estimation window length
-  pad_settings.decay_est_fact_db         = 16.0f;  // pad specific parameter: decay power estimation factor (to get over decay ripple)
-  pad_settings.decay_fact_db             = 1.0f;   // pad specific parameter: vertical shift of the decay function in dB
-  pad_settings.decay_len1_ms             = 0.0f;   // pad specific parameter: length of the decay 1
-  pad_settings.decay_grad_fact1          = 200.0f; // pad specific parameter: decay function gradient factor 1
-  pad_settings.decay_len2_ms             = 350.0f; // pad specific parameter: length of the decay 2
-  pad_settings.decay_grad_fact2          = 200.0f; // pad specific parameter: decay function gradient factor 2
-  pad_settings.decay_len3_ms             = 0.0f;   // pad specific parameter: length of the decay 3
-  pad_settings.decay_grad_fact3          = 200.0f; // pad specific parameter: decay function gradient factor 3
-  pad_settings.pos_low_pass_cutoff       = 150.0f; // pad specific parameter: low-pass filter cut-off in Hz for positional sensing
-  pad_settings.pos_invert                = false;  // pad specific parameter: invert the positional sensing metric
-  pad_settings.rim_use_low_freq_bp       = true;   // pad specific parameter: use low frequency band-pass filter for rim shot detection
-  pad_settings.rim_shot_window_len_ms    = 3.5f;   // pad specific parameter: window length for rim shot detection
-  pad_settings.rim_shot_velocity_thresh  = 0;      // pad specific parameter: velocity threshold for rim shots -> disabled per default
+  pad_settings.velocity_threshold              = 8;  // 0..31
+  pad_settings.velocity_sensitivity            = 9;  // 0..31
+  pad_settings.mask_time_ms                    = 6;  // 0..31 (ms)
+  pad_settings.pos_threshold                   = 9;  // 0..31
+  pad_settings.pos_sensitivity                 = 14; // 0..31
+  pad_settings.rim_shot_treshold               = 12; // 0..31
+  pad_settings.cancellation                    = 0;  // 0..31
+  pad_settings.curve_type                      = LINEAR;
+  pad_settings.pos_sense_is_used               = false;  // must be explicitely enabled if it shall be used
+  pad_settings.rim_shot_is_used                = false;  // must be explicitely enabled if it shall be used
+  pad_settings.first_peak_diff_thresh_db       = 8.0f;   // pad specific parameter: allowed difference between first peak and later peak in scan time
+  pad_settings.mask_time_decay_fact_db         = 15.0f;  // pad specific parameter: during mask time decay factor for maximum peak in scan time
+  pad_settings.scan_time_ms                    = 2.5f;   // pad specific parameter: scan time after first detected peak
+  pad_settings.pre_scan_time_ms                = 2.5f;   // pad specific parameter: pre-scan time to search for first peak
+  pad_settings.decay_est_delay_ms              = 7.0f;   // pad specific parameter: delay after second main peak until decay power estimation starts
+  pad_settings.decay_est_len_ms                = 4.0f;   // pad specific parameter: decay power estimation window length
+  pad_settings.decay_est_fact_db               = 16.0f;  // pad specific parameter: decay power estimation factor (to get over decay ripple)
+  pad_settings.decay_fact_db                   = 1.0f;   // pad specific parameter: vertical shift of the decay function in dB
+  pad_settings.decay_len1_ms                   = 0.0f;   // pad specific parameter: length of the decay 1
+  pad_settings.decay_grad_fact1                = 200.0f; // pad specific parameter: decay function gradient factor 1
+  pad_settings.decay_len2_ms                   = 350.0f; // pad specific parameter: length of the decay 2
+  pad_settings.decay_grad_fact2                = 200.0f; // pad specific parameter: decay function gradient factor 2
+  pad_settings.decay_len3_ms                   = 0.0f;   // pad specific parameter: length of the decay 3
+  pad_settings.decay_grad_fact3                = 200.0f; // pad specific parameter: decay function gradient factor 3
+  pad_settings.pos_low_pass_cutoff             = 150.0f; // pad specific parameter: low-pass filter cut-off in Hz for positional sensing
+  pad_settings.pos_invert                      = false;  // pad specific parameter: invert the positional sensing metric
+  pad_settings.rim_use_low_freq_bp             = true;   // pad specific parameter: use low frequency band-pass filter for rim shot detection
+  pad_settings.rim_shot_window_len_ms          = 3.5f;   // pad specific parameter: window length for rim shot detection
+  pad_settings.rim_shot_velocity_thresh        = 0;      // pad specific parameter: velocity threshold for rim shots -> disabled per default
+  pad_settings.second_peak_diff_ms             = 2.55f;  // pad specific parameter: time difference between first and second main peaks
+  pad_settings.hot_spot_sec_peak_win_len_ms    = 0.5f;   // pad specific parameter: time window length of searching for maximum of second main peak
+  pad_settings.hot_spot_peak_diff_limit_min_db = 0.4f;   // pad specific parameter: minimum difference between first and second peak for hot spot detection
+  pad_settings.hot_spot_middle_diff_db         = 14.0f;  // pad specific parameter: threshold for power difference between second peak and middle average power
+  pad_settings.hot_spot_attenuation_db         = 3.0f;   // pad specific parameter: 0 dB attenuation means that hot spot suppression is turned off
 
   switch ( pad_settings.pad_type )
   {
