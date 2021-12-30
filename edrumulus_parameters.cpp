@@ -54,12 +54,13 @@ void Edrumulus::Pad::apply_preset_pad_settings()
   pad_settings.hot_spot_sec_peak_win_len_ms    = 0.5f;   // pad specific parameter: time window length of searching for maximum of second main peak
   pad_settings.hot_spot_peak_diff_limit_min_db = 0.4f;   // pad specific parameter: minimum difference between first and second peak for hot spot detection
   pad_settings.hot_spot_middle_diff_db         = 14.0f;  // pad specific parameter: threshold for power difference between second peak and middle average power
-  pad_settings.hot_spot_attenuation_db         = 3.0f;   // pad specific parameter: 0 dB attenuation means that hot spot suppression is turned off
+  pad_settings.hot_spot_attenuation_db         = 0.0f;   // pad specific parameter: 0 dB attenuation means that hot spot suppression is turned off
 
   switch ( pad_settings.pad_type )
   {
     case PD120:
       // note: the PRESET settings are from the PD-120 pad
+      pad_settings.hot_spot_attenuation_db = 3.0f;
       break;
 
     case PD80R:
@@ -74,6 +75,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.decay_grad_fact3         = 100.0f;
       pad_settings.rim_use_low_freq_bp      = false;
       pad_settings.rim_shot_velocity_thresh = 10; // suppress incorrect rim shot detections on low velocity hits
+      pad_settings.hot_spot_attenuation_db  = 3.0f;
       break;
 
     case PD8:

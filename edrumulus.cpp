@@ -302,37 +302,50 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
 void Edrumulus::Pad::initialize()
 {
   // set algorithm parameters
-  const float threshold_db = 20 * log10 ( ADC_MAX_NOISE_AMPL ) - 16.0f + pad_settings.velocity_threshold; // threshold range considering the maximum ADC noise level
-  threshold                = pow   ( 10.0f, threshold_db / 10 );                   // linear power threshold
-  first_peak_diff_thresh   = pow   ( 10.0f, pad_settings.first_peak_diff_thresh_db / 10 ); // difference allowed between first peak and later peak in scan time
-  scan_time                = round ( pad_settings.scan_time_ms     * 1e-3f * Fs ); // scan time from first detected peak
-  pre_scan_time            = round ( pad_settings.pre_scan_time_ms * 1e-3f * Fs );
-  total_scan_time          = scan_time + pre_scan_time;                         // includes pre-scan time
-  mask_time                = round ( pad_settings.mask_time_ms  * 1e-3f * Fs ); // mask time (e.g. 10 ms)
-  decay_len1               = round ( pad_settings.decay_len1_ms * 1e-3f * Fs ); // decay time 1 (e.g. 250 ms)
-  decay_len2               = round ( pad_settings.decay_len2_ms * 1e-3f * Fs ); // decay time 2 (e.g. 250 ms)
-  decay_len3               = round ( pad_settings.decay_len3_ms * 1e-3f * Fs ); // decay time 3 (e.g. 250 ms)
-  decay_len                = decay_len1 + decay_len2 + decay_len3;
-  decay_fact               = pow   ( 10.0f, pad_settings.decay_fact_db / 10 );
-  decay_mask_fact          = pow   ( 10.0f, pad_settings.mask_time_decay_fact_db / 10 );
-  const float decay_grad1  = pad_settings.decay_grad_fact1 / Fs; // decay gradient factor 1
-  const float decay_grad2  = pad_settings.decay_grad_fact2 / Fs; // decay gradient factor 2
-  const float decay_grad3  = pad_settings.decay_grad_fact3 / Fs; // decay gradient factor 3
-  x_sq_hist_len            = total_scan_time;
-  decay_est_delay          = round ( pad_settings.decay_est_delay_ms * 1e-3f * Fs );
-  decay_est_len            = round ( pad_settings.decay_est_len_ms   * 1e-3f * Fs );
-  decay_est_fact           = pow ( 10.0f, pad_settings.decay_est_fact_db / 10 );
-  rim_shot_window_len      = round ( pad_settings.rim_shot_window_len_ms * 1e-3f * Fs );        // window length (e.g. 5 ms)
-  rim_shot_treshold_dB     = static_cast<float> ( pad_settings.rim_shot_treshold ) - 44;    // rim shot threshold
-  rim_switch_treshold      = -ADC_MAX_NOISE_AMPL + 9 * ( pad_settings.rim_shot_treshold - 31 ); // rim switch linear threshold
-  rim_switch_on_cnt_thresh = round ( 10.0f * 1e-3f * Fs );                                      // number of on samples until we detect a choke
-  x_rim_hist_len           = x_sq_hist_len + rim_shot_window_len;
-  cancellation_factor      = static_cast<float> ( pad_settings.cancellation ) / 31.0f;          // cancellation factor: range of 0.0..1.0
-  ctrl_history_len         = 10;   // (MUST BE AN EVEN VALUE) control history length, use a fixed value
-  ctrl_velocity_range_fact = 4.0f; // use a fixed value (TODO make it adjustable)
-  ctrl_velocity_threshold  = 5.0f; // use a fixed value (TODO make it adjustable)
-  overload_hist_len        = scan_time + x_filt_delay;
-  max_num_overloads        = 3; // maximum allowed number of overloaded samples until the overload special case is activated
+  const float threshold_db       = 20 * log10 ( ADC_MAX_NOISE_AMPL ) - 16.0f + pad_settings.velocity_threshold; // threshold range considering the maximum ADC noise level
+  threshold                      = pow   ( 10.0f, threshold_db / 10 );                   // linear power threshold
+  first_peak_diff_thresh         = pow   ( 10.0f, pad_settings.first_peak_diff_thresh_db / 10 ); // difference allowed between first peak and later peak in scan time
+  scan_time                      = round ( pad_settings.scan_time_ms     * 1e-3f * Fs ); // scan time from first detected peak
+  pre_scan_time                  = round ( pad_settings.pre_scan_time_ms * 1e-3f * Fs );
+  total_scan_time                = scan_time + pre_scan_time;                         // includes pre-scan time
+  mask_time                      = round ( pad_settings.mask_time_ms  * 1e-3f * Fs ); // mask time (e.g. 10 ms)
+  decay_len1                     = round ( pad_settings.decay_len1_ms * 1e-3f * Fs ); // decay time 1 (e.g. 250 ms)
+  decay_len2                     = round ( pad_settings.decay_len2_ms * 1e-3f * Fs ); // decay time 2 (e.g. 250 ms)
+  decay_len3                     = round ( pad_settings.decay_len3_ms * 1e-3f * Fs ); // decay time 3 (e.g. 250 ms)
+  decay_len                      = decay_len1 + decay_len2 + decay_len3;
+  decay_fact                     = pow   ( 10.0f, pad_settings.decay_fact_db / 10 );
+  decay_mask_fact                = pow   ( 10.0f, pad_settings.mask_time_decay_fact_db / 10 );
+  const float decay_grad1        = pad_settings.decay_grad_fact1 / Fs; // decay gradient factor 1
+  const float decay_grad2        = pad_settings.decay_grad_fact2 / Fs; // decay gradient factor 2
+  const float decay_grad3        = pad_settings.decay_grad_fact3 / Fs; // decay gradient factor 3
+  hot_spot_is_used               = pad_settings.hot_spot_attenuation_db > 0.0f; // if attenuation is 0 dB, hot spot detection is disabled
+  second_peak_diff               = round ( pad_settings.second_peak_diff_ms * 1e-3f * Fs );
+  hot_spot_sec_peak_half_win_len = round ( pad_settings.hot_spot_sec_peak_win_len_ms * 1e-3f * Fs / 2 );
+  hot_spot_hist_len              = hot_spot_sec_peak_half_win_len + second_peak_diff + 1;
+  hot_spot_peak_diff_limit_min   = pow   ( 10.0f, pad_settings.hot_spot_peak_diff_limit_min_db / 10 );
+  hot_spot_middle_diff           = pow   ( 10.0f, pad_settings.hot_spot_middle_diff_db / 10 );
+  if ( hot_spot_is_used )
+  {
+    x_sq_hist_len                = max ( total_scan_time, hot_spot_hist_len );
+  }
+  else
+  {
+    x_sq_hist_len                = total_scan_time;
+  }
+  decay_est_delay                = round ( pad_settings.decay_est_delay_ms * 1e-3f * Fs );
+  decay_est_len                  = round ( pad_settings.decay_est_len_ms   * 1e-3f * Fs );
+  decay_est_fact                 = pow ( 10.0f, pad_settings.decay_est_fact_db / 10 );
+  rim_shot_window_len            = round ( pad_settings.rim_shot_window_len_ms * 1e-3f * Fs );        // window length (e.g. 5 ms)
+  rim_shot_treshold_dB           = static_cast<float> ( pad_settings.rim_shot_treshold ) - 44;    // rim shot threshold
+  rim_switch_treshold            = -ADC_MAX_NOISE_AMPL + 9 * ( pad_settings.rim_shot_treshold - 31 ); // rim switch linear threshold
+  rim_switch_on_cnt_thresh       = round ( 10.0f * 1e-3f * Fs );                                      // number of on samples until we detect a choke
+  x_rim_hist_len                 = x_sq_hist_len + rim_shot_window_len;
+  cancellation_factor            = static_cast<float> ( pad_settings.cancellation ) / 31.0f;          // cancellation factor: range of 0.0..1.0
+  ctrl_history_len               = 10;   // (MUST BE AN EVEN VALUE) control history length, use a fixed value
+  ctrl_velocity_range_fact       = 4.0f; // use a fixed value (TODO make it adjustable)
+  ctrl_velocity_threshold        = 5.0f; // use a fixed value (TODO make it adjustable)
+  overload_hist_len              = scan_time + x_filt_delay;
+  max_num_overloads              = 3; // maximum allowed number of overloaded samples until the overload special case is activated
 
   // The ESP32 ADC has 12 bits resulting in a range of 20*log10(2048)=66.2 dB.
   // The sensitivity parameter shall be in the range of 0..31. This range should then be mapped to the
@@ -421,12 +434,16 @@ void Edrumulus::Pad::initialize()
   x_low_hist_idx          = 0;
   rim_shot_cnt            = 0;
   rim_switch_on_cnt       = 0;
+  hot_spot_cnt            = 0;
+  hot_spot_hist_idx       = 0;
   max_x_filt_val          = 0.0f;
   max_mask_x_filt_val     = 0.0f;
   was_peak_found          = false;
   was_pos_sense_ready     = false;
   was_rim_shot_ready      = false;
+  was_hot_spot_ready      = false;
   stored_is_rimshot       = false;
+  stored_is_hotspot       = false;
   prev_ctrl_value         = 0;
 
   // calculate positional sensing low-pass filter coefficients
@@ -568,6 +585,8 @@ void Edrumulus::Pad::process_sample ( const float* input,
       was_pos_sense_ready = false;  // needed since we reset the peak detection
       rim_shot_cnt        = 0;      // needed since we reset the peak detection
       was_rim_shot_ready  = false;  // needed since we reset the peak detection
+      hot_spot_cnt        = 0;      // needed since we reset the peak detection
+      was_hot_spot_ready  = false;  // needed since we reset the peak detection
     }
   }
 
@@ -874,9 +893,86 @@ void Edrumulus::Pad::process_sample ( const float* input,
     }
   }
 
+
+  // Calculate hot spot detection -------------------------------------------------
+  if ( hot_spot_is_used )
+  {
+    // start condition of delay process to fill up the required buffers
+    if ( was_peak_found && ( !was_hot_spot_ready ) && ( hot_spot_cnt == 0 ) )
+    {
+      // a peak was found, we now have to start the delay process to fill up the
+      // required buffer length for our metric
+      hot_spot_cnt      = max ( 1, hot_spot_hist_len - peak_delay );
+      hot_spot_hist_idx = x_sq_hist_len - hot_spot_hist_len - max ( 0, peak_delay - hot_spot_hist_len + 1 );
+    }
+
+    if ( hot_spot_cnt > 0 )
+    {
+      hot_spot_cnt--;
+
+      // end condition
+      if ( hot_spot_cnt == 0 )
+      {
+        // the buffers are filled, now calculate the metrics
+        // first metric: second/first peak difference
+        const int second_peak_hist_start_idx = hot_spot_hist_idx + hot_spot_hist_len - ( 2 * hot_spot_sec_peak_half_win_len + 1 ) - 1;
+        int       second_peak_hist_idx       = second_peak_hist_start_idx;
+
+        for ( int idx_offset = 1; idx_offset <= 2 * hot_spot_sec_peak_half_win_len; idx_offset++ )
+        {
+          if ( x_sq_hist[second_peak_hist_idx] < x_sq_hist[second_peak_hist_start_idx + idx_offset] )
+          {
+            second_peak_hist_idx = second_peak_hist_start_idx + idx_offset;
+          }
+        }
+
+        const float second_peak_value = x_sq_hist[second_peak_hist_idx];
+
+        // second metric: second/middle range difference
+        const int middle_range_half_len     = round ( second_peak_diff / 4.0f ); // middle range length is half the distance between main peaks
+        const int middle_range_start_offset = round ( ( second_peak_hist_idx - hot_spot_hist_idx ) / 2.0f ) - middle_range_half_len;
+
+        float middle_range_power = 0.0f;
+        for ( int idx_offset = 0; idx_offset <= 2 * middle_range_half_len; idx_offset++ )
+        {
+          middle_range_power += x_sq_hist[hot_spot_hist_idx + middle_range_start_offset + idx_offset];
+        }
+        middle_range_power /= 2 * middle_range_half_len + 1;
+
+        // combine both metric to get the final detection result
+        stored_is_hotspot = ( peak_val / second_peak_value > hot_spot_peak_diff_limit_min ) &&
+                            ( second_peak_value / middle_range_power > hot_spot_middle_diff );
+
+        hot_spot_cnt       = 0;
+        was_hot_spot_ready = true;
+
+
+// TO BE REMOVED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// TO BE REMOVED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// TEST for debugging hot spot detection
+/*
+if ( stored_is_hotspot )
+{
+  static int test_cnt = 0;
+  Serial.println ( "hot spot " + String ( test_cnt ) );
+  test_cnt++;
+}
+*/
+// TO BE REMOVED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// TO BE REMOVED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+      }
+    }
+  }
+
+
   // check for all estimations are ready and we can set the peak found flag and
   // return all results
-  if ( was_peak_found && ( !pos_sense_is_used || was_pos_sense_ready ) && ( !rim_shot_is_used || was_rim_shot_ready ) )
+  if ( was_peak_found &&
+       ( !pos_sense_is_used || was_pos_sense_ready ) &&
+       ( !rim_shot_is_used  || was_rim_shot_ready ) &&
+       ( !hot_spot_is_used  || was_hot_spot_ready ) )
   {
 
 // TODO in case of signal clipping, we cannot use the positional sensing and rim shot detection results
@@ -911,6 +1007,7 @@ if ( stored_is_rimshot )
     was_peak_found      = false;
     was_pos_sense_ready = false;
     was_rim_shot_ready  = false;
+    was_hot_spot_ready  = false;
     DEBUG_START_PLOTTING();
   }
 
