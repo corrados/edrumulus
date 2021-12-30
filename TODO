@@ -4,6 +4,9 @@
 - Hot spot suppression on mesh pads with center piezo
   -> striking directly on the piezo results in detected velocity values which are much too high
 
+- rim shot detection possible bug: const float rim_metric_db = 10 * log10 ( rim_max_pow / first_peak_val );
+  -> Shouldn't it be peak_val instead of first_peak_val?
+
 - set first_peak_diff_thresh_db to 20 in edrumulus.m and edrumulus.cpp and compare the results to make
   sure we do not have a bug here
 
