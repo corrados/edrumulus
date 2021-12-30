@@ -151,7 +151,7 @@ first_peak_val                 = 0;
 second_peak_diff               = round(pad.second_peak_diff_ms * 1e-3 * Fs);
 hot_spot_cnt                   = 0;
 hot_spot_sec_peak_half_win_len = round(pad.hot_spot_sec_peak_win_len_ms * 1e-3 * Fs / 2);
-hot_spot_hist_len              = hot_spot_sec_peak_half_win_len + second_peak_diff * 3 / 4;
+hot_spot_hist_len              = hot_spot_sec_peak_half_win_len + second_peak_diff + 1;
 hot_spot_hist_idx              = 1;
 hot_spot_peak_diff_limit_min   = 10 ^ (pad.hot_spot_peak_diff_limit_min_db / 10);
 hot_spot_middle_diff           = 10 ^ (pad.hot_spot_middle_diff_db / 10);
@@ -600,8 +600,8 @@ if hot_spot_is_used
 
     % a peak was found, we now have to start the delay process to fill up the
     % required buffer length for our metric
-    hot_spot_cnt      = max(1, second_peak_diff + hot_spot_sec_peak_half_win_len + 1 - peak_delay);
-    hot_spot_hist_idx = x_sq_hist_len - hot_spot_hist_len + max(0, peak_delay - hot_spot_hist_len + 1) + 1;
+    hot_spot_cnt      = max(1, hot_spot_hist_len - peak_delay);
+    hot_spot_hist_idx = x_sq_hist_len - hot_spot_hist_len - max(0, peak_delay - hot_spot_hist_len + 1) + 1;
 
   end
 
@@ -613,6 +613,7 @@ if hot_spot_is_used
     if hot_spot_cnt == 0
 
       % the buffers are filled, now calculate the metrics
+      % first metric: second/first peak difference
       second_peak_hist_start_idx = hot_spot_hist_idx + hot_spot_hist_len - (2 * hot_spot_sec_peak_half_win_len + 1);
       second_peak_hist_idx       = second_peak_hist_start_idx;
 
@@ -624,15 +625,19 @@ if hot_spot_is_used
 
       end
 
-      second_peak_value     = x_sq_hist(second_peak_hist_idx);
-      middle_range_half_len = round(second_peak_diff / 4); % middle range length is half the distance between main peaks
+      second_peak_value = x_sq_hist(second_peak_hist_idx);
+
+      % second metric: second/middle range difference
+      middle_range_half_len     = round(second_peak_diff / 4); % middle range length is half the distance between main peaks
+      middle_range_start_offset = round((second_peak_hist_idx - hot_spot_hist_idx) / 2) - middle_range_half_len;
 
       middle_range_power = 0;
       for idx_offset = 0:2 * middle_range_half_len
-        middle_range_power = middle_range_power + x_sq_hist(hot_spot_hist_idx + idx_offset);
+        middle_range_power = middle_range_power + x_sq_hist(hot_spot_hist_idx + middle_range_start_offset + idx_offset);
       end
       middle_range_power = middle_range_power / (2 * middle_range_half_len + 1);
 
+      % combine both metric to get the final detection result
       stored_is_hotspot = (peak_val / second_peak_value > hot_spot_peak_diff_limit_min) && ...
                           (second_peak_value / middle_range_power > hot_spot_middle_diff);
 
@@ -640,8 +645,8 @@ if hot_spot_is_used
       was_hot_spot_ready = true;
 
       % debugging outputs
-      hot_spot_region_debug(i - x_sq_hist_len + second_peak_hist_start_idx + (0:2 * hot_spot_sec_peak_half_win_len)) = second_peak_value;
-      hot_spot_region_debug(i - x_sq_hist_len + hot_spot_hist_idx + (0:2 * middle_range_half_len))                   = middle_range_power;
+      hot_spot_region_debug(i - x_sq_hist_len + second_peak_hist_start_idx + (0:2 * hot_spot_sec_peak_half_win_len))           = second_peak_value;
+      hot_spot_region_debug(i - x_sq_hist_len + hot_spot_hist_idx + middle_range_start_offset + (0:2 * middle_range_half_len)) = middle_range_power;
 
     end
 
