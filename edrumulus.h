@@ -118,14 +118,14 @@ protected:
       void setup ( const int conf_Fs,
                    const int conf_number_inputs = 1 );
 
-      void process_sample ( const float* input,
-                            const bool   overload_detected,
-                            bool&        peak_found,
-                            int&         midi_velocity,
-                            int&         midi_pos,
-                            bool&        is_rim_shot,
-                            bool&        is_choke_on,
-                            bool&        is_choke_off );
+      float process_sample ( const float* input,
+                             const bool   overload_detected,
+                             bool&        peak_found,
+                             int&         midi_velocity,
+                             int&         midi_pos,
+                             bool&        is_rim_shot,
+                             bool&        is_choke_on,
+                             bool&        is_choke_off );
 
       void process_control_sample ( const int* input,
                                     bool&      change_found,
