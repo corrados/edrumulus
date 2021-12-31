@@ -1019,7 +1019,7 @@ if ( stored_is_rimshot )
   }
 
   DEBUG_ADD_VALUES ( input[0] * input[0], x_filt, scan_time_cnt > 0 ? 0.5 : mask_back_cnt > 0 ? 0.2 : cur_decay, threshold );
-  return scan_time_cnt;//decay_back_cnt;//cur_decay;//x_filt;//first_peak_val;//peak_val;//second_peak_value;// // here, you can return debugging values for verification with Ocatve
+  return hot_spot_cnt;//second_peak_value;//scan_time_cnt;//decay_back_cnt;//cur_decay;//x_filt;//first_peak_val;//peak_val;// // here, you can return debugging values for verification with Ocatve
 }
 
 void Edrumulus::Pad::process_control_sample ( const int* input,
