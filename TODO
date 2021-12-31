@@ -9,6 +9,8 @@
 
 - move cancel_ADC_spikes() function to the end of the file
 
+- Should we use first peak value for "stored_is_hotspot = (peak_val / second_peak_value > hot_spot_peak_diff_limit_min) && ..."?
+
 - set first_peak_diff_thresh_db to 20 in edrumulus.m and edrumulus.cpp and compare the results to make
   sure we do not have a bug here
 
