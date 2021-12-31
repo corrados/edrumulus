@@ -328,7 +328,7 @@ void Edrumulus::Pad::initialize()
   hot_spot_middle_diff           = pow   ( 10.0f, pad_settings.hot_spot_middle_diff_db / 10 );
   if ( hot_spot_is_used )
   {
-    x_sq_hist_len                = max ( total_scan_time, hot_spot_hist_len );
+    x_sq_hist_len                = max ( total_scan_time, scan_time + hot_spot_hist_len );
   }
   else
   {
@@ -904,8 +904,8 @@ float Edrumulus::Pad::process_sample ( const float* input,
     {
       // a peak was found, we now have to start the delay process to fill up the
       // required buffer length for our metric
-      hot_spot_cnt      = max ( 1, hot_spot_hist_len - peak_delay );
-      hot_spot_hist_idx = x_sq_hist_len - hot_spot_hist_len - max ( 0, peak_delay - hot_spot_hist_len + 1 );
+      hot_spot_cnt      = max ( 1, hot_spot_hist_len - first_peak_delay );
+      hot_spot_hist_idx = x_sq_hist_len - hot_spot_hist_len - max ( 0, first_peak_delay - hot_spot_hist_len + 1 );
     }
 
     if ( hot_spot_cnt > 0 )
