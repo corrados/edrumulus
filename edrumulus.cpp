@@ -903,6 +903,7 @@ float Edrumulus::Pad::process_sample ( const float* input,
 float second_peak_value = 0;
 int second_peak_hist_idx = 0;
 int second_peak_hist_start_idx = 0;
+float middle_range_power = 0;
 
   if ( hot_spot_is_used )
   {
@@ -941,7 +942,7 @@ int second_peak_hist_start_idx = 0;
         const int middle_range_half_len     = round ( second_peak_diff / 4.0f ); // middle range length is half the distance between main peaks
         const int middle_range_start_offset = round ( ( second_peak_hist_idx - hot_spot_hist_idx ) / 2.0f ) - middle_range_half_len;
 
-        float middle_range_power = 0.0f;
+        /*float*/ middle_range_power = 0.0f;
         for ( int idx_offset = 0; idx_offset <= 2 * middle_range_half_len; idx_offset++ )
         {
           middle_range_power += x_sq_hist[hot_spot_hist_idx + middle_range_start_offset + idx_offset];
@@ -1021,7 +1022,11 @@ if ( stored_is_rimshot )
   }
 
   DEBUG_ADD_VALUES ( input[0] * input[0], x_filt, scan_time_cnt > 0 ? 0.5 : mask_back_cnt > 0 ? 0.2 : cur_decay, threshold );
-  return second_peak_value;//second_peak_hist_start_idx;//second_peak_hist_idx;//hot_spot_cnt;//scan_time_cnt;//decay_back_cnt;//cur_decay;//x_filt;//first_peak_val;//peak_val;// // here, you can return debugging values for verification with Ocatve
+
+float test = 1;
+if ( was_hot_spot_ready ) if ( stored_is_hotspot ) test = 100; else test = 10;
+  
+  return test;//middle_range_power;//second_peak_value;//second_peak_hist_start_idx;//second_peak_hist_idx;//hot_spot_cnt;//scan_time_cnt;//decay_back_cnt;//cur_decay;//x_filt;//first_peak_val;//peak_val;// // here, you can return debugging values for verification with Ocatve
 }
 
 void Edrumulus::Pad::process_control_sample ( const int* input,

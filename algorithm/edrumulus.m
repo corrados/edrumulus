@@ -21,7 +21,7 @@ function edrumulus(x, pad_input)
 
 global pad;
 
-close all
+%close all
 
 % load signal and pad settings
 if ~exist('x', 'var') || ~exist('pad_input', 'var')
@@ -676,6 +676,8 @@ if hot_spot_is_used
       % combine both metric to get the final detection result
       stored_is_hotspot = (peak_val / second_peak_value > hot_spot_peak_diff_limit_min) && ...
                           (second_peak_value / middle_range_power > hot_spot_middle_diff);
+
+10 * log10(second_peak_value / middle_range_power)
 
       hot_spot_cnt       = 0;
       was_hot_spot_ready = true;
