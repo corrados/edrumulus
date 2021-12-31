@@ -206,13 +206,13 @@ while ~no_more_peak
     % average of the power of the samples in between the two peaks.
     second_peak_diff                     = round(pad.second_peak_diff_ms * 1e-3 * Fs);
     hot_spot_sec_peak_half_win_len       = round(pad.hot_spot_sec_peak_win_len_ms * 1e-3 * Fs / 2);
-    second_peak_range                    = peak_idx + second_peak_diff + (-hot_spot_sec_peak_half_win_len:hot_spot_sec_peak_half_win_len);
+    second_peak_range                    = first_peak_idx + second_peak_diff + (-hot_spot_sec_peak_half_win_len:hot_spot_sec_peak_half_win_len);
     [second_peak_value, second_peak_idx] = max(x_sq(second_peak_range));
     second_peak_idx                      = second_peak_idx + second_peak_range(1) - 1;
-    first_second_peak_diff               = x_sq(peak_idx) / second_peak_value;
+    first_second_peak_diff               = x_sq(first_peak_idx) / second_peak_value;
 
     middle_range_half_len = round(second_peak_diff / 4); % middle range length is half the distance between main peaks
-    middle_range          = peak_idx + round((second_peak_idx - peak_idx) / 2) + (-middle_range_half_len:middle_range_half_len);
+    middle_range          = first_peak_idx + round((second_peak_idx - first_peak_idx) / 2) + (-middle_range_half_len:middle_range_half_len);
     middle_range_power    = mean(x_sq(middle_range));
     middle_range_metric   = second_peak_value / middle_range_power;
 

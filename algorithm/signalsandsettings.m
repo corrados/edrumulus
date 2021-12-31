@@ -41,7 +41,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
 %x = audioread("signals/pd80r.wav");x=x(:,1);padtype='pd80r';x = x(1:265000, :);%x = x(264000:320000, :);%
-x = audioread("signals/pd80r_hot_spot.wav");padtype='pd80r';
+x = audioread("signals/pd80r_hot_spot.wav");padtype='pd80r';%x = x(188000:194000, :);%
 %x = audioread("signals/pd80r_rimshot_issue.wav");padtype='pd80r';
 %x = audioread("signals/pdx8.wav");
 %x = audioread("signals/pd6.wav");
@@ -94,13 +94,15 @@ switch padtype
     % note: the PRESET settings are from the PD120 pad
     pad.hot_spot_attenuation_db = 3;
   case 'pd80r'
-    pad.scan_time_ms            = 3;
-    pad.decay_len_ms2           = 75;
-    pad.decay_grad_fact2        = 300;
-    pad.decay_len_ms3           = 300;
-    pad.decay_grad_fact3        = 100;
-    pad.rim_use_low_freq_bp     = false;
-    pad.hot_spot_attenuation_db = 3;
+    pad.scan_time_ms                    = 3;
+    pad.decay_len_ms2                   = 75;
+    pad.decay_grad_fact2                = 300;
+    pad.decay_len_ms3                   = 300;
+    pad.decay_grad_fact3                = 100;
+    pad.rim_use_low_freq_bp             = false;
+    pad.hot_spot_attenuation_db         = 3;
+    pad.hot_spot_peak_diff_limit_min_db = 4;
+    pad.hot_spot_middle_diff_db         = 5;
   case 'pd8'
     pad.scan_time_ms       = 1.3;
     pad.decay_est_delay_ms = 6;
@@ -139,19 +141,19 @@ switch padtype
     pad.decay_len_ms3      = 500;
     pad.decay_grad_fact3   = 45;
   case 'cy6'
-    pad.scan_time_ms       = 6;
-    pad.decay_len_ms2      = 150;
-    pad.decay_grad_fact2   = 120;
-    pad.decay_len_ms3      = 450;
-    pad.decay_grad_fact3   = 30;
+    pad.scan_time_ms     = 6;
+    pad.decay_len_ms2    = 150;
+    pad.decay_grad_fact2 = 120;
+    pad.decay_len_ms3    = 450;
+    pad.decay_grad_fact3 = 30;
   case 'cy8'
-    pad.scan_time_ms       = 6;
-    pad.decay_len_ms1      = 10;
-    pad.decay_grad_fact1   = 10;
-    pad.decay_len_ms2      = 100;
-    pad.decay_grad_fact2   = 200;
-    pad.decay_len_ms3      = 450;
-    pad.decay_grad_fact3   = 30;
+    pad.scan_time_ms     = 6;
+    pad.decay_len_ms1    = 10;
+    pad.decay_grad_fact1 = 10;
+    pad.decay_len_ms2    = 100;
+    pad.decay_grad_fact2 = 200;
+    pad.decay_len_ms3    = 450;
+    pad.decay_grad_fact3 = 30;
 end
 
 end
