@@ -112,6 +112,7 @@ void Edrumulus::process()
 // TEST for debugging: take samples from Octave, process and return result to Octave
 if ( Serial.available() > 0 )
 {
+  static int m = micros(); if ( micros() - m > 500000 ) pad[0].set_velocity_threshold ( 14.938 ); m = micros(); // 17 dB threshold
   float fIn[2]; fIn[0] = Serial.parseFloat(); fIn[1] = 0.0f;//Serial.parseFloat();
   bool peak_found_debug, is_rim_shot_debug, is_choke_on_debug, is_choke_off_debug;
   int  midi_velocity_debug, midi_pos_debug;
@@ -917,7 +918,7 @@ float Edrumulus::Pad::process_sample ( const float* input,
       {
         // the buffers are filled, now calculate the metrics
         // first metric: second/first peak difference
-        const int second_peak_hist_start_idx = hot_spot_hist_idx + hot_spot_hist_len - ( 2 * hot_spot_sec_peak_half_win_len + 1 ) - 1;
+        const int second_peak_hist_start_idx = hot_spot_hist_idx + hot_spot_hist_len - ( 2 * hot_spot_sec_peak_half_win_len + 1 );
         int       second_peak_hist_idx       = second_peak_hist_start_idx;
 
         for ( int idx_offset = 1; idx_offset <= 2 * hot_spot_sec_peak_half_win_len; idx_offset++ )
