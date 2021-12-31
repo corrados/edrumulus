@@ -108,10 +108,11 @@ void Edrumulus::process()
 {
   float sample[MAX_NUM_PAD_INPUTS];
 
-/*
+
 // TEST for debugging: take samples from Octave, process and return result to Octave
 if ( Serial.available() > 0 )
 {
+  static int m = micros(); if ( micros() - m > 500000 ) pad[0].set_velocity_threshold ( 14.938 /*17dB*/ ); m = micros();
   float fIn[2]; fIn[0] = Serial.parseFloat(); fIn[1] = 0.0f;//Serial.parseFloat();
   bool peak_found_debug, is_rim_shot_debug, is_choke_on_debug, is_choke_off_debug;
   int  midi_velocity_debug, midi_pos_debug;
@@ -119,7 +120,7 @@ if ( Serial.available() > 0 )
   Serial.println ( y, 7 );
 }
 return;
-*/
+
 
 
   // Query samples -------------------------------------------------------------
@@ -304,7 +305,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
 void Edrumulus::Pad::initialize()
 {
   // set algorithm parameters
-  const float threshold_db       = 20 * log10 ( ADC_MAX_NOISE_AMPL ) - 16.0f + pad_settings.velocity_threshold; // threshold range considering the maximum ADC noise level
+  const float threshold_db       = 17;//20 * log10 ( ADC_MAX_NOISE_AMPL ) - 16.0f + pad_settings.velocity_threshold; // threshold range considering the maximum ADC noise level
   threshold                      = pow   ( 10.0f, threshold_db / 10 );                   // linear power threshold
   first_peak_diff_thresh         = pow   ( 10.0f, pad_settings.first_peak_diff_thresh_db / 10 ); // difference allowed between first peak and later peak in scan time
   scan_time                      = round ( pad_settings.scan_time_ms     * 1e-3f * Fs ); // scan time from first detected peak
@@ -897,6 +898,10 @@ float Edrumulus::Pad::process_sample ( const float* input,
 
 
   // Calculate hot spot detection -------------------------------------------------
+
+// TEST
+float second_peak_value = 0;
+
   if ( hot_spot_is_used )
   {
     // start condition of delay process to fill up the required buffers
@@ -928,7 +933,7 @@ float Edrumulus::Pad::process_sample ( const float* input,
           }
         }
 
-        const float second_peak_value = x_sq_hist[second_peak_hist_idx];
+        /*const float*/ second_peak_value = x_sq_hist[second_peak_hist_idx];
 
         // second metric: second/middle range difference
         const int middle_range_half_len     = round ( second_peak_diff / 4.0f ); // middle range length is half the distance between main peaks
@@ -1014,7 +1019,7 @@ if ( stored_is_rimshot )
   }
 
   DEBUG_ADD_VALUES ( input[0] * input[0], x_filt, scan_time_cnt > 0 ? 0.5 : mask_back_cnt > 0 ? 0.2 : cur_decay, threshold );
-  return x_filt; // here, you can return debugging values for verification with Ocatve
+  return scan_time_cnt;//decay_back_cnt;//cur_decay;//x_filt;//first_peak_val;//peak_val;//second_peak_value;// // here, you can return debugging values for verification with Ocatve
 }
 
 void Edrumulus::Pad::process_control_sample ( const int* input,

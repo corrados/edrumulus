@@ -21,7 +21,7 @@ function edrumulus(x, pad_input)
 
 global pad;
 
-%close all
+close all
 
 % load signal and pad settings
 if ~exist('x', 'var') || ~exist('pad_input', 'var')
@@ -108,7 +108,7 @@ ylim([-10, 90]);
 %axis([61, 293, 14, 71]);
 %axis([2871, 3098, 12, 67]);
 
-return;
+%return;
 
 % TEST
 % prepare serial port
@@ -138,10 +138,10 @@ for i = 1:length(x)
 end
 %figure; plot(10 * log10(abs(circshift(y, -27)))+40,'*'); grid on;
 %figure; plot(10 * log10(y)); grid on;
-figure; plot(10 * log10(y),'*'); grid on;
+%figure; plot(10 * log10(y),'*'); grid on;
 %figure; plot(20 * log10(abs(y))); grid on;
 %figure; plot(y+40, '*'); grid on;
-%figure; plot(y, '*'); grid on;
+figure; plot(y); grid on;
 ylim([-10, 90]);
 
 end
