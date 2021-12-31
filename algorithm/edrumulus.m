@@ -138,10 +138,10 @@ for i = 1:length(x)
 end
 %figure; plot(10 * log10(abs(circshift(y, -27)))+40,'*'); grid on;
 %figure; plot(10 * log10(y)); grid on;
-%figure; plot(10 * log10(y),'*'); grid on;
+figure; plot(10 * log10(y),'*'); grid on;
 %figure; plot(20 * log10(abs(y))); grid on;
 %figure; plot(y+40, '*'); grid on;
-figure; plot(y, '*'); grid on;
+%figure; plot(y, '*'); grid on;
 ylim([-10, 90]);
 
 end

@@ -901,6 +901,8 @@ float Edrumulus::Pad::process_sample ( const float* input,
 
 // TEST
 float second_peak_value = 0;
+int second_peak_hist_idx = 0;
+int second_peak_hist_start_idx = 0;
 
   if ( hot_spot_is_used )
   {
@@ -922,8 +924,8 @@ float second_peak_value = 0;
       {
         // the buffers are filled, now calculate the metrics
         // first metric: second/first peak difference
-        const int second_peak_hist_start_idx = hot_spot_hist_idx + hot_spot_hist_len - ( 2 * hot_spot_sec_peak_half_win_len + 1 ) - 1;
-        int       second_peak_hist_idx       = second_peak_hist_start_idx;
+        /*const int*/ second_peak_hist_start_idx = hot_spot_hist_idx + hot_spot_hist_len - ( 2 * hot_spot_sec_peak_half_win_len + 1 );
+        /*int*/       second_peak_hist_idx       = second_peak_hist_start_idx;
 
         for ( int idx_offset = 1; idx_offset <= 2 * hot_spot_sec_peak_half_win_len; idx_offset++ )
         {
@@ -1019,7 +1021,7 @@ if ( stored_is_rimshot )
   }
 
   DEBUG_ADD_VALUES ( input[0] * input[0], x_filt, scan_time_cnt > 0 ? 0.5 : mask_back_cnt > 0 ? 0.2 : cur_decay, threshold );
-  return hot_spot_cnt;//second_peak_value;//scan_time_cnt;//decay_back_cnt;//cur_decay;//x_filt;//first_peak_val;//peak_val;// // here, you can return debugging values for verification with Ocatve
+  return second_peak_value;//second_peak_hist_start_idx;//second_peak_hist_idx;//hot_spot_cnt;//scan_time_cnt;//decay_back_cnt;//cur_decay;//x_filt;//first_peak_val;//peak_val;// // here, you can return debugging values for verification with Ocatve
 }
 
 void Edrumulus::Pad::process_control_sample ( const int* input,
