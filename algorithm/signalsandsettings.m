@@ -29,7 +29,7 @@ padtype = 'pd120'; % default
 
 %x = audioread("signals/teensy4_0_noise_test.wav");x=(x-mean(x))*4;padtype = 'pd80r';
 %x = audioread("signals/teensy4_0_pd80r.wav");x=(x-mean(x))*4;padtype = 'pd80r';%x = x(1:390000, :);%
-x = audioread("signals/teensy4_0_pd80r_hot_spot.wav");x=(x-mean(x))*4;padtype = 'pd80r';
+%x = audioread("signals/teensy4_0_pd80r_hot_spot.wav");x=(x-mean(x))*4;padtype = 'pd80r';
 %x = audioread("signals/esp32_pd120.wav");x=x/8;
 %x = audioread("signals/esp32_pd8.wav");x=x/8;padtype = 'pd8';
 %x = audioread("signals/pd120_pos_sense.wav");%x=x(10600:15000);%x = x(2900:10000, :);%x = x(55400:58000, :);%
@@ -37,7 +37,7 @@ x = audioread("signals/teensy4_0_pd80r_hot_spot.wav");x=(x-mean(x))*4;padtype = 
 %x = audioread("signals/pd120_single_hits.wav");
 %x = audioread("signals/pd120_roll.wav");%x = x(1:20000, :);%x = x(292410:294749, :);%x = x(311500:317600, :);
 %x = audioread("signals/pd120_middle_velocity.wav");
-%x = audioread("signals/pd120_hot_spot.wav");%x = x(1:5000);%x = x(41500:42200);%
+x = audioread("signals/pd120_hot_spot.wav");%x = x(1:5000);%x = x(41500:42200);%
 %x = audioread("signals/pd120_rimshot.wav");%x=x(7000:15000,:);%x = x(1:100000, :);%x = x(168000:171000, :);%x = x(1:34000, :);%
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
@@ -105,6 +105,13 @@ switch padtype
     pad.hot_spot_attenuation_db         = 3;
     pad.hot_spot_peak_diff_limit_min_db = 4;
     pad.hot_spot_middle_diff_db         = 5;
+
+% TEST
+%pad.second_peak_diff_ms             = 3.2;
+%pad.hot_spot_peak_diff_limit_min_db = 1;
+%pad.hot_spot_middle_diff_db         = 5;
+
+
   case 'pd8'
     pad.scan_time_ms       = 1.3;
     pad.decay_est_delay_ms = 6;
