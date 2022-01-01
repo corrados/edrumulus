@@ -868,7 +868,7 @@ float Edrumulus::Pad::process_sample ( const float* input,
             rim_max_pow = max ( rim_max_pow, x_rim_hist[x_rim_hist_idx + i] );
           }
 
-          const float rim_metric_db = 10 * log10 ( rim_max_pow / first_peak_val );
+          const float rim_metric_db = 10 * log10 ( rim_max_pow / peak_val );
           stored_is_rimshot         = rim_metric_db > rim_shot_treshold_dB;
           rim_shot_cnt              = 0;
           was_rim_shot_ready        = true;
