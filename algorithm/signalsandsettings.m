@@ -37,11 +37,11 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd120_single_hits.wav");
 %x = audioread("signals/pd120_roll.wav");%x = x(1:20000, :);%x = x(292410:294749, :);%x = x(311500:317600, :);
 %x = audioread("signals/pd120_middle_velocity.wav");
-x = audioread("signals/pd120_hot_spot.wav");%x = x(1:5000);%x = x(41500:42200);%
+%x = audioread("signals/pd120_hot_spot.wav");%x = x(1:5000);%x = x(41500:42200);%
 %x = audioread("signals/pd120_rimshot.wav");%x=x(7000:15000,:);%x = x(1:100000, :);%x = x(168000:171000, :);%x = x(1:34000, :);%
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
-%x = audioread("signals/pd80r.wav");x=x(:,1);padtype='pd80r';x = x(1:265000, :);%x = x(264000:320000, :);%
+x = audioread("signals/pd80r.wav");x=x(:,1);padtype='pd80r';x = x(1:265000, :);%x = x(264000:320000, :);%
 %x = audioread("signals/pd80r_hot_spot.wav");padtype='pd80r';%x = x(191700:192400, :);%
 %x = audioread("signals/pd80r_no_hot_spot.wav");padtype='pd80r';
 %x = audioread("signals/pd80r_rimshot_issue.wav");padtype='pd80r';
@@ -96,22 +96,13 @@ switch padtype
     % note: the PRESET settings are from the PD120 pad
     pad.hot_spot_attenuation_db = 3;
   case 'pd80r'
-    pad.scan_time_ms                    = 3;
-    pad.decay_len_ms2                   = 75;
-    pad.decay_grad_fact2                = 300;
-    pad.decay_len_ms3                   = 300;
-    pad.decay_grad_fact3                = 100;
-    pad.rim_use_low_freq_bp             = false;
-    pad.hot_spot_attenuation_db         = 3;
-    pad.hot_spot_peak_diff_limit_min_db = 4;
-    pad.hot_spot_middle_diff_db         = 5;
-
-% TEST
-%pad.second_peak_diff_ms             = 3.2;
-%pad.hot_spot_peak_diff_limit_min_db = 1;
-%pad.hot_spot_middle_diff_db         = 5;
-
-
+    pad.scan_time_ms            = 3;
+    pad.decay_len_ms2           = 75;
+    pad.decay_grad_fact2        = 300;
+    pad.decay_len_ms3           = 300;
+    pad.decay_grad_fact3        = 100;
+    pad.rim_use_low_freq_bp     = false;
+    pad.hot_spot_attenuation_db = 3;
   case 'pd8'
     pad.scan_time_ms       = 1.3;
     pad.decay_est_delay_ms = 6;
