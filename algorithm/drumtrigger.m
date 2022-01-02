@@ -236,6 +236,12 @@ end
 % TEST
 metric = x_sq(first_peak_idx) / x_sq(hot_spot_peak_idx);
 
+
+% TEST
+%rng_test = first_peak_idx + (0:15);
+%hot_spot_region(rng_test(1:end - 1)) = max(1, -diff(x_sq(rng_test)));
+
+
 %    if (10 * log10(first_second_peak_diff) > pad.hot_spot_peak_diff_limit_min_db) && ...
 %        (10 * log10(middle_range_metric) > pad.hot_spot_middle_diff_db)
 
