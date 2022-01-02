@@ -24,12 +24,12 @@ and in the [discussion forums](https://github.com/corrados/edrumulus/discussions
   parts possible.
 
 - Features:
-  - :ballot_box_with_check: Positional sensing
-  - :ballot_box_with_check: Retrigger cancellation
-  - :ballot_box_with_check: Rim shot/cymbol choke detection
-  - :ballot_box_with_check: Cross talk cancellation
-  - :black_square_button: Hot spot suppression for mesh head pads
-  - :black_square_button: Compensation of clipping distortion
+  - [x] Positional sensing
+  - [x] Retrigger cancellation
+  - [x] Rim shot/cymbol choke detection
+  - [x] Cross talk cancellation
+  - [ ] Hot spot suppression for mesh head pads
+  - [ ] Compensation of clipping distortion
 
 - Supported micro processor developer boards are:
   - **ESP32 (dual core) DEVKIT V1 or similar**
