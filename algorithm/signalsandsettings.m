@@ -41,8 +41,8 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd120_rimshot.wav");%x=x(7000:15000,:);%x = x(1:100000, :);%x = x(168000:171000, :);%x = x(1:34000, :);%
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
-x = audioread("signals/pd80r.wav");x=x(:,1);padtype='pd80r';x = x(1:265000, :);%x = x(264000:320000, :);%
-%x = audioread("signals/pd80r_hot_spot.wav");padtype='pd80r';%x = x(191700:192400, :);%
+%x = audioread("signals/pd80r.wav");x=x(:,1);padtype='pd80r';x = x(1:265000, :);%x = x(264000:320000, :);%
+x = audioread("signals/pd80r_hot_spot.wav");padtype='pd80r';%x = x(191700:192400, :);%
 %x = audioread("signals/pd80r_no_hot_spot.wav");padtype='pd80r';
 %x = audioread("signals/pd80r_rimshot_issue.wav");padtype='pd80r';
 %x = audioread("signals/pdx8.wav");
@@ -85,8 +85,8 @@ pad.pos_low_pass_cutoff             = 150; % Hz
 pad.pos_invert                      = false;
 pad.rim_shot_window_len_ms          = 3.5;
 pad.rim_use_low_freq_bp             = true;
-pad.second_peak_diff_ms             = 2.55;
-pad.hot_spot_sec_peak_win_len_ms    = 0.5;
+pad.second_peak_diff_ms             = 2.9;%3.5;%2.55;
+pad.hot_spot_sec_peak_win_len_ms    = 1.2;%0.5;
 pad.hot_spot_peak_diff_limit_min_db = 0.4; % dB minimum difference between first and second peak
 pad.hot_spot_middle_diff_db         = 14;
 pad.hot_spot_attenuation_db         = 0; % 0 dB attenuation means that hot spot suppression is turned off

@@ -177,17 +177,34 @@ while ~no_more_peak
   peak_idx_after_initial = find((x_sq(2 + first_peak_idx:end) < x_sq(1 + first_peak_idx:end - 1)) & ...
     (x_sq(1 + first_peak_idx:end - 1) >= x_sq(first_peak_idx:end - 2)));
 
-  scan_peaks_idx     = first_peak_idx + peak_idx_after_initial(peak_idx_after_initial <= total_scan_time);
+  scan_peaks_idx     = first_peak_idx + peak_idx_after_initial(peak_idx_after_initial <= 3 * total_scan_time);
   all_scan_peaks_idx = [all_scan_peaks_idx; scan_peaks_idx]; % only for debugging
 
   % if a peak in the scan time is much higher than the initial peak, use that one
+  scan_peaks_idx_first = 1;
   for i = 1:length(scan_peaks_idx)
 
     if x_sq(first_peak_idx) * first_peak_diff_thresh < x_sq(scan_peaks_idx(i))
-      first_peak_idx = scan_peaks_idx(i);
+
+      first_peak_idx       = scan_peaks_idx(i);
+      scan_peaks_idx_first = i;
+
     end
 
   end
+
+% TEST
+hot_spot_peak_idx = first_peak_idx;
+peak_found = false;
+cnt = 1;
+while ~peak_found && (scan_peaks_idx_first + cnt <= length(scan_peaks_idx))
+  hot_spot_peak_idx = scan_peaks_idx(scan_peaks_idx_first + cnt);
+  cnt = cnt + 1;
+
+  if (hot_spot_peak_idx - first_peak_idx > 6)
+    peak_found = true;
+  end
+end
 
   all_first_peaks = [all_first_peaks; first_peak_idx];
 
@@ -216,8 +233,17 @@ while ~no_more_peak
     middle_range_power    = mean(x_sq(middle_range));
     middle_range_metric   = second_peak_value / middle_range_power;
 
-    if (10 * log10(first_second_peak_diff) > pad.hot_spot_peak_diff_limit_min_db) && ...
-        (10 * log10(middle_range_metric) > pad.hot_spot_middle_diff_db)
+% TEST
+metric = x_sq(first_peak_idx) / x_sq(hot_spot_peak_idx);
+
+%    if (10 * log10(first_second_peak_diff) > pad.hot_spot_peak_diff_limit_min_db) && ...
+%        (10 * log10(middle_range_metric) > pad.hot_spot_middle_diff_db)
+
+%if (10 * log10(metric) < 10)% && (hot_spot_peak_idx - first_peak_idx < 15)
+
+if ((10 * log10(first_second_peak_diff) > pad.hot_spot_peak_diff_limit_min_db) && ...
+    (10 * log10(middle_range_metric) > pad.hot_spot_middle_diff_db)) || ...
+   ((10 * log10(metric) < 10) && (hot_spot_peak_idx - first_peak_idx < 12))
 
       all_hot_spots = [all_hot_spots; peak_idx];
     end
@@ -225,6 +251,11 @@ while ~no_more_peak
     % debugging outputs
     hot_spot_region(second_peak_range) = second_peak_value;  % mark second peak search range
     hot_spot_region(middle_range)      = middle_range_power; % mark middle range
+
+% TEST
+%hot_spot_region(second_peak_range) = metric;%second_peak_value;  % mark second peak search range
+%hot_spot_region(hot_spot_peak_idx:hot_spot_peak_idx + 2)      = x_sq(hot_spot_peak_idx); % mark middle range
+
 
   end
 
