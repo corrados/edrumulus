@@ -10,6 +10,8 @@
 - Improve dynamics for Drumgizmo (for official drum kits as well as self-recorded kit)
   MIDI file 1:10:127 -> reference -> record audio -> DGEdit -> check the estimated powers
 
+- support positional sensing for rim shots
+
 - Create pad parameter set for CY-5
 
 - Create pad parameter set for PDX-8
