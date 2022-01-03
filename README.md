@@ -24,10 +24,12 @@ and in the [discussion forums](https://github.com/corrados/edrumulus/discussions
   parts possible.
 
 - Features:
-  - Positional sensing
-  - Retrigger cancellation
-  - Rim shot/cymbol choke detection
-  - Cross talk cancellation
+  - [x] Positional sensing
+  - [x] Retrigger cancellation
+  - [x] Rim shot/cymbol choke detection
+  - [x] Cross talk cancellation
+  - [ ] Hot spot suppression for mesh head pads
+  - [ ] Compensation of clipping distortion
 
 - Supported micro processor developer boards are:
   - **ESP32 (dual core) DEVKIT V1 or similar**
