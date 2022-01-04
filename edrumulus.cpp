@@ -1,5 +1,5 @@
 /******************************************************************************\
- * Copyright (c) 2020-2021
+ * Copyright (c) 2020-2022
  * Author(s): Volker Fischer
  ******************************************************************************
  * This program is free software; you can redistribute it and/or modify it under
@@ -112,9 +112,12 @@ void Edrumulus::process()
 // TEST for debugging: take samples from Octave, process and return result to Octave
 if ( Serial.available() > 0 )
 {
-  const float fIn = Serial.parseFloat();
-  pad[0].process_sample ( fIn, peak_found, midi_velocity, midi_pos, is_rim_shot, debug );
-  Serial.println ( debug, 7 );
+  static int m = micros(); if ( micros() - m > 500000 ) pad[0].set_velocity_threshold ( 14.938 ); m = micros(); // 17 dB threshold
+  float fIn[2]; fIn[0] = Serial.parseFloat(); fIn[1] = 0.0f;//Serial.parseFloat();
+  bool peak_found_debug, is_rim_shot_debug, is_choke_on_debug, is_choke_off_debug;
+  int  midi_velocity_debug, midi_pos_debug;
+  float y = pad[0].process_sample ( fIn, false, peak_found_debug, midi_velocity_debug, midi_pos_debug, is_rim_shot_debug, is_choke_on_debug, is_choke_off_debug );
+  Serial.println ( y, 7 );
 }
 return;
 */
@@ -294,143 +297,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   // apply new pad type and set all parameters to the default values for that pad type
   pad_settings.pad_type = new_pad_type;
 
-  // apply PRESET settings (might be overwritten by pad-specific properties)
-  pad_settings.velocity_threshold        = 8;  // 0..31
-  pad_settings.velocity_sensitivity      = 9;  // 0..31
-  pad_settings.mask_time_ms              = 6;  // 0..31 (ms)
-  pad_settings.pos_threshold             = 9;  // 0..31
-  pad_settings.pos_sensitivity           = 14; // 0..31
-  pad_settings.rim_shot_treshold         = 12; // 0..31
-  pad_settings.cancellation              = 0;  // 0..31
-  pad_settings.curve_type                = LINEAR;
-  pad_settings.pos_sense_is_used         = false;  // must be explicitely enabled if it shall be used
-  pad_settings.rim_shot_is_used          = false;  // must be explicitely enabled if it shall be used
-  pad_settings.first_peak_diff_thresh_db = 8.0f;   // pad specific parameter: allowed difference between first peak and later peak in scan time
-  pad_settings.mask_time_decay_fact_db   = 15.0f;  // pad specific parameter: during mask time decay factor for maximum peak in scan time
-  pad_settings.scan_time_ms              = 2.5f;   // pad specific parameter: scan time after first detected peak
-  pad_settings.pre_scan_time_ms          = 2.5f;   // pad specific parameter: pre-scan time to search for first peak
-  pad_settings.decay_est_delay_ms        = 7.0f;   // pad specific parameter: delay after second main peak until decay power estimation starts
-  pad_settings.decay_est_len_ms          = 4.0f;   // pad specific parameter: decay power estimation window length
-  pad_settings.decay_est_fact_db         = 16.0f;  // pad specific parameter: decay power estimation factor (to get over decay ripple)
-  pad_settings.decay_fact_db             = 1.0f;   // pad specific parameter: vertical shift of the decay function in dB
-  pad_settings.decay_len1_ms             = 0.0f;   // pad specific parameter: length of the decay 1
-  pad_settings.decay_grad_fact1          = 200.0f; // pad specific parameter: decay function gradient factor 1
-  pad_settings.decay_len2_ms             = 350.0f; // pad specific parameter: length of the decay 2
-  pad_settings.decay_grad_fact2          = 200.0f; // pad specific parameter: decay function gradient factor 2
-  pad_settings.decay_len3_ms             = 0.0f;   // pad specific parameter: length of the decay 3
-  pad_settings.decay_grad_fact3          = 200.0f; // pad specific parameter: decay function gradient factor 3
-  pad_settings.pos_low_pass_cutoff       = 150.0f; // pad specific parameter: low-pass filter cut-off in Hz for positional sensing
-  pad_settings.pos_invert                = false;  // pad specific parameter: invert the positional sensing metric
-  pad_settings.rim_use_low_freq_bp       = true;   // pad specific parameter: use low frequency band-pass filter for rim shot detection
-  pad_settings.rim_shot_window_len_ms    = 3.5f;   // pad specific parameter: window length for rim shot detection
-  pad_settings.rim_shot_velocity_thresh  = 0;      // pad specific parameter: velocity threshold for rim shots -> disabled per default
-
-  switch ( new_pad_type )
-  {
-    case PD120:
-      // note: the PRESET settings are from the PD-120 pad
-      break;
-
-    case PD80R:
-      pad_settings.velocity_sensitivity     = 5;
-      pad_settings.rim_shot_treshold        = 11;
-      pad_settings.pos_threshold            = 11;
-      pad_settings.pos_sensitivity          = 10;
-      pad_settings.scan_time_ms             = 3.0f;
-      pad_settings.decay_len2_ms            = 75.0f;
-      pad_settings.decay_grad_fact2         = 300.0f;
-      pad_settings.decay_len3_ms            = 300.0f;
-      pad_settings.decay_grad_fact3         = 100.0f;
-      pad_settings.rim_use_low_freq_bp      = false;
-      pad_settings.rim_shot_velocity_thresh = 10; // suppress incorrect rim shot detections on low velocity hits
-      break;
-
-    case PD8:
-      pad_settings.velocity_sensitivity = 5;
-      pad_settings.pos_threshold        = 26;
-      pad_settings.pos_sensitivity      = 11;
-      pad_settings.rim_shot_treshold    = 16;
-      pad_settings.mask_time_ms         = 7;
-      pad_settings.scan_time_ms         = 1.3f;
-      pad_settings.decay_est_delay_ms   = 6.0f;
-      pad_settings.decay_fact_db        = 5.0f;
-      pad_settings.decay_len2_ms        = 30.0f;
-      pad_settings.decay_grad_fact2     = 600.0f;
-      pad_settings.decay_len3_ms        = 150.0f;
-      pad_settings.decay_grad_fact3     = 120.0f;
-      break;
-
-    case TP80:
-      pad_settings.velocity_sensitivity = 10;
-      pad_settings.pos_threshold        = 22;
-      pad_settings.pos_sensitivity      = 23;
-      pad_settings.scan_time_ms         = 2.75f;
-      pad_settings.decay_est_delay_ms   = 11.0f;
-      pad_settings.decay_len2_ms        = 60.0f;
-      pad_settings.decay_grad_fact2     = 400.0f;
-      pad_settings.decay_len3_ms        = 700.0f;
-      pad_settings.decay_grad_fact3     = 60.0f;
-      pad_settings.pos_invert           = true;
-      break;
-
-    case FD8:
-      pad_settings.velocity_threshold   = 5;
-      pad_settings.velocity_sensitivity = 0;
-      break;
-
-    case VH12:
-// TODO if the Hi-Hat is open just a little bit, we get double triggers
-      pad_settings.scan_time_ms       = 4.0f;
-      pad_settings.decay_est_delay_ms = 9.0f;
-      pad_settings.decay_fact_db      = 5.0f;
-      pad_settings.decay_len2_ms      = 27.0f;
-      pad_settings.decay_grad_fact2   = 700.0f;
-      pad_settings.decay_len3_ms      = 600.0f; // must be long because of open Hi-Hat ringing
-      pad_settings.decay_grad_fact3   = 75.0f;
-      break;
-
-    case VH12CTRL:
-      pad_settings.velocity_threshold   = 19;
-      pad_settings.velocity_sensitivity = 28;
-      break;
-
-    case KD7:
-      pad_settings.velocity_threshold   = 11;
-      pad_settings.velocity_sensitivity = 6;
-      pad_settings.scan_time_ms         = 2.0f;
-      pad_settings.decay_est_delay_ms   = 8.0f;
-      pad_settings.decay_fact_db        = 5.0f;
-      pad_settings.decay_len1_ms        = 4.0f;
-      pad_settings.decay_grad_fact1     = 30.0f;
-      pad_settings.decay_len2_ms        = 30.0f;
-      pad_settings.decay_grad_fact2     = 450.0f;
-      pad_settings.decay_len3_ms        = 500.0f;
-      pad_settings.decay_grad_fact3     = 45.0f;
-      break;
-
-    case CY6:
-      pad_settings.scan_time_ms     = 6.0f;
-      pad_settings.decay_len2_ms    = 150.0f;
-      pad_settings.decay_grad_fact2 = 120.0f;
-      pad_settings.decay_len3_ms    = 450.0f;
-      pad_settings.decay_grad_fact3 = 30.0f;
-      break;
-
-    case CY8:
-      pad_settings.velocity_threshold   = 13;
-      pad_settings.velocity_sensitivity = 8;
-      pad_settings.rim_shot_treshold    = 30;
-      pad_settings.curve_type           = LOG2;
-      pad_settings.scan_time_ms         = 6.0f;
-      pad_settings.decay_len1_ms        = 10.0f;
-      pad_settings.decay_grad_fact1     = 10.0f;
-      pad_settings.decay_len2_ms        = 100.0f;
-      pad_settings.decay_grad_fact2     = 200.0f;
-      pad_settings.decay_len3_ms        = 450.0f;
-      pad_settings.decay_grad_fact3     = 30.0f;
-      break;
-  }
-
+  apply_preset_pad_settings();
   initialize();
 }
 
@@ -438,7 +305,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
 void Edrumulus::Pad::initialize()
 {
   // set algorithm parameters
-  const float threshold_db = 2.0f + pad_settings.velocity_threshold;               // define threshold range
+  const float threshold_db = 20 * log10 ( ADC_MAX_NOISE_AMPL ) - 16.0f + pad_settings.velocity_threshold; // threshold range considering the maximum ADC noise level
   threshold                = pow   ( 10.0f, threshold_db / 10 );                   // linear power threshold
   first_peak_diff_thresh   = pow   ( 10.0f, pad_settings.first_peak_diff_thresh_db / 10 ); // difference allowed between first peak and later peak in scan time
   scan_time                = round ( pad_settings.scan_time_ms     * 1e-3f * Fs ); // scan time from first detected peak
@@ -624,14 +491,14 @@ void Edrumulus::Pad::initialize()
 }
 
 
-void Edrumulus::Pad::process_sample ( const float* input,
-                                      const bool   overload_detected,
-                                      bool&        peak_found,
-                                      int&         midi_velocity,
-                                      int&         midi_pos,
-                                      bool&        is_rim_shot,
-                                      bool&        is_choke_on,
-                                      bool&        is_choke_off )
+float Edrumulus::Pad::process_sample ( const float* input,
+                                       const bool   overload_detected,
+                                       bool&        peak_found,
+                                       int&         midi_velocity,
+                                       int&         midi_pos,
+                                       bool&        is_rim_shot,
+                                       bool&        is_choke_on,
+                                       bool&        is_choke_off )
 {
   // initialize return parameter
   peak_found                    = false;
@@ -648,8 +515,7 @@ void Edrumulus::Pad::process_sample ( const float* input,
   const bool pos_sense_inverted = pad_settings.pos_invert;                                // can be applied directly without calling initialize()
 
   // square input signal and store in FIFO buffer
-  const float x_sq     = input[0] * input[0];
-  const float x_rim_sq = input[1] * input[1];
+  const float x_sq = input[0] * input[0];
   update_fifo ( x_sq,                            x_sq_hist_len,     x_sq_hist );
   update_fifo ( overload_detected ? 1.0f : 0.0f, overload_hist_len, overload_hist );
 
@@ -1002,7 +868,7 @@ void Edrumulus::Pad::process_sample ( const float* input,
             rim_max_pow = max ( rim_max_pow, x_rim_hist[x_rim_hist_idx + i] );
           }
 
-          const float rim_metric_db = 10 * log10 ( rim_max_pow / first_peak_val );
+          const float rim_metric_db = 10 * log10 ( rim_max_pow / peak_val );
           stored_is_rimshot         = rim_metric_db > rim_shot_treshold_dB;
           rim_shot_cnt              = 0;
           was_rim_shot_ready        = true;
@@ -1052,6 +918,7 @@ if ( stored_is_rimshot )
   }
 
   DEBUG_ADD_VALUES ( input[0] * input[0], x_filt, scan_time_cnt > 0 ? 0.5 : mask_back_cnt > 0 ? 0.2 : cur_decay, threshold );
+  return x_filt; // here, you can return debugging values for verification with Ocatve
 }
 
 void Edrumulus::Pad::process_control_sample ( const int* input,

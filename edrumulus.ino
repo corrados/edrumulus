@@ -1,5 +1,5 @@
 /******************************************************************************\
- * Copyright (c) 2020-2021
+ * Copyright (c) 2020-2022
  * Author(s): Volker Fischer
  ******************************************************************************
  * This program is free software; you can redistribute it and/or modify it under
@@ -26,6 +26,7 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 #  define MYMIDI                     MIDI
 #  define MIDI_CONTROL_CHANGE_TYPE   midi::ControlChange
 #  define MIDI_SEND_AFTER_TOUCH      sendAfterTouch
+#  define MIDI_SERIAL                38400
 # endif
 # ifdef TEENSYDUINO
 #  define MYMIDI                     usbMIDI
@@ -35,20 +36,19 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 #endif
 
 Edrumulus edrumulus;
-const int number_pads       = 6;
+const int number_pads       = 6;             // note: must not exceed MAX_NUM_PADS
 const int status_LED_pin    = BOARD_LED_PIN; // internal LED used for overload indicator
-const int midi_channel      = 10; // default for edrums is 10
+const int midi_channel      = 10;            // default for edrums is 10
 const int hihat_pad_idx     = 2;
 const int hihatctrl_pad_idx = 3;
-bool      is_status_LED_on  = false;
-int       selected_pad      = 0;
+bool      is_status_LED_on  = false;         // initialization value
+int       selected_pad      = 0;             // initialization value
 
 
 void setup()
 {
-#ifdef USE_MIDI
-  MYMIDI.begin();
-  Serial.begin ( 38400 );
+#ifdef MIDI_SERIAL
+  Serial.begin ( MIDI_SERIAL );
 #else
   Serial.begin ( 115200 );
 #endif
@@ -61,9 +61,9 @@ void setup()
   const int analog_pins_rimshot[] = { 35,    -1,     26,       -1,         -1,     -1,    13,    -1,    -1 };
 #endif
 #ifdef TEENSYDUINO
-  // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2
-  const int analog_pins[]         = { 10,    11,    12,        13,          1,      6,     4,     5 };
-  const int analog_pins_rimshot[] = {  9,    -1,     0,        -1,          3,      8,     2,     7 };
+  // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
+  const int analog_pins[]         = { 10,    11,    12,        13,          1,      6,     4,     5,    17 };
+  const int analog_pins_rimshot[] = {  9,    -1,     0,        -1,          3,      8,     2,     7,    18 };
 #endif
 
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
@@ -81,7 +81,7 @@ void setup()
   edrumulus.set_midi_notes      ( 7, 45, 47 ); // x
   edrumulus.set_midi_notes      ( 8, 43, 58 ); // x
 
-// thijstriemstra prototype setup configuration...
+  // thijstriemstra prototype setup configuration...
   edrumulus.set_pad_type          ( 0, Edrumulus::PD120 ); // snare (Drum-tec Diabolo)
   edrumulus.set_rim_shot_is_used  ( 0, true );
   edrumulus.set_pos_sense_is_used ( 0, true );
@@ -90,7 +90,7 @@ void setup()
   edrumulus.set_pad_type          ( 2, Edrumulus::CY6 ); // Hi-Hat, using rim switch (Roland CY-5)
   edrumulus.set_rim_shot_is_used  ( 2, true );
   edrumulus.set_pad_type          ( 3, Edrumulus::FD8 ); // Hi-Hat-ctrl
-  edrumulus.set_pad_type          ( 4, Edrumulus::CY6 ); // tom 1 (Roland PD-5)
+  edrumulus.set_pad_type          ( 4, Edrumulus::PD8 ); // tom 1 (Roland PD-5)
   edrumulus.set_pad_type          ( 5, Edrumulus::PD8 ); // tom 2 (Roland PD-5)
 
   // initialize GPIO port for status LED
@@ -212,21 +212,21 @@ void loop()
         edrumulus.set_velocity_threshold ( selected_pad, value );
         is_used = true;
       }
-  
+
       // controller 104: sensitivity
       if ( controller == 104 )
       {
         edrumulus.set_velocity_sensitivity ( selected_pad, value );
         is_used = true;
       }
-  
+
       // controller 105: positional sensing threshold
       if ( controller == 105 )
       {
         edrumulus.set_pos_threshold ( selected_pad, value );
         is_used = true;
       }
-  
+
       // controller 106: positional sensing sensitivity
       if ( controller == 106 )
       {

@@ -1,5 +1,5 @@
 /******************************************************************************\
- * Copyright (c) 2020-2021
+ * Copyright (c) 2020-2022
  * Author(s): Volker Fischer
  ******************************************************************************
  * This program is free software; you can redistribute it and/or modify it under
@@ -118,14 +118,14 @@ protected:
       void setup ( const int conf_Fs,
                    const int conf_number_inputs = 1 );
 
-      void process_sample ( const float* input,
-                            const bool   overload_detected,
-                            bool&        peak_found,
-                            int&         midi_velocity,
-                            int&         midi_pos,
-                            bool&        is_rim_shot,
-                            bool&        is_choke_on,
-                            bool&        is_choke_off );
+      float process_sample ( const float* input,
+                             const bool   overload_detected,
+                             bool&        peak_found,
+                             int&         midi_velocity,
+                             int&         midi_pos,
+                             bool&        is_rim_shot,
+                             bool&        is_choke_on,
+                             bool&        is_choke_off );
 
       void process_control_sample ( const int* input,
                                     bool&      change_found,
@@ -208,6 +208,7 @@ protected:
         int        rim_shot_velocity_thresh;
       };
 
+      void apply_preset_pad_settings();
       void initialize();
 
       // band-pass filter coefficients (they are constant and must not be changed)
@@ -419,7 +420,7 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
 
 // Utility functions -----------------------------------------------------------------
 
-static void update_fifo ( const float input,
+inline void update_fifo ( const float input,
                           const int   fifo_length,
                           float*      fifo_memory )
 {
@@ -431,7 +432,7 @@ static void update_fifo ( const float input,
   fifo_memory[fifo_length - 1] = input;
 }
 
-static void allocate_initialize ( float**   array_memory,
+inline void allocate_initialize ( float**   array_memory,
                                   const int array_length )
 {
   // (delete and) allocate memory

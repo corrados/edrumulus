@@ -1,5 +1,5 @@
 %*******************************************************************************
-% Copyright (c) 2020-2021
+% Copyright (c) 2020-2022
 % Author(s): Volker Fischer
 %*******************************************************************************
 % This program is free software; you can redistribute it and/or modify it under
@@ -100,6 +100,42 @@ ylim([-10, 90]);
 % TEST for edrumulus porting...
 %axis([61, 293, 14, 71]);
 %axis([2871, 3098, 12, 67]);
+
+return;
+
+% TEST
+% prepare serial port
+pkg load instrument-control
+try
+  a = serialport("/dev/ttyACM0", 115200);
+catch
+end
+flush(a);
+% send the input data vector
+for i = 1:length(x)
+  % write sample
+  write(a, sprintf('%.5f\n', x(i, 1)), 'char');
+  if ( size(x, 2) > 1 )
+    write(a, sprintf('%.5f\n', x(i, 2)), 'char');
+  end
+  % receive the return sample, get number from string
+  readready = false; bytearray = uint8([]);
+  while ~readready
+    val = fread(a, 1);
+    if val == 13
+      readready = true;
+    end
+    bytearray = [bytearray, uint8(val)];
+  end
+  y(i) = str2double(char(bytearray));
+end
+%figure; plot(10 * log10(abs(circshift(y, -27)))+40,'*'); grid on;
+%figure; plot(10 * log10(y)); grid on;
+figure; plot(10 * log10(y),'*'); grid on;
+%figure; plot(20 * log10(abs(y))); grid on;
+%figure; plot(y+40, '*'); grid on;
+%figure; plot(y, '*'); grid on;
+ylim([-10, 90]);
 
 end
 

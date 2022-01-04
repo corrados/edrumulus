@@ -1,5 +1,5 @@
 %*******************************************************************************
-% Copyright (c) 2020-2021
+% Copyright (c) 2020-2022
 % Author(s): Volker Fischer
 %*******************************************************************************
 % This program is free software; you can redistribute it and/or modify it under
@@ -29,6 +29,8 @@ padtype = 'pd120'; % default
 
 %x = audioread("signals/teensy4_0_noise_test.wav");x=(x-mean(x))*4;padtype = 'pd80r';
 %x = audioread("signals/teensy4_0_pd80r.wav");x=(x-mean(x))*4;padtype = 'pd80r';%x = x(1:390000, :);%
+%x = audioread("signals/teensy4_0_pd80r_hot_spot.wav");x=(x-mean(x))*4;padtype = 'pd80r';
+%x = audioread("signals/teensy4_0_pd120_hot_spot.wav");x=(x-mean(x))*4;
 %x = audioread("signals/esp32_pd120.wav");x=x/8;
 %x = audioread("signals/esp32_pd8.wav");x=x/8;padtype = 'pd8';
 %x = audioread("signals/pd120_pos_sense.wav");%x=x(10600:15000);%x = x(2900:10000, :);%x = x(55400:58000, :);%
@@ -36,11 +38,13 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd120_single_hits.wav");
 %x = audioread("signals/pd120_roll.wav");%x = x(1:20000, :);%x = x(292410:294749, :);%x = x(311500:317600, :);
 %x = audioread("signals/pd120_middle_velocity.wav");
-%x = audioread("signals/pd120_hot_spot.wav");
+%x = audioread("signals/pd120_hot_spot.wav");%x = x(1:5000);%x = x(41500:42200);%
 %x = audioread("signals/pd120_rimshot.wav");%x=x(7000:15000,:);%x = x(1:100000, :);%x = x(168000:171000, :);%x = x(1:34000, :);%
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
-x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
-%x = audioread("signals/pd80r.wav");x=x(:,1);padtype='pd80r';x = x(1:265000, :);%x = x(264000:320000, :);%
+%x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
+x = audioread("signals/pd80r.wav");x=x(:,1);padtype='pd80r';x = x(1:265000, :);%x = x(264000:320000, :);%
+%x = audioread("signals/pd80r_hot_spot.wav");padtype='pd80r';%x = x(191700:192400, :);%
+%x = audioread("signals/pd80r_no_hot_spot.wav");padtype='pd80r';
 %x = audioread("signals/pd80r_rimshot_issue.wav");padtype='pd80r';
 %x = audioread("signals/pdx8.wav");
 %x = audioread("signals/pd6.wav");
@@ -62,37 +66,46 @@ x = x * 25000;
 
   
 % pad PRESET settings first, then overwrite these with pad specific properties
-pad.threshold_db              = 17;
-pad.mask_time_ms              = 6;
-pad.first_peak_diff_thresh_db = 8;
-pad.mask_time_decay_fact_db   = 15;
-pad.scan_time_ms              = 2.5;
-pad.pre_scan_time_ms          = 2.5;
-pad.decay_est_delay_ms        = 7;
-pad.decay_est_len_ms          = 4;
-pad.decay_est_fact_db         = 16;
-pad.decay_fact_db             = 1;
-pad.decay_len_ms1             = 0; % not used
-pad.decay_len_ms2             = 350;
-pad.decay_len_ms3             = 0; % not used
-pad.decay_grad_fact1          = 200;
-pad.decay_grad_fact2          = 200;
-pad.decay_grad_fact3          = 200;
-pad.pos_low_pass_cutoff       = 150; % Hz
-pad.pos_invert                = false;
-pad.rim_shot_window_len_ms    = 3.5;
-pad.rim_use_low_freq_bp       = true;
+pad.threshold_db                    = 17;
+pad.mask_time_ms                    = 6;
+pad.first_peak_diff_thresh_db       = 8;
+pad.mask_time_decay_fact_db         = 15;
+pad.scan_time_ms                    = 2.5;
+pad.pre_scan_time_ms                = 2.5;
+pad.decay_est_delay_ms              = 7;
+pad.decay_est_len_ms                = 4;
+pad.decay_est_fact_db               = 16;
+pad.decay_fact_db                   = 1;
+pad.decay_len_ms1                   = 0; % not used
+pad.decay_len_ms2                   = 350;
+pad.decay_len_ms3                   = 0; % not used
+pad.decay_grad_fact1                = 200;
+pad.decay_grad_fact2                = 200;
+pad.decay_grad_fact3                = 200;
+pad.pos_low_pass_cutoff             = 150; % Hz
+pad.pos_invert                      = false;
+pad.rim_shot_window_len_ms          = 3.5;
+pad.rim_use_low_freq_bp             = true;
+pad.second_peak_diff_ms             = 2.55;
+pad.hot_spot_sec_peak_win_len_ms    = 0.5;
+pad.hot_spot_peak_diff_limit_min_db = 0.4; % dB minimum difference between first and second peak
+pad.hot_spot_middle_diff_db         = 14;
+pad.hot_spot_attenuation_db         = 0; % 0 dB attenuation means that hot spot suppression is turned off
 
 switch padtype
   case 'pd120'
     % note: the PRESET settings are from the PD120 pad
+    pad.hot_spot_attenuation_db = 3;
   case 'pd80r'
-    pad.scan_time_ms        = 3;
-    pad.decay_len_ms2       = 75;
-    pad.decay_grad_fact2    = 300;
-    pad.decay_len_ms3       = 300;
-    pad.decay_grad_fact3    = 100;
-    pad.rim_use_low_freq_bp = false;
+    pad.scan_time_ms                    = 3;
+    pad.decay_len_ms2                   = 75;
+    pad.decay_grad_fact2                = 300;
+    pad.decay_len_ms3                   = 300;
+    pad.decay_grad_fact3                = 100;
+    pad.rim_use_low_freq_bp             = false;
+    pad.hot_spot_attenuation_db         = 3;
+    pad.hot_spot_peak_diff_limit_min_db = 4;
+    pad.hot_spot_middle_diff_db         = 5;
   case 'pd8'
     pad.scan_time_ms       = 1.3;
     pad.decay_est_delay_ms = 6;
@@ -131,19 +144,19 @@ switch padtype
     pad.decay_len_ms3      = 500;
     pad.decay_grad_fact3   = 45;
   case 'cy6'
-    pad.scan_time_ms       = 6;
-    pad.decay_len_ms2      = 150;
-    pad.decay_grad_fact2   = 120;
-    pad.decay_len_ms3      = 450;
-    pad.decay_grad_fact3   = 30;
+    pad.scan_time_ms     = 6;
+    pad.decay_len_ms2    = 150;
+    pad.decay_grad_fact2 = 120;
+    pad.decay_len_ms3    = 450;
+    pad.decay_grad_fact3 = 30;
   case 'cy8'
-    pad.scan_time_ms       = 6;
-    pad.decay_len_ms1      = 10;
-    pad.decay_grad_fact1   = 10;
-    pad.decay_len_ms2      = 100;
-    pad.decay_grad_fact2   = 200;
-    pad.decay_len_ms3      = 450;
-    pad.decay_grad_fact3   = 30;
+    pad.scan_time_ms     = 6;
+    pad.decay_len_ms1    = 10;
+    pad.decay_grad_fact1 = 10;
+    pad.decay_len_ms2    = 100;
+    pad.decay_grad_fact2 = 200;
+    pad.decay_len_ms3    = 450;
+    pad.decay_grad_fact3 = 30;
 end
 
 end
