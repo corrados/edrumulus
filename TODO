@@ -24,6 +24,9 @@
 
 - Documentation: Algorithm description
 
+- fix ghost strikes: probably caused by electrical interferers or noise in the microcontroller developer
+  board itself -> either find a software solution or changes in the analog front end are needed
+
 - Attach second piezo on mesh pad and experiment with improved velocity/position detection using the second piezo signal
 
 - Improve Edrumulus/Drumgizmo usage on Raspberry Pi (Pi 3+ and Pi Zero)
