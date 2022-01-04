@@ -90,7 +90,7 @@ void setup()
   edrumulus.set_pad_type          ( 2, Edrumulus::CY6 ); // Hi-Hat, using rim switch (Roland CY-5)
   edrumulus.set_rim_shot_is_used  ( 2, true );
   edrumulus.set_pad_type          ( 3, Edrumulus::FD8 ); // Hi-Hat-ctrl
-  edrumulus.set_pad_type          ( 4, Edrumulus::CY6 ); // tom 1 (Roland PD-5)
+  edrumulus.set_pad_type          ( 4, Edrumulus::PD8 ); // tom 1 (Roland PD-5)
   edrumulus.set_pad_type          ( 5, Edrumulus::PD8 ); // tom 2 (Roland PD-5)
 
   // initialize GPIO port for status LED
