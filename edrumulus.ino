@@ -218,21 +218,21 @@ void loop()
         edrumulus.set_velocity_threshold ( selected_pad, value );
         is_used = true;
       }
-  
+
       // controller 104: sensitivity
       if ( controller == 104 )
       {
         edrumulus.set_velocity_sensitivity ( selected_pad, value );
         is_used = true;
       }
-  
+
       // controller 105: positional sensing threshold
       if ( controller == 105 )
       {
         edrumulus.set_pos_threshold ( selected_pad, value );
         is_used = true;
       }
-  
+
       // controller 106: positional sensing sensitivity
       if ( controller == 106 )
       {
