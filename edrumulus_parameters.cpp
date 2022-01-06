@@ -155,5 +155,16 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.decay_len3_ms        = 450.0f;
       pad_settings.decay_grad_fact3     = 30.0f;
       break;
+
+    case DIABOLO12:
+      pad_settings.scan_time_ms              = 2.0f;
+      pad_settings.mask_time_ms              = 8.0f;
+      pad_settings.first_peak_diff_thresh_db = 13.0f;
+      pad_settings.mask_time_decay_fact_db   = 20.0f;
+      pad_settings.decay_grad_fact2          = 270.0f;
+      pad_settings.decay_fact_db             = 6.0f;
+      pad_settings.decay_est_delay_ms        = 20.0f;
+      pad_settings.pos_low_pass_cutoff       = 50.0f; // positional sensing seems not to work correctly
+      break;
   }
 }

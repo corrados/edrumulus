@@ -59,7 +59,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/kd7_hard_hits.wav");padtype = 'kd7';x = x(1:3000, :);
 %x = audioread("signals/tp80.wav");padtype = 'tp80';
 %x = audioread("signals/vh12.wav");padtype = 'vh12';%x = x(900000:end, :);%x = x(376000:420000, :);%x = x(1:140000, :);
-x = audioread("signals/drumtec_diabolo.wav");x=x(:,1);padtype='diabolo';
+x = audioread("signals/drumtec_diabolo12.wav");x=x(:,1);padtype='diabolo12';
 
 
 % scale to the ESP32 input range to match the signal level of the ESP32
@@ -159,16 +159,15 @@ switch padtype
     pad.decay_grad_fact2 = 200;
     pad.decay_len_ms3    = 450;
     pad.decay_grad_fact3 = 30;
-  case 'diabolo'
+case 'diabolo12'
+    pad.scan_time_ms              = 2;
+    pad.mask_time_ms              = 8;
     pad.first_peak_diff_thresh_db = 13;
     pad.mask_time_decay_fact_db   = 20;
     pad.decay_grad_fact2          = 270;
     pad.decay_fact_db             = 6;
     pad.decay_est_delay_ms        = 20;
-
-% TODO
-pad.pos_low_pass_cutoff       = 50; % Hz
-
+    pad.pos_low_pass_cutoff       = 50; % positional sensing seems not to work correctly
 end
 
 end
