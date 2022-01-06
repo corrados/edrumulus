@@ -37,7 +37,7 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 
 Edrumulus edrumulus;
 const int number_pads       = 6;             // note: must not exceed MAX_NUM_PADS
-const int status_LED_pin    = BOARD_LED_PIN; // internal LED used for overload indicator
+const int status_LED_pin    = 23;            // internal LED used for overload indicator
 const int midi_channel      = 10;            // default for edrums is 10
 const int hihat_pad_idx     = 2;
 const int hihatctrl_pad_idx = 3;
@@ -69,29 +69,56 @@ void setup()
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
 
   // some fundamental settings which do not change during operation
-  edrumulus.set_midi_notes      ( 0, 38, 40 ); // snare
-  edrumulus.set_midi_notes      ( 1, 36, 36 ); // kick
-  edrumulus.set_midi_notes      ( hihat_pad_idx, 22 /*42*/, 22 );
-  edrumulus.set_midi_notes_open ( hihat_pad_idx, 26 /*46*/, 26 );
-  edrumulus.set_midi_notes      ( hihatctrl_pad_idx, 44, 44 ); // Hi-Hat pedal hit
-  edrumulus.set_midi_ctrl_ch    ( hihatctrl_pad_idx, 4 ); // Hi-Hat control
-  edrumulus.set_midi_notes      ( 4, 49, 55 ); // tom 1
-  edrumulus.set_midi_notes      ( 5, 48, 50 ); // tom 2
-  edrumulus.set_midi_notes      ( 6, 51, 53 /*59*/ ); // x
-  edrumulus.set_midi_notes      ( 7, 45, 47 ); // x
-  edrumulus.set_midi_notes      ( 8, 43, 58 ); // x
+  edrumulus.set_midi_notes       ( 0, 38, 40 ); // snare
+  edrumulus.set_midi_notes       ( 1, 36, 36 ); // kick
+  edrumulus.set_midi_notes       ( hihat_pad_idx, 22 /*42*/, 22 );
+  edrumulus.set_midi_notes_open  ( hihat_pad_idx, 26 /*46*/, 26 );
+  edrumulus.set_midi_notes       ( hihatctrl_pad_idx, 44, 44 ); // Hi-Hat pedal hit
+  edrumulus.set_midi_ctrl_ch     ( hihatctrl_pad_idx, 4 ); // Hi-Hat control
+  edrumulus.set_midi_notes       ( 4, 49, 55 ); // tom 1
+  edrumulus.set_midi_notes       ( 5, 48, 50 ); // tom 2
+  edrumulus.set_midi_notes       ( 6, 51, 53 /*59*/ ); // x
+  edrumulus.set_midi_notes       ( 7, 45, 47 ); // x
+  edrumulus.set_midi_notes       ( 8, 43, 58 ); // x
 
   // thijstriemstra prototype setup configuration...
-  edrumulus.set_pad_type          ( 0, Edrumulus::PD120 ); // snare (Drum-tec Diabolo)
-  edrumulus.set_rim_shot_is_used  ( 0, true );
-  edrumulus.set_pos_sense_is_used ( 0, true );
-  edrumulus.set_pad_type          ( 1, Edrumulus::PD120 ); // kick (Roland KD-120BK)
-  edrumulus.set_curve             ( 1, Edrumulus::LOG2 ); // less dynamic on kick (similar to other drum modules)
-  edrumulus.set_pad_type          ( 2, Edrumulus::CY6 ); // Hi-Hat, using rim switch (Roland CY-5)
-  edrumulus.set_rim_shot_is_used  ( 2, true );
-  edrumulus.set_pad_type          ( 3, Edrumulus::FD8 ); // Hi-Hat-ctrl
-  edrumulus.set_pad_type          ( 4, Edrumulus::PD8 ); // tom 1 (Roland PD-5)
-  edrumulus.set_pad_type          ( 5, Edrumulus::PD8 ); // tom 2 (Roland PD-5)
+
+  // SNARE (Drum-tec Diabolo)
+  edrumulus.set_pad_type           ( 0, Edrumulus::PD120 );
+  // disable rim for now, see
+  // https://github.com/corrados/edrumulus/discussions/30#discussioncomment-1908586
+  edrumulus.set_rim_shot_is_used   ( 0, false );
+  //edrumulus.set_rim_shot_treshold  ( 0, 25 );
+  edrumulus.set_pos_sense_is_used  ( 0, true );
+  edrumulus.set_pos_threshold      ( 0, 4 );
+  edrumulus.set_pos_sensitivity    ( 0, 17 );
+
+  // KICK (Roland KD-120BK)
+  // see https://github.com/corrados/edrumulus/discussions/29
+  edrumulus.set_pad_type             ( 1, Edrumulus::PD120 );
+  edrumulus.set_velocity_threshold   ( 1, 9 );               // default is 8
+  edrumulus.set_velocity_sensitivity ( 1, 19 );              // default is 9
+  // less dynamic on kick (similar to other drum modules)
+  edrumulus.set_curve                ( 1, Edrumulus::LOG2 );
+
+  // HI-HAT (using rim switch, Roland CY-5)
+  edrumulus.set_pad_type             ( 2, Edrumulus::CY6 );
+  edrumulus.set_rim_shot_is_used     ( 2, true );
+  edrumulus.set_velocity_threshold   ( 2, 9 );
+  edrumulus.set_velocity_sensitivity ( 2, 16 );
+
+  // HI-HAT CTRL (FD-8)
+  edrumulus.set_pad_type             ( 3, Edrumulus::FD8 );
+
+  // TOM1 (Roland PD-5)
+  edrumulus.set_pad_type             ( 4, Edrumulus::PD8 );
+  edrumulus.set_velocity_threshold   ( 4, 8 );
+  edrumulus.set_velocity_sensitivity ( 4, 11 );
+
+  // TOM2 (Roland PD-5)
+  edrumulus.set_pad_type             ( 5, Edrumulus::PD8 );
+  edrumulus.set_velocity_threshold   ( 5, 8 );
+  edrumulus.set_velocity_sensitivity ( 5, 11 );
 
   // initialize GPIO port for status LED
   pinMode ( status_LED_pin, OUTPUT );

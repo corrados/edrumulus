@@ -103,7 +103,7 @@ protected:
 #include "soc/sens_reg.h"
 #include "driver/dac.h"
 
-#define BOARD_LED_PIN        23   // pin number of the LED on the ESP32 board
+#define BOARD_LED_PIN        2    // pin number of the LED on the ESP32 board
 #define ADC_MAX_RANGE        4096 // ESP32 ADC has 12 bits -> 0..4095
 #define ADC_MAX_NOISE_AMPL   8    // highest assumed ADC noise amplitude in the ADC input range unit (measured)
 
