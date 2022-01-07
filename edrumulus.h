@@ -39,7 +39,8 @@ public:
     CY6       = 8,
     CY8       = 9,
     DIABOLO12 = 10,
-    CY5       = 11
+    CY5       = 11,
+    HD1TOM    = 12
   };
 
   enum Ecurvetype // note that the enums need assigned integers for MIDI settings transfer

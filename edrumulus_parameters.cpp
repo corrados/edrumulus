@@ -176,5 +176,11 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.decay_est_delay_ms        = 20.0f;
       pad_settings.pos_low_pass_cutoff       = 50.0f; // positional sensing seems not to work correctly
       break;
+
+    case HD1TOM:
+      pad_settings.scan_time_ms        = 1.5f;
+      pad_settings.decay_grad_fact2    = 300.0f;
+      pad_settings.pos_low_pass_cutoff = 300.0f;
+      break;
   }
 }

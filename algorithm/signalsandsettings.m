@@ -50,8 +50,8 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd6.wav");
 %x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
-%x = audioread("signals/hd1tom.wav");
-x = audioread("signals/cy5.wav");padtype='cy5';
+x = audioread("signals/hd1tom.wav");padtype='hd1tom';
+%x = audioread("signals/cy5.wav");padtype='cy5';
 %x = audioread("signals/cy6.wav");padtype='cy6';%x = x(480000:590000, :);%x = x(250000:450000, :);%x = x(1:150000, :);
 %x = audioread("signals/cy8.wav");padtype='cy8';%x = x(1:200000, :);
 %x = audioread("signals/kd8.wav");
@@ -172,6 +172,10 @@ switch padtype
     pad.decay_fact_db             = 6;
     pad.decay_est_delay_ms        = 20;
     pad.pos_low_pass_cutoff       = 50; % positional sensing seems not to work correctly
+  case 'hd1tom'
+    pad.scan_time_ms        = 1.5;
+    pad.decay_grad_fact2    = 300;
+    pad.pos_low_pass_cutoff = 300;
 end
 
 end

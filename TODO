@@ -1,17 +1,17 @@
 
 
 
-- Create pad parameter set for PDX-8
-
-- Create pad parameter set for HD-1 tom pad
-
 - Create pad parameter set for PD-6
 
 - Create pad parameter set for KD-8
 
+- Create pad parameter set for PDX-8
+
 - Documentation: Edrumulus manual which describes the hardware/software setup, parameter description, HOWTOs, etc.
 
 - Documentation: Algorithm description
+
+- Should we consider pre-scan time high peaks for velocity estimation?
 
 - Hot spot suppression on mesh pads with center piezo
   -> striking directly on the piezo results in detected velocity values which are much too high
