@@ -1,17 +1,6 @@
 
 
 
-- Hot spot suppression on mesh pads with center piezo
-  -> striking directly on the piezo results in detected velocity values which are much too high
-
-- Signal overload correction
-  -> maybe based on low-pass filtering as suggested in https://github.com/corrados/edrumulus/discussions/17#discussion-3736264
-
-- Improve dynamics for Drumgizmo (for official drum kits as well as self-recorded kit)
-  MIDI file 1:10:127 -> reference -> record audio -> DGEdit -> check the estimated powers
-
-- support positional sensing for rim shots
-
 - Create pad parameter set for CY-5
 
 - Create pad parameter set for PDX-8
@@ -22,10 +11,23 @@
 
 - Create pad parameter set for KD-8
 
+- Documentation: Edrumulus manual which describes the hardware/software setup, parameter description, HOWTOs, etc.
+
 - Documentation: Algorithm description
+
+- Hot spot suppression on mesh pads with center piezo
+  -> striking directly on the piezo results in detected velocity values which are much too high
+
+- Signal overload correction
+  -> maybe based on low-pass filtering as suggested in https://github.com/corrados/edrumulus/discussions/17#discussion-3736264
+
+- support positional sensing for rim shots
 
 - fix ghost strikes: probably caused by electrical interferers or noise in the microcontroller developer
   board itself -> either find a software solution or changes in the analog front end are needed
+
+- Improve dynamics for Drumgizmo (for official drum kits as well as self-recorded kit)
+  MIDI file 1:10:127 -> reference -> record audio -> DGEdit -> check the estimated powers
 
 - Attach second piezo on mesh pad and experiment with improved velocity/position detection using the second piezo signal
 
@@ -34,8 +36,6 @@
 - Create Qt application for controlling Edrumulus via MIDI using the rtmidi library
 
 - Create PCB for Prototype2 based on ESP32
-
-- Documentation: Edrumulus manual which describes the hardware/software setup, parameter description, HOWTOs, etc.
 
 - support hardware keyboard/display like Arduino LCD1602 Display Keypad Shield
 
