@@ -54,7 +54,11 @@ void Edrumulus::Pad::apply_preset_pad_settings()
   switch ( pad_settings.pad_type )
   {
     case PD120:
-      // note: the PRESET settings are from the PD-120 pad
+      pad_settings.velocity_threshold   = 6;
+      pad_settings.velocity_sensitivity = 6;
+      pad_settings.pos_threshold        = 7;
+      pad_settings.pos_sensitivity      = 14;
+      pad_settings.rim_shot_treshold    = 24;
       break;
 
     case PD80R:
