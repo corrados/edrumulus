@@ -447,6 +447,10 @@ switch hObject
         set(GUI.val2, 'string', 'CY6');
       case 9
         set(GUI.val2, 'string', 'CY8');
+      case 10
+        set(GUI.val2, 'string', 'DIABOLO12');
+      case 11
+        set(GUI.val2, 'string', 'CY5');
     end
     if do_send_midi
       midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 102, value));

@@ -138,6 +138,12 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.decay_grad_fact3     = 45.0f;
       break;
 
+    case CY5:
+      pad_settings.scan_time_ms  = 3.0f;
+      pad_settings.mask_time_ms  = 8.0f;
+      pad_settings.decay_fact_db = 3.0f;
+      break;
+
     case CY6:
       pad_settings.scan_time_ms     = 6.0f;
       pad_settings.decay_len2_ms    = 150.0f;

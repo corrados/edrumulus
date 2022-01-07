@@ -38,7 +38,8 @@ public:
     TP80      = 7,
     CY6       = 8,
     CY8       = 9,
-    DIABOLO12 = 10
+    DIABOLO12 = 10,
+    CY5       = 11
   };
 
   enum Ecurvetype // note that the enums need assigned integers for MIDI settings transfer
@@ -171,7 +172,8 @@ protected:
                                                ( pad_settings.pad_type == VH12 ) ||
                                                ( pad_settings.pad_type == TP80 ) ||
                                                ( pad_settings.pad_type == CY6 ) ||
-                                               ( pad_settings.pad_type == CY8 ); } // TODO check if new pads must be added here
+                                               ( pad_settings.pad_type == CY8 ) ||
+                                               ( pad_settings.pad_type == CY5 ); } // TODO check if new pads must be added here
       bool  get_pos_sense_is_used()   { return pad_settings.pos_sense_is_used; }
 
       // definitions which can be used outside the pad class, too
