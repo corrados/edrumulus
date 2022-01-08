@@ -41,7 +41,8 @@ public:
     DIABOLO12 = 10,
     CY5       = 11,
     HD1TOM    = 12,
-    PD6       = 13
+    PD6       = 13,
+    KD8       = 14
   };
 
   enum Ecurvetype // note that the enums need assigned integers for MIDI settings transfer
