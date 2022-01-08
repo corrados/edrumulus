@@ -75,6 +75,10 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.rim_shot_velocity_thresh = 10; // suppress incorrect rim shot detections on low velocity hits
       break;
 
+    case PDX8:
+      // note: no changes needed to the default values
+      break;
+
     case PD6:
       pad_settings.scan_time_ms     = 1.5f;
       pad_settings.decay_grad_fact2 = 400.0f;
