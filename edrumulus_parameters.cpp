@@ -75,6 +75,11 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.rim_shot_velocity_thresh = 10; // suppress incorrect rim shot detections on low velocity hits
       break;
 
+    case PD6:
+      pad_settings.scan_time_ms     = 1.5f;
+      pad_settings.decay_grad_fact2 = 400.0f;
+      break;
+
     case PD8:
       pad_settings.velocity_sensitivity = 5;
       pad_settings.pos_threshold        = 26;
@@ -138,6 +143,20 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.decay_grad_fact3     = 45.0f;
       break;
 
+    case KD8:
+      pad_settings.scan_time_ms            = 3.0f;
+      pad_settings.mask_time_decay_fact_db = 10.0f;
+      pad_settings.decay_grad_fact2        = 450.0f;
+      pad_settings.decay_len3_ms           = 500.0f;
+      pad_settings.decay_grad_fact3        = 45.0f;
+      break;
+
+    case CY5:
+      pad_settings.scan_time_ms  = 3.0f;
+      pad_settings.mask_time_ms  = 8.0f;
+      pad_settings.decay_fact_db = 3.0f;
+      break;
+
     case CY6:
       pad_settings.scan_time_ms     = 6.0f;
       pad_settings.decay_len2_ms    = 150.0f;
@@ -169,6 +188,12 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.decay_fact_db             = 6.0f;
       pad_settings.decay_est_delay_ms        = 20.0f;
       pad_settings.pos_low_pass_cutoff       = 50.0f; // positional sensing seems not to work correctly
+      break;
+
+    case HD1TOM:
+      pad_settings.scan_time_ms        = 1.5f;
+      pad_settings.decay_grad_fact2    = 300.0f;
+      pad_settings.pos_low_pass_cutoff = 300.0f;
       break;
   }
 }
