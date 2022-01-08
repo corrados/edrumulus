@@ -1,5 +1,16 @@
 # Edrumulus Project Log
 
+
+## 2022-01-08 Hot spot detection for mesh head pads
+
+  I was working on a hot spot detection algorithm on a Git side branch recently. As a reference,
+  I have used the piezo signal of a PD-80R and PD120 recorded with a conventional audio card.
+  These audio card ipnuts are usually optimized for low impedence microphones. I developed an
+  algorithm which worked fine for these signals but did not work at all for running it in
+  real-time on a micro controller. The reason for that is caused by the mismatched input of the
+  audio card for piezo signals. The shape of the signal is so different that the algorithm
+  did not work at all. A new algorithm and further investigations are needed.
+
 ## 2021-12-16 Rim shot detection again
 
   After fixing a bug with the detection of the first peak and introducing a band-pass filter

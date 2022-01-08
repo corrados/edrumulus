@@ -27,12 +27,12 @@ padtype = 'pd120'; % default
 
 % load test data
 
-%x = audioread("signals/teensy4_0_noise_test.wav");x=(x-mean(x))*4;padtype = 'pd80r';
-%x = audioread("signals/teensy4_0_pd80r.wav");x=(x-mean(x))*4;padtype = 'pd80r';%x = x(1:390000, :);%
-%x = audioread("signals/teensy4_0_pd80r_hot_spot.wav");x=(x-mean(x))*4;padtype = 'pd80r';
+%x = audioread("signals/teensy4_0_noise_test.wav");x=(x-mean(x))*4;padtype='pd80r';
+%x = audioread("signals/teensy4_0_pd80r.wav");x=(x-mean(x))*4;padtype='pd80r';%x = x(1:390000, :);%
+%x = audioread("signals/teensy4_0_pd80r_hot_spot.wav");x=(x-mean(x))*4;padtype='pd80r';
 %x = audioread("signals/teensy4_0_pd120_hot_spot.wav");x=(x-mean(x))*4;
 %x = audioread("signals/esp32_pd120.wav");x=x/8;
-%x = audioread("signals/esp32_pd8.wav");x=x/8;padtype = 'pd8';
+%x = audioread("signals/esp32_pd8.wav");x=x/8;padtype='pd8';
 %x = audioread("signals/pd120_pos_sense.wav");%x=x(10600:15000);%x = x(2900:10000, :);%x = x(55400:58000, :);%
 %x = audioread("signals/pd120_pos_sense2.wav");
 %x = audioread("signals/pd120_single_hits.wav");
@@ -42,23 +42,25 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd120_rimshot.wav");%x=x(7000:15000,:);%x = x(1:100000, :);%x = x(168000:171000, :);%x = x(1:34000, :);%
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
-x = audioread("signals/pd80r.wav");x=x(:,1);padtype='pd80r';x = x(1:265000, :);%x = x(264000:320000, :);%
+%x = audioread("signals/pd80r.wav");x=x(:,1);padtype='pd80r';x = x(1:265000, :);%x = x(264000:320000, :);%
 %x = audioread("signals/pd80r_hot_spot.wav");padtype='pd80r';%x = x(191700:192400, :);%
 %x = audioread("signals/pd80r_no_hot_spot.wav");padtype='pd80r';
 %x = audioread("signals/pd80r_rimshot_issue.wav");padtype='pd80r';
 %x = audioread("signals/pdx8.wav");
-%x = audioread("signals/pd6.wav");
-%x = audioread("signals/pd8.wav");padtype = 'pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
-%x = audioread("signals/pd8_rimshot.wav");padtype = 'pd8';
-%x = audioread("signals/hd1tom.wav");
-%x = audioread("signals/cy5.wav");
-%x = audioread("signals/cy6.wav");padtype = 'cy6';%x = x(480000:590000, :);%x = x(250000:450000, :);%x = x(1:150000, :);
-%x = audioread("signals/cy8.wav");padtype = 'cy8';%x = x(1:200000, :);
-%x = audioread("signals/kd8.wav");
-%x = audioread("signals/kd7.wav");padtype = 'kd7';%x = x(1:170000, :);
-%x = audioread("signals/kd7_hard_hits.wav");padtype = 'kd7';x = x(1:3000, :);
-%x = audioread("signals/tp80.wav");padtype = 'tp80';
-%x = audioread("signals/vh12.wav");padtype = 'vh12';%x = x(900000:end, :);%x = x(376000:420000, :);%x = x(1:140000, :);
+%x = audioread("signals/pd6.wav");padtype='pd6';
+%x = audioread("signals/pd8.wav");padtype='pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
+%x = audioread("signals/pd8_rimshot.wav");padtype='pd8';
+%x = audioread("signals/hd1tom.wav");padtype='hd1tom';
+%x = audioread("signals/cy5.wav");padtype='cy5';
+%x = audioread("signals/cy6.wav");padtype='cy6';%x = x(480000:590000, :);%x = x(250000:450000, :);%x = x(1:150000, :);
+%x = audioread("signals/cy8.wav");padtype='cy8';%x = x(1:200000, :);
+x = audioread("signals/kd8.wav");padtype='kd8';%x = x(177050:178200, :);%
+%x = audioread("signals/kd7.wav");padtype='kd7';%x = x(1:170000, :);
+%x = audioread("signals/kd7_hard_hits.wav");padtype='kd7';x = x(1:3000, :);
+%x = audioread("signals/tp80.wav");padtype='tp80';
+%x = audioread("signals/vh12.wav");padtype='vh12';%x = x(900000:end, :);%x = x(376000:420000, :);%x = x(1:140000, :);
+%x = audioread("signals/drumtec_diabolo12.wav");x=x(:,1);padtype='diabolo12';
+
 
 % scale to the ESP32 input range to match the signal level of the ESP32
 x = x * 25000;
@@ -106,6 +108,9 @@ switch padtype
     pad.hot_spot_attenuation_db         = 3;
     pad.hot_spot_peak_diff_limit_min_db = 4;
     pad.hot_spot_middle_diff_db         = 5;
+  case 'pd6'
+    pad.scan_time_ms     = 1.5;
+    pad.decay_grad_fact2 = 400;
   case 'pd8'
     pad.scan_time_ms       = 1.3;
     pad.decay_est_delay_ms = 6;
@@ -143,6 +148,16 @@ switch padtype
     pad.decay_grad_fact2   = 450;
     pad.decay_len_ms3      = 500;
     pad.decay_grad_fact3   = 45;
+  case 'kd8'
+    pad.scan_time_ms            = 3;
+    pad.mask_time_decay_fact_db = 10;
+    pad.decay_grad_fact2        = 450;
+    pad.decay_len_ms3           = 500;
+    pad.decay_grad_fact3        = 45;
+  case 'cy5'
+    pad.scan_time_ms  = 3;
+    pad.mask_time_ms  = 8;
+    pad.decay_fact_db = 3;
   case 'cy6'
     pad.scan_time_ms     = 6;
     pad.decay_len_ms2    = 150;
@@ -157,6 +172,19 @@ switch padtype
     pad.decay_grad_fact2 = 200;
     pad.decay_len_ms3    = 450;
     pad.decay_grad_fact3 = 30;
+  case 'diabolo12'
+    pad.scan_time_ms              = 2;
+    pad.mask_time_ms              = 8;
+    pad.first_peak_diff_thresh_db = 13;
+    pad.mask_time_decay_fact_db   = 20;
+    pad.decay_grad_fact2          = 270;
+    pad.decay_fact_db             = 6;
+    pad.decay_est_delay_ms        = 20;
+    pad.pos_low_pass_cutoff       = 50; % positional sensing seems not to work correctly
+  case 'hd1tom'
+    pad.scan_time_ms        = 1.5;
+    pad.decay_grad_fact2    = 300;
+    pad.pos_low_pass_cutoff = 300;
 end
 
 end

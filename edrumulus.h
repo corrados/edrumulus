@@ -28,16 +28,21 @@ public:
   enum Epadtype // note that the enums need assigned integers for MIDI settings transfer
   {
 // TODO if new pads are added, check if get_is_control() and get_is_rim_switch() must be updated
-    PD120    = 0,
-    PD80R    = 1,
-    PD8      = 2,
-    FD8      = 3, // control pedal
-    VH12     = 4,
-    VH12CTRL = 5,
-    KD7      = 6,
-    TP80     = 7,
-    CY6      = 8,
-    CY8      = 9
+    PD120     = 0,
+    PD80R     = 1,
+    PD8       = 2,
+    FD8       = 3, // control pedal
+    VH12      = 4,
+    VH12CTRL  = 5,
+    KD7       = 6,
+    TP80      = 7,
+    CY6       = 8,
+    CY8       = 9,
+    DIABOLO12 = 10,
+    CY5       = 11,
+    HD1TOM    = 12,
+    PD6       = 13,
+    KD8       = 14
   };
 
   enum Ecurvetype // note that the enums need assigned integers for MIDI settings transfer
@@ -166,9 +171,11 @@ protected:
       float get_cancellation_factor() { return cancellation_factor; }
       bool  get_is_control()          { return ( pad_settings.pad_type == FD8 ) ||
                                                ( pad_settings.pad_type == VH12CTRL ); } // TODO check if new pads must be added here
-      bool  get_is_rim_switch()       { return ( pad_settings.pad_type == PD8 ) ||
+      bool  get_is_rim_switch()       { return ( pad_settings.pad_type == PD6 ) ||
+                                               ( pad_settings.pad_type == PD8 ) ||
                                                ( pad_settings.pad_type == VH12 ) ||
                                                ( pad_settings.pad_type == TP80 ) ||
+                                               ( pad_settings.pad_type == CY5 ) ||
                                                ( pad_settings.pad_type == CY6 ) ||
                                                ( pad_settings.pad_type == CY8 ); } // TODO check if new pads must be added here
       bool  get_pos_sense_is_used()   { return pad_settings.pos_sense_is_used; }
