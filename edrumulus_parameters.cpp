@@ -159,9 +159,10 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case CY5:
-      pad_settings.scan_time_ms  = 3.0f;
-      pad_settings.mask_time_ms  = 8.0f;
-      pad_settings.decay_fact_db = 3.0f;
+      pad_settings.velocity_sensitivity = 6;
+      pad_settings.scan_time_ms         = 3.0f;
+      pad_settings.mask_time_ms         = 8.0f;
+      pad_settings.decay_fact_db        = 3.0f;
       break;
 
     case CY6:
