@@ -75,16 +75,16 @@ void setup()
   edrumulus.set_midi_notes_open  ( hihat_pad_idx, 26 /*46*/, 26 );
   edrumulus.set_midi_notes       ( hihatctrl_pad_idx, 44, 44 ); // Hi-Hat pedal hit
   edrumulus.set_midi_ctrl_ch     ( hihatctrl_pad_idx, 4 ); // Hi-Hat control
-  edrumulus.set_midi_notes       ( 4, 49, 55 ); // tom 1
-  edrumulus.set_midi_notes       ( 5, 48, 50 ); // tom 2
+  edrumulus.set_midi_notes       ( 4, 49, 49 ); // tom 1
+  edrumulus.set_midi_notes       ( 5, 48, 48 ); // tom 2
   edrumulus.set_midi_notes       ( 6, 51, 53 /*59*/ ); // x
   edrumulus.set_midi_notes       ( 7, 45, 47 ); // x
-  edrumulus.set_midi_notes       ( 8, 43, 58 ); // x
+  //edrumulus.set_midi_notes       ( 8, 43, 58 ); // x
 
   // thijstriemstra prototype setup configuration...
 
-  // SNARE (Drum-tec Diabolo)
-  edrumulus.set_pad_type           ( 0, Edrumulus::PD120 );
+  // SNARE (Drum-tec Diabolo 12 inch)
+  edrumulus.set_pad_type           ( 0, Edrumulus::DIABOLO12 );
   // disable rim for now, see
   // https://github.com/corrados/edrumulus/discussions/30#discussioncomment-1908586
   edrumulus.set_rim_shot_is_used   ( 0, false );
@@ -96,27 +96,27 @@ void setup()
   // KICK (Roland KD-120BK)
   // see https://github.com/corrados/edrumulus/discussions/29
   edrumulus.set_pad_type             ( 1, Edrumulus::PD120 );
-  edrumulus.set_velocity_threshold   ( 1, 9 );               // default is 8
-  edrumulus.set_velocity_sensitivity ( 1, 19 );              // default is 9
+  edrumulus.set_velocity_threshold   ( 1, 10 );               // default is 8
+  edrumulus.set_velocity_sensitivity ( 1, 16 );              // default is 9
   // less dynamic on kick (similar to other drum modules)
   edrumulus.set_curve                ( 1, Edrumulus::LOG2 );
 
   // HI-HAT (using rim switch, Roland CY-5)
-  edrumulus.set_pad_type             ( 2, Edrumulus::CY6 );
-  edrumulus.set_rim_shot_is_used     ( 2, true );
-  edrumulus.set_velocity_threshold   ( 2, 9 );
-  edrumulus.set_velocity_sensitivity ( 2, 16 );
+  edrumulus.set_pad_type             ( hihat_pad_idx, Edrumulus::CY5 );
+  edrumulus.set_rim_shot_is_used     ( hihat_pad_idx, true );
+  //edrumulus.set_velocity_threshold   ( hihat_pad_idx, 9 );
+  //edrumulus.set_velocity_sensitivity ( hihat_pad_idx, 16 );
 
   // HI-HAT CTRL (FD-8)
-  edrumulus.set_pad_type             ( 3, Edrumulus::FD8 );
+  edrumulus.set_pad_type             ( hihatctrl_pad_idx, Edrumulus::FD8 );
 
   // TOM1 (Roland PD-5)
-  edrumulus.set_pad_type             ( 4, Edrumulus::PD8 );
+  edrumulus.set_pad_type             ( 4, Edrumulus::PD6 );
   edrumulus.set_velocity_threshold   ( 4, 8 );
   edrumulus.set_velocity_sensitivity ( 4, 11 );
 
   // TOM2 (Roland PD-5)
-  edrumulus.set_pad_type             ( 5, Edrumulus::PD8 );
+  edrumulus.set_pad_type             ( 5, Edrumulus::PD6 );
   edrumulus.set_velocity_threshold   ( 5, 8 );
   edrumulus.set_velocity_sensitivity ( 5, 11 );
 
