@@ -457,6 +457,8 @@ switch hObject
         set(GUI.val2, 'string', 'PD6');
       case 14
         set(GUI.val2, 'string', 'KD8');
+      case 15
+        set(GUI.val2, 'string', 'PDX8');
     end
     if do_send_midi
       midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 102, value));

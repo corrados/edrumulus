@@ -75,6 +75,13 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.rim_shot_velocity_thresh = 10; // suppress incorrect rim shot detections on low velocity hits
       break;
 
+    case PDX8:
+      // note: no changes needed to the default values
+      pad_settings.velocity_sensitivity = 5;
+      pad_settings.pos_threshold        = 17;
+      pad_settings.pos_sensitivity      = 13;
+      break;
+
     case PD6:
       pad_settings.scan_time_ms     = 1.5f;
       pad_settings.decay_grad_fact2 = 400.0f;
@@ -191,9 +198,10 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case HD1TOM:
-      pad_settings.scan_time_ms        = 1.5f;
-      pad_settings.decay_grad_fact2    = 300.0f;
-      pad_settings.pos_low_pass_cutoff = 300.0f;
+      pad_settings.velocity_sensitivity = 8;
+      pad_settings.scan_time_ms         = 1.5f;
+      pad_settings.decay_grad_fact2     = 300.0f;
+      pad_settings.pos_low_pass_cutoff  = 300.0f;
       break;
   }
 }
