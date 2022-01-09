@@ -27,23 +27,31 @@ class Edrumulus
 public:
   enum Epadtype // note that the enums need assigned integers for MIDI settings transfer
   {
+    //  0.. 9  Generic pads
+    // 10..29  Roland mesh head pads
+    // 30..39  Roland rubber pads
+    // 40..49  Roland kick pads
+    // 50..59  Roland cymbal pads
+    // 60..69  Hi-Hat pads (all manufacturer)
+    // 70..79  Hi-Hat control pedals
+    // 80..127 Various pad types  (all manufacturer)
 // TODO if new pads are added, check if get_is_control() and get_is_rim_switch() must be updated
-    PD120     = 0,
-    PD80R     = 1,
-    PD8       = 2,
-    FD8       = 3, // control pedal
-    VH12      = 4,
-    VH12CTRL  = 5,
-    KD7       = 6,
-    TP80      = 7,
-    CY6       = 8,
-    CY8       = 9,
-    DIABOLO12 = 10,
-    CY5       = 11,
-    HD1TOM    = 12,
-    PD6       = 13,
-    KD8       = 14,
-    PDX8      = 15
+    PDX8      = 11, // Roland mesh head pad
+    PD80R     = 12, // Roland mesh head pad
+    PD120     = 18, // Roland mesh head pad
+    HD1TOM    = 30, // Roland rubber pad for HD-1
+    PD6       = 33, // Roland rubber pad
+    PD8       = 36, // Roland rubber pad
+    KD7       = 40, // Roland rubber kick pad
+    KD8       = 41, // Roland rubber kick pad
+    CY5       = 50, // Roland rubber cymbal pad
+    CY6       = 51, // Roland rubber cymbal pad
+    CY8       = 53, // Roland rubber cymbal pad
+    VH12      = 62, // Roland hi-hat dual rubber pad
+    FD8       = 71, // Roland control pedal
+    VH12CTRL  = 75, // Roland control pedal (included in VH-12)
+    TP80      = 82, // Yamaha rubber pad
+    DIABOLO12 = 93  // drum-tec mesh head pad
   };
 
   enum Ecurvetype // note that the enums need assigned integers for MIDI settings transfer
