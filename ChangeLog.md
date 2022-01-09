@@ -1,5 +1,10 @@
 # Edrumulus Project Log
 
+## 2022-01-09 Possible out-of-memory issue for the ESP32
+
+  Today I flashed the current Edrumulus code on my ESP32 and it immediately crashed. After
+  disabling the initialization of the last configured pad it did not crash anymore so, I
+  assume that we have an out-of-memory issue for the ESP32.
 
 ## 2022-01-08 Hot spot detection for mesh head pads
 
