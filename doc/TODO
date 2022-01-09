@@ -1,11 +1,11 @@
 
 
 
-- Create pad parameter set for PDX-8
-
 - Documentation: Edrumulus manual which describes the hardware/software setup, parameter description, HOWTOs, etc.
 
 - Documentation: Algorithm description
+
+- possible memory issue on the ESP32, see 406c31fd66aeb1609f75e22672d5fa9280749f37
 
 - Should we consider pre-scan time high peaks for velocity estimation?
 
