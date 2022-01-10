@@ -158,6 +158,12 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.decay_grad_fact3        = 45.0f;
       break;
 
+    case KD120:
+      pad_settings.scan_time_ms      = 6.0f;
+      pad_settings.decay_fact_db     = 12.0f;
+      pad_settings.decay_est_fact_db = 20.0f;
+      break;
+
     case CY5:
       pad_settings.velocity_sensitivity = 6;
       pad_settings.scan_time_ms         = 3.0f;
