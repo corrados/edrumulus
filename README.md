@@ -2,24 +2,20 @@
 
 <img width="100" height="100" src="algorithm/images/edrumulus_logo.png"/>
 
-The aim of the **Edrumulus** project is to create a high quality Open Source e-drum trigger module software
-which runs on a micro processor.
-
 [![PlatformIO CI](https://github.com/corrados/edrumulus/actions/workflows/main.yml/badge.svg)](https://github.com/corrados/edrumulus/actions/workflows/main.yml)
+
+The aim of the **Edrumulus** project is to create a high quality Open Source e-drum trigger module software
+which runs on a micro processor. It shall fulfill the following specifications:
+- The trigger performance shall be similar to the Roland TD-27.
+- Overall latency should be as small as possible. The goal is to achieve a latency < 10 ms.
+- The required analog front end design shall be as simple as possible using the fewest number of
+  parts possible.
 
 
 ## News
 
 Find all important updates of the Edrumulus project in the [change log file](ChangeLog.md)
 and in the [discussion forums](https://github.com/corrados/edrumulus/discussions).
-
-
-## Specifications
-
-- The trigger performance shall be similar to the Roland TD-27.
-- Overall latency should be as small as possible. The goal is to achieve a latency < 10 ms.
-- The required analog front end design shall be as simple as possible using the fewest number of
-  parts possible.
 
 
 ## Features
