@@ -1,5 +1,17 @@
 # Edrumulus Project Log
 
+
+## 2022-01-09 Edrumulus prototype 3 (HD-1)
+
+  Today was the first time I tested Edrumulus in a full drum-kit setup and
+  stand-alone (i.e. no PC or Laptop needed). The prototype 3 consists of an
+  ESP32 with 7 pad and 1 control inputs, a Raspberry Pi 3 with a 32 GB SD card
+  and a Behringer UFO 202 USB audio interface. It worked pretty amazingly well.
+  Of course, there is plenty of room for improvement. But for a first try it was
+  a great experience. Even positional sensing was possible with the PDX-8
+  mesh pad even that it does not have a center mounted piezo trigger.
+  <br/>![Prototype 3 (HD-1)](algorithm/images/edrumulus_prototype3_hd1.jpg)
+
 ## 2022-01-09 Possible out-of-memory issue for the ESP32
 
   Today I flashed the current Edrumulus code on my ESP32 and it immediately crashed. After
