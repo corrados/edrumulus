@@ -19,6 +19,9 @@
 
 #include "edrumulus.h"
 
+#define VERSION_MAJOR   0
+#define VERSION_MINOR   3
+
 #ifdef USE_MIDI
 # ifdef ESP_PLATFORM
 #  include <MIDI.h>
@@ -270,6 +273,8 @@ void loop()
         MYMIDI.sendNoteOff ( 112, 0, 1 ); // TODO not yet supported
         MYMIDI.sendNoteOff ( 113, 0, 1 ); // TODO not yet supported
         MYMIDI.sendNoteOff ( 114, edrumulus.get_cancellation ( selected_pad ), 1 );
+        MYMIDI.sendNoteOff ( 126, VERSION_MINOR, 1 );
+        MYMIDI.sendNoteOff ( 127, VERSION_MAJOR, 1 );
       }
 
       // controller 109: MIDI curve type
