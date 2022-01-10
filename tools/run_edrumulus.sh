@@ -223,8 +223,13 @@ fi
 
 
 # run Edrumulus ----------------------------------------------------------------
-./drumgizmo/drumgizmo/drumgizmo -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
-sleep 5
+if [ $USER = "pi" ]; then
+  ./drumgizmo/drumgizmo/drumgizmo -l -L max=2,rampdown=0.04 -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
+  sleep 20
+else
+  ./drumgizmo/drumgizmo/drumgizmo -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
+  sleep 5
+fi
 
 jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
 jack_connect $KITJACKPORTLEFT system:playback_1
