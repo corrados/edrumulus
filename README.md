@@ -17,21 +17,18 @@ and in the [discussion forums](https://github.com/corrados/edrumulus/discussions
 ## Specifications
 
 - The trigger performance shall be similar to the Roland TD-27.
-
 - Overall latency should be as small as possible. The goal is to achieve a latency < 10 ms.
-
 - The required analog front end design shall be as simple as possible using the fewest number of
   parts possible.
 
-- Features:
-  - [x] Positional sensing
-  - [x] Retrigger cancellation
-  - [x] Rim shot/cymbol choke detection
-  - [x] Cross talk cancellation
-  - [ ] Hot spot suppression for mesh head pads
-  - [ ] Compensation of clipping distortion
 
-- Supported micro processor developer boards are:
+## Features
+
+- Positional sensing
+- Retrigger cancellation
+- Rim shot/cymbol choke detection
+- Cross talk cancellation
+- Supported micro processor developer boards:
   - **ESP32 (dual core) DEVKIT V1 or similar**
   - **Teensy 4.0**
 
