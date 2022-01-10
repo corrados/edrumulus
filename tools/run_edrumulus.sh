@@ -172,7 +172,7 @@ else
   #echo -n -e '\xB9\x6D\x03' > /dev/ttyUSB0 # MIDI curve type: LOG1
   #echo -n -e '\xB9\x66\x06' > /dev/ttyUSB0 # pad type: KD7
   #echo -n -e '\xB9\x67\x0A' > /dev/ttyUSB0 # threshold
-  #echo -n -e '\xB9\x68\x09' > /dev/ttyUSB0 # sensitivity
+  echo -n -e '\xB9\x68\x09' > /dev/ttyUSB0 # sensitivity
 
   # Hi-Hat
   echo -n -e '\xB9\x6C\x02' > /dev/ttyUSB0 # select pad: 2
