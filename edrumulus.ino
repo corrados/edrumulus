@@ -47,6 +47,9 @@ int       selected_pad      = 0;             // initialization value
 
 void setup()
 {
+#ifdef USE_MIDI
+  MYMIDI.begin();
+#endif
 #ifdef MIDI_SERIAL
   Serial.begin ( MIDI_SERIAL );
 #else
