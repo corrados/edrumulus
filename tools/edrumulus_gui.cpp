@@ -1,11 +1,12 @@
 
 // Edrumulus simple terminal GUI
-// compile with: gcc edrumulus_gui.c -o gui -lncurses
+// compile with: gcc edrumulus_gui.cpp -o gui -lncurses
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <algorithm>
 #include <termios.h>
 #include <curses.h>
 
@@ -74,13 +75,10 @@ int main()
     move ( 7, 10 ); deleteln();
     move ( 6, 10 ); deleteln();
 
-    if ( ch == 's' ) // change selected pad
+    if ( ch == 's' || ch == 'S' ) // change selected pad
     {
-      sel_pad++;
-      if ( sel_pad > max_num_pads )
-      {
-        sel_pad = 0;
-      }
+      ch == 's' ? sel_pad++ : sel_pad--;
+      sel_pad = std::max ( 0, std::min ( max_num_pads, sel_pad ) );
       mvprintw ( 8, 10, "s:sel pad" );
       write(serial_port, get_midi_cmd ( 108, sel_pad ), 3);
     }
