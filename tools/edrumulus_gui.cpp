@@ -64,7 +64,7 @@ int main()
   sel_cmd = 0;
 
   // show usage
-  mvaddstr ( 5, 10, "Press a key, q:quit, s:sel pad, c:sel command" );
+  mvaddstr ( 5, 10, "Press a key, q:quit, s,S:sel pad, c,C:sel command" );
   refresh();
 
   // loop until user presses q
@@ -78,18 +78,15 @@ int main()
     if ( ch == 's' || ch == 'S' ) // change selected pad
     {
       ch == 's' ? sel_pad++ : sel_pad--;
-      sel_pad = std::max ( 0, std::min ( max_num_pads, sel_pad ) );
+      sel_pad = std::max ( 0, std::min ( max_num_pads - 1, sel_pad ) );
       mvprintw ( 8, 10, "s:sel pad" );
       write(serial_port, get_midi_cmd ( 108, sel_pad ), 3);
     }
 
-    if ( ch == 'c' ) // change selected command
+    if ( ch == 'c' || ch == 'C' ) // change selected command
     {
-      sel_cmd++;
-      if ( sel_cmd > number_cmd )
-      {
-        sel_cmd = 0;
-      }
+      ch == 'c' ? sel_cmd++ : sel_cmd--;
+      sel_cmd = std::max ( 0, std::min ( number_cmd - 1, sel_cmd ) );
       mvprintw ( 8, 10, "c:sel command" );
     }
 
