@@ -9,6 +9,12 @@
 #include <termios.h>
 #include <curses.h>
 
+// tables
+const int   max_num_pads = 8;
+const int   number_cmd   = 12;
+const char* cmd_names[]  = { "type", "thresh", "sens", "pos thres", "pos sens", "rim thres", "curve", "spike", "rim/pos", "note", "note rim", "cross" };
+const int   cmd_val[]    = {    102,      103,    104,         105,        106,         107,     109,     110,       111,    112,        113,     114 };
+
 // utility function to get current MIDI command
 unsigned char* get_midi_cmd ( int cmd, int val )
 {
@@ -26,6 +32,8 @@ int main()
 
   int ch;
   int serial_port;
+  int sel_cmd;
+  int sel_pad;
   struct termios tty;
 
   // open serial USB port and set correct baud rate
@@ -51,31 +59,44 @@ int main()
   mainwin = initscr();
   noecho();                 // turn off key echoing
   keypad ( mainwin, true ); // enable the keypad for non-char keys
+  sel_pad = 0;
+  sel_cmd = 0;
 
   // show usage
-  mvaddstr ( 5, 10, "Press a key, q:quit, p:sel pad, a:MIDI curve" );
+  mvaddstr ( 5, 10, "Press a key, q:quit, s:sel pad, c:sel command" );
   refresh();
-  move(7, 10);
 
   // loop until user presses q
   while ( ( ch = getch() ) != 'q' )
   {
-    // delete the old response line, and print a new one
-    deleteln();
+    // delete the old response lines
+    move ( 8, 10 ); deleteln();
+    move ( 7, 10 ); deleteln();
+    move ( 6, 10 ); deleteln();
 
-/* TEST */
-if ( ch == 'p' )
-{
-  mvprintw ( 7, 10, "p:sel pad" );
-  write(serial_port, get_midi_cmd ( 108, 0 ), 3);
-}
-if ( ch == 'a' )
-{
-  mvprintw ( 7, 10, "a:MIDI curve" );
-  unsigned char midi_cmd[] = "\xB9\x6D\x03";
-  write(serial_port, midi_cmd, 3);
-}
+    if ( ch == 's' ) // change selected pad
+    {
+      sel_pad++;
+      if ( sel_pad > max_num_pads )
+      {
+        sel_pad = 0;
+      }
+      mvprintw ( 8, 10, "s:sel pad" );
+      write(serial_port, get_midi_cmd ( 108, sel_pad ), 3);
+    }
 
+    if ( ch == 'c' ) // change selected command
+    {
+      sel_cmd++;
+      if ( sel_cmd > number_cmd )
+      {
+        sel_cmd = 0;
+      }
+      mvprintw ( 8, 10, "c:sel command" );
+    }
+
+    mvprintw ( 7, 10, "Selected pad: %d",     sel_pad );
+    mvprintw ( 6, 10, "Selected command: %s", cmd_names[sel_cmd] );
     refresh();
   }
 
