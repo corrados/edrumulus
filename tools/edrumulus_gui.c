@@ -9,8 +9,17 @@
 #include <termios.h>
 #include <curses.h>
 
-unsigned char* get_midi_cmd();
+// utility function to get current MIDI command
+unsigned char* get_midi_cmd ( int cmd, int val )
+{
+  static unsigned char midi_cmd[3];
+  midi_cmd[0] = 185; // control change MIDI message on channel 10
+  midi_cmd[1] = cmd;
+  midi_cmd[2] = val;
+  return midi_cmd;
+}
 
+// main function
 int main()
 {
   WINDOW* mainwin;
@@ -58,7 +67,7 @@ int main()
 if ( ch == 'p' )
 {
   mvprintw ( 7, 10, "p:sel pad" );
-  write(serial_port, get_midi_cmd(), 3);
+  write(serial_port, get_midi_cmd ( 108, 0 ), 3);
 }
 if ( ch == 'a' )
 {
@@ -76,12 +85,5 @@ if ( ch == 'a' )
   refresh();
   close ( serial_port );
   return EXIT_SUCCESS;
-}
-
-// utility function to get current MIDI command
-unsigned char* get_midi_cmd()
-{
-  static unsigned char midi_cmd[3] = "\xB9\x6C\x00";
-  return midi_cmd;
 }
 
