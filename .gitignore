@@ -8,6 +8,7 @@ tools/drumgizmo/
 tools/mod-ttymidi/
 tools/SendMIDI/
 tools/mapex_mars/
+tools/gui
 
 hardware/prototype2/edrumulus-cache.lib
 hardware/prototype2/edrumulus.sch-bak
