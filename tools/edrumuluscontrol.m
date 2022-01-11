@@ -135,8 +135,8 @@ GUI.val2 = uicontrol(GUI.set_panel, ...
 GUI.slider2 = uicontrol(GUI.set_panel, ...
   'style',      'slider', ...
   'min',        0, ...
-  'max',        15, ...              % change value here if new pad type was added
-  'SliderStep', [1 / 15, 1 / 15], ... % change value here if new pad type was added
+  'max',        17, ...               % change value here if new pad type was added
+  'SliderStep', [1 / 17, 1 / 17], ... % change value here if new pad type was added
   'units',      'normalized', ...
   'position',   [1 * slider_width, 0, slider_width, slider_hight], ...
   'callback',   @slider_callback);
@@ -309,6 +309,8 @@ if ~isempty(edrumulus_in_index) && ~isempty(edrumulus_out_index)
 end
 
 % parse MIDI input to receive pad parameters and apply them to the GUI controls
+version_major = -1;
+version_minor = -1;
 while ishandle(figure_handle)
   midi_message = midireceive(GUI.midi_in_dev, 1);
   if ~isempty(midi_message) && (midi_message.type == midimsgtype.NoteOff) && ...
@@ -332,6 +334,10 @@ while ishandle(figure_handle)
       set(GUI.spike_dropdown, 'value', midi_message.velocity + 1);
     elseif midi_message.note == 114
       set_slieder_value(GUI.slider9, midi_message.velocity, false);
+    elseif midi_message.note == 126
+      version_minor = midi_message.velocity;
+    elseif midi_message.note == 127
+      version_major = midi_message.velocity;
     end
 
   end
@@ -350,6 +356,11 @@ while ishandle(figure_handle)
 
     end
 
+  end
+
+  % if version number is available, set the window title
+  if (version_major >= 0) && (version_minor >= 0) && isempty(strfind(get(figure_handle, 'Name'), 'Edrumulus'))
+    set(figure_handle, 'Name', ['Edrumulus Version ' num2str(version_major) '.' num2str(version_minor)], 'NumberTitle', 'off');
   end
 
   pause(0.01); % do not block the CPU all the time
@@ -459,6 +470,10 @@ switch hObject
         set(GUI.val2, 'string', 'KD8');
       case 15
         set(GUI.val2, 'string', 'PDX8');
+      case 16
+        set(GUI.val2, 'string', 'KD120');
+      case 17
+        set(GUI.val2, 'string', 'PD5');
     end
     if do_send_midi
       midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 102, value));

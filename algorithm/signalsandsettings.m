@@ -47,7 +47,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd80r_no_hot_spot.wav");padtype='pd80r';
 %x = audioread("signals/pd80r_rimshot_issue.wav");padtype='pd80r';
 %x = audioread("signals/pdx8.wav");padtype='pdx8';
-x = audioread("signals/pd5.wav");
+x = audioread("signals/pd5.wav");padtype='pd5';
 %x = audioread("signals/pd6.wav");padtype='pd6';
 %x = audioread("signals/pd8.wav");padtype='pd8';%x = x(1:300000, :);%x = x(420000:470000, :);%x = x(1:100000, :);
 %x = audioread("signals/pd8_rimshot.wav");padtype='pd8';
@@ -58,7 +58,7 @@ x = audioread("signals/pd5.wav");
 %x = audioread("signals/kd8.wav");padtype='kd8';%x = x(177050:178200, :);%
 %x = audioread("signals/kd7.wav");padtype='kd7';%x = x(1:170000, :);
 %x = audioread("signals/kd7_hard_hits.wav");padtype='kd7';x = x(1:3000, :);
-%x = audioread("signals/kd120.wav");
+%x = audioread("signals/kd120.wav");padtype='kd120';
 %x = audioread("signals/tp80.wav");padtype='tp80';
 %x = audioread("signals/vh12.wav");padtype='vh12';%x = x(900000:end, :);%x = x(376000:420000, :);%x = x(1:140000, :);
 %x = audioread("signals/drumtec_diabolo12.wav");x=x(:,1);padtype='diabolo12';
@@ -112,6 +112,10 @@ switch padtype
     pad.hot_spot_middle_diff_db         = 5;
   case 'pdx8'
     % note: no changes needed to the default values
+  case 'pd5'
+    pad.scan_time_ms     = 4;
+    pad.mask_time_ms     = 9;
+    pad.decay_grad_fact2 = 400;
   case 'pd6'
     pad.scan_time_ms     = 1.5;
     pad.decay_grad_fact2 = 400;
@@ -158,6 +162,10 @@ switch padtype
     pad.decay_grad_fact2        = 450;
     pad.decay_len_ms3           = 500;
     pad.decay_grad_fact3        = 45;
+  case 'kd120'
+    pad.scan_time_ms      = 6;
+    pad.decay_fact_db     = 12;
+    pad.decay_est_fact_db = 20;
   case 'cy5'
     pad.scan_time_ms  = 3;
     pad.mask_time_ms  = 8;

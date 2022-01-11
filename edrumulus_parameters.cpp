@@ -76,10 +76,15 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case PDX8:
-      // note: no changes needed to the default values
       pad_settings.velocity_sensitivity = 5;
       pad_settings.pos_threshold        = 17;
       pad_settings.pos_sensitivity      = 13;
+      break;
+
+    case PD5:
+      pad_settings.scan_time_ms     = 4.0f;
+      pad_settings.mask_time_ms     = 9.0f;
+      pad_settings.decay_grad_fact2 = 400.0f;
       break;
 
     case PD6:
@@ -156,6 +161,12 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.decay_grad_fact2        = 450.0f;
       pad_settings.decay_len3_ms           = 500.0f;
       pad_settings.decay_grad_fact3        = 45.0f;
+      break;
+
+    case KD120:
+      pad_settings.scan_time_ms      = 6.0f;
+      pad_settings.decay_fact_db     = 12.0f;
+      pad_settings.decay_est_fact_db = 20.0f;
       break;
 
     case CY5:
