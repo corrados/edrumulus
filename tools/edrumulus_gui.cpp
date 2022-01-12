@@ -38,7 +38,7 @@ int main()
   struct termios tty;
 
   // open serial USB port and set correct baud rate
-  serial_port = open("/dev/ttyUSB0", O_RDWR);
+  serial_port = open ( "/dev/ttyUSB0", O_RDWR | O_NONBLOCK );
 
   if ( tcgetattr ( serial_port, &tty ) != 0 )
   {
@@ -62,6 +62,7 @@ int main()
   keypad ( mainwin, true ); // enable the keypad for non-char keys
   sel_pad = 0;
   sel_cmd = 0;
+  nodelay ( mainwin, true ); // we want a non-blocking getch()
 
   // show usage
   mvaddstr ( 5, 10, "Press a key, q:quit, s,S:sel pad, c,C:sel command" );
@@ -70,29 +71,44 @@ int main()
   // loop until user presses q
   while ( ( ch = getch() ) != 'q' )
   {
-    // delete the old response lines
-    move ( 8, 10 ); deleteln();
-    move ( 7, 10 ); deleteln();
-    move ( 6, 10 ); deleteln();
-
-    if ( ch == 's' || ch == 'S' ) // change selected pad
+    if ( ch != -1 )
     {
-      ch == 's' ? sel_pad++ : sel_pad--;
-      sel_pad = std::max ( 0, std::min ( max_num_pads - 1, sel_pad ) );
-      mvprintw ( 8, 10, "s:sel pad" );
-      write(serial_port, get_midi_cmd ( 108, sel_pad ), 3);
+      // delete the old response lines
+      move ( 8, 10 ); deleteln();
+      move ( 7, 10 ); deleteln();
+      move ( 6, 10 ); deleteln();
+
+      if ( ch == 's' || ch == 'S' ) // change selected pad
+     {
+       ch == 's' ? sel_pad++ : sel_pad--;
+       sel_pad = std::max ( 0, std::min ( max_num_pads - 1, sel_pad ) );
+       mvprintw ( 8, 10, "s:sel pad" );
+       write ( serial_port, get_midi_cmd ( 108, sel_pad ), 3 );
+     }
+
+      if ( ch == 'c' || ch == 'C' ) // change selected command
+     {
+       ch == 'c' ? sel_cmd++ : sel_cmd--;
+       sel_cmd = std::max ( 0, std::min ( number_cmd - 1, sel_cmd ) );
+       mvprintw ( 8, 10, "c:sel command" );
+     }
+
+      mvprintw ( 7, 10, "Selected pad: %d",     sel_pad );
+      mvprintw ( 6, 10, "Selected command: %s", cmd_names[sel_cmd] );
+      refresh();
     }
 
-    if ( ch == 'c' || ch == 'C' ) // change selected command
-    {
-      ch == 'c' ? sel_cmd++ : sel_cmd--;
-      sel_cmd = std::max ( 0, std::min ( number_cmd - 1, sel_cmd ) );
-      mvprintw ( 8, 10, "c:sel command" );
-    }
+/*
+unsigned char read_buf[3];
+int num_bytes = read ( serial_port, &read_buf, 3 );
 
-    mvprintw ( 7, 10, "Selected pad: %d",     sel_pad );
-    mvprintw ( 6, 10, "Selected command: %s", cmd_names[sel_cmd] );
-    refresh();
+if ( num_bytes == 3 )
+{
+  printf ( "received\n" );
+}
+*/
+
+    usleep ( 100000 );
   }
 
   // clean up and exit
