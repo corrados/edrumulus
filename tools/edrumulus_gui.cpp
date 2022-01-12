@@ -66,17 +66,17 @@ int main()
       move ( 6, 10 ); deleteln();
 
       if ( ch == 's' || ch == 'S' ) // change selected pad
-     {
-       ch == 's' ? sel_pad++ : sel_pad--;
-       sel_pad = std::max ( 0, std::min ( max_num_pads - 1, sel_pad ) );
-       write ( serial_port, get_midi_cmd ( 108, sel_pad ), 3 );
-     }
+      {
+        ch == 's' ? sel_pad++ : sel_pad--;
+        sel_pad = std::max ( 0, std::min ( max_num_pads - 1, sel_pad ) );
+        write ( serial_port, get_midi_cmd ( 108, sel_pad ), 3 );
+      }
 
       if ( ch == 'c' || ch == 'C' ) // change selected command
-     {
-       ch == 'c' ? sel_cmd++ : sel_cmd--;
-       sel_cmd = std::max ( 0, std::min ( number_cmd - 1, sel_cmd ) );
-     }
+      {
+        ch == 'c' ? sel_cmd++ : sel_cmd--;
+        sel_cmd = std::max ( 0, std::min ( number_cmd - 1, sel_cmd ) );
+      }
 
       mvprintw ( 7, 10, "Selected pad: %d",     sel_pad );
       mvprintw ( 6, 10, "Selected command: %s", cmd_names[sel_cmd] );
