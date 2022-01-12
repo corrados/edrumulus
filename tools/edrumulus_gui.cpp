@@ -29,39 +29,26 @@ unsigned char* get_midi_cmd ( int cmd, int val )
 // main function
 int main()
 {
-  WINDOW* mainwin;
-
-  int ch;
-  int serial_port;
-  int sel_cmd;
-  int sel_pad;
+  int            ch;
   struct termios tty;
 
   // open serial USB port and set correct baud rate
-  serial_port = open ( "/dev/ttyUSB0", O_RDWR | O_NONBLOCK );
-
-  if ( tcgetattr ( serial_port, &tty ) != 0 )
-  {
-    fprintf ( stderr, "Error from tcgetattr.\n" );
-    exit ( EXIT_FAILURE );
-  }
-
+  int serial_port = open ( "/dev/ttyUSB0", O_RDWR | O_NONBLOCK );
+  int ret         = tcgetattr ( serial_port, &tty );
   cfsetispeed ( &tty, B38400 );
   cfsetospeed ( &tty, B38400 );
-
-  if ( tcsetattr ( serial_port, TCSANOW, &tty ) != 0 )
+  if ( tcsetattr ( serial_port, TCSANOW, &tty ) != 0 || ret != 0 )
   {
-    fprintf ( stderr, "Error from tcsetattr.\n" );
+    fprintf ( stderr, "Is Edrumulus connected? Are you in dialout group (sudo usermod -a -G dialout $USER)?\n" );
     exit ( EXIT_FAILURE );
   }
 
-
   // initialize GUI
-  mainwin = initscr();
+  WINDOW* mainwin = initscr();
   noecho();                 // turn off key echoing
   keypad ( mainwin, true ); // enable the keypad for non-char keys
-  sel_pad = 0;
-  sel_cmd = 0;
+  int sel_pad = 0;
+  int sel_cmd = 0;
   nodelay ( mainwin, true ); // we want a non-blocking getch()
 
   // show usage
