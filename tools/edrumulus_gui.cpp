@@ -69,7 +69,6 @@ int main()
      {
        ch == 's' ? sel_pad++ : sel_pad--;
        sel_pad = std::max ( 0, std::min ( max_num_pads - 1, sel_pad ) );
-       mvprintw ( 8, 10, "s:sel pad" );
        write ( serial_port, get_midi_cmd ( 108, sel_pad ), 3 );
      }
 
@@ -77,7 +76,6 @@ int main()
      {
        ch == 'c' ? sel_cmd++ : sel_cmd--;
        sel_cmd = std::max ( 0, std::min ( number_cmd - 1, sel_cmd ) );
-       mvprintw ( 8, 10, "c:sel command" );
      }
 
       mvprintw ( 7, 10, "Selected pad: %d",     sel_pad );
