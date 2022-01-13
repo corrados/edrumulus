@@ -30,13 +30,18 @@ unsigned char* get_midi_cmd ( int cmd, int val )
 int main()
 {
   int            ch;
-  struct termios tty;
+  struct termios tty, prev_tty;
 
   // open serial USB port and set correct baud rate
   int serial_port = open ( "/dev/ttyUSB0", O_RDWR | O_NONBLOCK );
-  int ret         = tcgetattr ( serial_port, &tty );
-  cfsetispeed ( &tty, B38400 );
-  cfsetospeed ( &tty, B38400 );
+  int ret         = tcgetattr ( serial_port, &prev_tty ); // store old tty settings
+  tty.c_cflag     = B38400 | CS8 | CLOCAL | CREAD;
+  tty.c_iflag     = IGNPAR;
+  tty.c_oflag     = 0;
+  tty.c_lflag     = 0;
+  tty.c_cc[VMIN]  = 1;
+  tty.c_cc[VTIME] = 0;
+  tcflush ( serial_port, TCIFLUSH );
   if ( tcsetattr ( serial_port, TCSANOW, &tty ) != 0 || ret != 0 )
   {
     fprintf ( stderr, "Is Edrumulus connected? Are you in dialout group (sudo usermod -a -G dialout $USER)?\n" );
@@ -83,16 +88,6 @@ int main()
       refresh();
     }
 
-/*
-unsigned char read_buf[3];
-int num_bytes = read ( serial_port, &read_buf, 3 );
-
-if ( num_bytes == 3 )
-{
-  printf ( "received\n" );
-}
-*/
-
     usleep ( 100000 );
   }
 
@@ -100,6 +95,7 @@ if ( num_bytes == 3 )
   delwin ( mainwin );
   endwin();
   refresh();
+  tcsetattr ( serial_port, TCSANOW, &prev_tty );
   close ( serial_port );
   return EXIT_SUCCESS;
 }
