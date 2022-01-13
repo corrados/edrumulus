@@ -15,6 +15,7 @@ const int   max_num_pads = 8;
 const int   number_cmd   = 12;
 const char* cmd_names[]  = { "type", "thresh", "sens", "pos thres", "pos sens", "rim thres", "curve", "spike", "rim/pos", "note", "note rim", "cross" };
 const int   cmd_val[]    = {    102,      103,    104,         105,        106,         107,     109,     110,       111,    112,        113,     114 };
+int         param_set[]  = {      0,        0,      0,           0,          0,           0,       0,       0,         0,      0,          0,       0 };
 
 // utility function to get current MIDI command
 unsigned char* get_midi_cmd ( int cmd, int val )
@@ -57,7 +58,7 @@ int main()
   nodelay ( mainwin, true ); // we want a non-blocking getch()
 
   // show usage
-  mvaddstr ( 5, 10, "Press a key, q:quit, s,S:sel pad, c,C:sel command" );
+  mvaddstr ( 5, 10, "Press a key; q:quit; s,S:sel pad; c,C:sel command; up,down: change parameter" );
   refresh();
 
   // loop until user presses q
@@ -66,9 +67,9 @@ int main()
     if ( ch != -1 )
     {
       // delete the old response lines
+      move ( 9, 10 ); deleteln();
       move ( 8, 10 ); deleteln();
       move ( 7, 10 ); deleteln();
-      move ( 6, 10 ); deleteln();
 
       if ( ch == 's' || ch == 'S' ) // change selected pad
       {
@@ -76,15 +77,21 @@ int main()
         sel_pad = std::max ( 0, std::min ( max_num_pads - 1, sel_pad ) );
         write ( serial_port, get_midi_cmd ( 108, sel_pad ), 3 );
       }
-
-      if ( ch == 'c' || ch == 'C' ) // change selected command
+      else if ( ch == 'c' || ch == 'C' ) // change selected command
       {
         ch == 'c' ? sel_cmd++ : sel_cmd--;
         sel_cmd = std::max ( 0, std::min ( number_cmd - 1, sel_cmd ) );
       }
+      else if ( ch == 258 || ch == 259 ) // change parameter value with up/down keys
+      {
+        ch == 259 ? param_set[sel_cmd]++ : param_set[sel_cmd]--;
+        param_set[sel_cmd] = std::max ( 0, std::min ( 31, param_set[sel_cmd] ) );
+        write ( serial_port, get_midi_cmd ( cmd_val[sel_cmd], param_set[sel_cmd] ), 3 );
+      }
 
-      mvprintw ( 7, 10, "Selected pad: %d",     sel_pad );
-      mvprintw ( 6, 10, "Selected command: %s", cmd_names[sel_cmd] );
+      mvprintw ( 9, 10, "Parameter value:  %d", param_set[sel_cmd] );
+      mvprintw ( 8, 10, "Selected pad:     %d", sel_pad );
+      mvprintw ( 7, 10, "Selected command: %s", cmd_names[sel_cmd] );
       refresh();
     }
 
