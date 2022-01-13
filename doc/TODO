@@ -7,6 +7,8 @@
 
 - possible memory issue on the ESP32, see 406c31fd66aeb1609f75e22672d5fa9280749f37
 
+- simulate 16 bit with current hardware and check if thresholds are correct
+
 - Should we consider pre-scan time high peaks for velocity estimation?
 
 - Hot spot suppression on mesh pads with center piezo
