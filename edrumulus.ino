@@ -86,7 +86,7 @@ void setup()
 
 // my prototype setup configuration...
   edrumulus.set_pad_type          ( 0, Edrumulus::PDX8 ); // snare
-  //edrumulus.set_rim_shot_is_used  ( 0, true ); // no rim shot piezo on HD1-PDX8
+  edrumulus.set_rim_shot_is_used  ( 0, true );
   edrumulus.set_pos_sense_is_used ( 0, true );
   edrumulus.set_pad_type          ( 1, Edrumulus::KD7 ); // kick
   edrumulus.set_curve             ( 1, Edrumulus::LOG2 ); // less dynamic on kick (similar to other drum modules)
