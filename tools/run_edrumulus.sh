@@ -165,7 +165,7 @@ else
   #echo -n -e '\xB9\x6B\x10' > /dev/ttyUSB0 # rim shot threshold
   #echo -n -e '\xB9\x69\x1A' > /dev/ttyUSB0 # positional sensing threshold
   #echo -n -e '\xB9\x6A\x0B' > /dev/ttyUSB0 # positional sensing sensitivity
-  #echo -n -e '\xB9\x6F\x03' > /dev/ttyUSB0 # rim/pos: both, rim shot and positional sensing
+  echo -n -e '\xB9\x6F\x03' > /dev/ttyUSB0 # rim/pos: both, rim shot and positional sensing
 
   # kick
   echo -n -e '\xB9\x6C\x01' > /dev/ttyUSB0 # select pad: 1
