@@ -1,6 +1,8 @@
 
 
 
+- use rim switch theshold in dB (not linear as it is implemented right now)
+
 - Documentation: Edrumulus manual which describes the hardware/software setup, parameter description, HOWTOs, etc.
 
 - Documentation: Algorithm description
