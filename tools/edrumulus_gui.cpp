@@ -23,6 +23,7 @@ jack_port_t* output_port;
 int          midi_send_cmd = -1;
 int          midi_send_val;
 
+// jack audio callback function
 int process ( jack_nframes_t nframes, void *arg )
 {
   void*        in_midi       = jack_port_get_buffer ( input_port,  nframes );
