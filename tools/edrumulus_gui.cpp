@@ -1,14 +1,16 @@
 
 // Edrumulus simple terminal GUI
-// compile with: gcc edrumulus_gui.cpp -o gui -lncurses
+// compile with: gcc edrumulus_gui.cpp -o gui -lncurses -ljack
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <algorithm>
-#include <termios.h>
 #include <curses.h>
+#include <jack/jack.h>
+#include <jack/midiport.h>
+
 
 // tables
 const int   max_num_pads = 8;
@@ -16,38 +18,59 @@ const int   number_cmd   = 12;
 const char* cmd_names[]  = { "type", "thresh", "sens", "pos thres", "pos sens", "rim thres", "curve", "spike", "rim/pos", "note", "note rim", "cross" };
 const int   cmd_val[]    = {    102,      103,    104,         105,        106,         107,     109,     110,       111,    112,        113,     114 };
 int         param_set[]  = {      0,        0,      0,           0,          0,           0,       0,       0,         0,      0,          0,       0 };
+jack_port_t* input_port;
+jack_port_t* output_port;
+int          midi_send_cmd = -1;
+int          midi_send_val;
 
-// utility function to get current MIDI command
-unsigned char* get_midi_cmd ( int cmd, int val )
+int process ( jack_nframes_t nframes, void *arg )
 {
-  static unsigned char midi_cmd[3];
-  midi_cmd[0] = 185; // control change MIDI message on channel 10
-  midi_cmd[1] = cmd;
-  midi_cmd[2] = val;
-  return midi_cmd;
+  void*        in_midi       = jack_port_get_buffer ( input_port,  nframes );
+  void*        out_midi      = jack_port_get_buffer ( output_port, nframes );
+  jack_nframes_t event_count = jack_midi_get_event_count ( in_midi );
+
+  for ( jack_nframes_t j = 0; j < event_count; j++ )
+  {
+    jack_midi_event_t in_event;
+    jack_midi_event_get ( &in_event, in_midi, j );
+
+    if ( in_event.size == 3 )
+    {
+
+// TODO use received MIDI values
+move ( 10, 10 ); deleteln();
+mvprintw ( 10, 10, "%d received %d %d %d", event_count, in_event.buffer[0], in_event.buffer[1], in_event.buffer[2] );
+refresh();
+
+    }
+  }
+
+  jack_midi_clear_buffer ( out_midi );
+  if ( midi_send_cmd >= 0 )
+  {
+    jack_midi_data_t* midi_out_buffer = jack_midi_event_reserve ( out_midi, 0, 3 );
+    midi_out_buffer[0] = 185; // control change MIDI message on channel 10
+    midi_out_buffer[1] = midi_send_cmd;
+    midi_out_buffer[2] = midi_send_val;
+    midi_send_cmd      = -1; // invalidate current command to prepare for next command
+  }
+
+  return 0;
 }
 
 // main function
 int main()
 {
-  int            ch;
-  struct termios tty, prev_tty;
+  int ch;
 
-  // open serial USB port and set correct baud rate
-  int serial_port = open ( "/dev/ttyUSB0", O_RDWR | O_NONBLOCK );
-  int ret         = tcgetattr ( serial_port, &prev_tty ); // store old tty settings
-  tty.c_cflag     = B38400 | CS8 | CLOCAL | CREAD;
-  tty.c_iflag     = IGNPAR;
-  tty.c_oflag     = 0;
-  tty.c_lflag     = 0;
-  tty.c_cc[VMIN]  = 0;//1;
-  tty.c_cc[VTIME] = 1;//0;
-  tcflush ( serial_port, TCIFLUSH );
-  if ( tcsetattr ( serial_port, TCSANOW, &tty ) != 0 || ret != 0 )
-  {
-    fprintf ( stderr, "Is Edrumulus connected? Are you in dialout group (sudo usermod -a -G dialout $USER)?\n" );
-    exit ( EXIT_FAILURE );
-  }
+  // initialize jack audio for MIDI
+  jack_client_t* client = jack_client_open   ( "EdrumulusGUI", JackNullOption, nullptr );
+  input_port            = jack_port_register ( client, "MIDI_in",  JACK_DEFAULT_MIDI_TYPE, JackPortIsInput,  0 );
+  output_port           = jack_port_register ( client, "MIDI_out", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0 );
+  jack_set_process_callback ( client, process, nullptr );
+  jack_activate             ( client );
+  jack_connect              ( client, "ttymidi:MIDI_in",       "EdrumulusGUI:MIDI_in" );
+  jack_connect              ( client, "EdrumulusGUI:MIDI_out", "ttymidi:MIDI_out" );
 
   // initialize GUI
   WINDOW* mainwin = initscr();
@@ -75,7 +98,8 @@ int main()
       {
         ch == 's' ? sel_pad++ : sel_pad--;
         sel_pad = std::max ( 0, std::min ( max_num_pads - 1, sel_pad ) );
-        write ( serial_port, get_midi_cmd ( 108, sel_pad ), 3 );
+        midi_send_cmd = 108;
+        midi_send_val = sel_pad;
       }
       else if ( ch == 'c' || ch == 'C' ) // change selected command
       {
@@ -86,7 +110,8 @@ int main()
       {
         ch == 259 ? param_set[sel_cmd]++ : param_set[sel_cmd]--;
         param_set[sel_cmd] = std::max ( 0, std::min ( 31, param_set[sel_cmd] ) );
-        write ( serial_port, get_midi_cmd ( cmd_val[sel_cmd], param_set[sel_cmd] ), 3 );
+        midi_send_cmd = cmd_val[sel_cmd];
+        midi_send_val = param_set[sel_cmd];
       }
 
       mvprintw ( 9, 10, "Parameter value:  %d", param_set[sel_cmd] );
@@ -95,32 +120,6 @@ int main()
       refresh();
     }
 
-/*
-unsigned char read_buf[1000];
-int num_bytes = read ( serial_port, read_buf, 1000 );
-
-if ( num_bytes > 0 )
-{
-  int test = 0;
-  for ( int i = 0; i < num_bytes; i++ )
-  {
-    if ( read_buf[i] >> 7 != 0 )
-    {
-      if ( read_buf[i] & 0xF0 == 0x80 )
-      {
-        test++;
-      }
-
-//      test = read_buf[i] & 0xF0;
-    }
-  }
-
-static int cnt = 0;
-  mvprintw ( 10, 10, "received: %d, cnt %d, test %d", num_bytes, cnt++, test );
-  refresh();
-}
-*/
-
     usleep ( 100000 );
   }
 
@@ -128,8 +127,11 @@ static int cnt = 0;
   delwin ( mainwin );
   endwin();
   refresh();
-  tcsetattr ( serial_port, TCSANOW, &prev_tty );
-  close ( serial_port );
+  jack_deactivate      ( client );
+  jack_port_unregister ( client, input_port );
+  jack_port_unregister ( client, output_port );
+  jack_client_close    ( client );
+
   return EXIT_SUCCESS;
 }
 
