@@ -1,23 +1,24 @@
 
 // Edrumulus simple terminal GUI
-// compile with: gcc edrumulus_gui.cpp -o gui -lncurses -ljack
+// compile with: gcc edrumulus_gui.cpp -o gui -lncurses -ljack -lstdc++
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <algorithm>
+#include <vector>
+#include <string>
 #include <curses.h>
 #include <jack/jack.h>
 #include <jack/midiport.h>
 
-
 // tables
 const int   max_num_pads = 8;
 const int   number_cmd   = 12;
-const char* cmd_names[]  = { "type", "thresh", "sens", "pos thres", "pos sens", "rim thres", "curve", "spike", "rim/pos", "note", "note rim", "cross" };
-const int   cmd_val[]    = {    102,      103,    104,         105,        106,         107,     109,     110,       111,    112,        113,     114 };
-int         param_set[]  = {      0,        0,      0,           0,          0,           0,       0,       0,         0,      0,          0,       0 };
+std::vector<std::string> cmd_names { "type", "thresh", "sens", "pos thres", "pos sens", "rim thres", "curve", "spike", "rim/pos", "note", "note rim", "cross" };
+std::vector<int>         cmd_val   {    102,      103,    104,         105,        106,         107,     109,     110,       111,    112,        113,     114 };
+std::vector<int> param_set ( number_cmd, 0 );
 jack_port_t* input_port;
 jack_port_t* output_port;
 int          midi_send_cmd = -1;
@@ -117,7 +118,7 @@ int main()
 
       mvprintw ( 9, 10, "Parameter value:  %d", param_set[sel_cmd] );
       mvprintw ( 8, 10, "Selected pad:     %d", sel_pad );
-      mvprintw ( 7, 10, "Selected command: %s", cmd_names[sel_cmd] );
+      mvprintw ( 7, 10, "Selected command: %s", cmd_names[sel_cmd].c_str() );
       refresh();
     }
 
