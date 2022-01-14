@@ -21,7 +21,9 @@ std::vector<int>         cmd_val   {    102,      103,    104,         105,     
 std::vector<int> param_set ( number_cmd, 0 );
 jack_port_t* input_port;
 jack_port_t* output_port;
-int          midi_send_cmd = -1;
+int          sel_pad       = 0;
+int          sel_cmd       = 0;
+int          midi_send_cmd = -1; // invalidate per default
 int          midi_send_val;
 
 // jack audio callback function
@@ -38,12 +40,18 @@ int process ( jack_nframes_t nframes, void *arg )
 
     if ( in_event.size == 3 )
     {
+      // if MIDI note-off and command is found, apply received parameter
+      auto it = std::find ( cmd_val.begin(), cmd_val.end(), in_event.buffer[1] );
+      if ( it != cmd_val.end() && ( in_event.buffer[0] & 0xF0 ) == 0x80 )
+      {
+        param_set[std::distance ( cmd_val.begin(), it )] = in_event.buffer[2];
 
-// TODO use received MIDI values
-move ( 10, 10 ); deleteln();
-mvprintw ( 10, 10, "%d received %d %d %d", event_count, in_event.buffer[0], in_event.buffer[1], in_event.buffer[2] );
+// TEST update current received parameter in the GUI
+move ( 9, 10 ); deleteln();
+mvprintw ( 9, 10, "Parameter value:  %d", param_set[sel_cmd] );
 refresh();
 
+      }
     }
   }
 
@@ -76,10 +84,8 @@ int main()
 
   // initialize GUI
   WINDOW* mainwin = initscr();
-  noecho();                 // turn off key echoing
-  keypad ( mainwin, true ); // enable the keypad for non-char keys
-  int sel_pad = 0;
-  int sel_cmd = 0;
+  noecho();                  // turn off key echoing
+  keypad  ( mainwin, true ); // enable the keypad for non-char keys
   nodelay ( mainwin, true ); // we want a non-blocking getch()
 
   // show usage
