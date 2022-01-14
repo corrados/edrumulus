@@ -40,8 +40,8 @@ int main()
   tty.c_iflag     = IGNPAR;
   tty.c_oflag     = 0;
   tty.c_lflag     = 0;
-  tty.c_cc[VMIN]  = 1;
-  tty.c_cc[VTIME] = 0;
+  tty.c_cc[VMIN]  = 0;//1;
+  tty.c_cc[VTIME] = 1;//0;
   tcflush ( serial_port, TCIFLUSH );
   if ( tcsetattr ( serial_port, TCSANOW, &tty ) != 0 || ret != 0 )
   {
@@ -94,6 +94,32 @@ int main()
       mvprintw ( 7, 10, "Selected command: %s", cmd_names[sel_cmd] );
       refresh();
     }
+
+/*
+unsigned char read_buf[1000];
+int num_bytes = read ( serial_port, read_buf, 1000 );
+
+if ( num_bytes > 0 )
+{
+  int test = 0;
+  for ( int i = 0; i < num_bytes; i++ )
+  {
+    if ( read_buf[i] >> 7 != 0 )
+    {
+      if ( read_buf[i] & 0xF0 == 0x80 )
+      {
+        test++;
+      }
+
+//      test = read_buf[i] & 0xF0;
+    }
+  }
+
+static int cnt = 0;
+  mvprintw ( 10, 10, "received: %d, cnt %d, test %d", num_bytes, cnt++, test );
+  refresh();
+}
+*/
 
     usleep ( 100000 );
   }
