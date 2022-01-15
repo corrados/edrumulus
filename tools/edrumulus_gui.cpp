@@ -74,7 +74,7 @@ int process ( jack_nframes_t nframes, void *arg )
       {
         wmove     ( midiwin, 1, 0 );
         winsdelln ( midiwin, 1 );
-        mvwprintw ( midiwin, 1, 1, "%d %d", (int) in_event.buffer[1], (int) in_event.buffer[2] );
+        mvwprintw ( midiwin, 1, 1, "note %3d, val %3d", (int) in_event.buffer[1], (int) in_event.buffer[2] );
         update_param_outputs();
       }
     }
@@ -100,7 +100,7 @@ int main()
 
   // initialize GUI
   mainwin = initscr();
-  midiwin = newwin ( 10, 40, row_start + 10, col_start );
+  midiwin = newwin ( 10, 19, row_start + 10, col_start );
   noecho();                  // turn off key echoing
   keypad  ( mainwin, true ); // enable the keypad for non-char keys
   update_param_outputs();
