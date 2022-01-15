@@ -109,7 +109,9 @@ ADC signal ───┬───►│ detect first ├───►│ calculate
 The impulse response of the low-pass filter is a triangle shape where the length of the triangle
 defines the cut-off frequency of the filter and [can be approximated](https://dsp.stackexchange.com/questions/9966/what-is-the-cut-off-frequency-of-a-moving-average-filter)
 with
-<br/><img src="https://render.githubusercontent.com/render/math?math=$N = \frac {\sqrt{0.196202 + F_{co}^2}}{F_{co}}$">
+<br/><img src="https://render.githubusercontent.com/render/math?math=$N = \frac {\sqrt{0.196202 + F_{co}^2}}{F_{co}}$">,
+where <img src="https://render.githubusercontent.com/render/math?math=$F_{co}$"> is the cut-off
+frequency and N is the length of the impulse response.
 
 Further testing showed that it is important to use the very first peak in time for positional sensing. If
 a later peak is used, the positional sensing based on the low-pass filtered signal does not yield
