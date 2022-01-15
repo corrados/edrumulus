@@ -47,6 +47,7 @@ in a FIFO and search in a time period right before the scan time for a possible 
 peak. This is marked by the yellow bar in the above plot which shows the three peaks of the
 band-pass filtered signal (The red bar is the scan time and the blue bar is the mask time).
 
+
 #### Latency of the band-pass filtered signal
 
 The band-pass filter introduces a filter delay which is usually below 2 ms. The good thing is
@@ -82,11 +83,32 @@ the captured signal after applying the retrigger cancellation:
 If you hit the pad close to the edge, the resulting sound has less low frequencies
 and sounds more crisp. Thus, the idea is to low-pass filter the signal and at the detected peak position we
 calculate the power ratio of the low-pass filtered signal with the unfiltered signal. This is then
-the metric for the positional sensing.
+the metric for the positional sensing. The flow diagram of the algorithm is as follows:
+
+```
+                   ┌──────────────┐    ┌───────────┐
+                   │              │    │           │    positional
+ADC signal ───┬───►│ detect first ├───►│ calculate ├───► sensing
+              │    │    peak      │    │   metric  │      result
+              │    │              │    │           │
+              │    └───────┬──────┘    └───────────┘
+              │            │                 ▲
+              │            │                 │
+              │            │                 │
+              │            ▼                 │
+              │     ┌────────────┐    ┌──────┴───────┐
+              │     │            │    │              │
+              └────►│  low-pass  ├───►│ detect first │
+                    │   filter   │    │    peak      │
+                    │            │    │              │
+                    └────────────┘    └──────────────┘
+```
 
 Further testing showed that it is important to use the very first peak in time for positional sensing. If
 a later peak is used, the positional sensing based on the low-pass filtered signal does not yield
 good results.
+
+### Positional sensing if a rim-shot is played
 
 It has shown that the positional sensing metric must be adjusted if a rim shot is used. Therefore, the
 rim shot detection information has to be used for the positional sensing.
