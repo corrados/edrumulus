@@ -224,7 +224,7 @@ fi
 
 # run Edrumulus ----------------------------------------------------------------
 if [ $USER = "pi" ]; then
-  ./drumgizmo/drumgizmo/drumgizmo -l -L max=1,rampdown=0.02 -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
+  ./drumgizmo/drumgizmo/drumgizmo -l -L max=2,rampdown=0.02 -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
   sleep 20
 else
   ./drumgizmo/drumgizmo/drumgizmo -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
