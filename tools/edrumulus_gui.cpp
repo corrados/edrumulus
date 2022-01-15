@@ -22,7 +22,7 @@ std::vector<std::string> cmd_names   { "type", "thresh", "sens", "pos thres", "p
 std::vector<int>         cmd_val     {    102,      103,    104,         105,        106,         107,     109,     110,       111,    112,        113,     114 };
 std::vector<int>         cmd_val_rng {     17,       31,     31,          31,         31,          31,       4,       4,         3,    127,        127,      31 };
 std::vector<int> param_set ( number_cmd, 0 );
-WINDOW       *mainwin, *midiwin, *poswin;
+WINDOW       *mainwin, *midiwin, *poswin, *posgwin;
 int          col_start = 5; // start column of parameter display
 int          row_start = 3; // start row of parameter display
 jack_port_t  *input_port, *output_port;
@@ -51,6 +51,9 @@ void update_param_outputs()
   box       ( poswin, 0, 0 ); // in this box the received positional sensing values are shown
   mvwprintw ( poswin, 0, 2, "POS" );
   wrefresh  ( poswin );
+  box       ( posgwin, 0, 0 ); // in this box the received positional sensing graph is shown
+  mvwprintw ( posgwin, 0, 2, "POSITION" );
+  wrefresh  ( posgwin );
 }
 
 // jack audio callback function
@@ -89,28 +92,13 @@ int process ( jack_nframes_t nframes, void *arg )
         wmove     ( poswin, 1, 0 );
         winsdelln ( poswin, 1 );
         mvwprintw ( poswin, 1, 1, " %3d", (int) in_event.buffer[2] );
+
+        wmove     ( posgwin, 1, 0 );
+        winsdelln ( posgwin, 1 );
+        std::string bar = "M--------------------E";
+        bar[1 + (int) ( (float) in_event.buffer[2] / 128 * 20 )] = '*';
+        mvwprintw ( posgwin, 1, 1, bar.c_str() );
         update_param_outputs();
-
-/*
-const bool use_edrumulus_debugging_output = false;
-if(use_edrumulus_debugging_output)
-{
-  auto type     = midi_buffer[0] & TypeMask;
-  auto key      = midi_buffer[1];
-  auto velocity = midi_buffer[2];
-  if((type == ControlChange) && (key == 16))
-  {
-    std::string bar = "--------------------";
-    bar[static_cast<int>(static_cast<float>(velocity) / 128 * 20)] = '*';
-    printf(std::string("                           " + bar + "\n").c_str());
-  }
-  else
-  {
-    printf("key: %d, velocity: %d\n", key, velocity);
-  }
-}
-*/
-
       }
     }
   }
@@ -136,7 +124,8 @@ int main()
   // initialize GUI
   mainwin = initscr();
   midiwin = newwin ( 10, 14, row_start + 5, col_start );
-  poswin  = newwin ( 10, 7, row_start + 5, col_start + 15 );
+  poswin  = newwin ( 10, 7,  row_start + 5, col_start + 15 );
+  posgwin = newwin ( 10, 24, row_start + 5, col_start + 23 );
   noecho();                  // turn off key echoing
   keypad  ( mainwin, true ); // enable the keypad for non-char keys
   update_param_outputs();
