@@ -40,7 +40,7 @@ std::string parse_cmd_param ( int cmd )
 // update window parameter outputs
 void update_param_outputs()
 {
-  mvaddstr ( row_start, col_start, "Press a key; q:quit; s,S:sel pad; c,C:sel command; up,down: change parameter" );
+  mvaddstr ( row_start, col_start, "Press a key (q:quit; s,S:sel pad; c,C:sel command; up,down: change parameter)" );
   mvprintw ( row_start + 3, col_start, "Parameter: %9s: %s             ", cmd_names[sel_cmd].c_str(), parse_cmd_param ( sel_cmd ).c_str() );
   mvprintw ( row_start + 2, col_start, "Selected pad:         %d       ", sel_pad );
   refresh();
