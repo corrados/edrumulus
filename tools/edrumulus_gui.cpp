@@ -35,6 +35,18 @@ std::string parse_cmd_param ( int cmd )
   return cmd == 0 ? pad_types[param_set[cmd]] : cmd == 6 ? curve_types[param_set[cmd]] : std::to_string ( param_set[cmd] );
 }
 
+// update window parameter outputs
+void update_param_outputs()
+{
+  move ( 9, 10 ); deleteln();
+  move ( 8, 10 ); deleteln();
+  move ( 7, 10 ); deleteln();
+  mvprintw ( 9, 10, "Parameter value:  %s", parse_cmd_param ( sel_cmd ).c_str() );
+  mvprintw ( 8, 10, "Selected pad:     %d", sel_pad );
+  mvprintw ( 7, 10, "Selected command: %s", cmd_names[sel_cmd].c_str() );
+  refresh();
+}
+
 // jack audio callback function
 int process ( jack_nframes_t nframes, void *arg )
 {
@@ -53,14 +65,9 @@ int process ( jack_nframes_t nframes, void *arg )
       auto it = std::find ( cmd_val.begin(), cmd_val.end(), in_event.buffer[1] );
       if ( it != cmd_val.end() && ( in_event.buffer[0] & 0xF0 ) == 0x80 )
       {
-        int cur_cmd = std::distance ( cmd_val.begin(), it );
+        int cur_cmd        = std::distance ( cmd_val.begin(), it );
         param_set[cur_cmd] = std::max ( 0, std::min ( cmd_val_rng[cur_cmd], (int) in_event.buffer[2] ) );
-
-// TEST update current received parameter in the GUI
-move ( 9, 10 ); deleteln();
-mvprintw ( 9, 10, "Parameter value:  %s", parse_cmd_param ( sel_cmd ).c_str() );
-refresh();
-
+        update_param_outputs();
       }
     }
   }
@@ -105,20 +112,15 @@ int main()
   keypad  ( mainwin, true ); // enable the keypad for non-char keys
   nodelay ( mainwin, true ); // we want a non-blocking getch()
 
-  // show usage
+  // show usage and update parameters
   mvaddstr ( 5, 10, "Press a key; q:quit; s,S:sel pad; c,C:sel command; up,down: change parameter" );
-  refresh();
+  update_param_outputs(); // note: has refresh() call
 
   // loop until user presses q
   while ( ( ch = getch() ) != 'q' )
   {
     if ( ch != -1 )
     {
-      // delete the old response lines
-      move ( 9, 10 ); deleteln();
-      move ( 8, 10 ); deleteln();
-      move ( 7, 10 ); deleteln();
-
       if ( ch == 's' || ch == 'S' ) // change selected pad
       {
         ch == 's' ? sel_pad++ : sel_pad--;
@@ -138,13 +140,8 @@ int main()
         midi_send_val = param_set[sel_cmd];
         midi_send_cmd = cmd_val[sel_cmd];
       }
-
-      mvprintw ( 9, 10, "Parameter value:  %s", parse_cmd_param ( sel_cmd ).c_str() );
-      mvprintw ( 8, 10, "Selected pad:     %d", sel_pad );
-      mvprintw ( 7, 10, "Selected command: %s", cmd_names[sel_cmd].c_str() );
-      refresh();
+      update_param_outputs();
     }
-
     usleep ( 100000 );
   }
 
