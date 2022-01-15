@@ -44,8 +44,10 @@ void update_param_outputs()
   mvprintw ( row_start + 3, col_start, "Parameter: %9s: %s             ", cmd_names[sel_cmd].c_str(), parse_cmd_param ( sel_cmd ).c_str() );
   mvprintw ( row_start + 2, col_start, "Selected pad:         %d       ", sel_pad );
   refresh();
-  box ( midiwin, 0, 0 ); // in this box the received note-on MIDI notes are shown
-  wrefresh ( midiwin );
+  box       ( midiwin, 0, 0 ); // in this box the received note-on MIDI notes are shown
+  mvwprintw ( midiwin, 0, 3, "MIDI-IN" );
+  mvwprintw ( midiwin, 1, 1, "note | value" );
+  wrefresh  ( midiwin );
 }
 
 // jack audio callback function
@@ -72,9 +74,9 @@ int process ( jack_nframes_t nframes, void *arg )
       // display current note-on received value
       if ( ( in_event.buffer[0] & 0xF0 ) == 0x90 )
       {
-        wmove     ( midiwin, 1, 0 );
+        wmove     ( midiwin, 2, 0 );
         winsdelln ( midiwin, 1 );
-        mvwprintw ( midiwin, 1, 1, "note %3d, val %3d", (int) in_event.buffer[1], (int) in_event.buffer[2] );
+        mvwprintw ( midiwin, 2, 1, " %3d | %3d", (int) in_event.buffer[1], (int) in_event.buffer[2] );
         update_param_outputs();
       }
     }
@@ -100,7 +102,7 @@ int main()
 
   // initialize GUI
   mainwin = initscr();
-  midiwin = newwin ( 10, 19, row_start + 10, col_start );
+  midiwin = newwin ( 10, 14, row_start + 5, col_start );
   noecho();                  // turn off key echoing
   keypad  ( mainwin, true ); // enable the keypad for non-char keys
   update_param_outputs();
