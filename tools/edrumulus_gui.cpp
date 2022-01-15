@@ -68,11 +68,22 @@ int process ( jack_nframes_t nframes, void *arg )
       {
         int cur_cmd        = std::distance ( cmd_val.begin(), it );
         param_set[cur_cmd] = std::max ( 0, std::min ( cmd_val_rng[cur_cmd], (int) in_event.buffer[2] ) );
-
+/*
 // TEST
-//wmove(midiwin, 1, 0);wdeleteln(midiwin);
-//mvwprintw ( midiwin, 5, 1, "%d", (int) in_event.buffer[2] );
+wmove(midiwin, 1, 0);
+//wdeleteln(midiwin);
+winsdelln(midiwin, 1);
+mvwprintw ( midiwin, 1, 1, "%d", (int) in_event.buffer[2] );
+*/
+        update_param_outputs();
+      }
 
+      // display current note-on received value
+      if ( ( in_event.buffer[0] & 0xF0 ) == 0x90 )
+      {
+        wmove ( midiwin, 1, 0 );
+        winsdelln ( midiwin, 1 );
+        mvwprintw ( midiwin, 1, 1, "%d %d", (int) in_event.buffer[1], (int) in_event.buffer[2] );
         update_param_outputs();
       }
     }
