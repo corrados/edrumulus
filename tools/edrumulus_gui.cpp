@@ -23,8 +23,9 @@ std::vector<int>         cmd_val     {    102,      103,    104,         105,   
 std::vector<int>         cmd_val_rng {     17,       31,     31,          31,         31,          31,       4,       4,         3,    127,        127,      31 };
 std::vector<int> param_set ( number_cmd, 0 );
 WINDOW       *mainwin, *midiwin, *poswin, *posgwin;
-int          col_start = 5; // start column of parameter display
-int          row_start = 3; // start row of parameter display
+int          col_start = 5;  // start column of parameter display
+int          row_start = 1;  // start row of parameter display
+int          box_len   = 17; // length of the output boxes
 jack_port_t  *input_port, *output_port;
 int          sel_pad       = 0;
 int          sel_cmd       = 0;
@@ -123,11 +124,12 @@ int main()
 
   // initialize GUI
   mainwin = initscr();
-  midiwin = newwin ( 10, 14, row_start + 5, col_start );
-  poswin  = newwin ( 10, 7,  row_start + 5, col_start + 15 );
-  posgwin = newwin ( 10, 24, row_start + 5, col_start + 23 );
-  noecho();                  // turn off key echoing
-  keypad  ( mainwin, true ); // enable the keypad for non-char keys
+  midiwin = newwin ( box_len, 14, row_start + 5, col_start );
+  poswin  = newwin ( box_len, 7,  row_start + 5, col_start + 15 );
+  posgwin = newwin ( box_len, 24, row_start + 5, col_start + 23 );
+  noecho();                   // turn off key echoing
+  keypad   ( mainwin, true ); // enable the keypad for non-char keys
+  curs_set ( 0 );             // suppress cursor
   update_param_outputs();
 
   // initialize jack audio for MIDI
