@@ -44,10 +44,8 @@ void update_param_outputs()
   mvprintw ( row_start + 3, col_start, "Parameter: %9s: %s             ", cmd_names[sel_cmd].c_str(), parse_cmd_param ( sel_cmd ).c_str() );
   mvprintw ( row_start + 2, col_start, "Selected pad:         %d       ", sel_pad );
   refresh();
-
-// TEST show a box in the MIDI window for a test
-box ( midiwin, 0, 0 );
-wrefresh ( midiwin );
+  box ( midiwin, 0, 0 ); // in this box the received note-on MIDI notes are shown
+  wrefresh ( midiwin );
 }
 
 // jack audio callback function
@@ -68,20 +66,13 @@ int process ( jack_nframes_t nframes, void *arg )
       {
         int cur_cmd        = std::distance ( cmd_val.begin(), it );
         param_set[cur_cmd] = std::max ( 0, std::min ( cmd_val_rng[cur_cmd], (int) in_event.buffer[2] ) );
-/*
-// TEST
-wmove(midiwin, 1, 0);
-//wdeleteln(midiwin);
-winsdelln(midiwin, 1);
-mvwprintw ( midiwin, 1, 1, "%d", (int) in_event.buffer[2] );
-*/
         update_param_outputs();
       }
 
       // display current note-on received value
       if ( ( in_event.buffer[0] & 0xF0 ) == 0x90 )
       {
-        wmove ( midiwin, 1, 0 );
+        wmove     ( midiwin, 1, 0 );
         winsdelln ( midiwin, 1 );
         mvwprintw ( midiwin, 1, 1, "%d %d", (int) in_event.buffer[1], (int) in_event.buffer[2] );
         update_param_outputs();
