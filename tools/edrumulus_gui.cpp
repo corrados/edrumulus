@@ -41,9 +41,8 @@ std::string parse_cmd_param ( int cmd )
 void update_param_outputs()
 {
   mvaddstr ( row_start, col_start, "Press a key; q:quit; s,S:sel pad; c,C:sel command; up,down: change parameter" );
-  mvprintw ( row_start + 4, col_start, "Parameter value:  %s             ", parse_cmd_param ( sel_cmd ).c_str() );
-  mvprintw ( row_start + 3, col_start, "Selected pad:     %d             ", sel_pad );
-  mvprintw ( row_start + 2, col_start, "Selected command: %s             ", cmd_names[sel_cmd].c_str() );
+  mvprintw ( row_start + 3, col_start, "Parameter: %9s: %s             ", cmd_names[sel_cmd].c_str(), parse_cmd_param ( sel_cmd ).c_str() );
+  mvprintw ( row_start + 2, col_start, "Selected pad:         %d       ", sel_pad );
   refresh();
 
 // TEST show a box in the MIDI window for a test
@@ -54,8 +53,8 @@ wrefresh(midiwin);
 // jack audio callback function
 int process ( jack_nframes_t nframes, void *arg )
 {
-  void*        in_midi       = jack_port_get_buffer      ( input_port,  nframes );
-  void*        out_midi      = jack_port_get_buffer      ( output_port, nframes );
+  void*          in_midi     = jack_port_get_buffer      ( input_port,  nframes );
+  void*          out_midi    = jack_port_get_buffer      ( output_port, nframes );
   jack_nframes_t event_count = jack_midi_get_event_count ( in_midi );
 
   for ( jack_nframes_t j = 0; j < event_count; j++ )
@@ -99,7 +98,6 @@ int main()
   midiwin = newwin ( 10, 40, row_start + 10, col_start );
   noecho();                  // turn off key echoing
   keypad  ( mainwin, true ); // enable the keypad for non-char keys
-  nodelay ( mainwin, true ); // we want a non-blocking getch()
   update_param_outputs();
 
   // initialize jack audio for MIDI
@@ -121,30 +119,26 @@ int main()
   // loop until user presses q
   while ( ( ch = getch() ) != 'q' )
   {
-    if ( ch != -1 )
+    if ( ch == 's' || ch == 'S' ) // change selected pad
     {
-      if ( ch == 's' || ch == 'S' ) // change selected pad
-      {
-        ch == 's' ? sel_pad++ : sel_pad--;
-        sel_pad = std::max ( 0, std::min ( max_num_pads - 1, sel_pad ) );
-        midi_send_val = sel_pad;
-        midi_send_cmd = 108;
-      }
-      else if ( ch == 'c' || ch == 'C' ) // change selected command
-      {
-        ch == 'c' ? sel_cmd++ : sel_cmd--;
-        sel_cmd = std::max ( 0, std::min ( number_cmd - 1, sel_cmd ) );
-      }
-      else if ( ch == 258 || ch == 259 ) // change parameter value with up/down keys
-      {
-        ch == 259 ? param_set[sel_cmd]++ : param_set[sel_cmd]--;
-        param_set[sel_cmd] = std::max ( 0, std::min ( cmd_val_rng[sel_cmd], param_set[sel_cmd] ) );
-        midi_send_val = param_set[sel_cmd];
-        midi_send_cmd = cmd_val[sel_cmd];
-      }
-      update_param_outputs();
+      ch == 's' ? sel_pad++ : sel_pad--;
+      sel_pad = std::max ( 0, std::min ( max_num_pads - 1, sel_pad ) );
+      midi_send_val = sel_pad;
+      midi_send_cmd = 108;
     }
-    usleep ( 100000 );
+    else if ( ch == 'c' || ch == 'C' ) // change selected command
+    {
+      ch == 'c' ? sel_cmd++ : sel_cmd--;
+      sel_cmd = std::max ( 0, std::min ( number_cmd - 1, sel_cmd ) );
+    }
+    else if ( ch == 258 || ch == 259 ) // change parameter value with up/down keys
+    {
+      ch == 259 ? param_set[sel_cmd]++ : param_set[sel_cmd]--;
+      param_set[sel_cmd] = std::max ( 0, std::min ( cmd_val_rng[sel_cmd], param_set[sel_cmd] ) );
+      midi_send_val = param_set[sel_cmd];
+      midi_send_cmd = cmd_val[sel_cmd];
+    }
+    update_param_outputs();
   }
 
   // clean up and exit
@@ -156,7 +150,6 @@ int main()
   jack_port_unregister ( client, input_port );
   jack_port_unregister ( client, output_port );
   jack_client_close    ( client );
-
   return EXIT_SUCCESS;
 }
 
