@@ -22,7 +22,7 @@ std::vector<std::string> cmd_names   { "type", "thresh", "sens", "pos thres", "p
 std::vector<int>         cmd_val     {    102,      103,    104,         105,        106,         107,     109,     110,       111,    112,        113,     114 };
 std::vector<int>         cmd_val_rng {     17,       31,     31,          31,         31,          31,       4,       4,         3,    127,        127,      31 };
 std::vector<int> param_set ( number_cmd, 0 );
-WINDOW       *mainwin, *midiwin, *poswin, *posgwin;
+WINDOW       *mainwin, *midiwin, *midigwin, *poswin, *posgwin;
 int          col_start = 5;  // start column of parameter display
 int          row_start = 1;  // start row of parameter display
 int          box_len   = 17; // length of the output boxes
@@ -49,11 +49,14 @@ void update_param_outputs()
   mvwprintw ( midiwin, 0, 3, "MIDI-IN" );
   mvwprintw ( midiwin, 1, 1, "note | value" );
   wrefresh  ( midiwin );
+  box       ( midigwin, 0, 0 ); // in this box the received MIDI velocity graph is shown
+  mvwprintw ( midigwin, 0, 3, "VELOCITY-GRAPH" );
+  wrefresh  ( midigwin );
   box       ( poswin, 0, 0 ); // in this box the received positional sensing values are shown
   mvwprintw ( poswin, 0, 2, "POS" );
   wrefresh  ( poswin );
   box       ( posgwin, 0, 0 ); // in this box the received positional sensing graph is shown
-  mvwprintw ( posgwin, 0, 2, "POSITION" );
+  mvwprintw ( posgwin, 0, 5, "POSITION-GRAPH" );
   wrefresh  ( posgwin );
 }
 
@@ -84,6 +87,11 @@ int process ( jack_nframes_t nframes, void *arg )
         wmove     ( midiwin, 2, 0 );
         winsdelln ( midiwin, 1 );
         mvwprintw ( midiwin, 2, 1, " %3d | %3d", (int) in_event.buffer[1], (int) in_event.buffer[2] );
+
+        wmove     ( midigwin, 1, 0 );
+        winsdelln ( midigwin, 1 );
+        wmove     ( midigwin, 2, 1 );
+        whline    ( midigwin, 'O', std::max ( 1, (int) ( (float) in_event.buffer[2] / 128 * 20 ) ) );
         update_param_outputs();
       }
 
@@ -123,10 +131,11 @@ int main()
   int ch;
 
   // initialize GUI
-  mainwin = initscr();
-  midiwin = newwin ( box_len, 14, row_start + 5, col_start );
-  poswin  = newwin ( box_len, 7,  row_start + 5, col_start + 15 );
-  posgwin = newwin ( box_len, 24, row_start + 5, col_start + 23 );
+  mainwin  = initscr();
+  midiwin  = newwin ( box_len, 14, row_start + 5, col_start );
+  midigwin = newwin ( box_len, 20, row_start + 5, col_start + 15 );
+  poswin   = newwin ( box_len, 7,  row_start + 5, col_start + 36 );
+  posgwin  = newwin ( box_len, 24, row_start + 5, col_start + 44 );
   noecho();                   // turn off key echoing
   keypad   ( mainwin, true ); // enable the keypad for non-char keys
   curs_set ( 0 );             // suppress cursor
