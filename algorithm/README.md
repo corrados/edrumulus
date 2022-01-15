@@ -47,6 +47,15 @@ in a FIFO and search in a time period right before the scan time for a possible 
 peak. This is marked by the yellow bar in the above plot which shows the three peaks of the
 band-pass filtered signal (The red bar is the scan time and the blue bar is the mask time).
 
+#### Latency of the band-pass filtered signal
+
+The band-pass filter introduces a filter delay which is usually below 2 ms. The good thing is
+that this filter delay can be ignored as long as it is shorter than the scan time. This is
+because we only use the band-pass filtered signal for the threshold test. For anything
+else we use the pure ADC signal which is not delayed. So, we store the original ADC signal
+in a FIFO and can therefore start the scan time in the past, i.e., undo the band-pass filter
+delay.
+
 
 ### Retrigger cancellation
 
