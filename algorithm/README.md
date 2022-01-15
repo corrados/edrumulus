@@ -83,7 +83,9 @@ the captured signal after applying the retrigger cancellation:
 If you hit the pad close to the edge, the resulting sound has less low frequencies
 and sounds more crisp. Thus, the idea is to low-pass filter the signal and at the detected peak position we
 calculate the power ratio of the low-pass filtered signal with the unfiltered signal. This is then
-the metric for the positional sensing. The flow diagram of the algorithm is as follows:
+the metric for the positional sensing.
+
+The flow diagram of the algorithm is as follows:
 
 ```
                    ┌──────────────┐    ┌───────────┐
@@ -103,6 +105,11 @@ ADC signal ───┬───►│ detect first ├───►│ calculate
                     │            │    │              │
                     └────────────┘    └──────────────┘
 ```
+
+The impulse response of the low-pass filter is a triangle shape where the length of the triangle
+defines the cut-off frequency of the filter and [can be approximated](https://dsp.stackexchange.com/questions/9966/what-is-the-cut-off-frequency-of-a-moving-average-filter)
+with
+<br/><img src="https://render.githubusercontent.com/render/math?math=$N = \frac {\sqrt{0.196202 + F_{co}^2}}{F_{co}}$">
 
 Further testing showed that it is important to use the very first peak in time for positional sensing. If
 a later peak is used, the positional sensing based on the low-pass filtered signal does not yield
