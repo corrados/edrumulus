@@ -35,6 +35,18 @@ band-pass filtered signal no matter what the original peak looks like:
 This effect is amplified if the upper cut-off frequency of the band-pass filter is lowered.
 It has shown that a good compromise is to use a pass-band range of 40 Hz to 400 Hz.
 
+#### Pre-scan time
+
+Caused by the three peaks of the band-pass filtered signal as described in the last section, it
+can happen that the second peak (the middle peak) is higher than the first peak. If a buzz-roll
+is played and the time distance between strikes is short, the retrigger cancellation can lead to
+the fact that the second peak is above the detection threshold and the first peak is not. This
+could lead to the problem that the very first/main peak is not inside the scan time period. To
+overcome this problem, we introduce a so called pre-scan time where we store the ADC signal
+in a FIFO and search in a time period right before the scan time for a possible first/main
+peak. This is marked by the yellow bar in the above plot which shows the three peaks of the
+band-pass filtered signal (The red bar is the scan time and the blue bar is the mask time).
+
 
 ### Retrigger cancellation
 
