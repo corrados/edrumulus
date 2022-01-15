@@ -13,11 +13,27 @@ this step we can also detect if we have a cross stick situation.
 
 ### Signal filtering
 
-The noise of cheap ADCs is usually not equally distributed over the entire frequency spectrum. To
-improve the peak detection, it makes sense to apply a band-pass filter to filter out ADC noise in
-spectrum parts which are not used by the pad piezo signal like very low frequencies and high
-frequencies. Therefore, a band-pass filter is applied. The pass-band width is a trade-off between
-noise cancellation and filter delay. A good compromise is a pass-band of 40 Hz to 400 Hz.
+The noise of cheap ADCs is usually not equally distributed over the entire frequency spectrum. e.g.,
+the Teensy 4.0 noise spectrum looks like the following plot and has high noise energy at the high
+frequencies:
+<br/>![Teensy 4.0 noise spectrum](images/teensy4_0_noise_spectrum.jpg)
+
+The spectrum of a piezo signal (in this example using a PD-120 mesh head pad) looks like this:
+<br/>![Spectrum PD-120 strikes](images/spectrum_pd120_strikes.jpg)
+
+The most energy of that signal is located near 200 Hz. Therefore, to improve the peak detection,
+it makes sense to apply a band-pass filter to filter out ADC noise in spectrum parts which are
+not used by the pad piezo signal like very low frequencies and high frequencies. Thus,
+a band-pass filter is applied to match the useful signal spectrum and filter out the noise.
+
+The pass-band width is a trade-off between noise cancellation and filter delay. As you can see in
+the following plot where the blue trace is the original ADC signal and the red trace is the
+band-pass filtered signal. Typically, you see three distinct peaks in the red trace which is the
+band-pass filtered signal no matter what the original peak looks like:
+<br/>![Band-pass filter peaks](images/band_pass_filter_peaks.jpg)
+
+This effect is amplified if the upper cut-off frequency of the band-pass filter is lowered.
+It has shown that a good compromise is to use a pass-band range of 40 Hz to 400 Hz.
 
 
 ### Retrigger cancellation
