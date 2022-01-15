@@ -22,11 +22,10 @@ std::vector<std::string> cmd_names   { "type", "thresh", "sens", "pos thres", "p
 std::vector<int>         cmd_val     {    102,      103,    104,         105,        106,         107,     109,     110,       111,    112,        113,     114 };
 std::vector<int>         cmd_val_rng {     17,       31,     31,          31,         31,          31,       4,       4,         3,    127,        127,      31 };
 std::vector<int> param_set ( number_cmd, 0 );
-WINDOW*      mainwin;
+WINDOW       *mainwin, *midiwin;
 int          col_start = 5; // start column of parameter display
 int          row_start = 3; // start row of parameter display
-jack_port_t* input_port;
-jack_port_t* output_port;
+jack_port_t  *input_port, *output_port;
 int          sel_pad       = 0;
 int          sel_cmd       = 0;
 int          midi_send_cmd = -1; // invalidate per default
@@ -42,13 +41,14 @@ std::string parse_cmd_param ( int cmd )
 void update_param_outputs()
 {
   mvaddstr ( row_start, col_start, "Press a key; q:quit; s,S:sel pad; c,C:sel command; up,down: change parameter" );
-  move     ( row_start + 4, col_start ); deleteln();
-  move     ( row_start + 3, col_start ); deleteln();
-  move     ( row_start + 2, col_start ); deleteln();
-  mvprintw ( row_start + 4, col_start, "Parameter value:  %s", parse_cmd_param ( sel_cmd ).c_str() );
-  mvprintw ( row_start + 3, col_start, "Selected pad:     %d", sel_pad );
-  mvprintw ( row_start + 2, col_start, "Selected command: %s", cmd_names[sel_cmd].c_str() );
+  mvprintw ( row_start + 4, col_start, "Parameter value:  %s             ", parse_cmd_param ( sel_cmd ).c_str() );
+  mvprintw ( row_start + 3, col_start, "Selected pad:     %d             ", sel_pad );
+  mvprintw ( row_start + 2, col_start, "Selected command: %s             ", cmd_names[sel_cmd].c_str() );
   refresh();
+
+// TEST show a box in the MIDI window for a test
+box ( midiwin, 0, 0 );
+wrefresh(midiwin);
 }
 
 // jack audio callback function
@@ -96,6 +96,7 @@ int main()
 
   // initialize GUI
   mainwin = initscr();
+  midiwin = newwin ( 10, 40, row_start + 10, col_start );
   noecho();                  // turn off key echoing
   keypad  ( mainwin, true ); // enable the keypad for non-char keys
   nodelay ( mainwin, true ); // we want a non-blocking getch()
@@ -148,6 +149,7 @@ int main()
 
   // clean up and exit
   delwin ( mainwin );
+  delwin ( midiwin );
   endwin();
   refresh();
   jack_deactivate      ( client );
