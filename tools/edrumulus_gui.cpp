@@ -91,7 +91,7 @@ int process ( jack_nframes_t nframes, void *arg )
         wmove     ( midigwin, 1, 0 );
         winsdelln ( midigwin, 1 );
         wmove     ( midigwin, 2, 1 );
-        whline    ( midigwin, 'O', std::max ( 1, (int) ( (float) in_event.buffer[2] / 128 * 20 ) ) );
+        whline    ( midigwin, ACS_BLOCK, std::max ( 1, (int) ( (float) in_event.buffer[2] / 128 * 25 ) ) );
         update_param_outputs();
       }
 
@@ -133,9 +133,9 @@ int main()
   // initialize GUI
   mainwin  = initscr();
   midiwin  = newwin ( box_len, 14, row_start + 5, col_start );
-  midigwin = newwin ( box_len, 20, row_start + 5, col_start + 15 );
-  poswin   = newwin ( box_len, 7,  row_start + 5, col_start + 36 );
-  posgwin  = newwin ( box_len, 24, row_start + 5, col_start + 44 );
+  midigwin = newwin ( box_len, 26, row_start + 5, col_start + 15 );
+  poswin   = newwin ( box_len, 7,  row_start + 5, col_start + 42 );
+  posgwin  = newwin ( box_len, 24, row_start + 5, col_start + 50 );
   noecho();                   // turn off key echoing
   keypad   ( mainwin, true ); // enable the keypad for non-char keys
   curs_set ( 0 );             // suppress cursor
