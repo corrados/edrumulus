@@ -5,8 +5,6 @@
 
 - Documentation: Edrumulus manual which describes the hardware/software setup, parameter description, HOWTOs, etc.
 
-- Documentation: Algorithm description
-
 - fix rim shot detection issue with low volume strikes -> Maybe issue is caused by ADC noise?
 
 - possible memory issue on the ESP32, see 406c31fd66aeb1609f75e22672d5fa9280749f37
@@ -22,6 +20,9 @@
   -> maybe based on low-pass filtering as suggested in https://github.com/corrados/edrumulus/discussions/17#discussion-3736264
 
 - support positional sensing for rim shots
+
+- Documentation: Algorithm description
+  -> improve retrigger cancellation section
 
 - fix ghost strikes: probably caused by electrical interferers or noise in the microcontroller developer
   board itself -> either find a software solution or changes in the analog front end are needed
