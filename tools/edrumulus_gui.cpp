@@ -47,7 +47,7 @@ void update_param_outputs()
 
 // TEST show a box in the MIDI window for a test
 box ( midiwin, 0, 0 );
-wrefresh(midiwin);
+wrefresh ( midiwin );
 }
 
 // jack audio callback function
@@ -60,9 +60,7 @@ int process ( jack_nframes_t nframes, void *arg )
   for ( jack_nframes_t j = 0; j < event_count; j++ )
   {
     jack_midi_event_t in_event;
-    jack_midi_event_get ( &in_event, in_midi, j );
-
-    if ( in_event.size == 3 )
+    if ( !jack_midi_event_get ( &in_event, in_midi, j ) && in_event.size == 3 )
     {
       // if MIDI note-off and command is found, apply received parameter
       auto it = std::find ( cmd_val.begin(), cmd_val.end(), in_event.buffer[1] );
@@ -70,6 +68,11 @@ int process ( jack_nframes_t nframes, void *arg )
       {
         int cur_cmd        = std::distance ( cmd_val.begin(), it );
         param_set[cur_cmd] = std::max ( 0, std::min ( cmd_val_rng[cur_cmd], (int) in_event.buffer[2] ) );
+
+// TEST
+//wmove(midiwin, 1, 0);wdeleteln(midiwin);
+//mvwprintw ( midiwin, 5, 1, "%d", (int) in_event.buffer[2] );
+
         update_param_outputs();
       }
     }
@@ -121,20 +124,23 @@ int main()
   {
     if ( ch == 's' || ch == 'S' ) // change selected pad
     {
-      ch == 's' ? sel_pad++ : sel_pad--;
-      sel_pad = std::max ( 0, std::min ( max_num_pads - 1, sel_pad ) );
+      int cur_sel_pad = sel_pad;
+      ch == 's' ? cur_sel_pad++ : cur_sel_pad--;
+      sel_pad = std::max ( 0, std::min ( max_num_pads - 1, cur_sel_pad ) );
       midi_send_val = sel_pad;
       midi_send_cmd = 108;
     }
     else if ( ch == 'c' || ch == 'C' ) // change selected command
     {
-      ch == 'c' ? sel_cmd++ : sel_cmd--;
-      sel_cmd = std::max ( 0, std::min ( number_cmd - 1, sel_cmd ) );
+      int cur_sel_cmd = sel_cmd;
+      ch == 'c' ? cur_sel_cmd++ : cur_sel_cmd--;
+      sel_cmd = std::max ( 0, std::min ( number_cmd - 1, cur_sel_cmd ) );
     }
     else if ( ch == 258 || ch == 259 ) // change parameter value with up/down keys
     {
-      ch == 259 ? param_set[sel_cmd]++ : param_set[sel_cmd]--;
-      param_set[sel_cmd] = std::max ( 0, std::min ( cmd_val_rng[sel_cmd], param_set[sel_cmd] ) );
+      int cur_sel_val = param_set[sel_cmd];
+      ch == 259 ? cur_sel_val++ : cur_sel_val--;
+      param_set[sel_cmd] = std::max ( 0, std::min ( cmd_val_rng[sel_cmd], cur_sel_val ) );
       midi_send_val = param_set[sel_cmd];
       midi_send_cmd = cmd_val[sel_cmd];
     }
