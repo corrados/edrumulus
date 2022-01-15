@@ -1,9 +1,13 @@
 
 
 
+- use rim switch theshold in dB (not linear as it is implemented right now)
+
 - Documentation: Edrumulus manual which describes the hardware/software setup, parameter description, HOWTOs, etc.
 
 - Documentation: Algorithm description
+
+- fix rim shot detection issue with low volume strikes -> Maybe issue is caused by ADC noise?
 
 - possible memory issue on the ESP32, see 406c31fd66aeb1609f75e22672d5fa9280749f37
 
