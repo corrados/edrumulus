@@ -22,6 +22,9 @@ std::vector<std::string> cmd_names   { "type", "thresh", "sens", "pos thres", "p
 std::vector<int>         cmd_val     {    102,      103,    104,         105,        106,         107,     109,     110,       111,    112,        113,     114 };
 std::vector<int>         cmd_val_rng {     17,       31,     31,          31,         31,          31,       4,       4,         3,    127,        127,      31 };
 std::vector<int> param_set ( number_cmd, 0 );
+WINDOW*      mainwin;
+int          col_start = 5; // start column of parameter display
+int          row_start = 3; // start row of parameter display
 jack_port_t* input_port;
 jack_port_t* output_port;
 int          sel_pad       = 0;
@@ -38,20 +41,21 @@ std::string parse_cmd_param ( int cmd )
 // update window parameter outputs
 void update_param_outputs()
 {
-  move ( 9, 10 ); deleteln();
-  move ( 8, 10 ); deleteln();
-  move ( 7, 10 ); deleteln();
-  mvprintw ( 9, 10, "Parameter value:  %s", parse_cmd_param ( sel_cmd ).c_str() );
-  mvprintw ( 8, 10, "Selected pad:     %d", sel_pad );
-  mvprintw ( 7, 10, "Selected command: %s", cmd_names[sel_cmd].c_str() );
+  mvaddstr ( row_start, col_start, "Press a key; q:quit; s,S:sel pad; c,C:sel command; up,down: change parameter" );
+  move     ( row_start + 4, col_start ); deleteln();
+  move     ( row_start + 3, col_start ); deleteln();
+  move     ( row_start + 2, col_start ); deleteln();
+  mvprintw ( row_start + 4, col_start, "Parameter value:  %s", parse_cmd_param ( sel_cmd ).c_str() );
+  mvprintw ( row_start + 3, col_start, "Selected pad:     %d", sel_pad );
+  mvprintw ( row_start + 2, col_start, "Selected command: %s", cmd_names[sel_cmd].c_str() );
   refresh();
 }
 
 // jack audio callback function
 int process ( jack_nframes_t nframes, void *arg )
 {
-  void*        in_midi       = jack_port_get_buffer ( input_port,  nframes );
-  void*        out_midi      = jack_port_get_buffer ( output_port, nframes );
+  void*        in_midi       = jack_port_get_buffer      ( input_port,  nframes );
+  void*        out_midi      = jack_port_get_buffer      ( output_port, nframes );
   jack_nframes_t event_count = jack_midi_get_event_count ( in_midi );
 
   for ( jack_nframes_t j = 0; j < event_count; j++ )
@@ -90,6 +94,13 @@ int main()
 {
   int ch;
 
+  // initialize GUI
+  mainwin = initscr();
+  noecho();                  // turn off key echoing
+  keypad  ( mainwin, true ); // enable the keypad for non-char keys
+  nodelay ( mainwin, true ); // we want a non-blocking getch()
+  update_param_outputs();
+
   // initialize jack audio for MIDI
   jack_client_t* client = jack_client_open   ( "EdrumulusGUI", JackNullOption, nullptr );
   input_port            = jack_port_register ( client, "MIDI_in",  JACK_DEFAULT_MIDI_TYPE, JackPortIsInput,  0 );
@@ -105,16 +116,6 @@ int main()
     jack_connect ( client, "EdrumulusGUI:MIDI_out", teensy_out[0] );          // Teensy
     jack_connect ( client, teensy_in[0],            "EdrumulusGUI:MIDI_in" ); // Teensy
   }
-
-  // initialize GUI
-  WINDOW* mainwin = initscr();
-  noecho();                  // turn off key echoing
-  keypad  ( mainwin, true ); // enable the keypad for non-char keys
-  nodelay ( mainwin, true ); // we want a non-blocking getch()
-
-  // show usage and update parameters
-  mvaddstr ( 5, 10, "Press a key; q:quit; s,S:sel pad; c,C:sel command; up,down: change parameter" );
-  update_param_outputs(); // note: has refresh() call
 
   // loop until user presses q
   while ( ( ch = getch() ) != 'q' )
