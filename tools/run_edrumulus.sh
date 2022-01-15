@@ -80,7 +80,7 @@ ADEVICE=$(aplay -l|grep "USB Audio"|tail -1|cut -d' ' -f3)
 echo "Using USB audio device: ${ADEVICE}"
 
 # start the jack deamon (exit once all clients are closed with -T)
-jackd -R -T --silent -P70 -t2000 -d alsa -dhw:${ADEVICE} -p 128 -n 3 -r 48000 -s &>/dev/null &
+jackd -R -T --silent -P70 -t2000 -d alsa -dhw:${ADEVICE} -p 128 -n 3 -r 48000 -s >/dev/null 2>&1 &
 sleep 1
 
 
@@ -147,7 +147,7 @@ if [[ -v is_teensy ]]; then
   #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 111 1 # enable rim shot
 
   # connect ALSA MIDI to Jack Audio MIDI
-  a2jmidid -e &
+  a2jmidid -e >/dev/null 2>&1 &
   sleep 1
 
   # get Edrumulus MIDI name
