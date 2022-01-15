@@ -17,6 +17,7 @@
 const int   max_num_pads = 8;
 const int   number_cmd   = 12;
 std::vector<std::string> pad_types   { "PD120", "PD80R", "PD8", "FD8", "VH12", "VH12CTRL", "KD7", "TP80", "CY6", "CY8", "DIABOLO12", "CY5", "HD1TOM", "PD6", "KD8", "PDX8", "KD120", "PD5" };
+std::vector<std::string> curve_types { "LINEAR", "EXP1", "EXP2", "LOG1", "LOG2" };
 std::vector<std::string> cmd_names   { "type", "thresh", "sens", "pos thres", "pos sens", "rim thres", "curve", "spike", "rim/pos", "note", "note rim", "cross" };
 std::vector<int>         cmd_val     {    102,      103,    104,         105,        106,         107,     109,     110,       111,    112,        113,     114 };
 std::vector<int>         cmd_val_rng {     17,       31,     31,          31,         31,          31,       4,       4,         3,    127,        127,      31 };
@@ -31,7 +32,7 @@ int          midi_send_val;
 // parse command parameter
 std::string parse_cmd_param ( int cmd )
 {
-  return cmd == 0 ? pad_types[param_set[cmd]] : std::to_string ( param_set[cmd] );
+  return cmd == 0 ? pad_types[param_set[cmd]] : cmd == 6 ? curve_types[param_set[cmd]] : std::to_string ( param_set[cmd] );
 }
 
 // jack audio callback function
