@@ -16,8 +16,10 @@
 // tables
 const int   max_num_pads = 8;
 const int   number_cmd   = 12;
-std::vector<std::string> cmd_names { "type", "thresh", "sens", "pos thres", "pos sens", "rim thres", "curve", "spike", "rim/pos", "note", "note rim", "cross" };
-std::vector<int>         cmd_val   {    102,      103,    104,         105,        106,         107,     109,     110,       111,    112,        113,     114 };
+std::vector<std::string> pad_types   { "PD120", "PD80R", "PD8", "FD8", "VH12", "VH12CTRL", "KD7", "TP80", "CY6", "CY8", "DIABOLO12", "CY5", "HD1TOM", "PD6", "KD8", "PDX8", "KD120", "PD5" };
+std::vector<std::string> cmd_names   { "type", "thresh", "sens", "pos thres", "pos sens", "rim thres", "curve", "spike", "rim/pos", "note", "note rim", "cross" };
+std::vector<int>         cmd_val     {    102,      103,    104,         105,        106,         107,     109,     110,       111,    112,        113,     114 };
+std::vector<int>         cmd_val_rng {     17,       31,     31,          31,         31,          31,       4,       4,         3,    127,        127,      31 };
 std::vector<int> param_set ( number_cmd, 0 );
 jack_port_t* input_port;
 jack_port_t* output_port;
@@ -25,6 +27,12 @@ int          sel_pad       = 0;
 int          sel_cmd       = 0;
 int          midi_send_cmd = -1; // invalidate per default
 int          midi_send_val;
+
+// parse command parameter
+std::string parse_cmd_param ( int cmd )
+{
+  return cmd == 0 ? pad_types[param_set[cmd]] : std::to_string ( param_set[cmd] );
+}
 
 // jack audio callback function
 int process ( jack_nframes_t nframes, void *arg )
@@ -44,11 +52,12 @@ int process ( jack_nframes_t nframes, void *arg )
       auto it = std::find ( cmd_val.begin(), cmd_val.end(), in_event.buffer[1] );
       if ( it != cmd_val.end() && ( in_event.buffer[0] & 0xF0 ) == 0x80 )
       {
-        param_set[std::distance ( cmd_val.begin(), it )] = in_event.buffer[2];
+        int cur_cmd = std::distance ( cmd_val.begin(), it );
+        param_set[cur_cmd] = std::max ( 0, std::min ( cmd_val_rng[cur_cmd], (int) in_event.buffer[2] ) );
 
 // TEST update current received parameter in the GUI
 move ( 9, 10 ); deleteln();
-mvprintw ( 9, 10, "Parameter value:  %d", param_set[sel_cmd] );
+mvprintw ( 9, 10, "Parameter value:  %s", parse_cmd_param ( sel_cmd ).c_str() );
 refresh();
 
       }
@@ -106,8 +115,8 @@ int main()
       {
         ch == 's' ? sel_pad++ : sel_pad--;
         sel_pad = std::max ( 0, std::min ( max_num_pads - 1, sel_pad ) );
-        midi_send_cmd = 108;
         midi_send_val = sel_pad;
+        midi_send_cmd = 108;
       }
       else if ( ch == 'c' || ch == 'C' ) // change selected command
       {
@@ -117,12 +126,12 @@ int main()
       else if ( ch == 258 || ch == 259 ) // change parameter value with up/down keys
       {
         ch == 259 ? param_set[sel_cmd]++ : param_set[sel_cmd]--;
-        param_set[sel_cmd] = std::max ( 0, std::min ( 31, param_set[sel_cmd] ) );
-        midi_send_cmd = cmd_val[sel_cmd];
+        param_set[sel_cmd] = std::max ( 0, std::min ( cmd_val_rng[sel_cmd], param_set[sel_cmd] ) );
         midi_send_val = param_set[sel_cmd];
+        midi_send_cmd = cmd_val[sel_cmd];
       }
 
-      mvprintw ( 9, 10, "Parameter value:  %d", param_set[sel_cmd] );
+      mvprintw ( 9, 10, "Parameter value:  %s", parse_cmd_param ( sel_cmd ).c_str() );
       mvprintw ( 8, 10, "Selected pad:     %d", sel_pad );
       mvprintw ( 7, 10, "Selected command: %s", cmd_names[sel_cmd].c_str() );
       refresh();
