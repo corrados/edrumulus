@@ -149,8 +149,8 @@ int main()
   jack_activate             ( client );
   jack_connect              ( client, "ttymidi:MIDI_in",       "EdrumulusGUI:MIDI_in" ); // ESP32
   jack_connect              ( client, "EdrumulusGUI:MIDI_out", "ttymidi:MIDI_out" );     // ESP32
-  const char** teensy_out = jack_get_ports ( client, "Edrumulus", NULL, JackPortIsInput );
-  const char** teensy_in  = jack_get_ports ( client, "Edrumulus", NULL, JackPortIsOutput );
+  const char** teensy_out = jack_get_ports ( client, "Edrumulus ", NULL, JackPortIsInput );
+  const char** teensy_in  = jack_get_ports ( client, "Edrumulus ", NULL, JackPortIsOutput );
   if ( teensy_in != nullptr && teensy_out != nullptr )
   {
     jack_connect ( client, "EdrumulusGUI:MIDI_out", teensy_out[0] );          // Teensy
