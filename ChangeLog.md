@@ -1,5 +1,11 @@
 # Edrumulus Project Log
 
+## 2022-01-16 New Linux console GUI
+
+  There is a new tool available to show/modify Edrumulus parameters in a Linux (remote) shell
+  using the ncurses library. This comes handy if Edrumulus is used with Drumgizmo running on
+  a headless Raspberry Pi. This GUI is coded in one single file tools/edrumulus_gui.cpp.
+  <br/>![Edrumulus console GUI](algorithm/images/edrumulus_console_gui.jpg)
 
 ## 2022-01-09 Edrumulus prototype 3 (HD-1)
 
