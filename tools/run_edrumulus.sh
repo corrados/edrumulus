@@ -99,6 +99,12 @@ if [ -d "edrumuluskit" ]; then
 fi
 
 
+# taken from "Raspberry Pi and realtime, low-latency audio" homepage at wiki.linuxaudio.org
+#sudo service triggerhappy stop
+#sudo service dbus stop
+#sudo mount -o remount,size=128M /dev/shm
+
+
 # jack deamon ------------------------------------------------------------------
 # get first USB audio sound card device
 ADEVICE=$(aplay -l|grep "USB Audio"|tail -1|cut -d' ' -f3)
