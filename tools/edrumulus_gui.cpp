@@ -31,6 +31,7 @@ int          sel_pad       = 0;
 int          sel_cmd       = 0;
 int          midi_send_cmd = -1; // invalidate per default
 int          midi_send_val;
+bool         auto_pad_sel  = false; // no auto pad selection per default
 
 // parse command parameter
 std::string parse_cmd_param ( int cmd )
@@ -41,9 +42,16 @@ std::string parse_cmd_param ( int cmd )
 // update window parameter outputs
 void update_param_outputs()
 {
-  mvaddstr ( row_start, col_start, "Press a key (q:quit; s,S:sel pad; c,C:sel command; up,down: change parameter)" );
+  mvaddstr ( row_start, col_start, "Press a key (q:quit; s,S:sel pad; c,C:sel command; a,A: auto pad sel; up,down: change parameter)" );
   mvprintw ( row_start + 3, col_start, "Parameter: %9s: %s             ", cmd_names[sel_cmd].c_str(), parse_cmd_param ( sel_cmd ).c_str() );
-  mvprintw ( row_start + 2, col_start, "Selected pad:         %d       ", sel_pad );
+  if ( auto_pad_sel )
+  {
+    mvprintw ( row_start + 2, col_start, "Selected pad (auto):  %d       ", sel_pad );
+  }
+  else
+  {
+    mvprintw ( row_start + 2, col_start, "Selected pad:         %d       ", sel_pad );
+  }
   refresh();
   box       ( midiwin, 0, 0 ); // in this box the received note-on MIDI notes are shown
   mvwprintw ( midiwin, 0, 3, "MIDI-IN" );
@@ -58,6 +66,17 @@ void update_param_outputs()
   box       ( posgwin, 0, 0 ); // in this box the received positional sensing graph is shown
   mvwprintw ( posgwin, 0, 5, "POSITION-GRAPH" );
   wrefresh  ( posgwin );
+}
+
+// update pad selection (for auto pad selection)
+void update_pad_selection ( int midi_note_in, int midi_note1, int midi_note2, int pad_index )
+{
+  if ( ( midi_note_in == midi_note1 || midi_note_in == midi_note2 ) && ( sel_pad != pad_index ) )
+  {
+    sel_pad       = pad_index;
+    midi_send_val = sel_pad;
+    midi_send_cmd = 108;
+  }
 }
 
 // jack audio callback function
@@ -93,6 +112,15 @@ int process ( jack_nframes_t nframes, void *arg )
         winsdelln ( midigwin, 1 );
         wmove     ( midigwin, 2, 1 );
         whline    ( midigwin, ACS_BLOCK, std::max ( 1, (int) ( (float) in_event.buffer[2] / 128 * 25 ) ) );
+
+        if ( auto_pad_sel && in_event.buffer[2] > 10 )
+        {
+          update_pad_selection ( in_event.buffer[1], 38, 40, 0 ); // snare
+          update_pad_selection ( in_event.buffer[1], 36, 36, 1 ); // kick
+          update_pad_selection ( in_event.buffer[1], 22, 26, 2 ); // hi-hat
+          update_pad_selection ( in_event.buffer[1], 49, 55, 4 ); // crash
+          update_pad_selection ( in_event.buffer[1], 48, 50, 5 ); // tom1
+        }
         do_update = true;
       }
 
@@ -187,6 +215,10 @@ int main()
       param_set[sel_cmd] = std::max ( 0, std::min ( cmd_val_rng[sel_cmd], cur_sel_val ) );
       midi_send_val = param_set[sel_cmd];
       midi_send_cmd = cmd_val[sel_cmd];
+    }
+    else if ( ch == 'a' || ch == 'A' ) // enable/disable auto pad selection
+    {
+      auto_pad_sel = ( ch == 'a' ); // capital 'A' disables auto pad selection
     }
     update_param_outputs();
   }
