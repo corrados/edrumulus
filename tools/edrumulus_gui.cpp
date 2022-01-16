@@ -27,11 +27,12 @@ int          col_start = 5;  // start column of parameter display
 int          row_start = 1;  // start row of parameter display
 int          box_len   = 17; // length of the output boxes
 jack_port_t  *input_port, *output_port;
-int          sel_pad       = 0;
-int          sel_cmd       = 0;
-int          midi_send_cmd = -1; // invalidate per default
+int          sel_pad                 = 0;
+int          sel_cmd                 = 0;
+bool         do_update_param_outputs = false;
+int          midi_send_cmd           = -1; // invalidate per default
 int          midi_send_val;
-bool         auto_pad_sel  = false; // no auto pad selection per default
+bool         auto_pad_sel = false; // no auto pad selection per default
 
 // parse command parameter
 std::string parse_cmd_param ( int cmd )
@@ -85,7 +86,6 @@ int process ( jack_nframes_t nframes, void *arg )
   void*          in_midi     = jack_port_get_buffer      ( input_port,  nframes );
   void*          out_midi    = jack_port_get_buffer      ( output_port, nframes );
   jack_nframes_t event_count = jack_midi_get_event_count ( in_midi );
-  bool           do_update   = false;
 
   for ( jack_nframes_t j = 0; j < event_count; j++ )
   {
@@ -96,9 +96,9 @@ int process ( jack_nframes_t nframes, void *arg )
       auto it = std::find ( cmd_val.begin(), cmd_val.end(), in_event.buffer[1] );
       if ( it != cmd_val.end() && ( in_event.buffer[0] & 0xF0 ) == 0x80 )
       {
-        int cur_cmd        = std::distance ( cmd_val.begin(), it );
-        param_set[cur_cmd] = std::max ( 0, std::min ( cmd_val_rng[cur_cmd], (int) in_event.buffer[2] ) );
-        do_update = true;
+        int cur_cmd             = std::distance ( cmd_val.begin(), it );
+        param_set[cur_cmd]      = std::max ( 0, std::min ( cmd_val_rng[cur_cmd], (int) in_event.buffer[2] ) );
+        do_update_param_outputs = true;
       }
 
       // display current note-on received value
@@ -121,7 +121,7 @@ int process ( jack_nframes_t nframes, void *arg )
           update_pad_selection ( in_event.buffer[1], 49, 55, 4 ); // crash
           update_pad_selection ( in_event.buffer[1], 48, 50, 5 ); // tom1
         }
-        do_update = true;
+        do_update_param_outputs = true;
       }
 
       // display current positional sensing received value
@@ -136,7 +136,7 @@ int process ( jack_nframes_t nframes, void *arg )
         std::string bar = "M--------------------E";
         bar[1 + (int) ( (float) in_event.buffer[2] / 128 * 20 )] = '*';
         mvwprintw ( posgwin, 1, 1, bar.c_str() );
-        do_update = true;
+        do_update_param_outputs = true;
       }
     }
   }
@@ -149,11 +149,6 @@ int process ( jack_nframes_t nframes, void *arg )
     midi_out_buffer[1] = midi_send_cmd;
     midi_out_buffer[2] = midi_send_val;
     midi_send_cmd      = -1; // invalidate current command to prepare for next command
-  }
-
-  if ( do_update )
-  {
-    update_param_outputs(); // update only once per jack block
   }
 
   return 0;
@@ -172,6 +167,7 @@ int main()
   posgwin  = newwin ( box_len, 24, row_start + 5, col_start + 50 );
   noecho();                   // turn off key echoing
   keypad   ( mainwin, true ); // enable the keypad for non-char keys
+  nodelay  ( mainwin, true ); // we want a non-blocking getch()
   curs_set ( 0 );             // suppress cursor
   update_param_outputs();
 
@@ -194,33 +190,43 @@ int main()
   // loop until user presses q
   while ( ( ch = getch() ) != 'q' )
   {
-    if ( ch == 's' || ch == 'S' ) // change selected pad
+    if ( ch != -1 )
     {
-      int cur_sel_pad = sel_pad;
-      ch == 's' ? cur_sel_pad++ : cur_sel_pad--;
-      sel_pad = std::max ( 0, std::min ( max_num_pads - 1, cur_sel_pad ) );
-      midi_send_val = sel_pad;
-      midi_send_cmd = 108;
+      if ( ch == 's' || ch == 'S' ) // change selected pad
+      {
+        int cur_sel_pad = sel_pad;
+        ch == 's' ? cur_sel_pad++ : cur_sel_pad--;
+        sel_pad = std::max ( 0, std::min ( max_num_pads - 1, cur_sel_pad ) );
+        midi_send_val = sel_pad;
+        midi_send_cmd = 108;
+      }
+      else if ( ch == 'c' || ch == 'C' ) // change selected command
+      {
+        int cur_sel_cmd = sel_cmd;
+        ch == 'c' ? cur_sel_cmd++ : cur_sel_cmd--;
+        sel_cmd = std::max ( 0, std::min ( number_cmd - 1, cur_sel_cmd ) );
+      }
+      else if ( ch == 258 || ch == 259 ) // change parameter value with up/down keys
+      {
+        int cur_sel_val = param_set[sel_cmd];
+        ch == 259 ? cur_sel_val++ : cur_sel_val--;
+        param_set[sel_cmd] = std::max ( 0, std::min ( cmd_val_rng[sel_cmd], cur_sel_val ) );
+        midi_send_val = param_set[sel_cmd];
+        midi_send_cmd = cmd_val[sel_cmd];
+      }
+      else if ( ch == 'a' || ch == 'A' ) // enable/disable auto pad selection
+      {
+        auto_pad_sel = ( ch == 'a' ); // capital 'A' disables auto pad selection
+      }
+      do_update_param_outputs = true;
     }
-    else if ( ch == 'c' || ch == 'C' ) // change selected command
+
+    if ( do_update_param_outputs )
     {
-      int cur_sel_cmd = sel_cmd;
-      ch == 'c' ? cur_sel_cmd++ : cur_sel_cmd--;
-      sel_cmd = std::max ( 0, std::min ( number_cmd - 1, cur_sel_cmd ) );
+      update_param_outputs();
+      do_update_param_outputs = false;
     }
-    else if ( ch == 258 || ch == 259 ) // change parameter value with up/down keys
-    {
-      int cur_sel_val = param_set[sel_cmd];
-      ch == 259 ? cur_sel_val++ : cur_sel_val--;
-      param_set[sel_cmd] = std::max ( 0, std::min ( cmd_val_rng[sel_cmd], cur_sel_val ) );
-      midi_send_val = param_set[sel_cmd];
-      midi_send_cmd = cmd_val[sel_cmd];
-    }
-    else if ( ch == 'a' || ch == 'A' ) // enable/disable auto pad selection
-    {
-      auto_pad_sel = ( ch == 'a' ); // capital 'A' disables auto pad selection
-    }
-    update_param_outputs();
+    usleep ( 100000 );
   }
 
   // clean up and exit
