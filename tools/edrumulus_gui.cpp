@@ -111,11 +111,6 @@ int process ( jack_nframes_t nframes, void *arg )
         do_update = true;
       }
     }
-
-    if ( do_update )
-    {
-      update_param_outputs(); // update only once per jack block
-    }
   }
 
   jack_midi_clear_buffer ( out_midi );
@@ -126,6 +121,11 @@ int process ( jack_nframes_t nframes, void *arg )
     midi_out_buffer[1] = midi_send_cmd;
     midi_out_buffer[2] = midi_send_val;
     midi_send_cmd      = -1; // invalidate current command to prepare for next command
+  }
+
+  if ( do_update )
+  {
+    update_param_outputs(); // update only once per jack block
   }
 
   return 0;
