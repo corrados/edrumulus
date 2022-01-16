@@ -48,7 +48,32 @@ else
 fi
 
 
-# download and compile Drumgizmo -----------------------------------------------
+# Jack audio without DBUS support ----------------------------------------------
+if [ -d "jack2" ]; then
+  echo "The Jack2 directory is present, we assume it is compiled and ready to use. If not, delete the jack2 directory and call this script again."
+else
+  git clone https://github.com/jackaudio/jack2.git
+  cd jack2
+  git checkout v1.9.20
+  ./waf configure --alsa --prefix=/usr/local --libdir=$(pwd)/build
+  ./waf -j${NCORES}
+  mkdir build/jack
+  cp build/*.so build/jack
+  cp build/common/*.so build/jack
+  cp build/example-clients/*.so build/jack
+  cd ..
+
+  # give audio group rights to do realtime
+  if grep -Fq "@audio" /etc/security/limits.conf; then
+    echo "audio group already has realtime rights"
+  else
+    sudo sh -c 'echo "@audio   -  rtprio   95" >> /etc/security/limits.conf'
+    sudo sh -c 'echo "@audio   -  memlock  unlimited" >> /etc/security/limits.conf'
+  fi
+fi
+
+
+# download and compile Drumgizmo using local jack2 build -----------------------
 if [ -d "drumgizmo" ]; then
   echo "The Drumgizmo directory is present, we assume it is compiled and ready to use. If not, delete the Drumgizmo directory and call this script again."
 else
@@ -58,7 +83,7 @@ else
   git submodule update --init
   ./autogen.sh
   ./configure --prefix=$PWD/install --with-lv2dir=$HOME/.lv2 --enable-lv2
-  make -j${NCORES}
+  LDFLAGS="-L../jack2/build/common" CFLAGS="-I../jack2/common" make -j${NCORES}
   cd ..
 fi
 
@@ -74,13 +99,20 @@ if [ -d "edrumuluskit" ]; then
 fi
 
 
+# taken from "Raspberry Pi and realtime, low-latency audio" homepage at wiki.linuxaudio.org
+#sudo service triggerhappy stop
+#sudo service dbus stop
+#sudo mount -o remount,size=128M /dev/shm
+
+
 # jack deamon ------------------------------------------------------------------
 # get first USB audio sound card device
 ADEVICE=$(aplay -l|grep "USB Audio"|tail -1|cut -d' ' -f3)
 echo "Using USB audio device: ${ADEVICE}"
 
 # start the jack deamon (exit once all clients are closed with -T)
-jackd -R -T --silent -P70 -t2000 -d alsa -dhw:${ADEVICE} -p 128 -n 3 -r 48000 -s >/dev/null 2>&1 &
+export LD_LIBRARY_PATH="jack2/build:jack2/build/common"
+jack2/build/jackd -R -T --silent -P70 -p16 -t2000 -d alsa -dhw:${ADEVICE} -p 128 -n 3 -r 48000 -s >/dev/null 2>&1 &
 sleep 1
 
 
@@ -224,7 +256,7 @@ fi
 
 # run Edrumulus ----------------------------------------------------------------
 if [ $USER = "pi" ]; then
-  ./drumgizmo/drumgizmo/drumgizmo -l -L max=1,rampdown=0.02 -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
+  ./drumgizmo/drumgizmo/drumgizmo -l -L max=2,rampdown=0.02 -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
   sleep 20
 else
   ./drumgizmo/drumgizmo/drumgizmo -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
