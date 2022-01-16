@@ -66,6 +66,7 @@ int process ( jack_nframes_t nframes, void *arg )
   void*          in_midi     = jack_port_get_buffer      ( input_port,  nframes );
   void*          out_midi    = jack_port_get_buffer      ( output_port, nframes );
   jack_nframes_t event_count = jack_midi_get_event_count ( in_midi );
+  bool           do_update   = false;
 
   for ( jack_nframes_t j = 0; j < event_count; j++ )
   {
@@ -78,7 +79,7 @@ int process ( jack_nframes_t nframes, void *arg )
       {
         int cur_cmd        = std::distance ( cmd_val.begin(), it );
         param_set[cur_cmd] = std::max ( 0, std::min ( cmd_val_rng[cur_cmd], (int) in_event.buffer[2] ) );
-        update_param_outputs();
+        do_update = true;
       }
 
       // display current note-on received value
@@ -92,7 +93,7 @@ int process ( jack_nframes_t nframes, void *arg )
         winsdelln ( midigwin, 1 );
         wmove     ( midigwin, 2, 1 );
         whline    ( midigwin, ACS_BLOCK, std::max ( 1, (int) ( (float) in_event.buffer[2] / 128 * 25 ) ) );
-        update_param_outputs();
+        do_update = true;
       }
 
       // display current positional sensing received value
@@ -107,8 +108,13 @@ int process ( jack_nframes_t nframes, void *arg )
         std::string bar = "M--------------------E";
         bar[1 + (int) ( (float) in_event.buffer[2] / 128 * 20 )] = '*';
         mvwprintw ( posgwin, 1, 1, bar.c_str() );
-        update_param_outputs();
+        do_update = true;
       }
+    }
+
+    if ( do_update )
+    {
+      update_param_outputs(); // update only once per jack block
     }
   }
 
