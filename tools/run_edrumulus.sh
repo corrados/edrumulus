@@ -191,8 +191,8 @@ else
   # Hi-Hat control
   echo -n -e '\xB9\x6C\x03' > /dev/ttyUSB0 # select pad: 3
   #echo -n -e '\xB9\x66\x03' > /dev/ttyUSB0 # pad type: FD8
-  #echo -n -e '\xB9\x67\x05' > /dev/ttyUSB0 # threshold
-  #echo -n -e '\xB9\x68\x00' > /dev/ttyUSB0 # sensitivity
+  echo -n -e '\xB9\x67\x0C' > /dev/ttyUSB0 # threshold
+  echo -n -e '\xB9\x68\x1C' > /dev/ttyUSB0 # sensitivity
 
   # crash
   echo -n -e '\xB9\x6C\x04' > /dev/ttyUSB0 # select pad: 4
