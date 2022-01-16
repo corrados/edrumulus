@@ -16,13 +16,15 @@
 // tables
 const int   max_num_pads = 8;
 const int   number_cmd   = 12;
+std::vector<std::string> pad_names   { "snare", "kick", "hi-hat", "ctrl", "crash", "tom1", "ride", "tom2", "tom3" };
 std::vector<std::string> pad_types   { "PD120", "PD80R", "PD8", "FD8", "VH12", "VH12CTRL", "KD7", "TP80", "CY6", "CY8", "DIABOLO12", "CY5", "HD1TOM", "PD6", "KD8", "PDX8", "KD120", "PD5" };
 std::vector<std::string> curve_types { "LINEAR", "EXP1", "EXP2", "LOG1", "LOG2" };
 std::vector<std::string> cmd_names   { "type", "thresh", "sens", "pos thres", "pos sens", "rim thres", "curve", "spike", "rim/pos", "note", "note rim", "cross" };
 std::vector<int>         cmd_val     {    102,      103,    104,         105,        106,         107,     109,     110,       111,    112,        113,     114 };
 std::vector<int>         cmd_val_rng {     17,       31,     31,          31,         31,          31,       4,       4,         3,    127,        127,      31 };
 std::vector<int> param_set ( number_cmd, 0 );
-WINDOW       *mainwin, *midiwin, *midigwin, *poswin, *posgwin;
+int          hi_hat_ctrl = 0; // current hi-hat control value
+WINDOW       *mainwin, *midiwin, *midigwin, *poswin, *posgwin, *ctrlwin;
 int          col_start = 5;  // start column of parameter display
 int          row_start = 1;  // start row of parameter display
 int          box_len   = 17; // length of the output boxes
@@ -47,11 +49,11 @@ void update_param_outputs()
   mvprintw ( row_start + 3, col_start, "Parameter: %9s: %s             ", cmd_names[sel_cmd].c_str(), parse_cmd_param ( sel_cmd ).c_str() );
   if ( auto_pad_sel )
   {
-    mvprintw ( row_start + 2, col_start, "Selected pad (auto):  %d       ", sel_pad );
+    mvprintw ( row_start + 2, col_start, "Selected pad (auto):  %2d (%s)      ", sel_pad, pad_names[sel_pad].c_str() );
   }
   else
   {
-    mvprintw ( row_start + 2, col_start, "Selected pad:         %d       ", sel_pad );
+    mvprintw ( row_start + 2, col_start, "Selected pad:         %2d (%s)      ", sel_pad, pad_names[sel_pad].c_str() );
   }
   refresh();
   box       ( midiwin, 0, 0 ); // in this box the received note-on MIDI notes are shown
@@ -67,6 +69,12 @@ void update_param_outputs()
   box       ( posgwin, 0, 0 ); // in this box the received positional sensing graph is shown
   mvwprintw ( posgwin, 0, 5, "POSITION-GRAPH" );
   wrefresh  ( posgwin );
+  box       ( ctrlwin, 0, 0 ); // in this box the hi-hat controller value/bar is shown
+  mvwprintw ( ctrlwin, 0, 1, "Ctrl" );
+  mvwprintw ( ctrlwin, 1, 1, "%4d", hi_hat_ctrl );
+  mvwvline  ( ctrlwin, 2, 3, ACS_BLOCK, box_len - 3 ); // for reversed hline
+  mvwvline  ( ctrlwin, 2, 3, ' ', (int) ( ( 127.0 - hi_hat_ctrl ) / 127 * ( box_len - 3 ) ) );
+  wrefresh  ( ctrlwin );
 }
 
 // update pad selection (for auto pad selection)
@@ -125,18 +133,27 @@ int process ( jack_nframes_t nframes, void *arg )
       }
 
       // display current positional sensing received value
-      if ( ( in_event.buffer[0] & 0xF0 ) == 0xB0 && in_event.buffer[1] == 16 )
+      if ( ( in_event.buffer[0] & 0xF0 ) == 0xB0 )
       {
-        wmove     ( poswin, 1, 0 );
-        winsdelln ( poswin, 1 );
-        mvwprintw ( poswin, 1, 1, " %3d", (int) in_event.buffer[2] );
+        if ( in_event.buffer[1] == 16 ) // positional sensing
+        {
+          wmove     ( poswin, 1, 0 );
+          winsdelln ( poswin, 1 );
+          mvwprintw ( poswin, 1, 1, " %3d", (int) in_event.buffer[2] );
 
-        wmove     ( posgwin, 1, 0 );
-        winsdelln ( posgwin, 1 );
-        std::string bar = "M--------------------E";
-        bar[1 + (int) ( (float) in_event.buffer[2] / 128 * 20 )] = '*';
-        mvwprintw ( posgwin, 1, 1, bar.c_str() );
-        do_update_param_outputs = true;
+          wmove     ( posgwin, 1, 0 );
+          winsdelln ( posgwin, 1 );
+          std::string bar = "M--------------------E";
+          bar[1 + (int) ( (float) in_event.buffer[2] / 128 * 20 )] = '*';
+          mvwprintw ( posgwin, 1, 1, bar.c_str() );
+          do_update_param_outputs = true;
+        }
+
+        if ( in_event.buffer[1] == 4 ) // hi-hat controller
+        {
+          hi_hat_ctrl             = in_event.buffer[2];
+          do_update_param_outputs = true;
+        }
       }
     }
   }
@@ -165,6 +182,7 @@ int main()
   midigwin = newwin ( box_len, 26, row_start + 5, col_start + 15 );
   poswin   = newwin ( box_len, 7,  row_start + 5, col_start + 42 );
   posgwin  = newwin ( box_len, 24, row_start + 5, col_start + 50 );
+  ctrlwin  = newwin ( box_len, 7,  row_start + 5, col_start + 75 );
   noecho();                   // turn off key echoing
   keypad   ( mainwin, true ); // enable the keypad for non-char keys
   nodelay  ( mainwin, true ); // we want a non-blocking getch()
