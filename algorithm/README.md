@@ -13,11 +13,49 @@ this step we can also detect if we have a cross stick situation.
 
 ### Signal filtering
 
-The noise of cheap ADCs is usually not equally distributed over the entire frequency spectrum. To
-improve the peak detection, it makes sense to apply a band-pass filter to filter out ADC noise in
-spectrum parts which are not used by the pad piezo signal like very low frequencies and high
-frequencies. Therefore, a band-pass filter is applied. The pass-band width is a trade-off between
-noise cancellation and filter delay. A good compromise is a pass-band of 40 Hz to 400 Hz.
+The noise of cheap ADCs is usually not equally distributed over the entire frequency spectrum. e.g.,
+the Teensy 4.0 noise spectrum looks like the following plot and has high noise energy at the high
+frequencies:
+<br/>![Teensy 4.0 noise spectrum](images/teensy4_0_noise_spectrum.jpg)
+
+The spectrum of a piezo signal (in this example using a PD-120 mesh head pad) looks like this:
+<br/>![Spectrum PD-120 strikes](images/spectrum_pd120_strikes.jpg)
+
+The most energy of that signal is located near 200 Hz. Therefore, to improve the peak detection,
+it makes sense to apply a band-pass filter to filter out ADC noise in spectrum parts which are
+not used by the pad piezo signal like very low frequencies and high frequencies. Thus,
+a band-pass filter is applied to match the useful signal spectrum and filter out the noise.
+
+The pass-band width is a trade-off between noise cancellation and filter delay. As you can see in
+the following plot where the blue trace is the original ADC signal and the red trace is the
+band-pass filtered signal. Typically, you see three distinct peaks in the red trace which is the
+band-pass filtered signal no matter what the original peak looks like:
+<br/>![Band-pass filter peaks](images/band_pass_filter_peaks.jpg)
+
+This effect is amplified if the upper cut-off frequency of the band-pass filter is lowered.
+It has shown that a good compromise is to use a pass-band range of 40 Hz to 400 Hz.
+
+#### Pre-scan time
+
+Caused by the three peaks of the band-pass filtered signal as described in the last section, it
+can happen that the second peak (the middle peak) is higher than the first peak. If a buzz-roll
+is played and the time distance between strikes is short, the retrigger cancellation can lead to
+the fact that the second peak is above the detection threshold and the first peak is not. This
+could lead to the problem that the very first/main peak is not inside the scan time period. To
+overcome this problem, we introduce a so called pre-scan time where we store the ADC signal
+in a FIFO and search in a time period right before the scan time for a possible first/main
+peak. This is marked by the yellow bar in the above plot which shows the three peaks of the
+band-pass filtered signal (The red bar is the scan time and the blue bar is the mask time).
+
+
+#### Latency of the band-pass filtered signal
+
+The band-pass filter introduces a filter delay which is usually below 2 ms. The good thing is
+that this filter delay can be ignored as long as it is shorter than the scan time. This is
+because we only use the band-pass filtered signal for the threshold test. For anything
+else we use the pure ADC signal which is not delayed. So, we store the original ADC signal
+in a FIFO and can therefore start the scan time in the past, i.e., undo the band-pass filter
+delay.
 
 
 ### Retrigger cancellation
@@ -47,9 +85,39 @@ and sounds more crisp. Thus, the idea is to low-pass filter the signal and at th
 calculate the power ratio of the low-pass filtered signal with the unfiltered signal. This is then
 the metric for the positional sensing.
 
+The flow diagram of the algorithm is as follows:
+
+```
+                   ┌──────────────┐    ┌───────────┐
+                   │              │    │           │    positional
+ADC signal ───┬───►│ detect first ├───►│ calculate ├───► sensing
+              │    │    peak      │    │   metric  │      result
+              │    │              │    │           │
+              │    └───────┬──────┘    └───────────┘
+              │            │                 ▲
+              │            │                 │
+              │            │                 │
+              │            ▼                 │
+              │     ┌────────────┐    ┌──────┴───────┐
+              │     │            │    │              │
+              └────►│  low-pass  ├───►│ detect first │
+                    │   filter   │    │    peak      │
+                    │            │    │              │
+                    └────────────┘    └──────────────┘
+```
+
+The impulse response of the low-pass filter is a triangle shape where the length of the triangle
+defines the cut-off frequency of the filter and [can be approximated](https://dsp.stackexchange.com/questions/9966/what-is-the-cut-off-frequency-of-a-moving-average-filter)
+with
+<br/><img src="https://render.githubusercontent.com/render/math?math=N = \frac {\sqrt{0.196202 + F_{co}^2}}{F_{co}}">,
+where <img src="https://render.githubusercontent.com/render/math?math=F_{co}"> is the cut-off
+frequency and N is the length of the impulse response.
+
 Further testing showed that it is important to use the very first peak in time for positional sensing. If
 a later peak is used, the positional sensing based on the low-pass filtered signal does not yield
 good results.
+
+### Positional sensing if a rim-shot is played
 
 It has shown that the positional sensing metric must be adjusted if a rim shot is used. Therefore, the
 rim shot detection information has to be used for the positional sensing.

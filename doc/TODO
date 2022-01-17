@@ -1,11 +1,24 @@
 
 
 
+- remove unnecessary log10() calculation in Drumgzimo special Edrumulus code
+
+- Linux console GUI does loose MIDI events on Raspberry Pi -> maybe too much time spend in process function
+
+- introduce defines for debugging functionality instead of /* */
+
+- use rim switch theshold in dB (not linear as it is implemented right now)
+
+- for the ESP32 prototype, adjust the ADC_noise_peak_velocity_scaling in edrumulus.h correctly
+
 - Documentation: Edrumulus manual which describes the hardware/software setup, parameter description, HOWTOs, etc.
 
-- Documentation: Algorithm description
+- fix rim shot detection issue with low volume strikes -> Maybe issue is caused by ADC noise?
+  -> we should detect if peak of rim piezo is in the order of ADC_MAX_NOISE_AMPL instead of rim_shot_velocity_thresh
 
 - possible memory issue on the ESP32, see 406c31fd66aeb1609f75e22672d5fa9280749f37
+
+- simulate 16 bit with current hardware and check if thresholds are correct
 
 - Should we consider pre-scan time high peaks for velocity estimation?
 
@@ -16,6 +29,9 @@
   -> maybe based on low-pass filtering as suggested in https://github.com/corrados/edrumulus/discussions/17#discussion-3736264
 
 - support positional sensing for rim shots
+
+- Documentation: Algorithm description
+  -> improve retrigger cancellation section
 
 - fix ghost strikes: probably caused by electrical interferers or noise in the microcontroller developer
   board itself -> either find a software solution or changes in the analog front end are needed

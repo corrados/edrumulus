@@ -76,9 +76,11 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case PDX8:
-      pad_settings.velocity_sensitivity = 5;
-      pad_settings.pos_threshold        = 17;
-      pad_settings.pos_sensitivity      = 13;
+      pad_settings.velocity_sensitivity     = 5;
+      pad_settings.rim_shot_treshold        = 9;
+      pad_settings.pos_threshold            = 20;
+      pad_settings.pos_sensitivity          = 25;
+      pad_settings.rim_shot_velocity_thresh = 10; // suppress incorrect rim shot detections on low velocity hits
       break;
 
     case PD5:
