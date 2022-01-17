@@ -70,7 +70,7 @@ void update_param_outputs()
   mvwprintw ( posgwin, 0, 5, "POSITION-GRAPH" );
   wrefresh  ( posgwin );
   box       ( ctrlwin, 0, 0 ); // in this box the hi-hat controller value/bar is shown
-  mvwprintw ( ctrlwin, 0, 1, "Ctrl" );
+  mvwprintw ( ctrlwin, 0, 1, "CTRL" );
   mvwprintw ( ctrlwin, 1, 1, "%4d", hi_hat_ctrl );
   mvwvline  ( ctrlwin, 2, 3, ACS_BLOCK, box_len - 3 ); // for reversed hline
   mvwvline  ( ctrlwin, 2, 3, ' ', (int) ( ( 127.0 - hi_hat_ctrl ) / 127 * ( box_len - 3 ) ) );

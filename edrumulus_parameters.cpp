@@ -49,7 +49,6 @@ void Edrumulus::Pad::apply_preset_pad_settings()
   pad_settings.pos_invert                = false;  // pad specific parameter: invert the positional sensing metric
   pad_settings.rim_use_low_freq_bp       = true;   // pad specific parameter: use low frequency band-pass filter for rim shot detection
   pad_settings.rim_shot_window_len_ms    = 3.5f;   // pad specific parameter: window length for rim shot detection
-  pad_settings.rim_shot_velocity_thresh  = 0;      // pad specific parameter: velocity threshold for rim shots -> disabled per default
 
   switch ( pad_settings.pad_type )
   {
@@ -62,25 +61,23 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case PD80R:
-      pad_settings.velocity_sensitivity     = 5;
-      pad_settings.rim_shot_treshold        = 11;
-      pad_settings.pos_threshold            = 11;
-      pad_settings.pos_sensitivity          = 10;
-      pad_settings.scan_time_ms             = 3.0f;
-      pad_settings.decay_len2_ms            = 75.0f;
-      pad_settings.decay_grad_fact2         = 300.0f;
-      pad_settings.decay_len3_ms            = 300.0f;
-      pad_settings.decay_grad_fact3         = 100.0f;
-      pad_settings.rim_use_low_freq_bp      = false;
-      pad_settings.rim_shot_velocity_thresh = 10; // suppress incorrect rim shot detections on low velocity hits
+      pad_settings.velocity_sensitivity = 5;
+      pad_settings.rim_shot_treshold    = 11;
+      pad_settings.pos_threshold        = 11;
+      pad_settings.pos_sensitivity      = 10;
+      pad_settings.scan_time_ms         = 3.0f;
+      pad_settings.decay_len2_ms        = 75.0f;
+      pad_settings.decay_grad_fact2     = 300.0f;
+      pad_settings.decay_len3_ms        = 300.0f;
+      pad_settings.decay_grad_fact3     = 100.0f;
+      pad_settings.rim_use_low_freq_bp  = false;
       break;
 
     case PDX8:
-      pad_settings.velocity_sensitivity     = 5;
-      pad_settings.rim_shot_treshold        = 9;
-      pad_settings.pos_threshold            = 20;
-      pad_settings.pos_sensitivity          = 25;
-      pad_settings.rim_shot_velocity_thresh = 10; // suppress incorrect rim shot detections on low velocity hits
+      pad_settings.velocity_sensitivity = 5;
+      pad_settings.rim_shot_treshold    = 9;
+      pad_settings.pos_threshold        = 20;
+      pad_settings.pos_sensitivity      = 25;
       break;
 
     case PD5:
