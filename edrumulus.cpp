@@ -329,6 +329,7 @@ void Edrumulus::Pad::initialize()
   rim_shot_treshold_dB     = static_cast<float> ( pad_settings.rim_shot_treshold ) - 44;    // rim shot threshold
   rim_switch_treshold      = -ADC_MAX_NOISE_AMPL + 9 * ( pad_settings.rim_shot_treshold - 31 ); // rim switch linear threshold
   rim_switch_on_cnt_thresh = round ( 10.0f * 1e-3f * Fs );                                      // number of on samples until we detect a choke
+  rim_max_power_low_limit  = ADC_MAX_NOISE_AMPL * ADC_MAX_NOISE_AMPL / 31.0f; // lower limit on detected rim power, 15 dB below max noise amplitude
   x_rim_hist_len           = x_sq_hist_len + rim_shot_window_len;
   cancellation_factor      = static_cast<float> ( pad_settings.cancellation ) / 31.0f;          // cancellation factor: range of 0.0..1.0
   ctrl_history_len         = 10;   // (MUST BE AN EVEN VALUE) control history length, use a fixed value
@@ -843,7 +844,7 @@ float Edrumulus::Pad::process_sample ( const float* input,
 
       update_fifo ( x_rim_bp, bp_filt_len - 1, rim_bp_hist_y );
       x_rim_bp = x_rim_bp * x_rim_bp; // calculate power of filter result
-      update_fifo(x_rim_bp, x_rim_hist_len, x_rim_hist);
+      update_fifo ( x_rim_bp, x_rim_hist_len, x_rim_hist );
 
       // start condition of delay process to fill up the required buffers
       if ( was_peak_found && ( !was_rim_shot_ready ) && ( rim_shot_cnt == 0 ) )
@@ -869,7 +870,7 @@ float Edrumulus::Pad::process_sample ( const float* input,
           }
 
           const float rim_metric_db = 10 * log10 ( rim_max_pow / peak_val );
-          stored_is_rimshot         = rim_metric_db > rim_shot_treshold_dB;
+          stored_is_rimshot         = ( rim_metric_db > rim_shot_treshold_dB ) && ( rim_max_pow > rim_max_power_low_limit );
           rim_shot_cnt              = 0;
           was_rim_shot_ready        = true;
         }
@@ -902,14 +903,7 @@ if ( stored_is_rimshot )
     midi_velocity = stored_midi_velocity;
     midi_pos      = stored_midi_pos;
     peak_found    = true;
-
-    // Rim shots are usually at high velocity levels. On some pads we have issues with the rim shot
-    // detection algorithm that it detect false rim shots on low velocity hits. To suppress these
-    // false detections, a simple MIDI velocity threshold can be applied.
-    if ( midi_velocity > pad_settings.rim_shot_velocity_thresh )
-    {
-      is_rim_shot = stored_is_rimshot;
-    }
+    is_rim_shot   = stored_is_rimshot;
 
     was_peak_found      = false;
     was_pos_sense_ready = false;
