@@ -180,7 +180,7 @@ int process ( jack_nframes_t nframes, void *arg )
 }
 
 // main function
-int main()
+int main ( int argc, char *argv[] )
 {
   int ch;
 
@@ -212,6 +212,10 @@ int main()
   {
     jack_connect ( client, "EdrumulusGUI:MIDI_out", teensy_out[0] );          // Teensy
     jack_connect ( client, teensy_in[0],            "EdrumulusGUI:MIDI_in" ); // Teensy
+  }
+  if ( argc == 2 )
+  {
+    jack_connect ( client, "EdrumulusGUI:MIDI_through", argv[1] );
   }
 
   // loop until user presses q

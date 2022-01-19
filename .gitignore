@@ -10,6 +10,7 @@ tools/SendMIDI/
 tools/jack2/
 tools/mapex_mars/
 tools/gui
+tools/EdrumulusGUI
 
 hardware/prototype2/edrumulus-cache.lib
 hardware/prototype2/edrumulus.sch-bak
