@@ -218,7 +218,6 @@ protected:
         bool       pos_invert;
         bool       rim_use_low_freq_bp;
         float      rim_shot_window_len_ms;
-        int        rim_shot_velocity_thresh;
       };
 
       void apply_preset_pad_settings();
@@ -325,6 +324,7 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       float        ctrl_velocity_range_fact;
       int          prev_ctrl_value;
       float        cancellation_factor;
+      float        rim_max_power_low_limit;
 
       // real-time debugging support
 #ifdef USE_SERIAL_DEBUG_PLOTTING
