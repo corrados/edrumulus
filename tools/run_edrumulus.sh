@@ -14,7 +14,7 @@ fi
 
 
 # install required packages ----------------------------------------------------
-pkgs='git htop alsamixergui build-essential libasound2-dev jackd2 cmake libglib2.0-dev autoconf automake libtool lv2-dev xorg-dev libsndfile1-dev libjack-jackd2-dev libsmf-dev gettext a2jmidid'
+pkgs='git htop alsamixergui build-essential libasound2-dev jackd2 cmake libglib2.0-dev autoconf automake libtool lv2-dev xorg-dev libsndfile1-dev libjack-jackd2-dev libsmf-dev gettext a2jmidid libncurses5-dev'
 if ! dpkg -s $pkgs >/dev/null 2>&1; then
   read -p "Do you want to install missing packages? " -n 1 -r
   echo
@@ -60,6 +60,13 @@ else
   ./configure --prefix=$PWD/install --with-lv2dir=$HOME/.lv2 --enable-lv2
   make -j${NCORES}
   cd ..
+fi
+
+
+# compile EdrumulusGUI ---------------------------------------------------------
+if [ ! -f EdrumulusGUI ]; then
+  echo "Compile EdrumulusGUI"
+  gcc edrumulus_gui.cpp -o EdrumulusGUI -lncurses -ljack -lstdc++
 fi
 
 
@@ -237,13 +244,17 @@ else
   sleep 5
 fi
 
-jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
 jack_connect $KITJACKPORTLEFT system:playback_1
 jack_connect $KITJACKPORTRIGHT system:playback_2
 
 
-echo "###---------- PRESS ANY KEY TO TERMINATE THE EDRUMULUS SESSION ---------###"
-read -n 1 -s -r -p ""
+# either use direct MIDI connection or through EdrumulusGUI
+##jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
+##echo "###---------- PRESS ANY KEY TO TERMINATE THE EDRUMULUS SESSION ---------###"
+##read -n 1 -s -r -p ""
+./EdrumulusGUI DrumGizmo:drumgizmo_midiin
+
+
 killall drumgizmo
 
 if [[ -v is_teensy ]]; then

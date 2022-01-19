@@ -1,6 +1,6 @@
 # Edrumulus Project Log
 
-## 2022-01-16 New Linux console GUI
+## 2022-01-16 [[r0.3](https://github.com/corrados/edrumulus/releases/tag/r0_3)] New Linux console GUI
 
   There is a new tool available to show/modify Edrumulus parameters in a Linux (remote) shell
   using the ncurses library. This comes handy if Edrumulus is used with Drumgizmo running on

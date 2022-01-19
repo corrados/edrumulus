@@ -3,8 +3,6 @@
 
 - use rim switch theshold in dB (not linear as it is implemented right now)
 
-- Linux console GUI does loose MIDI events on Raspberry Pi -> maybe too much time spend in process function
-
 - for the ESP32 prototype, adjust the ADC_noise_peak_velocity_scaling in edrumulus.h correctly
 
 - introduce defines for debugging functionality instead of /* */
