@@ -1,6 +1,6 @@
 
 // Edrumulus simple terminal GUI
-// compile with: gcc edrumulus_gui.cpp -o gui -lncurses -ljack -lstdc++
+// compile with: gcc edrumulus_gui.cpp -o EdrumulusGUI -lncurses -ljack -lstdc++
 
 #include <stdlib.h>
 #include <stdio.h>
