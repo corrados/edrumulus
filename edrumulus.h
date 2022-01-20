@@ -111,16 +111,15 @@ public:
   void set_midi_notes_open      ( const int pad_idx, const int new_midi_note, const int new_midi_note_rim ) { pad[pad_idx].set_midi_notes_open ( new_midi_note, new_midi_note_rim ); }
   void set_midi_ctrl_ch         ( const int pad_idx, const int new_midi_ctrl_ch )                           { pad[pad_idx].set_midi_ctrl_ch ( new_midi_ctrl_ch ); }
   void set_rim_shot_is_used     ( const int pad_idx, const bool new_is_used ) { pad[pad_idx].set_rim_shot_is_used ( new_is_used ); }
+  bool get_rim_shot_is_used     ( const int pad_idx )                         { return pad[pad_idx].get_rim_shot_is_used(); }
   void set_pos_sense_is_used    ( const int pad_idx, const bool new_is_used ) { pad[pad_idx].set_pos_sense_is_used ( new_is_used ); }
+  bool get_pos_sense_is_used    ( const int pad_idx )                         { return pad[pad_idx].get_pos_sense_is_used(); }
   void set_spike_cancel_level   ( const int new_level )                       { spike_cancel_level = new_level; }
   int  get_spike_cancel_level   ()                                            { return spike_cancel_level; }
 
   // overload and error handling
   bool get_status_is_overload() { return status_is_overload; }
   bool get_status_is_error()    { return status_is_error; }
-
-  // query functions
-  bool get_pos_sense_is_used ( const int pad_idx ) { return pad[pad_idx].get_pos_sense_is_used(); }
 
 protected:
   class Pad
@@ -150,7 +149,9 @@ protected:
       void set_midi_notes_open   ( const int new_midi_note, const int new_midi_note_rim ) { midi_note_open = new_midi_note; midi_note_open_rim = new_midi_note_rim; }
       void set_midi_ctrl_ch      ( const int new_midi_ctrl_ch )                           { midi_ctrl_ch = new_midi_ctrl_ch; }
       void set_rim_shot_is_used  ( const bool new_is_used ) { pad_settings.rim_shot_is_used = new_is_used; }
+      bool get_rim_shot_is_used  ()                         { return pad_settings.rim_shot_is_used; }
       void set_pos_sense_is_used ( const bool new_is_used ) { pad_settings.pos_sense_is_used = new_is_used; }
+      bool get_pos_sense_is_used ()                         { return pad_settings.pos_sense_is_used; }
 
       void set_velocity_threshold   ( const int        new_threshold ) { pad_settings.velocity_threshold = new_threshold; initialize(); }
       int  get_velocity_threshold   ()                                 { return pad_settings.velocity_threshold; }
@@ -184,7 +185,6 @@ protected:
                                                ( pad_settings.pad_type == CY5 ) ||
                                                ( pad_settings.pad_type == CY6 ) ||
                                                ( pad_settings.pad_type == CY8 ); } // TODO check if new pads must be added here
-      bool  get_pos_sense_is_used()   { return pad_settings.pos_sense_is_used; }
 
       // definitions which can be used outside the pad class, too
       static const int control_midi_hysteresis       = ADC_MAX_NOISE_AMPL / 2; // MIDI hysteresis for the controller to suppress noise
