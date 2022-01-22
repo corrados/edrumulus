@@ -1,5 +1,13 @@
 # Edrumulus Project Log
 
+## 2022-01-22 [[r0.4](https://github.com/corrados/edrumulus/releases/tag/r0_4)] Store settings on Edrumulus
+
+  Edrumulus stores all trigger parameter on the micro processor using the Arduino
+  EEPROM library now. It is no longer necessary to hard-code pad trigger parameters for
+  your prototype in edrumulus.ino. After flashing the new firmware for the first time,
+  the settings must be reset. Either use the Linux EdrumulusGUI and press the **r** key
+  or use the Octave edrumuluscontrol.m GUI and press the **Reset All Settings** button.
+
 ## 2022-01-16 [[r0.3](https://github.com/corrados/edrumulus/releases/tag/r0_3)] New Linux console GUI
 
   There is a new tool available to show/modify Edrumulus parameters in a Linux (remote) shell
