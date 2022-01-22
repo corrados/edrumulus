@@ -271,8 +271,8 @@ void loop()
         MYMIDI.sendNoteOff ( 109, static_cast<int> ( edrumulus.get_curve ( selected_pad ) ), 1 );
         MYMIDI.sendNoteOff ( 110, edrumulus.get_spike_cancel_level(), 1 );
         MYMIDI.sendNoteOff ( 111, 0, 1 ); // TODO not yet supported
-        MYMIDI.sendNoteOff ( 112, 0, 1 ); // TODO not yet supported
-        MYMIDI.sendNoteOff ( 113, 0, 1 ); // TODO not yet supported
+        MYMIDI.sendNoteOff ( 112, edrumulus.get_midi_note_norm ( selected_pad ), 1 );
+        MYMIDI.sendNoteOff ( 113, edrumulus.get_midi_note_rim ( selected_pad ), 1 );
         MYMIDI.sendNoteOff ( 114, edrumulus.get_cancellation ( selected_pad ), 1 );
         MYMIDI.sendNoteOff ( 126, VERSION_MINOR, 1 );
         MYMIDI.sendNoteOff ( 127, VERSION_MAJOR, 1 );
@@ -308,14 +308,14 @@ void loop()
       // controller 112: normal MIDI note
       if ( controller == 112 )
       {
-        edrumulus.set_midi_notes ( selected_pad, value, edrumulus.get_midi_note_rim ( selected_pad ) );
+        edrumulus.set_midi_note_norm ( selected_pad, value );
         is_used = true;
       }
 
       // controller 113: MIDI note for rim
       if ( controller == 113 )
       {
-        edrumulus.set_midi_notes ( selected_pad, edrumulus.get_midi_note_norm ( selected_pad ), value );
+        edrumulus.set_midi_note_rim ( selected_pad, value );
         is_used = true;
       }
 
@@ -349,17 +349,18 @@ void read_settings()
 {
   for ( int i = 0; i < number_pads; i++ )
   {
-    edrumulus.set_pad_type             ( i, static_cast<Edrumulus::Epadtype> ( edrumulus.read_setting ( i, 0 ) ) );
-    edrumulus.set_velocity_threshold   ( i, edrumulus.read_setting ( i, 1 ) );
-    edrumulus.set_velocity_sensitivity ( i, edrumulus.read_setting ( i, 2 ) );
-    edrumulus.set_pos_threshold        ( i, edrumulus.read_setting ( i, 3 ) );
-    edrumulus.set_pos_sensitivity      ( i, edrumulus.read_setting ( i, 4 ) );
-    edrumulus.set_rim_shot_treshold    ( i, edrumulus.read_setting ( i, 5 ) );
+    edrumulus.set_pad_type             ( i, static_cast<Edrumulus::Epadtype> (   edrumulus.read_setting ( i, 0 ) ) );
+    edrumulus.set_velocity_threshold   ( i,                                      edrumulus.read_setting ( i, 1 ) );
+    edrumulus.set_velocity_sensitivity ( i,                                      edrumulus.read_setting ( i, 2 ) );
+    edrumulus.set_pos_threshold        ( i,                                      edrumulus.read_setting ( i, 3 ) );
+    edrumulus.set_pos_sensitivity      ( i,                                      edrumulus.read_setting ( i, 4 ) );
+    edrumulus.set_rim_shot_treshold    ( i,                                      edrumulus.read_setting ( i, 5 ) );
     edrumulus.set_curve                ( i, static_cast<Edrumulus::Ecurvetype> ( edrumulus.read_setting ( i, 6 ) ) );
-    edrumulus.set_rim_shot_is_used     ( i, edrumulus.read_setting ( i, 7 ) );
-    edrumulus.set_pos_sense_is_used    ( i, edrumulus.read_setting ( i, 8 ) );
-    edrumulus.set_midi_notes           ( i, edrumulus.read_setting ( i, 9 ), edrumulus.read_setting ( i, 10 ) );
-    edrumulus.set_cancellation         ( i, edrumulus.read_setting ( i, 11 ) );
+    edrumulus.set_rim_shot_is_used     ( i,                                      edrumulus.read_setting ( i, 7 ) );
+    edrumulus.set_pos_sense_is_used    ( i,                                      edrumulus.read_setting ( i, 8 ) );
+    edrumulus.set_midi_note_norm       ( i,                                      edrumulus.read_setting ( i, 9 ) );
+    edrumulus.set_midi_note_rim        ( i,                                      edrumulus.read_setting ( i, 10 ) );
+    edrumulus.set_cancellation         ( i,                                      edrumulus.read_setting ( i, 11 ) );
   }
   edrumulus.set_spike_cancel_level ( edrumulus.read_setting ( number_pads, 0 ) );
 }
