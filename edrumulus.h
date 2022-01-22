@@ -142,6 +142,7 @@ protected:
                                     bool&      change_found,
                                     int&       midi_ctrl_value,
                                     bool&      peak_found,
+                                    bool&      is_splash,
                                     int&       midi_velocity );
 
       void set_pad_type          ( const Epadtype new_pad_type );

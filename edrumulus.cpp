@@ -158,7 +158,7 @@ Serial.println ( serial_print );
     {
       // process sample for control input
       pad[i].process_control_sample ( sample_org_pad, control_found[i], midi_ctrl_value[i],
-                                      peak_found[i], midi_velocity[i] );
+                                      peak_found[i], is_rim_shot[i], midi_velocity[i] );
     }
     else
     {
@@ -332,7 +332,7 @@ void Edrumulus::Pad::initialize()
   rim_max_power_low_limit  = ADC_MAX_NOISE_AMPL * ADC_MAX_NOISE_AMPL / 31.0f; // lower limit on detected rim power, 15 dB below max noise amplitude
   x_rim_hist_len           = x_sq_hist_len + rim_shot_window_len;
   cancellation_factor      = static_cast<float> ( pad_settings.cancellation ) / 31.0f;          // cancellation factor: range of 0.0..1.0
-  ctrl_history_len         = 10;   // (MUST BE AN EVEN VALUE) control history length, use a fixed value
+  ctrl_history_len         = 300;  // (MUST BE DIVISIBLE BY 3) control history length, use a fixed value
   ctrl_velocity_range_fact = 4.0f; // use a fixed value (TODO make it adjustable)
   ctrl_velocity_threshold  = 5.0f; // use a fixed value (TODO make it adjustable)
   overload_hist_len        = scan_time + x_filt_delay;
@@ -919,32 +919,49 @@ void Edrumulus::Pad::process_control_sample ( const int* input,
                                               bool&      change_found,
                                               int&       midi_ctrl_value,
                                               bool&      peak_found,
+                                              bool&      is_splash,
                                               int&       midi_velocity )
 {
+  // initialize return parameter
+  peak_found = false;
+  is_splash  = false;
+
   // map the input value to the MIDI range
   int cur_midi_ctrl_value = ( ( ADC_MAX_RANGE - input[0] - control_threshold ) / control_range * 127 );
   cur_midi_ctrl_value     = max ( 0, min ( 127, cur_midi_ctrl_value ) );
 
   // detect pedal hit
+  const int ctrl_hist_region_len      = ctrl_history_len / 3;
+  const int ctrl_hist_region_1_offset = ctrl_hist_region_len;
+  const int ctrl_hist_region_2_offset = 2 * ctrl_hist_region_len;
   update_fifo ( cur_midi_ctrl_value, ctrl_history_len, ctrl_hist );
 
-  float prev_ctrl_average = 0;
-  float cur_ctrl_average  = 0;
-  for ( int i = 0; i < ctrl_history_len / 2; i++ )
+  float prev0_ctrl_average = 0;
+  float prev1_ctrl_average = 0;
+  float cur_ctrl_average   = 0;
+  for ( int i = 0; i < ctrl_hist_region_len; i++ )
   {
-    prev_ctrl_average += ctrl_hist[i];                        // use first half for previous value
-    cur_ctrl_average  += ctrl_hist[i + ctrl_history_len / 2]; // use second half for current value
+    prev0_ctrl_average += ctrl_hist[i];
+    prev1_ctrl_average += ctrl_hist[i + ctrl_hist_region_1_offset];
+    cur_ctrl_average   += ctrl_hist[i + ctrl_hist_region_2_offset];
   }
-  prev_ctrl_average /= ctrl_history_len / 2;
-  cur_ctrl_average  /= ctrl_history_len / 2;
+  prev0_ctrl_average /= ctrl_hist_region_len;
+  prev1_ctrl_average /= ctrl_hist_region_len;
+  cur_ctrl_average   /= ctrl_hist_region_len;
 
-  if ( ( prev_ctrl_average < hi_hat_is_open_MIDI_threshold ) &&
-       ( cur_ctrl_average >= hi_hat_is_open_MIDI_threshold ) &&
-       ( cur_ctrl_average - prev_ctrl_average > ctrl_velocity_threshold ) )
+  if ( ( prev0_ctrl_average < hi_hat_is_open_MIDI_threshold ) &&
+       ( prev1_ctrl_average >= hi_hat_is_open_MIDI_threshold ) &&
+       ( prev1_ctrl_average - prev0_ctrl_average > ctrl_velocity_threshold ) )
   {
     // map curve difference (gradient) to velocity
-    midi_velocity = min ( 127, static_cast<int> ( ( cur_ctrl_average - prev_ctrl_average - ctrl_velocity_threshold ) * ctrl_velocity_range_fact ) );
+    midi_velocity = min ( 127, static_cast<int> ( ( prev1_ctrl_average - prev0_ctrl_average - ctrl_velocity_threshold ) * ctrl_velocity_range_fact ) );
     peak_found    = true;
+
+    // splash, if immediately released pedal
+    if ( cur_ctrl_average < hi_hat_is_open_MIDI_threshold )
+    {
+      is_splash = true;
+    }
 
     // reset the history after a detection to suppress multiple detections
     for ( int i = 0; i < ctrl_history_len; i++ )
