@@ -3,15 +3,11 @@
 
 - use rim switch theshold in dB (not linear as it is implemented right now)
 
-- Linux console GUI does loose MIDI events on Raspberry Pi -> maybe too much time spend in process function
-
-- for the ESP32 prototype, adjust the ADC_noise_peak_velocity_scaling in edrumulus.h correctly
-
 - introduce defines for debugging functionality instead of /* */
 
-- Documentation: Edrumulus manual which describes the hardware/software setup, parameter description, HOWTOs, etc.
-
 - possible memory issue on the ESP32, see 406c31fd66aeb1609f75e22672d5fa9280749f37
+
+- Documentation: Edrumulus manual which describes the hardware/software setup, parameter description, HOWTOs, etc.
 
 - simulate 16 bit with current hardware and check if thresholds are correct
 
@@ -24,6 +20,8 @@
   -> maybe based on low-pass filtering as suggested in https://github.com/corrados/edrumulus/discussions/17#discussion-3736264
 
 - support positional sensing for rim shots
+
+- for the ESP32 prototype, adjust the ADC_noise_peak_velocity_scaling in edrumulus.h correctly
 
 - Documentation: Algorithm description
   -> improve retrigger cancellation section

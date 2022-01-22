@@ -112,6 +112,21 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
 }
 
 
+void Edrumulus_hardware::write_setting ( const int  pad_index,
+                                         const int  address,
+                                         const byte value )
+{
+  EEPROM.update ( pad_index * MAX_NUM_SET_PER_PAD + address, value );
+}
+
+
+byte Edrumulus_hardware::read_setting ( const int pad_index,
+                                        const int address )
+{
+  return EEPROM.read ( pad_index * MAX_NUM_SET_PER_PAD + address );
+}
+
+
 void Edrumulus_hardware::on_timer()
 {
   // tell the main loop that a sample can be read by setting the flag (semaphore)
@@ -170,6 +185,7 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
 {
   // set essential parameters
   Fs = conf_Fs;
+  eeprom_settings.begin ( ( number_pads + 1 ) * MAX_NUM_SET_PER_PAD ); // "+ 1" for pad-independent global settings
 
   // create linear vectors containing the pin/ADC information for each pad and pad-input
   bool input_is_used[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
@@ -250,15 +266,47 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
 }
 
 
+void Edrumulus_hardware::write_setting ( const int  pad_index,
+                                         const int  address,
+                                         const byte value )
+{
+  setup_timer ( true ); // clear timer to avoid a crash during writing the EEPROM settings
+  eeprom_settings.write ( pad_index * MAX_NUM_SET_PER_PAD + address, value );
+  eeprom_settings.commit(); // needed to update actual flash memory, will only be written if different
+  setup_timer(); // restart timer
+}
+
+
+byte Edrumulus_hardware::read_setting ( const int pad_index,
+                                        const int address )
+{
+  return eeprom_settings.read ( pad_index * MAX_NUM_SET_PER_PAD + address );
+}
+
+
+void Edrumulus_hardware::setup_timer ( const bool clear_timer )
+{
+  if ( !clear_timer )
+  {
+    // prepare timer at a rate of given sampling rate
+    timer = timerBegin ( 0, 80, true ); // prescaler of 80 (i.e. below we have 1 MHz instead of 80 MHz)
+    timerAttachInterrupt ( timer, &on_timer, true );
+    timerAlarmWrite      ( timer, 1000000 / Fs, true ); // here we define the sampling rate (1 MHz / Fs)
+    timerAlarmEnable     ( timer );
+  }
+  else
+  {
+    // clear timer to release SPI resources for writing EEPROM data
+    timerAlarmDisable    ( timer );
+    timerDetachInterrupt ( timer );
+    timerEnd             ( timer );
+  }
+}
+
+
 void Edrumulus_hardware::start_timer_core0_task ( void* param )
 {
-  Edrumulus_hardware* my_obj = reinterpret_cast<Edrumulus_hardware*> ( param );
-
-  // prepare timer at a rate of given sampling rate
-  my_obj->timer = timerBegin ( 0, 80, true ); // prescaler of 80 (i.e. below we have 1 MHz instead of 80 MHz)
-  timerAttachInterrupt ( my_obj->timer, &my_obj->on_timer, true );
-  timerAlarmWrite      ( my_obj->timer, 1000000 / my_obj->Fs, true ); // here we define the sampling rate (1 MHz / Fs)
-  timerAlarmEnable     ( my_obj->timer );
+  reinterpret_cast<Edrumulus_hardware*> ( param )->setup_timer();
 
   // tasks must not return: forever loop with delay to keep watchdog happy
   for ( ; ; )

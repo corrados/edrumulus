@@ -112,53 +112,6 @@ if [[ -v is_teensy ]]; then
   #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 106 11 # positional sensing sensitivity
   #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 111 3 # both, rim shot and positional sensing
 
-  # kick
-  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 108 1 # pad 1
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 102 6 # KD7
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 9 # threshold
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 9 # sensitivity
-
-  # Hi-Hat
-  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 108 2 # pad 2
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 102 2 # PD8
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 2 # threshold
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 8 # sensitivity
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 111 1 # enable rim shot
-
-  # Hi-Hat control
-  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 108 3 # pad 3
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 102 3 # FD8
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 5 # threshold
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 0 # sensitivity
-
-  # crash
-  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 108 4 # pad 4
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 102 2 # PD8
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 19 # threshold
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 21 # sensitivity
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 111 1 # enable rim shot
-
-  # tom 1
-  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 108 5 # pad 5
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 102 1 # PD80R
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 9 # threshold
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 0 # sensitivity
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 111 1 # enable rim shot
-
-  # ride
-  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 108 6 # pad 6
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 102 2 # PD8
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 18 # threshold
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 21 # sensitivity
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 111 1 # enable rim shot
-
-  # tom 2
-  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 108 7 # pad 7
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 102 1 # PD80R
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 18 # threshold
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 0 # sensitivity
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 111 1 # enable rim shot
-
   # connect ALSA MIDI to Jack Audio MIDI
   a2jmidid -e >/dev/null 2>&1 &
   sleep 1
@@ -179,54 +132,6 @@ else
   #echo -n -e '\xB9\x69\x1A' > /dev/ttyUSB0 # positional sensing threshold
   #echo -n -e '\xB9\x6A\x0B' > /dev/ttyUSB0 # positional sensing sensitivity
   #echo -n -e '\xB9\x6F\x03' > /dev/ttyUSB0 # rim/pos: both, rim shot and positional sensing
-
-  # kick
-  echo -n -e '\xB9\x6C\x01' > /dev/ttyUSB0 # select pad: 1
-  #echo -n -e '\xB9\x6D\x03' > /dev/ttyUSB0 # MIDI curve type: LOG1
-  #echo -n -e '\xB9\x66\x06' > /dev/ttyUSB0 # pad type: KD7
-  #echo -n -e '\xB9\x67\x0A' > /dev/ttyUSB0 # threshold
-  echo -n -e '\xB9\x68\x09' > /dev/ttyUSB0 # sensitivity
-
-  # Hi-Hat
-  echo -n -e '\xB9\x6C\x02' > /dev/ttyUSB0 # select pad: 2
-  #echo -n -e '\xB9\x6D\x03' > /dev/ttyUSB0 # MIDI curve type: LOG1
-  #echo -n -e '\xB9\x66\x02' > /dev/ttyUSB0 # pad type: PD8
-  #echo -n -e '\xB9\x67\x05' > /dev/ttyUSB0 # threshold
-  #echo -n -e '\xB9\x68\x08' > /dev/ttyUSB0 # sensitivity
-  #echo -n -e '\xB9\x6F\x01' > /dev/ttyUSB0 # rim/pos: enable rim shot
-
-  # Hi-Hat control
-  echo -n -e '\xB9\x6C\x03' > /dev/ttyUSB0 # select pad: 3
-  #echo -n -e '\xB9\x66\x03' > /dev/ttyUSB0 # pad type: FD8
-  echo -n -e '\xB9\x67\x0C' > /dev/ttyUSB0 # threshold
-  echo -n -e '\xB9\x68\x1C' > /dev/ttyUSB0 # sensitivity
-
-  # crash
-  echo -n -e '\xB9\x6C\x04' > /dev/ttyUSB0 # select pad: 4
-  #echo -n -e '\xB9\x6D\x03' > /dev/ttyUSB0 # MIDI curve type: LOG1
-  #echo -n -e '\xB9\x66\x08' > /dev/ttyUSB0 # pad type: CY6
-  #echo -n -e '\xB9\x67\x09' > /dev/ttyUSB0 # threshold
-  #echo -n -e '\xB9\x68\x0B' > /dev/ttyUSB0 # sensitivity
-  #echo -n -e '\xB9\x6F\x01' > /dev/ttyUSB0 # rim/pos: enable rim shot
-
-  # tom 1
-  echo -n -e '\xB9\x6C\x05' > /dev/ttyUSB0 # select pad: 5
-  #echo -n -e '\xB9\x66\x01' > /dev/ttyUSB0 # pad type: PD80R
-  #echo -n -e '\xB9\x67\x09' > /dev/ttyUSB0 # threshold
-  #echo -n -e '\xB9\x68\x00' > /dev/ttyUSB0 # sensitivity
-
-  # ride
-  echo -n -e '\xB9\x6C\x06' > /dev/ttyUSB0 # select pad: 6
-  #echo -n -e '\xB9\x66\x02' > /dev/ttyUSB0 # pad type: PD8
-  #echo -n -e '\xB9\x67\x12' > /dev/ttyUSB0 # threshold
-  #echo -n -e '\xB9\x68\x15' > /dev/ttyUSB0 # sensitivity
-  #echo -n -e '\xB9\x6F\x01' > /dev/ttyUSB0 # rim/pos: enable rim shot
-
-  # tom 2
-  echo -n -e '\xB9\x6C\x07' > /dev/ttyUSB0 # select pad: 7
-  #echo -n -e '\xB9\x66\x01' > /dev/ttyUSB0 # pad type: PD80R
-  #echo -n -e '\xB9\x67\x12' > /dev/ttyUSB0 # threshold
-  #echo -n -e '\xB9\x68\x00' > /dev/ttyUSB0 # sensitivity
 
   # start MIDI tool to convert serial MIDI to Jack Audio MIDI
   # note that to get access to /dev/ttyUSB0 we need to be in group tty/dialout
@@ -249,11 +154,14 @@ jack_connect $KITJACKPORTRIGHT system:playback_2
 
 
 # either use direct MIDI connection or through EdrumulusGUI
-##jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
-##echo "###---------- PRESS ANY KEY TO TERMINATE THE EDRUMULUS SESSION ---------###"
-##read -n 1 -s -r -p ""
-./EdrumulusGUI DrumGizmo:drumgizmo_midiin
-
+if [[ "$1" == gui ]]
+then
+  ./EdrumulusGUI DrumGizmo:drumgizmo_midiin
+else
+  jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
+  echo "###---------- PRESS ANY KEY TO TERMINATE THE EDRUMULUS SESSION ---------###"
+  read -n 1 -s -r -p ""
+fi
 
 killall drumgizmo
 

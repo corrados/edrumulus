@@ -33,13 +33,23 @@ value_hight  = 0.2;
 GUI.midi_out_dev_list = uicontrol(figure_handle, ...
   'style',    'listbox', ...
   'units',    'normalized', ...
-  'position', [0, 0.8, 0.4, 0.2], ...
+  'position', [0.1, 0.8, 0.4, 0.2], ...
   'callback', @midi_out_sel_callback);
+uicontrol(figure_handle, ...
+  'style',    'text', ...
+  'string',   'MIDI out:', ...
+  'units',    'normalized', ...
+  'position', [0, 0.8, 0.1, 0.2]);
 GUI.midi_in_dev_list = uicontrol(figure_handle, ...
   'style',    'listbox', ...
   'units',    'normalized', ...
-  'position', [0, 0.6, 0.4, 0.2], ...
+  'position', [0.1, 0.6, 0.4, 0.2], ...
   'callback', @midi_in_sel_callback);
+uicontrol(figure_handle, ...
+  'style',    'text', ...
+  'string',   'MIDI in:', ...
+  'units',    'normalized', ...
+  'position', [0, 0.6, 0.1, 0.2]);
 
 midi_devices        = mididevinfo;
 midi_in_names       = {};
@@ -68,7 +78,7 @@ GUI.midi_in_dev  = [];
 % default settings button
 GUI.set_but = uicontrol(figure_handle, ...
   'style',    'pushbutton', ... 
-  'string',   'Default Settings', ...
+  'string',   'Reset All Settings', ...
   'units',    'normalized', ...
   'position', [0.7, 0.9, 0.3, 0.1], ...
   'callback', @button_callback);
@@ -541,64 +551,14 @@ function button_callback(hObject)
 
 global GUI;
 
-% snare
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 108, 0)); % pad 0
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 102, 2)); % PD8
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 103, 3)); % threshold
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 104, 8)); % sensitivity
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 107, 16)); % rim shot threshold
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 105, 26)); % positional sensing threshold
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 106, 11)); % positional sensing sensitivity
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 111, 3)); % both, rim shot and positional sensing
+selected_button = questdlg('Do you really want to reset all Edrumulus parameters to the default values?', ...
+                           'Reset All Parameters', 'OK', 'Cancel', 'Cancel');
 
-% kick
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 108, 1)); % pad 1
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 102, 6)); % KD7
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 103, 9)); % threshold
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 104, 9)); % sensitivity
-
-% Hi-Hat
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 108, 2)); % pad 2
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 102, 2)); % PD8
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 103, 4)); % threshold
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 104, 8)); % sensitivity
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 111, 1)); % enable rim shot
-
-% Hi-Hat control
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 108, 3)); % pad 3
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 102, 3)); % FD8
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 103, 5)); % threshold
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 104, 0)); % sensitivity
-
-% crash
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 108, 4)); % pad 4
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 102, 8)); % CY6
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 103, 19)); % threshold
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 104, 21)); % sensitivity
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 111, 1)); % enable rim shot
-
-% tom 1
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 108, 5)); % pad 5
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 102, 1)); % PD80R
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 103, 9)); % threshold
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 104, 0)); % sensitivity
-
-% ride
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 108, 6)); % pad 6
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 102, 2)); % PD8
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 103, 18)); % threshold
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 104, 21)); % sensitivity
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 111, 1)); % enable rim shot
-
-% tom 2
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 108, 7)); % pad 7
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 102, 1)); % PD80R
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 103, 18)); % threshold
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 104, 0)); % sensitivity
-
-% cleanup GUI
-midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 108, 0)); % pad 0
-reset_sliders;
+if selected_button == 'OK'
+  midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 115, 0)); % PRESET
+  reset_sliders;
+  midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 108, 0)); % select pad 0
+end
 
 end
 
