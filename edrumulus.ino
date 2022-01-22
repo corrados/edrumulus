@@ -36,7 +36,11 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 #endif
 
 Edrumulus edrumulus;
-const int number_pads       = 8;             // note: must not exceed MAX_NUM_PADS
+#ifdef ESP_PLATFORM
+const int number_pads       = 9; // ESP32
+#else
+const int number_pads       = 8; // Teensy 4.0
+#endif
 const int status_LED_pin    = BOARD_LED_PIN; // internal LED used for overload indicator
 const int midi_channel      = 10;            // default for edrums is 10
 const int hihat_pad_idx     = 2;

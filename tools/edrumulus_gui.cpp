@@ -16,7 +16,7 @@
 #include <jack/midiport.h>
 
 // tables
-const int   max_num_pads = 8;
+const int   max_num_pads = 9;
 const int   number_cmd   = 12;
 std::map<int, std::string> midi_map = { { 38, "snare" }, { 40, "snare" }, { 36, "kick" }, { 22, "hi-hat" }, { 26, "hi-hat" }, { 44, "pedal" },
                                         { 49, "crash" }, { 51, "ride" },  { 48, "tom1" }, { 45, "tom2" },   { 43, "tom3" } };
@@ -138,6 +138,7 @@ int process ( jack_nframes_t nframes, void *arg )
           update_pad_selection ( in_event.buffer[1], 48, 50, 5 ); // tom1
           update_pad_selection ( in_event.buffer[1], 51, 53, 6 ); // ride
           update_pad_selection ( in_event.buffer[1], 45, 47, 7 ); // tom2
+          update_pad_selection ( in_event.buffer[1], 43, 58, 8 ); // tom3
         }
         do_update_param_outputs = true;
       }
