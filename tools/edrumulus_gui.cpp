@@ -46,8 +46,7 @@ std::string parse_cmd_param ( int cmd )
 // update window parameter outputs
 void update_param_outputs()
 {
-  mvaddstr ( row_start, col_start, "Press a key (q:quit; s,S:sel pad; c,C:sel command; a,A: auto pad sel; up,down: change parameter)" );
-  mvprintw ( row_start + 3, col_start, "Parameter: %9s: %s             ", cmd_names[sel_cmd].c_str(), parse_cmd_param ( sel_cmd ).c_str() );
+  mvaddstr ( row_start, col_start, "Press a key (q:quit; s,S:sel pad; c,C:sel command; a,A: auto pad sel; up,down: change parameter; r: reset)" );
   if ( auto_pad_sel )
   {
     mvprintw ( row_start + 2, col_start, "Selected pad (auto):  %2d (%s)      ", sel_pad, pad_names[sel_pad].c_str() );
@@ -56,6 +55,7 @@ void update_param_outputs()
   {
     mvprintw ( row_start + 2, col_start, "Selected pad:         %2d (%s)      ", sel_pad, pad_names[sel_pad].c_str() );
   }
+  mvprintw ( row_start + 3, col_start, "Parameter: %9s: %s             ", cmd_names[sel_cmd].c_str(), parse_cmd_param ( sel_cmd ).c_str() );
   refresh();
   box       ( midiwin, 0, 0 ); // in this box the received note-on MIDI notes are shown
   mvwprintw ( midiwin, 0, 3, "MIDI-IN" );
@@ -252,6 +252,17 @@ int main ( int argc, char *argv[] )
       else if ( ch == 'a' || ch == 'A' ) // enable/disable auto pad selection
       {
         auto_pad_sel = ( ch == 'a' ); // capital 'A' disables auto pad selection
+      }
+      else if ( ch == 'r' )
+      {
+        mvaddstr ( row_start + 1, col_start, "DO YOU REALLY WANT TO RESET ALL EDRUMULUS PARAMETERS [y/n]?" );
+        nodelay  ( mainwin, false ); // temporarily, use blocking getch()
+        if ( getch() == 'y' )
+        {
+          midi_send_cmd = 115; // midi_send_val will be ignored by Edrumulus for this command
+        }
+        nodelay  ( mainwin, true ); // go back to unblocking getch()
+        mvaddstr ( row_start + 1, col_start, "                                                           " );
       }
       do_update_param_outputs = true;
     }
