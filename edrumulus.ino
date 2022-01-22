@@ -106,7 +106,7 @@ void preset_settings()
   edrumulus.set_pad_type          ( 6, Edrumulus::PD8 ); // ride, using rim switch
   edrumulus.set_rim_shot_is_used  ( 6, true );
   edrumulus.set_pad_type          ( 7, Edrumulus::PD8 ); // tom 2
-//edrumulus.set_pad_type          ( 8, Edrumulus::PD8 ); // tom 3
+  edrumulus.set_pad_type          ( 8, Edrumulus::PD8 ); // tom 3
 }
 
 
