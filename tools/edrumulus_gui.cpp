@@ -218,6 +218,10 @@ int main ( int argc, char *argv[] )
     jack_connect ( client, "EdrumulusGUI:MIDI_through", argv[1] );
   }
 
+  // initial pad selection for retrieving Edrumulus parameters for current selected pad
+  midi_send_val = sel_pad;
+  midi_send_cmd = 108;
+
   // loop until user presses q
   while ( ( ch = getch() ) != 'q' )
   {
