@@ -105,7 +105,6 @@ protected:
 #include "soc/sens_reg.h"
 #include "driver/dac.h"
 #include "EEPROM.h"
-#include <Preferences.h>
 
 #define BOARD_LED_PIN        2    // pin number of the LED on the ESP32 board
 #define ADC_MAX_RANGE        4096 // ESP32 ADC has 12 bits -> 0..4095
@@ -136,9 +135,7 @@ public:
 
 protected:
   int                        Fs;
-  Preferences                preferences;
   EEPROMClass                eeprom_settings;
-
   volatile SemaphoreHandle_t timer_semaphore;
   hw_timer_t*                timer = nullptr;
   static void IRAM_ATTR      on_timer();
