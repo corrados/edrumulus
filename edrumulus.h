@@ -121,6 +121,10 @@ public:
   bool get_status_is_overload() { return status_is_overload; }
   bool get_status_is_error()    { return status_is_error; }
 
+  // persistent settings storage
+  void write_setting ( const int address, const byte value ) { edrumulus_hardware.write_setting ( address, value ); }
+  byte read_setting  ( const int address )                   { return edrumulus_hardware.read_setting ( address ); }
+
 protected:
   class Pad
   {

@@ -102,6 +102,7 @@ protected:
 
 #include "soc/sens_reg.h"
 #include "driver/dac.h"
+#include <Preferences.h>
 
 #define BOARD_LED_PIN        2    // pin number of the LED on the ESP32 board
 #define ADC_MAX_RANGE        4096 // ESP32 ADC has 12 bits -> 0..4095
@@ -127,8 +128,49 @@ public:
                             const int   input_channel_index,
                             const int   level );
 
+
+// TEST
+void write_setting ( const int address, const byte value )
+{
+/*  
+  timerAlarmDisable(timer);
+Serial.println ( "before" );
+//  vTaskSuspend(pvCreatedTask);
+Serial.println ( "after1" );
+  preferences.begin ( "e", false );
+  String key = String ( address );
+  char key_char[3];
+  key.toCharArray ( key_char, 3 );
+  preferences.putUChar ( key_char, value );
+  preferences.end();
+Serial.println ( "after2" );
+//  vTaskResume( pvCreatedTask );
+Serial.println ( "after3" );
+  timerAlarmEnable(timer);
+*/  
+}
+byte read_setting ( const int address )
+{
+/*  
+  byte return_value;
+  preferences.begin ( "e", true );
+  String key = String ( address );
+  char key_char[3];
+  key.toCharArray ( key_char, 3 );
+  return_value = preferences.getUChar ( key_char, 0 );
+  preferences.end();
+  return return_value;
+*/
+return 0;  
+}
+
+
 protected:
   int                        Fs;
+//  Preferences                preferences;
+
+TaskHandle_t* pvCreatedTask;
+
   volatile SemaphoreHandle_t timer_semaphore;
   hw_timer_t*                timer = nullptr;
   static void IRAM_ATTR      on_timer();

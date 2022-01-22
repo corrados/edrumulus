@@ -163,6 +163,12 @@ void Edrumulus_hardware::capture_samples ( const int number_pads,
 // -----------------------------------------------------------------------------
 #ifdef ESP_PLATFORM
 
+
+#include "EEPROM.h"
+EEPROMClass MYEEPROM2 ( "Edrumulus2", 0x500 );
+
+
+
 void Edrumulus_hardware::setup ( const int conf_Fs,
                                  const int number_pads,
                                  const int number_inputs[],
@@ -243,11 +249,15 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
 
   // create timer semaphore
   timer_semaphore = xSemaphoreCreateBinary();
+MYEEPROM2.begin ( 10 );
 
   // create task pinned to core 0 for creating the timer interrupt so that the
   // timer function is not running in our working core 1
-  xTaskCreatePinnedToCore ( start_timer_core0_task, "start_timer_core0_task", 800, this, 1, NULL, 0 );
+  xTaskCreatePinnedToCore ( start_timer_core0_task, "start_timer_core0_task", 800, this, 1, pvCreatedTask, 0 );
 }
+
+
+
 
 
 void Edrumulus_hardware::start_timer_core0_task ( void* param )
@@ -264,6 +274,23 @@ void Edrumulus_hardware::start_timer_core0_task ( void* param )
   for ( ; ; )
   {
     delay ( 1000 );
+
+/*
+MYEEPROM2.write ( 0, 10 );
+//MYEEPROM2.commit();
+
+MYEEPROM2.write ( 2, 10 );
+//MYEEPROM2.commit();
+
+MYEEPROM2.write ( 3, 10 );
+//MYEEPROM2.commit();
+
+MYEEPROM2.write ( 6, 10 );
+//MYEEPROM2.commit();
+*/
+
+//MYEEPROM2.end();
+
   }
 }
 

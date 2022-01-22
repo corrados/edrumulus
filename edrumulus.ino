@@ -15,10 +15,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 \******************************************************************************/
 
-#define USE_MIDI
+//#define USE_MIDI
 
-#include <EEPROM.h>
 #include "edrumulus.h"
+//#include "EEPROM.h"
 
 #ifdef USE_MIDI
 # ifdef ESP_PLATFORM
@@ -37,7 +37,7 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 #endif
 
 Edrumulus edrumulus;
-const int number_pads       = 8;             // note: must not exceed MAX_NUM_PADS
+const int number_pads       = 5;//8;             // note: must not exceed MAX_NUM_PADS
 const int status_LED_pin    = BOARD_LED_PIN; // internal LED used for overload indicator
 const int midi_channel      = 10;            // default for edrums is 10
 const int hihat_pad_idx     = 2;
@@ -46,6 +46,9 @@ const int max_num_set_pad   = 30;            // should be more than actual numbe
 bool      is_status_LED_on  = false;         // initialization value
 int       selected_pad      = 0;             // initialization value
 
+
+// TEST
+//EEPROMClass MYEEPROM ( "Edrumulus", 0x500 );
 
 void setup()
 {
@@ -57,9 +60,11 @@ void setup()
 #else
   Serial.begin ( 115200 );
 #endif
-#ifdef ESP_PLATFORM
-  EEPROM.begin ( max_num_set_pad * ( number_pads + 1 ) ); // "+ 1" for pad independend settings
-#endif
+
+
+// TEST
+//MYEEPROM.begin ( number_pads * max_num_set_pad + 1 );
+
 
 #ifdef ESP_PLATFORM
   // NOTE: avoid ESP32 GPIO 25/26 for piezo inputs since they are DAC pins which cause an incorrect DC offset
@@ -74,8 +79,13 @@ void setup()
   const int analog_pins_rimshot[] = {  9,    -1,     0,        -1,          3,      8,     2,     7,    18 };
 #endif
 
+Serial.println ( "test" );
+
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
-  read_settings();
+//  read_settings();
+Serial.println ( "test2" );
+write_settings();
+Serial.println ( "test3" );
 
   // initialize GPIO port for status LED
   pinMode ( status_LED_pin, OUTPUT );
@@ -355,19 +365,19 @@ void read_settings()
   for ( int i = 0; i < number_pads; i++ )
   {
     const int pad_start_addr = i * max_num_set_pad;
-    edrumulus.set_pad_type             ( i, static_cast<Edrumulus::Epadtype> ( EEPROM.read ( pad_start_addr + 0 ) ) );
-    edrumulus.set_velocity_threshold   ( i, EEPROM.read ( pad_start_addr + 1 ) );
-    edrumulus.set_velocity_sensitivity ( i, EEPROM.read ( pad_start_addr + 2 ) );
-    edrumulus.set_pos_threshold        ( i, EEPROM.read ( pad_start_addr + 3 ) );
-    edrumulus.set_pos_sensitivity      ( i, EEPROM.read ( pad_start_addr + 4 ) );
-    edrumulus.set_rim_shot_treshold    ( i, EEPROM.read ( pad_start_addr + 5 ) );
-    edrumulus.set_curve                ( i, static_cast<Edrumulus::Ecurvetype> ( EEPROM.read ( pad_start_addr + 6 ) ) );
-    edrumulus.set_rim_shot_is_used     ( i, EEPROM.read ( pad_start_addr + 7 ) );
-    edrumulus.set_pos_sense_is_used    ( i, EEPROM.read ( pad_start_addr + 8 ) );
-    edrumulus.set_midi_notes           ( i, EEPROM.read ( pad_start_addr + 9 ), EEPROM.read ( pad_start_addr + 10 ) );
-    edrumulus.set_cancellation         ( i, EEPROM.read ( pad_start_addr + 11 ) );
+    edrumulus.set_pad_type             ( i, static_cast<Edrumulus::Epadtype> ( edrumulus.read_setting ( pad_start_addr + 0 ) ) );
+    edrumulus.set_velocity_threshold   ( i, edrumulus.read_setting ( pad_start_addr + 1 ) );
+    edrumulus.set_velocity_sensitivity ( i, edrumulus.read_setting ( pad_start_addr + 2 ) );
+    edrumulus.set_pos_threshold        ( i, edrumulus.read_setting ( pad_start_addr + 3 ) );
+    edrumulus.set_pos_sensitivity      ( i, edrumulus.read_setting ( pad_start_addr + 4 ) );
+    edrumulus.set_rim_shot_treshold    ( i, edrumulus.read_setting ( pad_start_addr + 5 ) );
+    edrumulus.set_curve                ( i, static_cast<Edrumulus::Ecurvetype> ( edrumulus.read_setting ( pad_start_addr + 6 ) ) );
+    edrumulus.set_rim_shot_is_used     ( i, edrumulus.read_setting ( pad_start_addr + 7 ) );
+    edrumulus.set_pos_sense_is_used    ( i, edrumulus.read_setting ( pad_start_addr + 8 ) );
+    edrumulus.set_midi_notes           ( i, edrumulus.read_setting ( pad_start_addr + 9 ), edrumulus.read_setting ( pad_start_addr + 10 ) );
+    edrumulus.set_cancellation         ( i, edrumulus.read_setting ( pad_start_addr + 11 ) );
   }
-  edrumulus.set_spike_cancel_level ( EEPROM.read ( number_pads * max_num_set_pad + 0 ) );
+  edrumulus.set_spike_cancel_level ( edrumulus.read_setting ( number_pads * max_num_set_pad + 0 ) );
 }
 
 
@@ -376,28 +386,27 @@ void write_settings()
   for ( int i = 0; i < number_pads; i++ )
   {
     const int pad_start_addr = i * max_num_set_pad;
-    EEPROM_update ( pad_start_addr + 0,  edrumulus.get_pad_type             ( i ) );
-    EEPROM_update ( pad_start_addr + 1,  edrumulus.get_velocity_threshold   ( i ) );
-    EEPROM_update ( pad_start_addr + 2,  edrumulus.get_velocity_sensitivity ( i ) );
-    EEPROM_update ( pad_start_addr + 3,  edrumulus.get_pos_threshold        ( i ) );
-    EEPROM_update ( pad_start_addr + 4,  edrumulus.get_pos_sensitivity      ( i ) );
-    EEPROM_update ( pad_start_addr + 5,  edrumulus.get_rim_shot_treshold    ( i ) );
-    EEPROM_update ( pad_start_addr + 6,  edrumulus.get_curve                ( i ) );
-    EEPROM_update ( pad_start_addr + 7,  edrumulus.get_rim_shot_is_used     ( i ) );
-    EEPROM_update ( pad_start_addr + 8,  edrumulus.get_pos_sense_is_used    ( i ) );
-    EEPROM_update ( pad_start_addr + 9,  edrumulus.get_midi_note_norm       ( i ) );
-    EEPROM_update ( pad_start_addr + 10, edrumulus.get_midi_note_rim        ( i ) );
-    EEPROM_update ( pad_start_addr + 11, edrumulus.get_cancellation         ( i ) );
+//    edrumulus.write_setting ( pad_start_addr + 0,  edrumulus.get_pad_type             ( i ) );
+/*
+    edrumulus.write_setting ( pad_start_addr + 1,  edrumulus.get_velocity_threshold   ( i ) );
+    edrumulus.write_setting ( pad_start_addr + 2,  edrumulus.get_velocity_sensitivity ( i ) );
+    edrumulus.write_setting ( pad_start_addr + 3,  edrumulus.get_pos_threshold        ( i ) );
+    edrumulus.write_setting ( pad_start_addr + 4,  edrumulus.get_pos_sensitivity      ( i ) );
+    edrumulus.write_setting ( pad_start_addr + 5,  edrumulus.get_rim_shot_treshold    ( i ) );
+    edrumulus.write_setting ( pad_start_addr + 6,  edrumulus.get_curve                ( i ) );
+    edrumulus.write_setting ( pad_start_addr + 7,  edrumulus.get_rim_shot_is_used     ( i ) );
+    edrumulus.write_setting ( pad_start_addr + 8,  edrumulus.get_pos_sense_is_used    ( i ) );
+    edrumulus.write_setting ( pad_start_addr + 9,  edrumulus.get_midi_note_norm       ( i ) );
+    edrumulus.write_setting ( pad_start_addr + 10, edrumulus.get_midi_note_rim        ( i ) );
+    edrumulus.write_setting ( pad_start_addr + 11, edrumulus.get_cancellation         ( i ) );
+*/
   }
-  EEPROM_update ( number_pads * max_num_set_pad + 0, edrumulus.get_spike_cancel_level() );
-}
+//  edrumulus.write_setting ( number_pads * max_num_set_pad + 0, edrumulus.get_spike_cancel_level() );
 
-
-void EEPROM_update ( int address, int value )
-{
-  // only write if parameter is different to save EEPROM write cycles and keep the memory healthy
-  if ( EEPROM.read ( address ) != value )
-  {
-    EEPROM.write ( address, value );
-  }
+/*
+MYEEPROM.begin ( number_pads * max_num_set_pad + 1 );
+MYEEPROM.write ( number_pads * max_num_set_pad + 0, edrumulus.get_spike_cancel_level() );
+//MYEEPROM.commit();
+MYEEPROM.end();
+*/
 }
