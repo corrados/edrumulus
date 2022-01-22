@@ -163,11 +163,8 @@ void Edrumulus_hardware::capture_samples ( const int number_pads,
 // -----------------------------------------------------------------------------
 #ifdef ESP_PLATFORM
 
-
-#include "EEPROM.h"
-EEPROMClass MYEEPROM2 ( "Edrumulus2", 0x500 );
-
-
+//#include "EEPROM.h"
+//EEPROMClass MYEEPROM ( "Edrumulus", MAX_EEPROM_SIZE );
 
 void Edrumulus_hardware::setup ( const int conf_Fs,
                                  const int number_pads,
@@ -176,6 +173,10 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
 {
   // set essential parameters
   Fs = conf_Fs;
+  eeprom_settings.begin ( ( number_pads + 1 ) * MAX_NUM_SET_PER_PAD ); // "+ 1" for pad-independent global settings
+
+
+//Serial.println ( eeprom_settings.length() );
 
   // create linear vectors containing the pin/ADC information for each pad and pad-input
   bool input_is_used[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
@@ -249,48 +250,41 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
 
   // create timer semaphore
   timer_semaphore = xSemaphoreCreateBinary();
-MYEEPROM2.begin ( 10 );
 
   // create task pinned to core 0 for creating the timer interrupt so that the
   // timer function is not running in our working core 1
-  xTaskCreatePinnedToCore ( start_timer_core0_task, "start_timer_core0_task", 800, this, 1, pvCreatedTask, 0 );
+  xTaskCreatePinnedToCore ( start_timer_core0_task, "start_timer_core0_task", 800, this, 1, NULL, 0 );
 }
 
 
-
+void Edrumulus_hardware::setup_timer ( const bool clear_timer )
+{
+  if ( !clear_timer )
+  {
+    // prepare timer at a rate of given sampling rate
+    timer = timerBegin ( 0, 80, true ); // prescaler of 80 (i.e. below we have 1 MHz instead of 80 MHz)
+    timerAttachInterrupt ( timer, &on_timer, true );
+    timerAlarmWrite      ( timer, 1000000 / Fs, true ); // here we define the sampling rate (1 MHz / Fs)
+    timerAlarmEnable     ( timer );
+  }
+  else
+  {
+    // clear timer to release SPI resources for writing EEPROM data
+    timerAlarmDisable    ( timer );
+    timerDetachInterrupt ( timer );
+    timerEnd             ( timer );
+  }
+}
 
 
 void Edrumulus_hardware::start_timer_core0_task ( void* param )
 {
-  Edrumulus_hardware* my_obj = reinterpret_cast<Edrumulus_hardware*> ( param );
-
-  // prepare timer at a rate of given sampling rate
-  my_obj->timer = timerBegin ( 0, 80, true ); // prescaler of 80 (i.e. below we have 1 MHz instead of 80 MHz)
-  timerAttachInterrupt ( my_obj->timer, &my_obj->on_timer, true );
-  timerAlarmWrite      ( my_obj->timer, 1000000 / my_obj->Fs, true ); // here we define the sampling rate (1 MHz / Fs)
-  timerAlarmEnable     ( my_obj->timer );
+  reinterpret_cast<Edrumulus_hardware*> ( param )->setup_timer();
 
   // tasks must not return: forever loop with delay to keep watchdog happy
   for ( ; ; )
   {
     delay ( 1000 );
-
-/*
-MYEEPROM2.write ( 0, 10 );
-//MYEEPROM2.commit();
-
-MYEEPROM2.write ( 2, 10 );
-//MYEEPROM2.commit();
-
-MYEEPROM2.write ( 3, 10 );
-//MYEEPROM2.commit();
-
-MYEEPROM2.write ( 6, 10 );
-//MYEEPROM2.commit();
-*/
-
-//MYEEPROM2.end();
-
   }
 }
 

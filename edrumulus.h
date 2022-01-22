@@ -122,8 +122,8 @@ public:
   bool get_status_is_error()    { return status_is_error; }
 
   // persistent settings storage
-  void write_setting ( const int address, const byte value ) { edrumulus_hardware.write_setting ( address, value ); }
-  byte read_setting  ( const int address )                   { return edrumulus_hardware.read_setting ( address ); }
+  void write_setting ( const int pad_index, const int address, const byte value ) { edrumulus_hardware.write_setting ( pad_index, address, value ); }
+  byte read_setting  ( const int pad_index, const int address )                   { return edrumulus_hardware.read_setting ( pad_index, address ); }
 
 protected:
   class Pad

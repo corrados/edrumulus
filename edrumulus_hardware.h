@@ -29,8 +29,10 @@ enum Espikestate
   ST_OTHER
 };
 
-#define MAX_NUM_PADS         12 // a maximum of 12 pads are supported
-#define MAX_NUM_PAD_INPUTS   2  // a maximum of 2 sensors per pad is supported
+#define MAX_NUM_PADS         12  // a maximum of 12 pads are supported
+#define MAX_NUM_PAD_INPUTS   2   // a maximum of 2 sensors per pad is supported
+#define MAX_EEPROM_SIZE      512 // bytes
+#define MAX_NUM_SET_PER_PAD  30  // maximum number of settings which can be stored per pad
 
 
 // -----------------------------------------------------------------------------
@@ -102,6 +104,7 @@ protected:
 
 #include "soc/sens_reg.h"
 #include "driver/dac.h"
+#include "EEPROM.h"
 #include <Preferences.h>
 
 #define BOARD_LED_PIN        2    // pin number of the LED on the ESP32 board
@@ -130,28 +133,31 @@ public:
 
 
 // TEST
-void write_setting ( const int address, const byte value )
+void write_setting ( const int pad_index, const int address, const byte value )
 {
-/*  
-  timerAlarmDisable(timer);
-Serial.println ( "before" );
-//  vTaskSuspend(pvCreatedTask);
-Serial.println ( "after1" );
+  setup_timer ( true ); // clear timer
+
+//Serial.println ( "before" );
+
+eeprom_settings.write ( pad_index * MAX_NUM_SET_PER_PAD + address, value );
+eeprom_settings.commit();
+
+/*
   preferences.begin ( "e", false );
   String key = String ( address );
   char key_char[3];
   key.toCharArray ( key_char, 3 );
   preferences.putUChar ( key_char, value );
   preferences.end();
-Serial.println ( "after2" );
-//  vTaskResume( pvCreatedTask );
-Serial.println ( "after3" );
-  timerAlarmEnable(timer);
-*/  
+*/
+//Serial.println ( "after2" );
+
+  setup_timer();
 }
-byte read_setting ( const int address )
+byte read_setting ( const int pad_index, const int address )
 {
-/*  
+
+/*
   byte return_value;
   preferences.begin ( "e", true );
   String key = String ( address );
@@ -161,21 +167,22 @@ byte read_setting ( const int address )
   preferences.end();
   return return_value;
 */
-return 0;  
+
+  return eeprom_settings.read ( pad_index * MAX_NUM_SET_PER_PAD + address );
 }
 
 
 protected:
   int                        Fs;
-//  Preferences                preferences;
-
-TaskHandle_t* pvCreatedTask;
+  Preferences                preferences;
+  EEPROMClass                eeprom_settings;
 
   volatile SemaphoreHandle_t timer_semaphore;
   hw_timer_t*                timer = nullptr;
   static void IRAM_ATTR      on_timer();
   static void                start_timer_core0_task ( void* param );
 
+  void     setup_timer ( const bool clear_timer = false );
   void     init_my_analogRead();
   uint16_t my_analogRead ( const uint8_t pin );
   void my_analogRead_parallel ( const uint32_t channel_adc1_bitval,
