@@ -163,9 +163,6 @@ void Edrumulus_hardware::capture_samples ( const int number_pads,
 // -----------------------------------------------------------------------------
 #ifdef ESP_PLATFORM
 
-//#include "EEPROM.h"
-//EEPROMClass MYEEPROM ( "Edrumulus", MAX_EEPROM_SIZE );
-
 void Edrumulus_hardware::setup ( const int conf_Fs,
                                  const int number_pads,
                                  const int number_inputs[],
@@ -174,9 +171,6 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
   // set essential parameters
   Fs = conf_Fs;
   eeprom_settings.begin ( ( number_pads + 1 ) * MAX_NUM_SET_PER_PAD ); // "+ 1" for pad-independent global settings
-
-
-//Serial.println ( eeprom_settings.length() );
 
   // create linear vectors containing the pin/ADC information for each pad and pad-input
   bool input_is_used[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
@@ -254,6 +248,24 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
   // create task pinned to core 0 for creating the timer interrupt so that the
   // timer function is not running in our working core 1
   xTaskCreatePinnedToCore ( start_timer_core0_task, "start_timer_core0_task", 800, this, 1, NULL, 0 );
+}
+
+
+void Edrumulus_hardware::write_setting ( const int  pad_index,
+                                         const int  address,
+                                         const byte value )
+{
+  setup_timer ( true ); // clear timer to avoid a crash during writing the EEPROM settings
+  eeprom_settings.write ( pad_index * MAX_NUM_SET_PER_PAD + address, value );
+  eeprom_settings.commit(); // needed to update actual flash memory, will only be written if different
+  setup_timer(); // restart timer
+}
+
+
+byte Edrumulus_hardware::read_setting ( const int pad_index,
+                                        const int address )
+{
+  return eeprom_settings.read ( pad_index * MAX_NUM_SET_PER_PAD + address );
 }
 
 

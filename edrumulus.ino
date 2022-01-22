@@ -15,10 +15,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 \******************************************************************************/
 
-//#define USE_MIDI
+#define USE_MIDI
 
 #include "edrumulus.h"
-//#include "EEPROM.h"
 
 #ifdef USE_MIDI
 # ifdef ESP_PLATFORM
@@ -46,9 +45,6 @@ bool      is_status_LED_on  = false;         // initialization value
 int       selected_pad      = 0;             // initialization value
 
 
-// TEST
-//EEPROMClass MYEEPROM ( "Edrumulus", 0x500 );
-
 void setup()
 {
 #ifdef USE_MIDI
@@ -59,11 +55,6 @@ void setup()
 #else
   Serial.begin ( 115200 );
 #endif
-
-
-// TEST
-//MYEEPROM.begin ( number_pads * max_num_set_pad + 1 );
-
 
 #ifdef ESP_PLATFORM
   // NOTE: avoid ESP32 GPIO 25/26 for piezo inputs since they are DAC pins which cause an incorrect DC offset
@@ -78,16 +69,45 @@ void setup()
   const int analog_pins_rimshot[] = {  9,    -1,     0,        -1,          3,      8,     2,     7,    18 };
 #endif
 
-Serial.println ( "test" );
-
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
   read_settings();
-Serial.println ( "test2" );
-write_settings();
-Serial.println ( "test3" );
 
   // initialize GPIO port for status LED
   pinMode ( status_LED_pin, OUTPUT );
+}
+
+
+void preset_settings()
+{
+  // default MIDI note assignments
+  edrumulus.set_midi_notes      ( 0, 38, 40 ); // snare
+  edrumulus.set_midi_notes      ( 1, 36, 36 ); // kick
+  edrumulus.set_midi_notes      ( hihat_pad_idx, 22 /*42*/, 22 );
+  edrumulus.set_midi_notes_open ( hihat_pad_idx, 26 /*46*/, 26 );
+  edrumulus.set_midi_notes      ( hihatctrl_pad_idx, 44, 44 ); // Hi-Hat pedal hit
+  edrumulus.set_midi_ctrl_ch    ( hihatctrl_pad_idx, 4 ); // Hi-Hat control
+  edrumulus.set_midi_notes      ( 4, 49, 55 ); // crash
+  edrumulus.set_midi_notes      ( 5, 48, 50 ); // tom 1
+  edrumulus.set_midi_notes      ( 6, 51, 53 /*59*/ ); // ride (edge: 59, bell: 53)
+  edrumulus.set_midi_notes      ( 7, 45, 47 ); // tom 2
+  edrumulus.set_midi_notes      ( 8, 43, 58 ); // tom 3
+
+  // default drum kit setup
+  edrumulus.set_pad_type          ( 0, Edrumulus::PD80R ); // snare
+  edrumulus.set_rim_shot_is_used  ( 0, true );
+  edrumulus.set_pos_sense_is_used ( 0, true );
+  edrumulus.set_pad_type          ( 1, Edrumulus::KD7 ); // kick
+  edrumulus.set_curve             ( 1, Edrumulus::LOG2 ); // less dynamic on kick (similar to other drum modules)
+  edrumulus.set_pad_type          ( 2, Edrumulus::CY5 ); // Hi-Hat, using rim switch
+  edrumulus.set_rim_shot_is_used  ( 2, true );
+  edrumulus.set_pad_type          ( 3, Edrumulus::FD8 ); // Hi-Hat-ctrl
+  edrumulus.set_pad_type          ( 4, Edrumulus::CY8 ); // crash, using rim switch
+  edrumulus.set_rim_shot_is_used  ( 4, true );
+  edrumulus.set_pad_type          ( 5, Edrumulus::PD8 ); // tom 1
+  edrumulus.set_pad_type          ( 6, Edrumulus::PD8 ); // ride, using rim switch
+  edrumulus.set_rim_shot_is_used  ( 6, true );
+  edrumulus.set_pad_type          ( 7, Edrumulus::PD8 ); // tom 2
+//edrumulus.set_pad_type          ( 8, Edrumulus::PD8 ); // tom 3
 }
 
 
@@ -325,68 +345,23 @@ void loop()
 }
 
 
-void preset_settings()
-{
-  // default MIDI note assignments
-  edrumulus.set_midi_notes      ( 0, 38, 40 ); // snare
-  edrumulus.set_midi_notes      ( 1, 36, 36 ); // kick
-  edrumulus.set_midi_notes      ( hihat_pad_idx, 22 /*42*/, 22 );
-  edrumulus.set_midi_notes_open ( hihat_pad_idx, 26 /*46*/, 26 );
-  edrumulus.set_midi_notes      ( hihatctrl_pad_idx, 44, 44 ); // Hi-Hat pedal hit
-  edrumulus.set_midi_ctrl_ch    ( hihatctrl_pad_idx, 4 ); // Hi-Hat control
-  edrumulus.set_midi_notes      ( 4, 49, 55 ); // crash
-  edrumulus.set_midi_notes      ( 5, 48, 50 ); // tom 1
-  edrumulus.set_midi_notes      ( 6, 51, 53 /*59*/ ); // ride (edge: 59, bell: 53)
-  edrumulus.set_midi_notes      ( 7, 45, 47 ); // tom 2
-  edrumulus.set_midi_notes      ( 8, 43, 58 ); // tom 3
-
-  // default drum kit setup
-  edrumulus.set_pad_type          ( 0, Edrumulus::PD80R ); // snare
-  edrumulus.set_rim_shot_is_used  ( 0, true );
-  edrumulus.set_pos_sense_is_used ( 0, true );
-  edrumulus.set_pad_type          ( 1, Edrumulus::KD7 ); // kick
-  edrumulus.set_curve             ( 1, Edrumulus::LOG2 ); // less dynamic on kick (similar to other drum modules)
-  edrumulus.set_pad_type          ( 2, Edrumulus::CY5 ); // Hi-Hat, using rim switch
-  edrumulus.set_rim_shot_is_used  ( 2, true );
-  edrumulus.set_pad_type          ( 3, Edrumulus::FD8 ); // Hi-Hat-ctrl
-  edrumulus.set_pad_type          ( 4, Edrumulus::CY8 ); // crash, using rim switch
-  edrumulus.set_rim_shot_is_used  ( 4, true );
-  edrumulus.set_pad_type          ( 5, Edrumulus::PD8 ); // tom 1
-  edrumulus.set_pad_type          ( 6, Edrumulus::PD8 ); // ride, using rim switch
-  edrumulus.set_rim_shot_is_used  ( 6, true );
-  edrumulus.set_pad_type          ( 7, Edrumulus::PD8 ); // tom 2
-//edrumulus.set_pad_type          ( 8, Edrumulus::PD8 ); // tom 3
-}
-
-
 void read_settings()
 {
-
-Serial.println ( edrumulus.read_setting ( 0, 0 ) );
-Serial.println ( edrumulus.read_setting ( 0, 1 ) );
-Serial.println ( edrumulus.read_setting ( 0, 2 ) );
-Serial.println ( edrumulus.read_setting ( 0, 3 ) );
-Serial.println ( edrumulus.read_setting ( 0, 4 ) );
-Serial.println ( edrumulus.read_setting ( 0, 5 ) );
-
-/*
   for ( int i = 0; i < number_pads; i++ )
   {
-    const int pad_start_addr = i * max_num_set_pad;
-    edrumulus.set_pad_type             ( i, static_cast<Edrumulus::Epadtype> ( edrumulus.read_setting ( pad_start_addr + 0 ) ) );
-    edrumulus.set_velocity_threshold   ( i, edrumulus.read_setting ( pad_start_addr + 1 ) );
-    edrumulus.set_velocity_sensitivity ( i, edrumulus.read_setting ( pad_start_addr + 2 ) );
-    edrumulus.set_pos_threshold        ( i, edrumulus.read_setting ( pad_start_addr + 3 ) );
-    edrumulus.set_pos_sensitivity      ( i, edrumulus.read_setting ( pad_start_addr + 4 ) );
-    edrumulus.set_rim_shot_treshold    ( i, edrumulus.read_setting ( pad_start_addr + 5 ) );
-    edrumulus.set_curve                ( i, static_cast<Edrumulus::Ecurvetype> ( edrumulus.read_setting ( pad_start_addr + 6 ) ) );
-    edrumulus.set_rim_shot_is_used     ( i, edrumulus.read_setting ( pad_start_addr + 7 ) );
-    edrumulus.set_pos_sense_is_used    ( i, edrumulus.read_setting ( pad_start_addr + 8 ) );
-    edrumulus.set_midi_notes           ( i, edrumulus.read_setting ( pad_start_addr + 9 ), edrumulus.read_setting ( pad_start_addr + 10 ) );
-    edrumulus.set_cancellation         ( i, edrumulus.read_setting ( pad_start_addr + 11 ) );
+    edrumulus.set_pad_type             ( i, static_cast<Edrumulus::Epadtype> ( edrumulus.read_setting ( i, 0 ) ) );
+    edrumulus.set_velocity_threshold   ( i, edrumulus.read_setting ( i, 1 ) );
+    edrumulus.set_velocity_sensitivity ( i, edrumulus.read_setting ( i, 2 ) );
+    edrumulus.set_pos_threshold        ( i, edrumulus.read_setting ( i, 3 ) );
+    edrumulus.set_pos_sensitivity      ( i, edrumulus.read_setting ( i, 4 ) );
+    edrumulus.set_rim_shot_treshold    ( i, edrumulus.read_setting ( i, 5 ) );
+    edrumulus.set_curve                ( i, static_cast<Edrumulus::Ecurvetype> ( edrumulus.read_setting ( i, 6 ) ) );
+    edrumulus.set_rim_shot_is_used     ( i, edrumulus.read_setting ( i, 7 ) );
+    edrumulus.set_pos_sense_is_used    ( i, edrumulus.read_setting ( i, 8 ) );
+    edrumulus.set_midi_notes           ( i, edrumulus.read_setting ( i, 9 ), edrumulus.read_setting ( i, 10 ) );
+    edrumulus.set_cancellation         ( i, edrumulus.read_setting ( i, 11 ) );
   }
-  edrumulus.set_spike_cancel_level ( edrumulus.read_setting ( number_pads * max_num_set_pad + 0 ) );
-*/
+  edrumulus.set_spike_cancel_level ( edrumulus.read_setting ( number_pads, 0 ) );
 }
 
 
@@ -408,12 +383,5 @@ void write_settings()
     edrumulus.write_setting ( i, 11, edrumulus.get_cancellation         ( i ) );
 
   }
- // edrumulus.write_setting ( number_pads * max_num_set_pad + 0, edrumulus.get_spike_cancel_level() );
-
-/*
-MYEEPROM.begin ( number_pads * max_num_set_pad + 1 );
-MYEEPROM.write ( number_pads * max_num_set_pad + 0, edrumulus.get_spike_cancel_level() );
-//MYEEPROM.commit();
-MYEEPROM.end();
-*/
+  edrumulus.write_setting ( number_pads, 0, edrumulus.get_spike_cancel_level() );
 }

@@ -131,46 +131,8 @@ public:
                             const int   input_channel_index,
                             const int   level );
 
-
-// TEST
-void write_setting ( const int pad_index, const int address, const byte value )
-{
-  setup_timer ( true ); // clear timer
-
-//Serial.println ( "before" );
-
-eeprom_settings.write ( pad_index * MAX_NUM_SET_PER_PAD + address, value );
-eeprom_settings.commit();
-
-/*
-  preferences.begin ( "e", false );
-  String key = String ( address );
-  char key_char[3];
-  key.toCharArray ( key_char, 3 );
-  preferences.putUChar ( key_char, value );
-  preferences.end();
-*/
-//Serial.println ( "after2" );
-
-  setup_timer();
-}
-byte read_setting ( const int pad_index, const int address )
-{
-
-/*
-  byte return_value;
-  preferences.begin ( "e", true );
-  String key = String ( address );
-  char key_char[3];
-  key.toCharArray ( key_char, 3 );
-  return_value = preferences.getUChar ( key_char, 0 );
-  preferences.end();
-  return return_value;
-*/
-
-  return eeprom_settings.read ( pad_index * MAX_NUM_SET_PER_PAD + address );
-}
-
+  void write_setting ( const int pad_index, const int address, const byte value );
+  byte read_setting  ( const int pad_index, const int address );
 
 protected:
   int                        Fs;
