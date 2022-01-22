@@ -112,6 +112,21 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
 }
 
 
+void Edrumulus_hardware::write_setting ( const int  pad_index,
+                                         const int  address,
+                                         const byte value )
+{
+  EEPROM.update ( pad_index * MAX_NUM_SET_PER_PAD + address, value );
+}
+
+
+byte Edrumulus_hardware::read_setting ( const int pad_index,
+                                        const int address )
+{
+  return EEPROM.read ( pad_index * MAX_NUM_SET_PER_PAD + address );
+}
+
+
 void Edrumulus_hardware::on_timer()
 {
   // tell the main loop that a sample can be read by setting the flag (semaphore)

@@ -18,6 +18,7 @@
 #pragma once
 
 #include "Arduino.h"
+#include "EEPROM.h"
 
 
 // Global hardware enums and definitions ---------------------------------------
@@ -31,7 +32,7 @@ enum Espikestate
 
 #define MAX_NUM_PADS         12  // a maximum of 12 pads are supported
 #define MAX_NUM_PAD_INPUTS   2   // a maximum of 2 sensors per pad is supported
-#define MAX_EEPROM_SIZE      512 // bytes
+#define MAX_EEPROM_SIZE      512 // bytes (Teensy 4.0: max 1024 bytes)
 #define MAX_NUM_SET_PER_PAD  30  // maximum number of settings which can be stored per pad
 
 
@@ -72,6 +73,9 @@ public:
                             const int   input_channel_index,
                             const int   level );
 
+  void write_setting ( const int pad_index, const int address, const byte value );
+  byte read_setting  ( const int pad_index, const int address );
+
 protected:
   int           Fs;
   IntervalTimer myTimer;
@@ -104,7 +108,6 @@ protected:
 
 #include "soc/sens_reg.h"
 #include "driver/dac.h"
-#include "EEPROM.h"
 
 #define BOARD_LED_PIN        2    // pin number of the LED on the ESP32 board
 #define ADC_MAX_RANGE        4096 // ESP32 ADC has 12 bits -> 0..4095

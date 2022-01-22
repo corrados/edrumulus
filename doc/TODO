@@ -1,6 +1,10 @@
 
 
 
+- support Reset command in Octave Edrumulus GUI
+
+- show instrument name in MIDI-IN box additional to the MIDI note
+
 - use rim switch theshold in dB (not linear as it is implemented right now)
 
 - for the ESP32 prototype, adjust the ADC_noise_peak_velocity_scaling in edrumulus.h correctly

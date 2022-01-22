@@ -85,7 +85,6 @@ void preset_settings()
   edrumulus.set_midi_notes      ( hihat_pad_idx, 22 /*42*/, 22 );
   edrumulus.set_midi_notes_open ( hihat_pad_idx, 26 /*46*/, 26 );
   edrumulus.set_midi_notes      ( hihatctrl_pad_idx, 44, 44 ); // Hi-Hat pedal hit
-  edrumulus.set_midi_ctrl_ch    ( hihatctrl_pad_idx, 4 ); // Hi-Hat control
   edrumulus.set_midi_notes      ( 4, 49, 55 ); // crash
   edrumulus.set_midi_notes      ( 5, 48, 50 ); // tom 1
   edrumulus.set_midi_notes      ( 6, 51, 53 /*59*/ ); // ride (edge: 59, bell: 53)
@@ -361,6 +360,8 @@ void read_settings()
     edrumulus.set_midi_note_norm       ( i,                                      edrumulus.read_setting ( i, 9 ) );
     edrumulus.set_midi_note_rim        ( i,                                      edrumulus.read_setting ( i, 10 ) );
     edrumulus.set_cancellation         ( i,                                      edrumulus.read_setting ( i, 11 ) );
+    edrumulus.set_midi_note_open_norm  ( i,                                      edrumulus.read_setting ( i, 12 ) );
+    edrumulus.set_midi_note_open_rim   ( i,                                      edrumulus.read_setting ( i, 13 ) );
   }
   edrumulus.set_spike_cancel_level ( edrumulus.read_setting ( number_pads, 0 ) );
 }
@@ -382,7 +383,8 @@ void write_settings()
     edrumulus.write_setting ( i, 9,  edrumulus.get_midi_note_norm       ( i ) );
     edrumulus.write_setting ( i, 10, edrumulus.get_midi_note_rim        ( i ) );
     edrumulus.write_setting ( i, 11, edrumulus.get_cancellation         ( i ) );
-
+    edrumulus.write_setting ( i, 12, edrumulus.get_midi_note_open_norm  ( i ) );
+    edrumulus.write_setting ( i, 13, edrumulus.get_midi_note_open_rim   ( i ) );
   }
   edrumulus.write_setting ( number_pads, 0, edrumulus.get_spike_cancel_level() );
 }
