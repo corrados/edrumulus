@@ -273,7 +273,7 @@ void loop()
         MYMIDI.sendNoteOff ( 108, selected_pad, 1 );
         MYMIDI.sendNoteOff ( 109, static_cast<int> ( edrumulus.get_curve ( selected_pad ) ), 1 );
         MYMIDI.sendNoteOff ( 110, edrumulus.get_spike_cancel_level(), 1 );
-        MYMIDI.sendNoteOff ( 111, 0, 1 ); // TODO not yet supported
+        MYMIDI.sendNoteOff ( 111, edrumulus.get_rim_shot_is_used ( selected_pad ) + 2 * edrumulus.get_pos_sense_is_used ( selected_pad ), 1 );
         MYMIDI.sendNoteOff ( 112, edrumulus.get_midi_note_norm ( selected_pad ), 1 );
         MYMIDI.sendNoteOff ( 113, edrumulus.get_midi_note_rim ( selected_pad ), 1 );
         MYMIDI.sendNoteOff ( 114, edrumulus.get_cancellation ( selected_pad ), 1 );

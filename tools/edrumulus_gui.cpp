@@ -35,6 +35,8 @@ int          box_len   = 17; // length of the output boxes
 jack_port_t  *input_port, *output_port, *through_port;
 int          sel_pad                 = 0;
 int          sel_cmd                 = 0;
+int          version_major           = -1;
+int          version_minor           = -1;
 bool         do_update_param_outputs = false;
 int          midi_send_cmd           = -1; // invalidate per default
 int          midi_send_val;
@@ -49,7 +51,11 @@ std::string parse_cmd_param ( int cmd )
 // update window parameter outputs
 void update_param_outputs()
 {
-  mvaddstr ( row_start, col_start, "Press a key (q:quit; s,S:sel pad; c,C:sel command; a,A: auto pad sel; up,down: change parameter; r: reset)" );
+  if ( version_major >= 0 && version_minor >= 0 )
+  {
+    mvprintw ( row_start - 1, col_start, "Edrumulus v%d.%d", version_major, version_minor );
+  }
+  mvaddstr ( row_start, col_start, "Press a key (q:quit; s,S:sel pad; c,C:sel command; a,A: auto pad sel; up,down: change param; r: reset)" );
   if ( auto_pad_sel )
   {
     mvprintw ( row_start + 2, col_start, "Selected pad (auto):  %2d (%s)      ", sel_pad, pad_names[sel_pad].c_str() );
@@ -58,7 +64,7 @@ void update_param_outputs()
   {
     mvprintw ( row_start + 2, col_start, "Selected pad:         %2d (%s)      ", sel_pad, pad_names[sel_pad].c_str() );
   }
-  mvprintw ( row_start + 3, col_start, "Parameter: %9s: %s             ", cmd_names[sel_cmd].c_str(), parse_cmd_param ( sel_cmd ).c_str() );
+  mvprintw ( row_start + 3, col_start, "Parameter: %10s: %s             ", cmd_names[sel_cmd].c_str(), parse_cmd_param ( sel_cmd ).c_str() );
   refresh();
   box       ( midiwin, 0, 0 ); // in this box the received note-on MIDI notes are shown
   mvwprintw ( midiwin, 0, 8, "MIDI-IN" );
@@ -115,6 +121,16 @@ int process ( jack_nframes_t nframes, void *arg )
         int cur_cmd             = std::distance ( cmd_val.begin(), it );
         param_set[cur_cmd]      = std::max ( 0, std::min ( cmd_val_rng[cur_cmd], (int) in_event.buffer[2] ) );
         do_update_param_outputs = true;
+      }
+
+      if ( in_event.buffer[1] == 127 && ( in_event.buffer[0] & 0xF0 ) == 0x80 )
+      {
+        version_major = in_event.buffer[2];
+      }
+
+      if ( in_event.buffer[1] == 126 && ( in_event.buffer[0] & 0xF0 ) == 0x80 )
+      {
+        version_minor = in_event.buffer[2];
       }
 
       // display current note-on received value
