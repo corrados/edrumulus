@@ -162,9 +162,19 @@ jack_connect $KITJACKPORTRIGHT system:playback_2
 
 
 # either use direct MIDI connection or through EdrumulusGUI
-if [[ "$1" == gui ]]
-then
+if [[ "$1" == gui ]]; then
   ./EdrumulusGUI DrumGizmo:drumgizmo_midiin
+elif [[ "$1" == jamulus ]]; then
+  echo "Jamulus session mode enabled"
+  jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
+  jack_disconnect $KITJACKPORTLEFT system:playback_1
+  jack_disconnect $KITJACKPORTRIGHT system:playback_2
+  ./../../jamulus/Jamulus -n -i ../../jamulus/Jamulus.ini -c anygenre1.jamulus.io
+  sleep 5
+  jack_connect $KITJACKPORTLEFT "Jamulus:input left"
+  jack_connect $KITJACKPORTRIGHT "Jamulus:input right"
+  echo "###---------- PRESS ANY KEY TO TERMINATE THE EDRUMULUS/JAMULUS SESSION ---------###"
+  read -n 1 -s -r -p ""
 else
   jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
   echo "###---------- PRESS ANY KEY TO TERMINATE THE EDRUMULUS SESSION ---------###"
@@ -172,6 +182,10 @@ else
 fi
 
 killall drumgizmo
+
+if [[ "$1" == jamulus ]]; then
+  killall Jamulus
+fi
 
 if [[ -v is_teensy ]]; then
   killall a2jmidid
