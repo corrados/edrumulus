@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Edrumulus Linux start script for using Drumgizmo
+#
+# Optional: If your Raspberry Pi has a button for ON/OFF connected to gpio pin3, add the following in /boot/config.txt
+#           dtoverlay=gpio-shutdown,gpio_pin=3, active_low=1,gpio_pull=up
+# Optional: Give audio group rights to do realtime
+#           sudo sh -c 'echo "@audio   -  rtprio   95" >> /etc/security/limits.conf'
+#           sudo sh -c 'echo "@audio   -  memlock  unlimited" >> /etc/security/limits.conf'
+
 echo "This script prepares a Raspberry Pi for Edrumulus usage"
 
 
@@ -14,7 +22,7 @@ fi
 
 
 # install required packages ----------------------------------------------------
-pkgs='git htop alsamixergui build-essential libasound2-dev jackd2 cmake libglib2.0-dev autoconf automake libtool lv2-dev xorg-dev libsndfile1-dev libjack-jackd2-dev libsmf-dev gettext a2jmidid libncurses5-dev'
+pkgs='git htop vim alsamixergui build-essential libasound2-dev jackd2 cmake libglib2.0-dev autoconf automake libtool lv2-dev xorg-dev libsndfile1-dev libjack-jackd2-dev libsmf-dev gettext a2jmidid libncurses5-dev'
 if ! dpkg -s $pkgs >/dev/null 2>&1; then
   read -p "Do you want to install missing packages? " -n 1 -r
   echo
