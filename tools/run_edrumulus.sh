@@ -169,7 +169,7 @@ elif [[ "$1" == jamulus ]]; then
   jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
   jack_disconnect $KITJACKPORTLEFT system:playback_1
   jack_disconnect $KITJACKPORTRIGHT system:playback_2
-  ./../../jamulus/Jamulus -n -i ../../jamulus/Jamulus.ini -c anygenre1.jamulus.io
+  ./../../jamulus/Jamulus -n -i ../../jamulus/Jamulus.ini -c anygenre1.jamulus.io &
   sleep 5
   jack_connect $KITJACKPORTLEFT "Jamulus:input left"
   jack_connect $KITJACKPORTRIGHT "Jamulus:input right"
