@@ -2,12 +2,12 @@
 
 Edrumulus is a high quality open source e-drum trigger module software. To use Edrumulus, you need to have:
 
-- A supported micro controller developer board (see the README file for supported micro controllers),
-- An analog front end circuit to connect the trigger pads to the micro controller (soldering skills are needed),
-- The [Arduino IDE](https://www.arduino.cc/en/software) for flashing the micro controller firmware,
-- Some other software tools like [Hairless MIDI](https://projectgus.github.io/hairless-midiserial),
-  [loopMIDI](https://www.tobias-erichsen.de/software/loopmidi.html), etc., for using the Edrumulus MIDI output signal,
-- [Octave](https://www.gnu.org/software/octave) software to control Edrumulus trigger parameter in real-time.
+- A supported micro controller developer board (see the README file for supported micro controllers)
+- An analog front end circuit to connect the trigger pads to the micro controller (soldering skills are needed)
+- The [Arduino IDE](https://www.arduino.cc/en/software) for flashing the micro controller firmware
+- Some other software tools like [Hairless MIDI](https://projectgus.github.io/hairless-midiserial)
+  [loopMIDI](https://www.tobias-erichsen.de/software/loopmidi.html), etc., for using the Edrumulus MIDI output signal
+- [Octave](https://www.gnu.org/software/octave) software to control Edrumulus trigger parameter in real-time
 
 
 ## Analog front end circuit
