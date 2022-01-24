@@ -1,6 +1,6 @@
 # Drum triggering algorithm
 
-The task to convert a hit on the drum pad with the stick to a MIDI signal consists of mulitple stages.
+The task to convert a hit on the drum pad with the stick to a MIDI signal consists of multiple stages.
 The first stage is the detection of the position in time of the stick hit. This we call the
 __peak detection__. Then we __estimate the velocity of the hit__ using the detected peak. The next
 step is to estimate the position of the stick hit on the pad (i.e. if the hit was in the center or
@@ -42,7 +42,7 @@ can happen that the second peak (the middle peak) is higher than the first peak.
 is played and the time distance between strikes is short, the retrigger cancellation can lead to
 the fact that the second peak is above the detection threshold and the first peak is not. This
 could lead to the problem that the very first/main peak is not inside the scan time period. To
-overcome this problem, we introduce a so called pre-scan time where we store the ADC signal
+overcome this problem, we introduce a so-called pre-scan time where we store the ADC signal
 in a FIFO and search in a time period right before the scan time for a possible first/main
 peak. This is marked by the yellow bar in the above plot which shows the three peaks of the
 band-pass filtered signal (The red bar is the scan time and the blue bar is the mask time).
