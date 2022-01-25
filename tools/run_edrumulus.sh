@@ -20,6 +20,18 @@ if aconnect -l|grep -q Edrumulus; then
   is_teensy=true
 fi
 
+# check if we are running on a Raspberry Pi by checking if the user name is pi
+if [ $USER = "pi" ]; then
+  echo "Running on a Raspberry pi"
+  is_raspi=true
+fi
+
+# check if we are in Jamulus session mode
+if [[ "$1" == jamulus ]]; then
+  echo "Jamulus session mode enabled"
+  is_jamulus=true
+fi
+
 
 # install required packages ----------------------------------------------------
 pkgs='git htop vim alsamixergui build-essential libasound2-dev jackd2 cmake libglib2.0-dev autoconf automake libtool lv2-dev xorg-dev libsndfile1-dev libjack-jackd2-dev libsmf-dev gettext a2jmidid libncurses5-dev'
@@ -149,7 +161,7 @@ fi
 
 
 # run Edrumulus ----------------------------------------------------------------
-if [ $USER = "pi" ]; then
+if [[ -v is_raspi ]]; then
   ./drumgizmo/drumgizmo/drumgizmo -l -L max=2,rampdown=0.02 -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
   sleep 20
 else
@@ -164,8 +176,7 @@ jack_connect $KITJACKPORTRIGHT system:playback_2
 # either use direct MIDI connection or through EdrumulusGUI
 if [[ "$1" == gui ]]; then
   ./EdrumulusGUI DrumGizmo:drumgizmo_midiin
-elif [[ "$1" == jamulus ]]; then
-  echo "Jamulus session mode enabled"
+elif [[ -v is_jamulus ]]; then
   jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
   jack_disconnect $KITJACKPORTLEFT system:playback_1
   jack_disconnect $KITJACKPORTRIGHT system:playback_2
@@ -187,7 +198,7 @@ fi
 
 killall drumgizmo
 
-if [[ "$1" == jamulus ]]; then
+if [[ -v is_jamulus ]]; then
   killall Jamulus
 fi
 
