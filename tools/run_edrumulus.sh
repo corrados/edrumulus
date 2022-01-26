@@ -68,6 +68,34 @@ else
 fi
 
 
+# download and compile jack2 (optional) ----------------------------------------
+if [[ -v is_raspi ]]; then
+  # Jack audio without DBUS support
+  if [ -d "jack2" ]; then
+    echo "The Jack2 directory is present, we assume it is compiled and ready to use. If not, delete the jack2 directory and call this script again."
+  else
+    git clone https://github.com/jackaudio/jack2.git
+    cd jack2
+    git checkout v1.9.20
+    ./waf configure --alsa --prefix=/usr/local --libdir=$(pwd)/build
+    ./waf -j${NCORES}
+    mkdir build/jack
+    cp build/*.so build/jack
+    cp build/common/*.so build/jack
+    cp build/example-clients/*.so build/jack
+    cd ..
+
+    # give audio group rights to do realtime
+    if grep -Fq "@audio" /etc/security/limits.conf; then
+      echo "audio group already has realtime rights"
+    else
+      sudo sh -c 'echo "@audio   -  rtprio   95" >> /etc/security/limits.conf'
+      sudo sh -c 'echo "@audio   -  memlock  unlimited" >> /etc/security/limits.conf'
+    fi
+  fi
+fi
+
+
 # download and compile Drumgizmo -----------------------------------------------
 if [ -d "drumgizmo" ]; then
   echo "The Drumgizmo directory is present, we assume it is compiled and ready to use. If not, delete the Drumgizmo directory and call this script again."
@@ -77,7 +105,11 @@ else
   git checkout edrumulus
   git submodule update --init
   ./autogen.sh
-  ./configure --prefix=$PWD/install --with-lv2dir=$HOME/.lv2 --enable-lv2
+  if [[ -v is_raspi ]]; then
+    ./configure --includedir=$(pwd)/../jack2/common --libdir=$(pwd)/../jack2/build/common --prefix=$PWD/install --with-lv2dir=$HOME/.lv2 --enable-lv2
+  else
+    ./configure --prefix=$PWD/install --with-lv2dir=$HOME/.lv2 --enable-lv2
+  fi
   make -j${NCORES}
   cd ..
 fi
@@ -113,7 +145,12 @@ ADEVICE=$(aplay -l|grep "USB Audio"|tail -1|cut -d' ' -f3)
 echo "Using USB audio device: ${ADEVICE}"
 
 # start the jack deamon (exit once all clients are closed with -T)
-jackd -R -T --silent -P70 -t2000 -d alsa -dhw:${ADEVICE} -p 128 -n 3 -r 48000 -s >/dev/null 2>&1 &
+if [[ -v is_raspi ]]; then
+  export LD_LIBRARY_PATH="jack2/build:jack2/build/common"
+  jack2/build/jackd -R -T --silent -P70 -t2000 -d alsa -dhw:${ADEVICE} -p 128 -n 3 -r 48000 -s >/dev/null 2>&1 &
+else
+  jackd -R -T --silent -P70 -t2000 -d alsa -dhw:${ADEVICE} -p 128 -n 3 -r 48000 -s >/dev/null 2>&1 &
+fi
 sleep 1
 
 
