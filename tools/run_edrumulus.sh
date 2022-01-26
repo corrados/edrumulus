@@ -68,34 +68,6 @@ else
 fi
 
 
-# download and compile jack2 (optional) ----------------------------------------
-if [[ -v is_raspi ]]; then
-  # Jack audio without DBUS support
-  if [ -d "jack2" ]; then
-    echo "The Jack2 directory is present, we assume it is compiled and ready to use. If not, delete the jack2 directory and call this script again."
-  else
-    git clone https://github.com/jackaudio/jack2.git
-    cd jack2
-    git checkout v1.9.20
-    ./waf configure --alsa --prefix=/usr/local --libdir=$(pwd)/build
-    ./waf -j${NCORES}
-    mkdir build/jack
-    cp build/*.so build/jack
-    cp build/common/*.so build/jack
-    cp build/example-clients/*.so build/jack
-    cd ..
-
-    # give audio group rights to do realtime
-    if grep -Fq "@audio" /etc/security/limits.conf; then
-      echo "audio group already has realtime rights"
-    else
-      sudo sh -c 'echo "@audio   -  rtprio   95" >> /etc/security/limits.conf'
-      sudo sh -c 'echo "@audio   -  memlock  unlimited" >> /etc/security/limits.conf'
-    fi
-  fi
-fi
-
-
 # download and compile Drumgizmo -----------------------------------------------
 if [ -d "drumgizmo" ]; then
   echo "The Drumgizmo directory is present, we assume it is compiled and ready to use. If not, delete the Drumgizmo directory and call this script again."
