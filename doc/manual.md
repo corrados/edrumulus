@@ -34,9 +34,6 @@ Now open the edrumulus.ino file in the Arduino IDE and customize the settings:
 - analog_pins and analog_pins_rimshot define the GPIO ports you use for your pad inputs. If you have
   a single piezo pad (mono pad), set the corresponding GPIO value to -1 to disable the second input
   for that pad.
-- In the sections "some fundamental settings" and "my prototype setup" you can customize
-  the pad settings. Note that this can also be done in real-time from Octave later on without
-  the need to flash a new Edrumulus firmware to change the pad parameters.
 
 Start the loopMIDI and Hairless MIDI tools. Configure the Hairless MIDI "MIDI Out" combo box to
 loopMIDI to be able to use Edrumulus with your DAW.

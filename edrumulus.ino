@@ -70,8 +70,16 @@ void setup()
 #endif
 
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
+  read_settings();
 
-  // some fundamental settings which do not change during operation
+  // initialize GPIO port for status LED
+  pinMode ( status_LED_pin, OUTPUT );
+}
+
+
+void preset_settings()
+{
+  // default MIDI note assignments
   edrumulus.set_midi_notes       ( 0, 38, 40 ); // snare
   edrumulus.set_midi_notes       ( 1, 36, 36 ); // kick
   // not sure what difference between set_midi_notes and set_midi_notes_open is.
@@ -86,10 +94,29 @@ void setup()
   edrumulus.set_midi_notes       ( 7, 45, 47 ); // x
   //edrumulus.set_midi_notes     ( 8, 43, 58 ); // x
 
+  // default drum kit setup
+  edrumulus.set_pad_type          ( 0, Edrumulus::PD80R ); // snare
+  edrumulus.set_rim_shot_is_used  ( 0, true );
+  edrumulus.set_pos_sense_is_used ( 0, true );
+  edrumulus.set_pad_type          ( 1, Edrumulus::KD7 ); // kick
+  edrumulus.set_curve             ( 1, Edrumulus::LOG2 ); // less dynamic on kick (similar to other drum modules)
+  edrumulus.set_pad_type          ( 2, Edrumulus::CY5 ); // Hi-Hat, using rim switch
+  edrumulus.set_rim_shot_is_used  ( 2, true );
+  edrumulus.set_pad_type          ( 3, Edrumulus::FD8 ); // Hi-Hat-ctrl
+  edrumulus.set_pad_type          ( 4, Edrumulus::CY8 ); // crash, using rim switch
+  edrumulus.set_rim_shot_is_used  ( 4, true );
+  edrumulus.set_pad_type          ( 5, Edrumulus::PD8 ); // tom 1
+  edrumulus.set_pad_type          ( 6, Edrumulus::PD8 ); // ride, using rim switch
+  edrumulus.set_rim_shot_is_used  ( 6, true );
+  edrumulus.set_pad_type          ( 7, Edrumulus::PD8 ); // tom 2
+  edrumulus.set_pad_type          ( 8, Edrumulus::PD8 ); // tom 3
+
   // thijstriemstra prototype setup configuration...
 
   // SNARE (Drum-tec Diabolo 12 inch)
   edrumulus.set_pad_type             ( 0, Edrumulus::DIABOLO12 );
+  // disable for now
+  edrumulus.set_pos_sense_is_used    ( 0, false );
   // disable rim for now, see
   // https://github.com/corrados/edrumulus/discussions/30#discussioncomment-1908586
   edrumulus.set_rim_shot_is_used     ( 0, false );
@@ -126,9 +153,6 @@ void setup()
   edrumulus.set_pad_type             ( 5, Edrumulus::PD5 );
   edrumulus.set_velocity_threshold   ( 5, 15 );
   edrumulus.set_velocity_sensitivity ( 5, 12 );
-
-  // initialize GPIO port for status LED
-  pinMode ( status_LED_pin, OUTPUT );
 }
 
 
@@ -291,9 +315,9 @@ void loop()
         MYMIDI.sendNoteOff ( 108, selected_pad, 1 );
         MYMIDI.sendNoteOff ( 109, static_cast<int> ( edrumulus.get_curve ( selected_pad ) ), 1 );
         MYMIDI.sendNoteOff ( 110, edrumulus.get_spike_cancel_level(), 1 );
-        MYMIDI.sendNoteOff ( 111, 0, 1 ); // TODO not yet supported
-        MYMIDI.sendNoteOff ( 112, 0, 1 ); // TODO not yet supported
-        MYMIDI.sendNoteOff ( 113, 0, 1 ); // TODO not yet supported
+        MYMIDI.sendNoteOff ( 111, edrumulus.get_rim_shot_is_used ( selected_pad ) + 2 * edrumulus.get_pos_sense_is_used ( selected_pad ), 1 );
+        MYMIDI.sendNoteOff ( 112, edrumulus.get_midi_note_norm ( selected_pad ), 1 );
+        MYMIDI.sendNoteOff ( 113, edrumulus.get_midi_note_rim ( selected_pad ), 1 );
         MYMIDI.sendNoteOff ( 114, edrumulus.get_cancellation ( selected_pad ), 1 );
         MYMIDI.sendNoteOff ( 126, VERSION_MINOR, 1 );
         MYMIDI.sendNoteOff ( 127, VERSION_MAJOR, 1 );
@@ -329,14 +353,14 @@ void loop()
       // controller 112: normal MIDI note
       if ( controller == 112 )
       {
-        edrumulus.set_midi_notes ( selected_pad, value, edrumulus.get_midi_note_rim ( selected_pad ) );
+        edrumulus.set_midi_note_norm ( selected_pad, value );
         is_used = true;
       }
 
       // controller 113: MIDI note for rim
       if ( controller == 113 )
       {
-        edrumulus.set_midi_notes ( selected_pad, edrumulus.get_midi_note_norm ( selected_pad ), value );
+        edrumulus.set_midi_note_rim ( selected_pad, value );
         is_used = true;
       }
 
@@ -347,12 +371,66 @@ void loop()
         is_used = true;
       }
 
-      // give some feedback that the setting was correctly received
+      // controller 115: apply preset settings and store these to the EEPROM
+      if ( controller == 115 )
+      {
+        preset_settings();
+        is_used = true;
+      }
+
+      // give some feedback that the setting was correctly received and store new value
       if ( is_used )
       {
+        write_settings();
         MYMIDI.sendNoteOff ( controller, value, 1 ); // can be checked, e.g., in the log file
       }
     }
   }
 #endif
+}
+
+
+void read_settings()
+{
+  for ( int i = 0; i < number_pads; i++ )
+  {
+    edrumulus.set_pad_type             ( i, static_cast<Edrumulus::Epadtype> (   edrumulus.read_setting ( i, 0 ) ) );
+    edrumulus.set_velocity_threshold   ( i,                                      edrumulus.read_setting ( i, 1 ) );
+    edrumulus.set_velocity_sensitivity ( i,                                      edrumulus.read_setting ( i, 2 ) );
+    edrumulus.set_pos_threshold        ( i,                                      edrumulus.read_setting ( i, 3 ) );
+    edrumulus.set_pos_sensitivity      ( i,                                      edrumulus.read_setting ( i, 4 ) );
+    edrumulus.set_rim_shot_treshold    ( i,                                      edrumulus.read_setting ( i, 5 ) );
+    edrumulus.set_curve                ( i, static_cast<Edrumulus::Ecurvetype> ( edrumulus.read_setting ( i, 6 ) ) );
+    edrumulus.set_rim_shot_is_used     ( i,                                      edrumulus.read_setting ( i, 7 ) );
+    edrumulus.set_pos_sense_is_used    ( i,                                      edrumulus.read_setting ( i, 8 ) );
+    edrumulus.set_midi_note_norm       ( i,                                      edrumulus.read_setting ( i, 9 ) );
+    edrumulus.set_midi_note_rim        ( i,                                      edrumulus.read_setting ( i, 10 ) );
+    edrumulus.set_cancellation         ( i,                                      edrumulus.read_setting ( i, 11 ) );
+    edrumulus.set_midi_note_open_norm  ( i,                                      edrumulus.read_setting ( i, 12 ) );
+    edrumulus.set_midi_note_open_rim   ( i,                                      edrumulus.read_setting ( i, 13 ) );
+  }
+  edrumulus.set_spike_cancel_level ( edrumulus.read_setting ( number_pads, 0 ) );
+}
+
+
+void write_settings()
+{
+  for ( int i = 0; i < number_pads; i++ )
+  {
+    edrumulus.write_setting ( i, 0,  edrumulus.get_pad_type             ( i ) );
+    edrumulus.write_setting ( i, 1,  edrumulus.get_velocity_threshold   ( i ) );
+    edrumulus.write_setting ( i, 2,  edrumulus.get_velocity_sensitivity ( i ) );
+    edrumulus.write_setting ( i, 3,  edrumulus.get_pos_threshold        ( i ) );
+    edrumulus.write_setting ( i, 4,  edrumulus.get_pos_sensitivity      ( i ) );
+    edrumulus.write_setting ( i, 5,  edrumulus.get_rim_shot_treshold    ( i ) );
+    edrumulus.write_setting ( i, 6,  edrumulus.get_curve                ( i ) );
+    edrumulus.write_setting ( i, 7,  edrumulus.get_rim_shot_is_used     ( i ) );
+    edrumulus.write_setting ( i, 8,  edrumulus.get_pos_sense_is_used    ( i ) );
+    edrumulus.write_setting ( i, 9,  edrumulus.get_midi_note_norm       ( i ) );
+    edrumulus.write_setting ( i, 10, edrumulus.get_midi_note_rim        ( i ) );
+    edrumulus.write_setting ( i, 11, edrumulus.get_cancellation         ( i ) );
+    edrumulus.write_setting ( i, 12, edrumulus.get_midi_note_open_norm  ( i ) );
+    edrumulus.write_setting ( i, 13, edrumulus.get_midi_note_open_rim   ( i ) );
+  }
+  edrumulus.write_setting ( number_pads, 0, edrumulus.get_spike_cancel_level() );
 }

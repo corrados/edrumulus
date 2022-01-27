@@ -18,6 +18,7 @@
 #pragma once
 
 #include "Arduino.h"
+#include "EEPROM.h"
 
 
 // Global hardware enums and definitions ---------------------------------------
@@ -29,8 +30,10 @@ enum Espikestate
   ST_OTHER
 };
 
-#define MAX_NUM_PADS         12 // a maximum of 12 pads are supported
-#define MAX_NUM_PAD_INPUTS   2  // a maximum of 2 sensors per pad is supported
+#define MAX_NUM_PADS         12  // a maximum of 12 pads are supported
+#define MAX_NUM_PAD_INPUTS   2   // a maximum of 2 sensors per pad is supported
+#define MAX_EEPROM_SIZE      512 // bytes (Teensy 4.0: max 1024 bytes)
+#define MAX_NUM_SET_PER_PAD  30  // maximum number of settings which can be stored per pad
 
 
 // -----------------------------------------------------------------------------
@@ -69,6 +72,9 @@ public:
                             const int   pad_index,
                             const int   input_channel_index,
                             const int   level );
+
+  void write_setting ( const int pad_index, const int address, const byte value );
+  byte read_setting  ( const int pad_index, const int address );
 
 protected:
   int           Fs;
@@ -127,13 +133,18 @@ public:
                             const int   input_channel_index,
                             const int   level );
 
+  void write_setting ( const int pad_index, const int address, const byte value );
+  byte read_setting  ( const int pad_index, const int address );
+
 protected:
   int                        Fs;
+  EEPROMClass                eeprom_settings;
   volatile SemaphoreHandle_t timer_semaphore;
   hw_timer_t*                timer = nullptr;
   static void IRAM_ATTR      on_timer();
   static void                start_timer_core0_task ( void* param );
 
+  void     setup_timer ( const bool clear_timer = false );
   void     init_my_analogRead();
   uint16_t my_analogRead ( const uint8_t pin );
   void my_analogRead_parallel ( const uint32_t channel_adc1_bitval,
