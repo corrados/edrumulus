@@ -394,6 +394,7 @@ void read_settings()
 {
   for ( int i = 0; i < number_pads; i++ )
   {
+    // NOTE that it is important that set_pad_type() is called first because it resets all other parameters
     edrumulus.set_pad_type             ( i, static_cast<Edrumulus::Epadtype> (   edrumulus.read_setting ( i, 0 ) ) );
     edrumulus.set_velocity_threshold   ( i,                                      edrumulus.read_setting ( i, 1 ) );
     edrumulus.set_velocity_sensitivity ( i,                                      edrumulus.read_setting ( i, 2 ) );
