@@ -1,6 +1,14 @@
 #!/bin/bash
 
-echo "This script prepares a Raspberry Pi for Edrumulus usage"
+# Edrumulus Linux start script for using Drumgizmo
+#
+# Optional: If your Raspberry Pi has a button for ON/OFF connected to gpio pin3, add the following in /boot/config.txt
+#           dtoverlay=gpio-shutdown,gpio_pin=3, active_low=1,gpio_pull=up
+# Optional: Give audio group rights to do realtime
+#           sudo sh -c 'echo "@audio   -  rtprio   95" >> /etc/security/limits.conf'
+#           sudo sh -c 'echo "@audio   -  memlock  unlimited" >> /etc/security/limits.conf'
+
+echo "This script prepares a Linux/Raspberry Pi system for Edrumulus usage"
 
 
 # get environment --------------------------------------------------------------
@@ -12,9 +20,21 @@ if aconnect -l|grep -q Edrumulus; then
   is_teensy=true
 fi
 
+# check if we are running on a Raspberry Pi by checking if the user name is pi
+if [ $USER = "pi" ]; then
+  echo "Running on a Raspberry pi"
+  is_raspi=true
+fi
+
+# check if we are in Jamulus session mode
+if [[ "$1" == jamulus ]]; then
+  echo "Jamulus session mode enabled"
+  is_jamulus=true
+fi
+
 
 # install required packages ----------------------------------------------------
-pkgs='git htop alsamixergui build-essential libasound2-dev jackd2 cmake libglib2.0-dev autoconf automake libtool lv2-dev xorg-dev libsndfile1-dev libjack-jackd2-dev libsmf-dev gettext a2jmidid libncurses5-dev'
+pkgs='git htop vim alsamixergui build-essential libasound2-dev jackd2 cmake libglib2.0-dev autoconf automake libtool lv2-dev xorg-dev libsndfile1-dev libjack-jackd2-dev libsmf-dev gettext a2jmidid libncurses5-dev'
 if ! dpkg -s $pkgs >/dev/null 2>&1; then
   read -p "Do you want to install missing packages? " -n 1 -r
   echo
@@ -141,7 +161,7 @@ fi
 
 
 # run Edrumulus ----------------------------------------------------------------
-if [ $USER = "pi" ]; then
+if [[ -v is_raspi ]]; then
   ./drumgizmo/drumgizmo/drumgizmo -l -L max=2,rampdown=0.02 -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
   sleep 20
 else
@@ -154,9 +174,22 @@ jack_connect $KITJACKPORTRIGHT system:playback_2
 
 
 # either use direct MIDI connection or through EdrumulusGUI
-if [[ "$1" == gui ]]
-then
+if [[ "$1" == gui ]]; then
   ./EdrumulusGUI DrumGizmo:drumgizmo_midiin
+elif [[ -v is_jamulus ]]; then
+  jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
+  jack_disconnect $KITJACKPORTLEFT system:playback_1
+  jack_disconnect $KITJACKPORTRIGHT system:playback_2
+  if [ -z "$2" ]; then
+    ./../../jamulus/Jamulus -n -i ../../jamulus/Jamulus.ini -c anygenre1.jamulus.io &
+  else
+    ./../../jamulus/Jamulus -n -i ../../jamulus/Jamulus.ini -c $2 &
+  fi
+  sleep 5
+  jack_connect $KITJACKPORTLEFT "Jamulus:input left"
+  jack_connect $KITJACKPORTRIGHT "Jamulus:input right"
+  echo "###---------- PRESS ANY KEY TO TERMINATE THE EDRUMULUS/JAMULUS SESSION ---------###"
+  read -n 1 -s -r -p ""
 else
   jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
   echo "###---------- PRESS ANY KEY TO TERMINATE THE EDRUMULUS SESSION ---------###"
@@ -164,6 +197,10 @@ else
 fi
 
 killall drumgizmo
+
+if [[ -v is_jamulus ]]; then
+  killall Jamulus
+fi
 
 if [[ -v is_teensy ]]; then
   killall a2jmidid

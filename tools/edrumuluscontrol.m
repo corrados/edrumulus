@@ -370,7 +370,7 @@ while ishandle(figure_handle)
 
   % if version number is available, set the window title
   if (version_major >= 0) && (version_minor >= 0) && isempty(strfind(get(figure_handle, 'Name'), 'Edrumulus'))
-    set(figure_handle, 'Name', ['Edrumulus Version ' num2str(version_major) '.' num2str(version_minor)], 'NumberTitle', 'off');
+    set(figure_handle, 'Name', ['Edrumulus v' num2str(version_major) '.' num2str(version_minor)], 'NumberTitle', 'off');
   end
 
   pause(0.01); % do not block the CPU all the time

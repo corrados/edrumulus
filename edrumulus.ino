@@ -273,7 +273,7 @@ void loop()
         MYMIDI.sendNoteOff ( 108, selected_pad, 1 );
         MYMIDI.sendNoteOff ( 109, static_cast<int> ( edrumulus.get_curve ( selected_pad ) ), 1 );
         MYMIDI.sendNoteOff ( 110, edrumulus.get_spike_cancel_level(), 1 );
-        MYMIDI.sendNoteOff ( 111, 0, 1 ); // TODO not yet supported
+        MYMIDI.sendNoteOff ( 111, edrumulus.get_rim_shot_is_used ( selected_pad ) + 2 * edrumulus.get_pos_sense_is_used ( selected_pad ), 1 );
         MYMIDI.sendNoteOff ( 112, edrumulus.get_midi_note_norm ( selected_pad ), 1 );
         MYMIDI.sendNoteOff ( 113, edrumulus.get_midi_note_rim ( selected_pad ), 1 );
         MYMIDI.sendNoteOff ( 114, edrumulus.get_cancellation ( selected_pad ), 1 );
@@ -352,6 +352,7 @@ void read_settings()
 {
   for ( int i = 0; i < number_pads; i++ )
   {
+    // NOTE that it is important that set_pad_type() is called first because it resets all other parameters
     edrumulus.set_pad_type             ( i, static_cast<Edrumulus::Epadtype> (   edrumulus.read_setting ( i, 0 ) ) );
     edrumulus.set_velocity_threshold   ( i,                                      edrumulus.read_setting ( i, 1 ) );
     edrumulus.set_velocity_sensitivity ( i,                                      edrumulus.read_setting ( i, 2 ) );
