@@ -37,7 +37,7 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 
 Edrumulus edrumulus;
 #ifdef ESP_PLATFORM
-const int number_pads       = 9; // ESP32
+const int number_pads       = 4; // ESP32
 #else
 const int number_pads       = 8; // Teensy 4.0
 #endif
@@ -64,8 +64,8 @@ void setup()
   // NOTE: avoid ESP32 GPIO 25/26 for piezo inputs since they are DAC pins which cause an incorrect DC offset
   //       estimation and DC offset drift which makes the spike cancellation algorithm not working correctly
   // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
-  const int analog_pins[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    15 };
-  const int analog_pins_rimshot[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1 };
+  const int analog_pins[]         = { 12,    35,     15,       34,         34,     39,    27,    12,    15 };
+  const int analog_pins_rimshot[] = { 13,    -1,     14,       -1,         14,     -1,    13,    -1,    -1 };
 #endif
 #ifdef TEENSYDUINO
   // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
