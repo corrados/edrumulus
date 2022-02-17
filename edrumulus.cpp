@@ -244,7 +244,7 @@ Serial.println ( serial_print );
 // TEST check the measured sampling rate
 //Serial.println ( 1.0f / ( samplerate_cur_micros - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f, 7 );
 
-    // do update status if micros() has wrapped around (at about 70 minutes)
+    // do not update status if micros() has wrapped around (at about 70 minutes)
     if ( samplerate_cur_micros - samplerate_prev_micros > 0 )
     {
       // set error flag if sample rate deviation is too large
