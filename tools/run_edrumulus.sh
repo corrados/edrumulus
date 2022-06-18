@@ -157,16 +157,22 @@ else
   stty 38400 -F /dev/ttyUSB0
 
   if [[ -v is_settings ]]; then
+    # general settings
+    echo -n -e '\xB9\x6E\x04' > /dev/ttyUSB0 # spike cancellation: 4
+
     # snare
-    echo -n -e '\xB9\x6C\x00' > /dev/ttyUSB0 # select pad: 0
-    #echo -n -e '\xB9\x6D\x03' > /dev/ttyUSB0 # MIDI curve type: LOG1
-    #echo -n -e '\xB9\x66\x02' > /dev/ttyUSB0 # pad type: PD8
-    #echo -n -e '\xB9\x67\x05' > /dev/ttyUSB0 # threshold
-    #echo -n -e '\xB9\x68\x08' > /dev/ttyUSB0 # sensitivity
-    #echo -n -e '\xB9\x6B\x10' > /dev/ttyUSB0 # rim shot threshold
-    #echo -n -e '\xB9\x69\x1A' > /dev/ttyUSB0 # positional sensing threshold
-    #echo -n -e '\xB9\x6A\x0B' > /dev/ttyUSB0 # positional sensing sensitivity
-    #echo -n -e '\xB9\x6F\x03' > /dev/ttyUSB0 # rim/pos: both, rim shot and positional sensing
+    echo -n -e '\xB9\x6C\x00' > /dev/ttyUSB0 # select pad:       0
+    echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
+    echo -n -e '\xB9\x66\x0F' > /dev/ttyUSB0 # pad type:         PDX8
+    echo -n -e '\xB9\x67\x07' > /dev/ttyUSB0 # threshold:        7
+    echo -n -e '\xB9\x68\x07' > /dev/ttyUSB0 # sensitivity:      7
+    echo -n -e '\xB9\x6B\x04' > /dev/ttyUSB0 # rim threshold:    4
+    echo -n -e '\xB9\x69\x16' > /dev/ttyUSB0 # pos threshold:    22
+    echo -n -e '\xB9\x6A\x1F' > /dev/ttyUSB0 # pos sensitivity:  31
+    echo -n -e '\xB9\x6F\x03' > /dev/ttyUSB0 # rim/pos:          3 (both)
+    echo -n -e '\xB9\x70\x26' > /dev/ttyUSB0 # midi note:        38
+    echo -n -e '\xB9\x71\x28' > /dev/ttyUSB0 # midi note rim:    40
+    echo -n -e '\xB9\x72\x05' > /dev/ttyUSB0 # crosstalk cancel: 5
 
     # kick
     echo -n -e '\xB9\x6C\x01' > /dev/ttyUSB0 # select pad: 1
