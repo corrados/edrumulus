@@ -287,11 +287,12 @@ elif [[ -v is_jamulus ]]; then
   jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
   jack_disconnect $KITJACKPORTLEFT system:playback_1
   jack_disconnect $KITJACKPORTRIGHT system:playback_2
-  if [ -z "$2" ]; then
+  # note that $2 does not work anymore -> TODO fix it
+  #if [ -z "$2" ]; then
     ./../../jamulus/Jamulus -n -i ../../jamulus/Jamulus.ini -c anygenre1.jamulus.io &
-  else
-    ./../../jamulus/Jamulus -n -i ../../jamulus/Jamulus.ini -c $2 &
-  fi
+  #else
+  #  ./../../jamulus/Jamulus -n -i ../../jamulus/Jamulus.ini -c $2 &
+  #fi
   sleep 5
   jack_connect $KITJACKPORTLEFT "Jamulus:input left"
   jack_connect $KITJACKPORTRIGHT "Jamulus:input right"
