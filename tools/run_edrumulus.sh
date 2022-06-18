@@ -158,98 +158,98 @@ else
 
   if [[ -v is_settings ]]; then
     # general settings
-    echo -n -e '\xB9\x6E\x04' > /dev/ttyUSB0 # spike cancellation: 4
+    echo -n -e '\xB9\x6E\x04' > /dev/ttyUSB0; sleep 0.1 # spike cancellation: 4
 
     # snare
-    echo -n -e '\xB9\x6C\x00' > /dev/ttyUSB0; sleep 0.05 # select pad:       0
-    echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0; sleep 0.05 # MIDI curve type:  LINEAR
-    echo -n -e '\xB9\x66\x0F' > /dev/ttyUSB0; sleep 0.05 # pad type:         PDX8
-    echo -n -e '\xB9\x67\x07' > /dev/ttyUSB0; sleep 0.05 # threshold:        7
-    echo -n -e '\xB9\x68\x07' > /dev/ttyUSB0; sleep 0.05 # sensitivity:      7
-    echo -n -e '\xB9\x6B\x0E' > /dev/ttyUSB0; sleep 0.05 # rim threshold:    14
-    echo -n -e '\xB9\x69\x16' > /dev/ttyUSB0; sleep 0.05 # pos threshold:    22
-    echo -n -e '\xB9\x6A\x1F' > /dev/ttyUSB0; sleep 0.05 # pos sensitivity:  31
-    echo -n -e '\xB9\x6F\x03' > /dev/ttyUSB0; sleep 0.05 # rim/pos:          3 (both)
-    echo -n -e '\xB9\x70\x26' > /dev/ttyUSB0; sleep 0.05 # midi note:        38
-    echo -n -e '\xB9\x71\x28' > /dev/ttyUSB0; sleep 0.05 # midi note rim:    40
-    echo -n -e '\xB9\x72\x05' > /dev/ttyUSB0; sleep 0.05 # crosstalk cancel: 5
+    echo -n -e '\xB9\x6C\x00' > /dev/ttyUSB0; sleep 0.1 # select pad:       0
+    echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0; sleep 0.1 # MIDI curve type:  LINEAR
+    echo -n -e '\xB9\x66\x0F' > /dev/ttyUSB0; sleep 0.1 # pad type:         PDX8
+    echo -n -e '\xB9\x67\x07' > /dev/ttyUSB0; sleep 0.1 # threshold:        7
+    echo -n -e '\xB9\x68\x07' > /dev/ttyUSB0; sleep 0.1 # sensitivity:      7
+    echo -n -e '\xB9\x6B\x0E' > /dev/ttyUSB0; sleep 0.1 # rim threshold:    14
+    echo -n -e '\xB9\x69\x16' > /dev/ttyUSB0; sleep 0.1 # pos threshold:    22
+    echo -n -e '\xB9\x6A\x1F' > /dev/ttyUSB0; sleep 0.1 # pos sensitivity:  31
+    echo -n -e '\xB9\x6F\x03' > /dev/ttyUSB0; sleep 0.1 # rim/pos:          3 (both)
+    echo -n -e '\xB9\x70\x26' > /dev/ttyUSB0; sleep 0.1 # midi note:        38
+    echo -n -e '\xB9\x71\x28' > /dev/ttyUSB0; sleep 0.1 # midi note rim:    40
+    echo -n -e '\xB9\x72\x05' > /dev/ttyUSB0; sleep 0.1 # crosstalk cancel: 5
 
     # kick
-    echo -n -e '\xB9\x6C\x01' > /dev/ttyUSB0; sleep 0.05 # select pad:       1
-    echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0; sleep 0.05 # MIDI curve type:  LINEAR
-    echo -n -e '\xB9\x66\x06' > /dev/ttyUSB0; sleep 0.05 # pad type:         KD7
-    echo -n -e '\xB9\x67\x0E' > /dev/ttyUSB0; sleep 0.05 # threshold:        14
-    echo -n -e '\xB9\x68\x09' > /dev/ttyUSB0; sleep 0.05 # sensitivity:      9
-    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0; sleep 0.05 # rim/pos:          0 (none)
-    echo -n -e '\xB9\x70\x24' > /dev/ttyUSB0; sleep 0.05 # midi note:        36
-    echo -n -e '\xB9\x72\x00' > /dev/ttyUSB0; sleep 0.05 # crosstalk cancel: 0
+    echo -n -e '\xB9\x6C\x01' > /dev/ttyUSB0; sleep 0.1 # select pad:       1
+    echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0; sleep 0.1 # MIDI curve type:  LINEAR
+    echo -n -e '\xB9\x66\x06' > /dev/ttyUSB0; sleep 0.1 # pad type:         KD7
+    echo -n -e '\xB9\x67\x0E' > /dev/ttyUSB0; sleep 0.1 # threshold:        14
+    echo -n -e '\xB9\x68\x09' > /dev/ttyUSB0; sleep 0.1 # sensitivity:      9
+    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0; sleep 0.1 # rim/pos:          0 (none)
+    echo -n -e '\xB9\x70\x24' > /dev/ttyUSB0; sleep 0.1 # midi note:        36
+    echo -n -e '\xB9\x72\x00' > /dev/ttyUSB0; sleep 0.1 # crosstalk cancel: 0
 
     # Hi-Hat
-    echo -n -e '\xB9\x6C\x02' > /dev/ttyUSB0; sleep 0.05 # select pad:       2
-    echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0; sleep 0.05 # MIDI curve type:  LINEAR
-    echo -n -e '\xB9\x66\x0B' > /dev/ttyUSB0; sleep 0.05 # pad type:         CY5
-    echo -n -e '\xB9\x67\x06' > /dev/ttyUSB0; sleep 0.05 # threshold:        6
-    echo -n -e '\xB9\x68\x06' > /dev/ttyUSB0; sleep 0.05 # sensitivity:      6
-    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0; sleep 0.05 # rim/pos:          0 (none)
-    echo -n -e '\xB9\x70\x16' > /dev/ttyUSB0; sleep 0.05 # midi note:        22
-    echo -n -e '\xB9\x72\x08' > /dev/ttyUSB0; sleep 0.05 # crosstalk cancel: 8
+    echo -n -e '\xB9\x6C\x02' > /dev/ttyUSB0; sleep 0.1 # select pad:       2
+    echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0; sleep 0.1 # MIDI curve type:  LINEAR
+    echo -n -e '\xB9\x66\x0B' > /dev/ttyUSB0; sleep 0.1 # pad type:         CY5
+    echo -n -e '\xB9\x67\x06' > /dev/ttyUSB0; sleep 0.1 # threshold:        6
+    echo -n -e '\xB9\x68\x06' > /dev/ttyUSB0; sleep 0.1 # sensitivity:      6
+    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0; sleep 0.1 # rim/pos:          0 (none)
+    echo -n -e '\xB9\x70\x16' > /dev/ttyUSB0; sleep 0.1 # midi note:        22
+    echo -n -e '\xB9\x72\x08' > /dev/ttyUSB0; sleep 0.1 # crosstalk cancel: 8
 
     # Hi-Hat control
-    echo -n -e '\xB9\x6C\x03' > /dev/ttyUSB0; sleep 0.05 # select pad:       3
-    echo -n -e '\xB9\x66\x03' > /dev/ttyUSB0; sleep 0.05 # pad type:         FD8
-    echo -n -e '\xB9\x67\x0C' > /dev/ttyUSB0; sleep 0.05 # threshold:        12
-    echo -n -e '\xB9\x68\x1F' > /dev/ttyUSB0; sleep 0.05 # sensitivity:      31
-    echo -n -e '\xB9\x70\x2C' > /dev/ttyUSB0; sleep 0.05 # midi note:        44
+    echo -n -e '\xB9\x6C\x03' > /dev/ttyUSB0; sleep 0.1 # select pad:       3
+    echo -n -e '\xB9\x66\x03' > /dev/ttyUSB0; sleep 0.1 # pad type:         FD8
+    echo -n -e '\xB9\x67\x0C' > /dev/ttyUSB0; sleep 0.1 # threshold:        12
+    echo -n -e '\xB9\x68\x1F' > /dev/ttyUSB0; sleep 0.1 # sensitivity:      31
+    echo -n -e '\xB9\x70\x2C' > /dev/ttyUSB0; sleep 0.1 # midi note:        44
 
     # crash
-    echo -n -e '\xB9\x6C\x04' > /dev/ttyUSB0; sleep 0.05 # select pad:       4
-    echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0; sleep 0.05 # MIDI curve type:  LINEAR
-    echo -n -e '\xB9\x66\x0B' > /dev/ttyUSB0; sleep 0.05 # pad type:         CY5
-    echo -n -e '\xB9\x67\x0D' > /dev/ttyUSB0; sleep 0.05 # threshold:        13
-    echo -n -e '\xB9\x68\x09' > /dev/ttyUSB0; sleep 0.05 # sensitivity:      9
-    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0; sleep 0.05 # rim/pos:          0 (none)
-    echo -n -e '\xB9\x70\x31' > /dev/ttyUSB0; sleep 0.05 # midi note:        49
-    echo -n -e '\xB9\x72\x08' > /dev/ttyUSB0; sleep 0.05 # crosstalk cancel: 8
+    echo -n -e '\xB9\x6C\x04' > /dev/ttyUSB0; sleep 0.1 # select pad:       4
+    echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0; sleep 0.1 # MIDI curve type:  LINEAR
+    echo -n -e '\xB9\x66\x0B' > /dev/ttyUSB0; sleep 0.1 # pad type:         CY5
+    echo -n -e '\xB9\x67\x0D' > /dev/ttyUSB0; sleep 0.1 # threshold:        13
+    echo -n -e '\xB9\x68\x09' > /dev/ttyUSB0; sleep 0.1 # sensitivity:      9
+    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0; sleep 0.1 # rim/pos:          0 (none)
+    echo -n -e '\xB9\x70\x31' > /dev/ttyUSB0; sleep 0.1 # midi note:        49
+    echo -n -e '\xB9\x72\x08' > /dev/ttyUSB0; sleep 0.1 # crosstalk cancel: 8
 
     # tom 1
-    echo -n -e '\xB9\x6C\x05' > /dev/ttyUSB0; sleep 0.05 # select pad:       5
-    echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0; sleep 0.05 # MIDI curve type:  LINEAR
-    echo -n -e '\xB9\x66\x0C' > /dev/ttyUSB0; sleep 0.05 # pad type:         HD1TOM
-    echo -n -e '\xB9\x67\x08' > /dev/ttyUSB0; sleep 0.05 # threshold:        8
-    echo -n -e '\xB9\x68\x06' > /dev/ttyUSB0; sleep 0.05 # sensitivity:      6
-    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0; sleep 0.05 # rim/pos:          0 (none)
-    echo -n -e '\xB9\x70\x30' > /dev/ttyUSB0; sleep 0.05 # midi note:        48
-    echo -n -e '\xB9\x72\x04' > /dev/ttyUSB0; sleep 0.05 # crosstalk cancel: 4
+    echo -n -e '\xB9\x6C\x05' > /dev/ttyUSB0; sleep 0.1 # select pad:       5
+    echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0; sleep 0.1 # MIDI curve type:  LINEAR
+    echo -n -e '\xB9\x66\x0C' > /dev/ttyUSB0; sleep 0.1 # pad type:         HD1TOM
+    echo -n -e '\xB9\x67\x08' > /dev/ttyUSB0; sleep 0.1 # threshold:        8
+    echo -n -e '\xB9\x68\x06' > /dev/ttyUSB0; sleep 0.1 # sensitivity:      6
+    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0; sleep 0.1 # rim/pos:          0 (none)
+    echo -n -e '\xB9\x70\x30' > /dev/ttyUSB0; sleep 0.1 # midi note:        48
+    echo -n -e '\xB9\x72\x04' > /dev/ttyUSB0; sleep 0.1 # crosstalk cancel: 4
 
     # ride
-    echo -n -e '\xB9\x6C\x06' > /dev/ttyUSB0; sleep 0.05 # select pad:       6
-    echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0; sleep 0.05 # MIDI curve type:  LINEAR
-    echo -n -e '\xB9\x66\x0B' > /dev/ttyUSB0; sleep 0.05 # pad type:         CY5
-    echo -n -e '\xB9\x67\x08' > /dev/ttyUSB0; sleep 0.05 # threshold:        8
-    echo -n -e '\xB9\x68\x09' > /dev/ttyUSB0; sleep 0.05 # sensitivity:      9
-    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0; sleep 0.05 # rim/pos:          0 (none)
-    echo -n -e '\xB9\x70\x33' > /dev/ttyUSB0; sleep 0.05 # midi note:        51
-    echo -n -e '\xB9\x72\x00' > /dev/ttyUSB0; sleep 0.05 # crosstalk cancel: 0
+    echo -n -e '\xB9\x6C\x06' > /dev/ttyUSB0; sleep 0.1 # select pad:       6
+    echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0; sleep 0.1 # MIDI curve type:  LINEAR
+    echo -n -e '\xB9\x66\x0B' > /dev/ttyUSB0; sleep 0.1 # pad type:         CY5
+    echo -n -e '\xB9\x67\x08' > /dev/ttyUSB0; sleep 0.1 # threshold:        8
+    echo -n -e '\xB9\x68\x09' > /dev/ttyUSB0; sleep 0.1 # sensitivity:      9
+    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0; sleep 0.1 # rim/pos:          0 (none)
+    echo -n -e '\xB9\x70\x33' > /dev/ttyUSB0; sleep 0.1 # midi note:        51
+    echo -n -e '\xB9\x72\x00' > /dev/ttyUSB0; sleep 0.1 # crosstalk cancel: 0
 
     # tom 2
-    echo -n -e '\xB9\x6C\x07' > /dev/ttyUSB0; sleep 0.05 # select pad:       7
-    echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0; sleep 0.05 # MIDI curve type:  LINEAR
-    echo -n -e '\xB9\x66\x0C' > /dev/ttyUSB0; sleep 0.05 # pad type:         HD1TOM
-    echo -n -e '\xB9\x67\x08' > /dev/ttyUSB0; sleep 0.05 # threshold:        8
-    echo -n -e '\xB9\x68\x06' > /dev/ttyUSB0; sleep 0.05 # sensitivity:      6
-    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0; sleep 0.05 # rim/pos:          0 (none)
-    echo -n -e '\xB9\x70\x2D' > /dev/ttyUSB0; sleep 0.05 # midi note:        45
-    echo -n -e '\xB9\x72\x04' > /dev/ttyUSB0; sleep 0.05 # crosstalk cancel: 4
+    echo -n -e '\xB9\x6C\x07' > /dev/ttyUSB0; sleep 0.1 # select pad:       7
+    echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0; sleep 0.1 # MIDI curve type:  LINEAR
+    echo -n -e '\xB9\x66\x0C' > /dev/ttyUSB0; sleep 0.1 # pad type:         HD1TOM
+    echo -n -e '\xB9\x67\x08' > /dev/ttyUSB0; sleep 0.1 # threshold:        8
+    echo -n -e '\xB9\x68\x06' > /dev/ttyUSB0; sleep 0.1 # sensitivity:      6
+    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0; sleep 0.1 # rim/pos:          0 (none)
+    echo -n -e '\xB9\x70\x2D' > /dev/ttyUSB0; sleep 0.1 # midi note:        45
+    echo -n -e '\xB9\x72\x04' > /dev/ttyUSB0; sleep 0.1 # crosstalk cancel: 4
 
     # tom 3
-    echo -n -e '\xB9\x6C\x08' > /dev/ttyUSB0; sleep 0.05 # select pad:       8
-    echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0; sleep 0.05 # MIDI curve type:  LINEAR
-    echo -n -e '\xB9\x66\x0C' > /dev/ttyUSB0; sleep 0.05 # pad type:         HD1TOM
-    echo -n -e '\xB9\x67\x08' > /dev/ttyUSB0; sleep 0.05 # threshold:        8
-    echo -n -e '\xB9\x68\x06' > /dev/ttyUSB0; sleep 0.05 # sensitivity:      6
-    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0; sleep 0.05 # rim/pos:          0 (none)
-    echo -n -e '\xB9\x70\x2B' > /dev/ttyUSB0; sleep 0.05 # midi note:        43
-    echo -n -e '\xB9\x72\x04' > /dev/ttyUSB0; sleep 0.05 # crosstalk cancel: 4
+    echo -n -e '\xB9\x6C\x08' > /dev/ttyUSB0; sleep 0.1 # select pad:       8
+    echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0; sleep 0.1 # MIDI curve type:  LINEAR
+    echo -n -e '\xB9\x66\x0C' > /dev/ttyUSB0; sleep 0.1 # pad type:         HD1TOM
+    echo -n -e '\xB9\x67\x08' > /dev/ttyUSB0; sleep 0.1 # threshold:        8
+    echo -n -e '\xB9\x68\x06' > /dev/ttyUSB0; sleep 0.1 # sensitivity:      6
+    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0; sleep 0.1 # rim/pos:          0 (none)
+    echo -n -e '\xB9\x70\x2B' > /dev/ttyUSB0; sleep 0.1 # midi note:        43
+    echo -n -e '\xB9\x72\x04' > /dev/ttyUSB0; sleep 0.1 # crosstalk cancel: 4
   fi
 
   # start MIDI tool to convert serial MIDI to Jack Audio MIDI
