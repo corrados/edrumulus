@@ -181,7 +181,7 @@ else
     echo -n -e '\xB9\x66\x06' > /dev/ttyUSB0 # pad type:         KD7
     echo -n -e '\xB9\x67\x0E' > /dev/ttyUSB0 # threshold:        14
     echo -n -e '\xB9\x68\x09' > /dev/ttyUSB0 # sensitivity:      9
-    echo -n -e '\xB9\x6F\x03' > /dev/ttyUSB0 # rim/pos:          0 (none)
+    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0 # rim/pos:          0 (none)
     echo -n -e '\xB9\x70\x24' > /dev/ttyUSB0 # midi note:        36
     echo -n -e '\xB9\x72\x00' > /dev/ttyUSB0 # crosstalk cancel: 0
     sleep 0.2
@@ -192,7 +192,7 @@ else
     echo -n -e '\xB9\x66\x0B' > /dev/ttyUSB0 # pad type:         CY5
     echo -n -e '\xB9\x67\x06' > /dev/ttyUSB0 # threshold:        6
     echo -n -e '\xB9\x68\x06' > /dev/ttyUSB0 # sensitivity:      6
-    echo -n -e '\xB9\x6F\x03' > /dev/ttyUSB0 # rim/pos:          0 (none)
+    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0 # rim/pos:          0 (none)
     echo -n -e '\xB9\x70\x16' > /dev/ttyUSB0 # midi note:        22
     echo -n -e '\xB9\x72\x08' > /dev/ttyUSB0 # crosstalk cancel: 8
     sleep 0.2
@@ -211,7 +211,7 @@ else
     echo -n -e '\xB9\x66\x0B' > /dev/ttyUSB0 # pad type:         CY5
     echo -n -e '\xB9\x67\x0D' > /dev/ttyUSB0 # threshold:        13
     echo -n -e '\xB9\x68\x09' > /dev/ttyUSB0 # sensitivity:      9
-    echo -n -e '\xB9\x6F\x03' > /dev/ttyUSB0 # rim/pos:          0 (none)
+    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0 # rim/pos:          0 (none)
     echo -n -e '\xB9\x70\x31' > /dev/ttyUSB0 # midi note:        49
     echo -n -e '\xB9\x72\x08' > /dev/ttyUSB0 # crosstalk cancel: 8
     sleep 0.2
@@ -222,7 +222,7 @@ else
     echo -n -e '\xB9\x66\x0C' > /dev/ttyUSB0 # pad type:         HD1TOM
     echo -n -e '\xB9\x67\x08' > /dev/ttyUSB0 # threshold:        8
     echo -n -e '\xB9\x68\x06' > /dev/ttyUSB0 # sensitivity:      6
-    echo -n -e '\xB9\x6F\x03' > /dev/ttyUSB0 # rim/pos:          0 (none)
+    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0 # rim/pos:          0 (none)
     echo -n -e '\xB9\x70\x30' > /dev/ttyUSB0 # midi note:        48
     echo -n -e '\xB9\x72\x04' > /dev/ttyUSB0 # crosstalk cancel: 4
     sleep 0.2
@@ -233,7 +233,7 @@ else
     echo -n -e '\xB9\x66\x0B' > /dev/ttyUSB0 # pad type:         CY5
     echo -n -e '\xB9\x67\x08' > /dev/ttyUSB0 # threshold:        8
     echo -n -e '\xB9\x68\x09' > /dev/ttyUSB0 # sensitivity:      9
-    echo -n -e '\xB9\x6F\x03' > /dev/ttyUSB0 # rim/pos:          0 (none)
+    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0 # rim/pos:          0 (none)
     echo -n -e '\xB9\x70\x33' > /dev/ttyUSB0 # midi note:        51
     echo -n -e '\xB9\x72\x00' > /dev/ttyUSB0 # crosstalk cancel: 0
     sleep 0.2
@@ -244,7 +244,7 @@ else
     echo -n -e '\xB9\x66\x0C' > /dev/ttyUSB0 # pad type:         HD1TOM
     echo -n -e '\xB9\x67\x08' > /dev/ttyUSB0 # threshold:        8
     echo -n -e '\xB9\x68\x06' > /dev/ttyUSB0 # sensitivity:      6
-    echo -n -e '\xB9\x6F\x03' > /dev/ttyUSB0 # rim/pos:          0 (none)
+    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0 # rim/pos:          0 (none)
     echo -n -e '\xB9\x70\x2D' > /dev/ttyUSB0 # midi note:        45
     echo -n -e '\xB9\x72\x04' > /dev/ttyUSB0 # crosstalk cancel: 4
     sleep 0.2
@@ -255,7 +255,7 @@ else
     echo -n -e '\xB9\x66\x0C' > /dev/ttyUSB0 # pad type:         HD1TOM
     echo -n -e '\xB9\x67\x08' > /dev/ttyUSB0 # threshold:        8
     echo -n -e '\xB9\x68\x06' > /dev/ttyUSB0 # sensitivity:      6
-    echo -n -e '\xB9\x6F\x03' > /dev/ttyUSB0 # rim/pos:          0 (none)
+    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0 # rim/pos:          0 (none)
     echo -n -e '\xB9\x70\x2B' > /dev/ttyUSB0 # midi note:        43
     echo -n -e '\xB9\x72\x04' > /dev/ttyUSB0 # crosstalk cancel: 4
   fi
