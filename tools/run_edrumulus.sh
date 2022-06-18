@@ -167,6 +167,60 @@ else
     #echo -n -e '\xB9\x69\x1A' > /dev/ttyUSB0 # positional sensing threshold
     #echo -n -e '\xB9\x6A\x0B' > /dev/ttyUSB0 # positional sensing sensitivity
     #echo -n -e '\xB9\x6F\x03' > /dev/ttyUSB0 # rim/pos: both, rim shot and positional sensing
+
+    # kick
+    echo -n -e '\xB9\x6C\x01' > /dev/ttyUSB0 # select pad: 1
+    #echo -n -e '\xB9\x6D\x03' > /dev/ttyUSB0 # MIDI curve type: LOG1
+    #echo -n -e '\xB9\x66\x06' > /dev/ttyUSB0 # pad type: KD7
+    #echo -n -e '\xB9\x67\x0A' > /dev/ttyUSB0 # threshold
+    #echo -n -e '\xB9\x68\x09' > /dev/ttyUSB0 # sensitivity
+
+    # Hi-Hat
+    echo -n -e '\xB9\x6C\x02' > /dev/ttyUSB0 # select pad: 2
+    #echo -n -e '\xB9\x6D\x03' > /dev/ttyUSB0 # MIDI curve type: LOG1
+    #echo -n -e '\xB9\x66\x02' > /dev/ttyUSB0 # pad type: PD8
+    #echo -n -e '\xB9\x67\x05' > /dev/ttyUSB0 # threshold
+    #echo -n -e '\xB9\x68\x08' > /dev/ttyUSB0 # sensitivity
+    #echo -n -e '\xB9\x6F\x01' > /dev/ttyUSB0 # rim/pos: enable rim shot
+
+    # Hi-Hat control
+    echo -n -e '\xB9\x6C\x03' > /dev/ttyUSB0 # select pad: 3
+    #echo -n -e '\xB9\x66\x03' > /dev/ttyUSB0 # pad type: FD8
+    #echo -n -e '\xB9\x67\x05' > /dev/ttyUSB0 # threshold
+    #echo -n -e '\xB9\x68\x00' > /dev/ttyUSB0 # sensitivity
+
+    # crash
+    echo -n -e '\xB9\x6C\x04' > /dev/ttyUSB0 # select pad: 4
+    #echo -n -e '\xB9\x6D\x03' > /dev/ttyUSB0 # MIDI curve type: LOG1
+    #echo -n -e '\xB9\x66\x08' > /dev/ttyUSB0 # pad type: CY6
+    #echo -n -e '\xB9\x67\x09' > /dev/ttyUSB0 # threshold
+    #echo -n -e '\xB9\x68\x0B' > /dev/ttyUSB0 # sensitivity
+    #echo -n -e '\xB9\x6F\x01' > /dev/ttyUSB0 # rim/pos: enable rim shot
+
+    # tom 1
+    echo -n -e '\xB9\x6C\x05' > /dev/ttyUSB0 # select pad: 5
+    #echo -n -e '\xB9\x66\x01' > /dev/ttyUSB0 # pad type: PD80R
+    #echo -n -e '\xB9\x67\x09' > /dev/ttyUSB0 # threshold
+    #echo -n -e '\xB9\x68\x00' > /dev/ttyUSB0 # sensitivity
+
+    # ride
+    echo -n -e '\xB9\x6C\x06' > /dev/ttyUSB0 # select pad: 6
+    #echo -n -e '\xB9\x66\x02' > /dev/ttyUSB0 # pad type: PD8
+    #echo -n -e '\xB9\x67\x12' > /dev/ttyUSB0 # threshold
+    #echo -n -e '\xB9\x68\x15' > /dev/ttyUSB0 # sensitivity
+    #echo -n -e '\xB9\x6F\x01' > /dev/ttyUSB0 # rim/pos: enable rim shot
+
+    # tom 2
+    echo -n -e '\xB9\x6C\x07' > /dev/ttyUSB0 # select pad: 7
+    #echo -n -e '\xB9\x66\x01' > /dev/ttyUSB0 # pad type: PD80R
+    #echo -n -e '\xB9\x67\x12' > /dev/ttyUSB0 # threshold
+    #echo -n -e '\xB9\x68\x00' > /dev/ttyUSB0 # sensitivity
+
+    # tom 3
+    echo -n -e '\xB9\x6C\x08' > /dev/ttyUSB0 # select pad: 8
+    #echo -n -e '\xB9\x66\x01' > /dev/ttyUSB0 # pad type: PD80R
+    #echo -n -e '\xB9\x67\x12' > /dev/ttyUSB0 # threshold
+    #echo -n -e '\xB9\x68\x00' > /dev/ttyUSB0 # sensitivity
   fi
 
   # start MIDI tool to convert serial MIDI to Jack Audio MIDI
