@@ -162,8 +162,8 @@ else
 
     # snare
     echo -e '\xB9\x6C\x00' > /dev/ttyUSB0 # select pad:       0
-    echo -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
     echo -e '\xB9\x66\x0F' > /dev/ttyUSB0 # pad type:         PDX8
+    echo -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
     echo -e '\xB9\x67\x07' > /dev/ttyUSB0 # threshold:        7
     echo -e '\xB9\x68\x07' > /dev/ttyUSB0 # sensitivity:      7
     echo -e '\xB9\x6B\x0E' > /dev/ttyUSB0 # rim threshold:    14
@@ -176,8 +176,8 @@ else
 
     # kick
     echo -e '\xB9\x6C\x01' > /dev/ttyUSB0 # select pad:       1
-    echo -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
     echo -e '\xB9\x66\x06' > /dev/ttyUSB0 # pad type:         KD7
+    echo -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
     echo -e '\xB9\x67\x0E' > /dev/ttyUSB0 # threshold:        14
     echo -e '\xB9\x68\x09' > /dev/ttyUSB0 # sensitivity:      9
     echo -e '\xB9\x6F\x00' > /dev/ttyUSB0 # rim/pos:          0 (none)
@@ -186,8 +186,8 @@ else
 
     # Hi-Hat
     echo -e '\xB9\x6C\x02' > /dev/ttyUSB0 # select pad:       2
-    echo -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
     echo -e '\xB9\x66\x0B' > /dev/ttyUSB0 # pad type:         CY5
+    echo -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
     echo -e '\xB9\x67\x06' > /dev/ttyUSB0 # threshold:        6
     echo -e '\xB9\x68\x06' > /dev/ttyUSB0 # sensitivity:      6
     echo -e '\xB9\x6F\x00' > /dev/ttyUSB0 # rim/pos:          0 (none)
@@ -203,8 +203,8 @@ else
 
     # crash
     echo -e '\xB9\x6C\x04' > /dev/ttyUSB0 # select pad:       4
-    echo -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
     echo -e '\xB9\x66\x0B' > /dev/ttyUSB0 # pad type:         CY5
+    echo -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
     echo -e '\xB9\x67\x0D' > /dev/ttyUSB0 # threshold:        13
     echo -e '\xB9\x68\x09' > /dev/ttyUSB0 # sensitivity:      9
     echo -e '\xB9\x6F\x00' > /dev/ttyUSB0 # rim/pos:          0 (none)
@@ -213,8 +213,8 @@ else
 
     # tom 1
     echo -e '\xB9\x6C\x05' > /dev/ttyUSB0 # select pad:       5
-    echo -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
     echo -e '\xB9\x66\x0C' > /dev/ttyUSB0 # pad type:         HD1TOM
+    echo -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
     echo -e '\xB9\x67\x08' > /dev/ttyUSB0 # threshold:        8
     echo -e '\xB9\x68\x06' > /dev/ttyUSB0 # sensitivity:      6
     echo -e '\xB9\x6F\x00' > /dev/ttyUSB0 # rim/pos:          0 (none)
@@ -223,8 +223,8 @@ else
 
     # ride
     echo -e '\xB9\x6C\x06' > /dev/ttyUSB0 # select pad:       6
-    echo -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
     echo -e '\xB9\x66\x0B' > /dev/ttyUSB0 # pad type:         CY5
+    echo -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
     echo -e '\xB9\x67\x08' > /dev/ttyUSB0 # threshold:        8
     echo -e '\xB9\x68\x09' > /dev/ttyUSB0 # sensitivity:      9
     echo -e '\xB9\x6F\x00' > /dev/ttyUSB0 # rim/pos:          0 (none)
@@ -233,8 +233,8 @@ else
 
     # tom 2
     echo -e '\xB9\x6C\x07' > /dev/ttyUSB0 # select pad:       7
-    echo -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
     echo -e '\xB9\x66\x0C' > /dev/ttyUSB0 # pad type:         HD1TOM
+    echo -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
     echo -e '\xB9\x67\x08' > /dev/ttyUSB0 # threshold:        8
     echo -e '\xB9\x68\x06' > /dev/ttyUSB0 # sensitivity:      6
     echo -e '\xB9\x6F\x00' > /dev/ttyUSB0 # rim/pos:          0 (none)
@@ -243,8 +243,8 @@ else
 
     # tom 3
     echo -e '\xB9\x6C\x08' > /dev/ttyUSB0 # select pad:       8
-    echo -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
     echo -e '\xB9\x66\x0C' > /dev/ttyUSB0 # pad type:         HD1TOM
+    echo -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
     echo -e '\xB9\x67\x08' > /dev/ttyUSB0 # threshold:        8
     echo -e '\xB9\x68\x06' > /dev/ttyUSB0 # sensitivity:      6
     echo -e '\xB9\x6F\x00' > /dev/ttyUSB0 # rim/pos:          0 (none)
