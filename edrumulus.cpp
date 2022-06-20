@@ -239,14 +239,20 @@ Serial.println ( serial_print );
   // (i.e. if CPU is overloaded, the sample rate will drop which is bad)
   if ( samplerate_prev_micros_cnt >= samplerate_max_cnt )
   {
-    // set error flag if sample rate deviation is too large
-    status_is_error            = ( abs ( 1.0f / ( micros() - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f - Fs ) > samplerate_max_error_Hz );
+    const unsigned long samplerate_cur_micros = micros();
 
 // TEST check the measured sampling rate
-//Serial.println ( 1.0f / ( micros() - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f, 7 );
+//Serial.println ( 1.0f / ( samplerate_cur_micros - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f, 7 );
+
+    // do not update status if micros() has wrapped around (at about 70 minutes)
+    if ( samplerate_cur_micros - samplerate_prev_micros > 0 )
+    {
+      // set error flag if sample rate deviation is too large
+      status_is_error = ( abs ( 1.0f / ( samplerate_cur_micros - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f - Fs ) > samplerate_max_error_Hz );
+    }
 
     samplerate_prev_micros_cnt = 0;
-    samplerate_prev_micros     = micros();
+    samplerate_prev_micros     = samplerate_cur_micros;
 
 /*
 // TEST check DC offset values
