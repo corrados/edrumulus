@@ -27,21 +27,15 @@ if [ $USER = "pi" ]; then
 fi
 
 # check if we are in Jamulus session mode
-if [ "$1" == jamulus ] || [ "$2" == jamulus ]; then
+if [[ "$1" == jamulus ]]; then
   echo "-> Jamulus session mode enabled"
   is_jamulus=true
 fi
 
 # check if the GUI mode shall be used
-if [ "$1" == gui ] || [ "$2" == gui ]; then
+if [[ "$1" == gui ]]; then
   echo "-> GUI mode enabled"
   is_gui=true
-fi
-
-# check if we are using custom settings (which overwrite the settings stored on the microcontroller)
-if [ "$1" == set ] || [ "$2" == set ]; then
-  echo "-> Using custom settings (overwrites settings on device)"
-  is_settings=true
 fi
 
 
@@ -129,23 +123,8 @@ jackd -R -T --silent -P70 -t2000 -d alsa -dhw:${ADEVICE} -p 128 -n 3 -r 48000 -s
 sleep 1
 
 
-# write Edrumulus trigger configuration ----------------------------------------
+# preparations -----------------------------------------------------------------
 if [[ -v is_teensy ]]; then
-  if [[ -v is_settings ]]; then
-    # diable spike cancellation for Teensy 4.0 prototype
-    #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 110 0
-
-    # snare
-    SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 108 0 # pad 0
-    #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 102 2 # PD8
-    #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 1 # threshold
-    #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 8 # sensitivity
-    #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 107 16 # rim shot threshold
-    #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 105 26 # positional sensing threshold
-    #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 106 11 # positional sensing sensitivity
-    #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 111 3 # both, rim shot and positional sensing
-  fi
-
   # connect ALSA MIDI to Jack Audio MIDI
   a2jmidid -e >/dev/null 2>&1 &
   sleep 1
@@ -153,107 +132,8 @@ if [[ -v is_teensy ]]; then
   # get Edrumulus MIDI name
   MIDIJACKPORT=$(jack_lsp|grep "(capture): Edrumulus MIDI")
 else
-  # prepare serial output interface for sending MIDI configuration messages
-  stty 38400 -F /dev/ttyUSB0
-
-  if [[ -v is_settings ]]; then
-    # general settings
-    echo -n -e '\xB9\x6E\x04' > /dev/ttyUSB0 # spike cancellation: 4
-
-    # snare
-    echo -n -e '\xB9\x6C\x00' > /dev/ttyUSB0 # select pad:       0
-    echo -n -e '\xB9\x66\x0F' > /dev/ttyUSB0 # pad type:         PDX8
-    echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
-    echo -n -e '\xB9\x67\x07' > /dev/ttyUSB0 # threshold:        7
-    echo -n -e '\xB9\x68\x07' > /dev/ttyUSB0 # sensitivity:      7
-    echo -n -e '\xB9\x6B\x0E' > /dev/ttyUSB0 # rim threshold:    14
-    echo -n -e '\xB9\x69\x16' > /dev/ttyUSB0 # pos threshold:    22
-    echo -n -e '\xB9\x6A\x1F' > /dev/ttyUSB0 # pos sensitivity:  31
-    echo -n -e '\xB9\x6F\x03' > /dev/ttyUSB0 # rim/pos:          3 (both)
-    echo -n -e '\xB9\x70\x26' > /dev/ttyUSB0 # midi note:        38
-    echo -n -e '\xB9\x71\x28' > /dev/ttyUSB0 # midi note rim:    40
-    echo -n -e '\xB9\x72\x05' > /dev/ttyUSB0 # crosstalk cancel: 5
-
-    # kick
-    echo -n -e '\xB9\x6C\x01' > /dev/ttyUSB0 # select pad:       1
-    echo -n -e '\xB9\x66\x06' > /dev/ttyUSB0 # pad type:         KD7
-    echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
-    echo -n -e '\xB9\x67\x0E' > /dev/ttyUSB0 # threshold:        14
-    echo -n -e '\xB9\x68\x09' > /dev/ttyUSB0 # sensitivity:      9
-    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0 # rim/pos:          0 (none)
-    echo -n -e '\xB9\x70\x24' > /dev/ttyUSB0 # midi note:        36
-    echo -n -e '\xB9\x72\x00' > /dev/ttyUSB0 # crosstalk cancel: 0
-
-    # Hi-Hat
-    echo -n -e '\xB9\x6C\x02' > /dev/ttyUSB0 # select pad:       2
-    echo -n -e '\xB9\x66\x0B' > /dev/ttyUSB0 # pad type:         CY5
-    echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
-    echo -n -e '\xB9\x67\x06' > /dev/ttyUSB0 # threshold:        6
-    echo -n -e '\xB9\x68\x06' > /dev/ttyUSB0 # sensitivity:      6
-    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0 # rim/pos:          0 (none)
-    echo -n -e '\xB9\x70\x16' > /dev/ttyUSB0 # midi note:        22
-    echo -n -e '\xB9\x72\x08' > /dev/ttyUSB0 # crosstalk cancel: 8
-
-    # Hi-Hat control
-    echo -n -e '\xB9\x6C\x03' > /dev/ttyUSB0 # select pad:       3
-    echo -n -e '\xB9\x66\x03' > /dev/ttyUSB0 # pad type:         FD8
-    echo -n -e '\xB9\x67\x0C' > /dev/ttyUSB0 # threshold:        12
-    echo -n -e '\xB9\x68\x1F' > /dev/ttyUSB0 # sensitivity:      31
-    echo -n -e '\xB9\x70\x2C' > /dev/ttyUSB0 # midi note:        44
-
-    # crash
-    echo -n -e '\xB9\x6C\x04' > /dev/ttyUSB0 # select pad:       4
-    echo -n -e '\xB9\x66\x0B' > /dev/ttyUSB0 # pad type:         CY5
-    echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
-    echo -n -e '\xB9\x67\x0D' > /dev/ttyUSB0 # threshold:        13
-    echo -n -e '\xB9\x68\x09' > /dev/ttyUSB0 # sensitivity:      9
-    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0 # rim/pos:          0 (none)
-    echo -n -e '\xB9\x70\x31' > /dev/ttyUSB0 # midi note:        49
-    echo -n -e '\xB9\x72\x08' > /dev/ttyUSB0 # crosstalk cancel: 8
-
-    # tom 1
-    echo -n -e '\xB9\x6C\x05' > /dev/ttyUSB0 # select pad:       5
-    echo -n -e '\xB9\x66\x0C' > /dev/ttyUSB0 # pad type:         HD1TOM
-    echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
-    echo -n -e '\xB9\x67\x08' > /dev/ttyUSB0 # threshold:        8
-    echo -n -e '\xB9\x68\x06' > /dev/ttyUSB0 # sensitivity:      6
-    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0 # rim/pos:          0 (none)
-    echo -n -e '\xB9\x70\x30' > /dev/ttyUSB0 # midi note:        48
-    echo -n -e '\xB9\x72\x04' > /dev/ttyUSB0 # crosstalk cancel: 4
-
-    # ride
-    echo -n -e '\xB9\x6C\x06' > /dev/ttyUSB0 # select pad:       6
-    echo -n -e '\xB9\x66\x0B' > /dev/ttyUSB0 # pad type:         CY5
-    echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
-    echo -n -e '\xB9\x67\x08' > /dev/ttyUSB0 # threshold:        8
-    echo -n -e '\xB9\x68\x09' > /dev/ttyUSB0 # sensitivity:      9
-    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0 # rim/pos:          0 (none)
-    echo -n -e '\xB9\x70\x33' > /dev/ttyUSB0 # midi note:        51
-    echo -n -e '\xB9\x72\x00' > /dev/ttyUSB0 # crosstalk cancel: 0
-
-    # tom 2
-    echo -n -e '\xB9\x6C\x07' > /dev/ttyUSB0 # select pad:       7
-    echo -n -e '\xB9\x66\x0C' > /dev/ttyUSB0 # pad type:         HD1TOM
-    echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
-    echo -n -e '\xB9\x67\x08' > /dev/ttyUSB0 # threshold:        8
-    echo -n -e '\xB9\x68\x06' > /dev/ttyUSB0 # sensitivity:      6
-    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0 # rim/pos:          0 (none)
-    echo -n -e '\xB9\x70\x2D' > /dev/ttyUSB0 # midi note:        45
-    echo -n -e '\xB9\x72\x04' > /dev/ttyUSB0 # crosstalk cancel: 4
-
-    # tom 3
-    echo -n -e '\xB9\x6C\x08' > /dev/ttyUSB0 # select pad:       8
-    echo -n -e '\xB9\x66\x0C' > /dev/ttyUSB0 # pad type:         HD1TOM
-    echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
-    echo -n -e '\xB9\x67\x08' > /dev/ttyUSB0 # threshold:        8
-    echo -n -e '\xB9\x68\x06' > /dev/ttyUSB0 # sensitivity:      6
-    echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0 # rim/pos:          0 (none)
-    echo -n -e '\xB9\x70\x2B' > /dev/ttyUSB0 # midi note:        43
-    echo -n -e '\xB9\x72\x04' > /dev/ttyUSB0 # crosstalk cancel: 4
-  fi
-
   # start MIDI tool to convert serial MIDI to Jack Audio MIDI
-  # note that to get access to /dev/ttyUSB0 we need to be in group tty/dialout
+  # note that to get access to /dev/ttyUSB0 you need to be in group tty/dialout
   mod-ttymidi/ttymidi -b 38400 &
   MIDIJACKPORT=ttymidi:MIDI_in
 fi
@@ -279,12 +159,11 @@ elif [[ -v is_jamulus ]]; then
   jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
   jack_disconnect $KITJACKPORTLEFT system:playback_1
   jack_disconnect $KITJACKPORTRIGHT system:playback_2
-  # note that $2 does not work anymore -> TODO fix it
-  #if [ -z "$2" ]; then
+  if [ -z "$2" ]; then
     ./../../jamulus/Jamulus -n -i ../../jamulus/Jamulus.ini -c anygenre1.jamulus.io &
-  #else
-  #  ./../../jamulus/Jamulus -n -i ../../jamulus/Jamulus.ini -c $2 &
-  #fi
+  else
+    ./../../jamulus/Jamulus -n -i ../../jamulus/Jamulus.ini -c $2 &
+  fi
   sleep 5
   jack_connect $KITJACKPORTLEFT "Jamulus:input left"
   jack_connect $KITJACKPORTRIGHT "Jamulus:input right"
