@@ -89,7 +89,7 @@ else
   # tom 1
   echo -n -e '\xB9\x6C\x05' > /dev/ttyUSB0 # select pad:       5
   echo -n -e '\xB9\x66\x0C' > /dev/ttyUSB0 # pad type:         HD1TOM
-  echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
+  echo -n -e '\xB9\x6D\x03' > /dev/ttyUSB0 # MIDI curve type:  LOG1
   echo -n -e '\xB9\x67\x08' > /dev/ttyUSB0 # threshold:        8
   echo -n -e '\xB9\x68\x05' > /dev/ttyUSB0 # sensitivity:      5
   echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0 # rim/pos:          0 (none)
@@ -109,7 +109,7 @@ else
   # tom 2
   echo -n -e '\xB9\x6C\x07' > /dev/ttyUSB0 # select pad:       7
   echo -n -e '\xB9\x66\x0C' > /dev/ttyUSB0 # pad type:         HD1TOM
-  echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
+  echo -n -e '\xB9\x6D\x03' > /dev/ttyUSB0 # MIDI curve type:  LOG1
   echo -n -e '\xB9\x67\x08' > /dev/ttyUSB0 # threshold:        8
   echo -n -e '\xB9\x68\x05' > /dev/ttyUSB0 # sensitivity:      5
   echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0 # rim/pos:          0 (none)
@@ -119,7 +119,7 @@ else
   # tom 3
   echo -n -e '\xB9\x6C\x08' > /dev/ttyUSB0 # select pad:       8
   echo -n -e '\xB9\x66\x0C' > /dev/ttyUSB0 # pad type:         HD1TOM
-  echo -n -e '\xB9\x6D\x00' > /dev/ttyUSB0 # MIDI curve type:  LINEAR
+  echo -n -e '\xB9\x6D\x03' > /dev/ttyUSB0 # MIDI curve type:  LOG1
   echo -n -e '\xB9\x67\x08' > /dev/ttyUSB0 # threshold:        8
   echo -n -e '\xB9\x68\x05' > /dev/ttyUSB0 # sensitivity:      5
   echo -n -e '\xB9\x6F\x00' > /dev/ttyUSB0 # rim/pos:          0 (none)
