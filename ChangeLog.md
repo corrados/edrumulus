@@ -1,6 +1,11 @@
 # Edrumulus Project Log
 
 
+## 2022-07-02 Youtube video of prototype 3 (HD-1)
+
+  A [Youtube Video](https://youtu.be/tBlKvivwAE4) of Edrumulus prototype 3 (HD-1) is
+  now available showing the trigger performance in real action.
+
 ## 2022-06-18 Unreliable settings storage on ESP32
 
   Unfortunately, it seems that the settings storage on the ESP32 does not work as expected.
