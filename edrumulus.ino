@@ -260,42 +260,48 @@ void loop()
       // controller 102: pad type
       if ( controller == 102 )
       {
-        edrumulus.set_pad_type ( selected_pad, static_cast<Edrumulus::Epadtype> ( value ) );
+        edrumulus.set_pad_type  ( selected_pad,    static_cast<Edrumulus::Epadtype> ( value ) );
+        edrumulus.write_setting ( selected_pad, 0, value );
         is_used = true;
       }
 
       // controller 103: threshold
       if ( controller == 103 )
       {
-        edrumulus.set_velocity_threshold ( selected_pad, value );
+        edrumulus.set_velocity_threshold ( selected_pad,    value );
+        edrumulus.write_setting          ( selected_pad, 1, value );
         is_used = true;
       }
 
       // controller 104: sensitivity
       if ( controller == 104 )
       {
-        edrumulus.set_velocity_sensitivity ( selected_pad, value );
+        edrumulus.set_velocity_sensitivity ( selected_pad,    value );
+        edrumulus.write_setting            ( selected_pad, 2, value );
         is_used = true;
       }
 
       // controller 105: positional sensing threshold
       if ( controller == 105 )
       {
-        edrumulus.set_pos_threshold ( selected_pad, value );
+        edrumulus.set_pos_threshold ( selected_pad,    value );
+        edrumulus.write_setting     ( selected_pad, 3, value );
         is_used = true;
       }
 
       // controller 106: positional sensing sensitivity
       if ( controller == 106 )
       {
-        edrumulus.set_pos_sensitivity ( selected_pad, value );
+        edrumulus.set_pos_sensitivity ( selected_pad,    value );
+        edrumulus.write_setting       ( selected_pad, 4, value );
         is_used = true;
       }
 
       // controller 107: rim shot threshold
       if ( controller == 107 )
       {
-        edrumulus.set_rim_shot_treshold ( selected_pad, value );
+        edrumulus.set_rim_shot_treshold ( selected_pad,    value );
+        edrumulus.write_setting         ( selected_pad, 5, value );
         is_used = true;
       }
 
@@ -326,14 +332,16 @@ void loop()
       // controller 109: MIDI curve type
       if ( controller == 109 )
       {
-        edrumulus.set_curve ( selected_pad, static_cast<Edrumulus::Ecurvetype> ( value ) );
+        edrumulus.set_curve     ( selected_pad,    static_cast<Edrumulus::Ecurvetype> ( value ) );
+        edrumulus.write_setting ( selected_pad, 6, value );
         is_used = true;
       }
 
       // controller 110: spike cancellation level
       if ( controller == 110 )
       {
-        edrumulus.set_spike_cancel_level ( value );
+        edrumulus.set_spike_cancel_level (                 value );
+        edrumulus.write_setting          ( number_pads, 0, value );
         is_used = true;
       }
 
@@ -342,10 +350,30 @@ void loop()
       {
         switch ( value )
         {
-          case 0: edrumulus.set_rim_shot_is_used ( selected_pad, false ); edrumulus.set_pos_sense_is_used ( selected_pad, false ); break;
-          case 1: edrumulus.set_rim_shot_is_used ( selected_pad, true );  edrumulus.set_pos_sense_is_used ( selected_pad, false ); break;
-          case 2: edrumulus.set_rim_shot_is_used ( selected_pad, false ); edrumulus.set_pos_sense_is_used ( selected_pad, true );  break;
-          case 3: edrumulus.set_rim_shot_is_used ( selected_pad, true );  edrumulus.set_pos_sense_is_used ( selected_pad, true );  break;
+          case 0:
+            edrumulus.set_rim_shot_is_used  ( selected_pad,    false );
+            edrumulus.write_setting         ( selected_pad, 7, false );
+            edrumulus.set_pos_sense_is_used ( selected_pad,    false );
+            edrumulus.write_setting         ( selected_pad, 8, false );
+            break;
+          case 1:
+            edrumulus.set_rim_shot_is_used  ( selected_pad,    true );
+            edrumulus.write_setting         ( selected_pad, 7, true );
+            edrumulus.set_pos_sense_is_used ( selected_pad,    false );
+            edrumulus.write_setting         ( selected_pad, 8, false );
+            break;
+          case 2:
+            edrumulus.set_rim_shot_is_used  ( selected_pad,    false );
+            edrumulus.write_setting         ( selected_pad, 7, false );
+            edrumulus.set_pos_sense_is_used ( selected_pad,    true );
+            edrumulus.write_setting         ( selected_pad, 8, true );
+            break;
+          case 3:
+            edrumulus.set_rim_shot_is_used  ( selected_pad,    true );
+            edrumulus.write_setting         ( selected_pad, 7, true );
+            edrumulus.set_pos_sense_is_used ( selected_pad,    true );
+            edrumulus.write_setting         ( selected_pad, 8, true );
+            break;
         }
         is_used = true;
       }
@@ -353,21 +381,24 @@ void loop()
       // controller 112: normal MIDI note
       if ( controller == 112 )
       {
-        edrumulus.set_midi_note_norm ( selected_pad, value );
+        edrumulus.set_midi_note_norm ( selected_pad,    value );
+        edrumulus.write_setting      ( selected_pad, 9, value );
         is_used = true;
       }
 
       // controller 113: MIDI note for rim
       if ( controller == 113 )
       {
-        edrumulus.set_midi_note_rim ( selected_pad, value );
+        edrumulus.set_midi_note_rim ( selected_pad,     value );
+        edrumulus.write_setting     ( selected_pad, 10, value );
         is_used = true;
       }
 
       // controller 114: cross talk cancellation
       if ( controller == 114 )
       {
-        edrumulus.set_cancellation ( selected_pad, value );
+        edrumulus.set_cancellation ( selected_pad,     value );
+        edrumulus.write_setting    ( selected_pad, 11, value );
         is_used = true;
       }
 
@@ -375,13 +406,29 @@ void loop()
       if ( controller == 115 )
       {
         preset_settings();
+        write_all_settings();
         is_used = true;
       }
 
-      // give some feedback that the setting was correctly received and store new value
+      // controller 116: normal MIDI note open (Hi-Hat)
+      if ( controller == 116 )
+      {
+        edrumulus.set_midi_note_open_norm ( selected_pad,     value );
+        edrumulus.write_setting           ( selected_pad, 12, value );
+        is_used = true;
+      }
+
+      // controller 117: MIDI note open (Hi-Hat) for rim
+      if ( controller == 117 )
+      {
+        edrumulus.set_midi_note_open_rim ( selected_pad,     value );
+        edrumulus.write_setting          ( selected_pad, 13, value );
+        is_used = true;
+      }
+
+      // give some feedback that the setting was correctly received
       if ( is_used )
       {
-        write_settings();
         MYMIDI.sendNoteOff ( controller, value, 1 ); // can be checked, e.g., in the log file
       }
     }
@@ -414,7 +461,7 @@ void read_settings()
 }
 
 
-void write_settings()
+void write_all_settings()
 {
   for ( int i = 0; i < number_pads; i++ )
   {

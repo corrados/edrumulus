@@ -60,6 +60,13 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.rim_shot_treshold    = 24;
       break;
 
+    case PDA120LS:
+      pad_settings.decay_grad_fact2          = 250.0f;
+      pad_settings.pre_scan_time_ms          = 3.5f;
+      pad_settings.first_peak_diff_thresh_db = 7.0f;
+      pad_settings.pos_low_pass_cutoff       = 370.0f;
+      break;
+
     case PD80R:
       pad_settings.velocity_sensitivity = 5;
       pad_settings.rim_shot_treshold    = 11;

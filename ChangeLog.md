@@ -1,5 +1,19 @@
 # Edrumulus Project Log
 
+
+## 2022-07-02 Youtube video of prototype 3 (HD-1)
+
+  A [Youtube Video](https://youtu.be/tBlKvivwAE4) of Edrumulus prototype 3 (HD-1) is
+  now available showing the trigger performance in real action.
+
+## 2022-06-18 Unreliable settings storage on ESP32
+
+  Unfortunately, it seems that the settings storage on the ESP32 does not work as expected.
+  On my prototype 3 (HD-1), some settings are not recalled correctly. This especially
+  happens if the attached Raspberry Pi must be resetted after, e.g., a freeze. Either the
+  sudden power off of the ESP32 is the cause or the Raspberry Pi sends arbitrary MIDI signals
+  when it is shut-down. This has to be investigated...
+
 ## 2022-01-22 [[r0.4](https://github.com/corrados/edrumulus/releases/tag/r0_4)] Store settings on Edrumulus
 
   Edrumulus stores all trigger parameter on the micro processor using the Arduino
