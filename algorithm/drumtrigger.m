@@ -293,6 +293,33 @@ end
 function pos_sense_metric = calc_pos_sense_metric(x, Fs, all_first_peaks)
 global pad;
 
+
+% TEST
+test = nan(size(x)); test(all_first_peaks) = x(all_first_peaks);
+s = sign(x) * 1000;
+metric = [];
+for i = 1:length(all_first_peaks)
+  left_len = 0;
+  while s(all_first_peaks(i) - left_len) == s(all_first_peaks(i))
+    left_len = left_len + 1;
+  end
+
+  right_len = 0;
+  while s(all_first_peaks(i) + right_len) == s(all_first_peaks(i))
+    right_len = right_len + 1;
+  end
+
+%all_first_peaks(i)
+%left_len
+%right_len
+  metric(i) = left_len + right_len;
+end
+metric
+metric_all = nan(size(x)); metric_all(all_first_peaks) = metric * 300;
+figure; plot([x test metric_all], '*-');
+
+
+
 % low pass filter of the input signal
 % moving average cut off frequency approximation according to:
 % https://dsp.stackexchange.com/questions/9966/what-is-the-cut-off-frequency-of-a-moving-average-filter
