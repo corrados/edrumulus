@@ -294,29 +294,26 @@ function pos_sense_metric = calc_pos_sense_metric(x, Fs, all_first_peaks)
 global pad;
 
 
-% TEST
-test = nan(size(x)); test(all_first_peaks) = x(all_first_peaks);
-s = sign(x) * 1000;
+% TEST TODO only negative first peaks are supported right now
+test   = nan(size(x)); test(all_first_peaks) = x(all_first_peaks);
 metric = [];
+fact   = 0.1;
 for i = 1:length(all_first_peaks)
   left_len = 0;
-  while s(all_first_peaks(i) - left_len) == s(all_first_peaks(i))
+  while x(all_first_peaks(i) - left_len) < x(all_first_peaks(i)) * fact
     left_len = left_len + 1;
   end
 
   right_len = 0;
-  while s(all_first_peaks(i) + right_len) == s(all_first_peaks(i))
+  while x(all_first_peaks(i) + right_len) < x(all_first_peaks(i)) * fact
     right_len = right_len + 1;
   end
 
-%all_first_peaks(i)
-%left_len
-%right_len
   metric(i) = left_len + right_len;
 end
-metric
-metric_all = nan(size(x)); metric_all(all_first_peaks) = metric * 300;
+metric_all = nan(size(x)); metric_all(all_first_peaks) = metric * 100;
 figure; plot([x test metric_all], '*-');
+
 
 
 
