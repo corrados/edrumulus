@@ -300,8 +300,6 @@ NoConn ~ 8275 3775
 NoConn ~ 8275 3375
 NoConn ~ 8275 3275
 NoConn ~ 8275 3075
-NoConn ~ 8275 2975
-NoConn ~ 8275 2875
 NoConn ~ 8275 2775
 NoConn ~ 8275 2675
 Text GLabel 8275 4075 2    50   Input ~ 0
@@ -310,7 +308,6 @@ Text GLabel 8275 3875 2    50   Input ~ 0
 GPIO15
 NoConn ~ 8275 3675
 NoConn ~ 6425 2675
-NoConn ~ 6425 4075
 Text GLabel 1800 2000 0    50   Input ~ 0
 GND
 Connection ~ 1900 2000
@@ -1359,63 +1356,63 @@ Text Notes 3400 5750 0    50   ~ 0
 Tom3 Trigger Input
 Wire Notes Line
 	5950 5650 3350 5650
-Text GLabel 9575 3625 2    50   Input ~ 0
+Text GLabel 6575 4800 2    50   Input ~ 0
 KICK-SLEEVE
-Text GLabel 9575 3725 2    50   Input ~ 0
+Text GLabel 6575 4900 2    50   Input ~ 0
 TOM1-SLEEVE
-Text GLabel 9575 3825 2    50   Input ~ 0
+Text GLabel 6575 5000 2    50   Input ~ 0
 SNARE-SLEEVE
-Text GLabel 9575 3925 2    50   Input ~ 0
+Text GLabel 6575 5100 2    50   Input ~ 0
 HI-HAT-SLEEVE&TOM2-SLEEVE
-Text GLabel 9575 4025 2    50   Input ~ 0
+Text GLabel 6575 5200 2    50   Input ~ 0
 TOM3-SLEEVE
-Text GLabel 9575 4125 2    50   Input ~ 0
+Text GLabel 6575 5300 2    50   Input ~ 0
 HI-HAT-CONTROL-SLEEVE
-Text GLabel 9575 4225 2    50   Input ~ 0
+Text GLabel 6575 5400 2    50   Input ~ 0
 RIDE-SLEEVE&RIDE-BELL_SLEEVE
-Text GLabel 9575 4325 2    50   Input ~ 0
+Text GLabel 6575 5500 2    50   Input ~ 0
 CRASH1-SLEEVE
-Text GLabel 9375 3625 0    50   Input ~ 0
+Text GLabel 6375 4800 0    50   Input ~ 0
 GND
 Wire Wire Line
-	9575 3625 9475 3625
+	6575 4800 6475 4800
 Wire Wire Line
-	9475 3625 9475 3725
+	6475 4800 6475 4900
 Wire Wire Line
-	9475 4325 9575 4325
+	6475 5500 6575 5500
 Wire Wire Line
-	9575 4225 9475 4225
-Connection ~ 9475 4225
+	6575 5400 6475 5400
+Connection ~ 6475 5400
 Wire Wire Line
-	9475 4225 9475 4325
+	6475 5400 6475 5500
 Wire Wire Line
-	9575 4125 9475 4125
-Connection ~ 9475 4125
+	6575 5300 6475 5300
+Connection ~ 6475 5300
 Wire Wire Line
-	9475 4125 9475 4225
+	6475 5300 6475 5400
 Wire Wire Line
-	9575 4025 9475 4025
-Connection ~ 9475 4025
+	6575 5200 6475 5200
+Connection ~ 6475 5200
 Wire Wire Line
-	9475 4025 9475 4125
+	6475 5200 6475 5300
 Wire Wire Line
-	9575 3925 9475 3925
-Connection ~ 9475 3925
+	6575 5100 6475 5100
+Connection ~ 6475 5100
 Wire Wire Line
-	9475 3925 9475 4025
+	6475 5100 6475 5200
 Wire Wire Line
-	9575 3825 9475 3825
-Connection ~ 9475 3825
+	6575 5000 6475 5000
+Connection ~ 6475 5000
 Wire Wire Line
-	9475 3825 9475 3925
+	6475 5000 6475 5100
 Wire Wire Line
-	9575 3725 9475 3725
-Connection ~ 9475 3725
+	6575 4900 6475 4900
+Connection ~ 6475 4900
 Wire Wire Line
-	9475 3725 9475 3825
+	6475 4900 6475 5000
 Wire Wire Line
-	9375 3625 9475 3625
-Connection ~ 9475 3625
+	6375 4800 6475 4800
+Connection ~ 6475 4800
 Wire Wire Line
 	1900 1000 1800 1000
 Connection ~ 1900 1000
@@ -1423,8 +1420,6 @@ Text GLabel 1400 1550 0    50   Input ~ 0
 SNARE-TIP
 Text GLabel 1400 1450 0    50   Input ~ 0
 SNARE-RING
-NoConn ~ 8275 3475
-NoConn ~ 8275 3575
 Text GLabel 1400 3200 0    50   Input ~ 0
 HI-HAT-TIP
 Text GLabel 1400 3100 0    50   Input ~ 0
@@ -1459,4 +1454,45 @@ HI-HAT-CONTROL-TIP
 Wire Wire Line
 	7250 1400 7125 1400
 Connection ~ 7250 1400
+$Comp
+L Connector_Generic_MountingPin:Conn_02x20_Odd_Even_MountingPin J?
+U 1 1 62D10684
+P 9775 4875
+F 0 "J?" H 9825 5992 50  0000 C CNN
+F 1 "Raspberry Pi GPIO pins" H 9825 5901 50  0000 C CNN
+F 2 "" H 9775 4875 50  0001 C CNN
+F 3 "~" H 9775 4875 50  0001 C CNN
+	1    9775 4875
+	1    0    0    -1  
+$EndComp
+Text GLabel 10075 4175 2    50   Input ~ 0
+GND
+Text GLabel 10075 4575 2    50   Input ~ 0
+GND
+Text GLabel 10075 4875 2    50   Input ~ 0
+GND
+Text GLabel 10075 5375 2    50   Input ~ 0
+GND
+Text GLabel 10075 5575 2    50   Input ~ 0
+GND
+Text GLabel 9575 5875 0    50   Input ~ 0
+GND
+Text GLabel 9575 5175 0    50   Input ~ 0
+GND
+Text GLabel 9575 4375 0    50   Input ~ 0
+GND
+Text GLabel 8275 2875 2    50   Input ~ 0
+ESP-UART0-TX
+Text GLabel 8275 2975 2    50   Input ~ 0
+ESP-UART0-RX
+Text GLabel 10075 4375 2    50   Input ~ 0
+ESP-UART0-TX
+Text GLabel 10075 4275 2    50   Input ~ 0
+ESP-UART0-RX
+Text GLabel 6425 4075 0    50   Input ~ 0
+ESP-VIN
+Text GLabel 10075 3975 2    50   Input ~ 0
+ESP-VIN
+NoConn ~ 8275 3475
+NoConn ~ 8275 3575
 $EndSCHEMATC
