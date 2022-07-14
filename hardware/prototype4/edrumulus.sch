@@ -267,21 +267,8 @@ F 3 "~" H 7500 1250 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	7800 1550 7700 1550
-Text GLabel 6800 1200 2    50   Input ~ 0
-GND
 Text GLabel 8250 1550 2    50   Input ~ 0
 3V3
-$Comp
-L Connector:AudioJack3 J9
-U 1 1 61D81CDE
-P 6500 1300
-F 0 "J9" H 6450 950 50  0000 C CNN
-F 1 "Hi-Hat Ctrl" H 6450 1050 50  0000 C CNN
-F 2 "edrumulus:Jack_6.35mm_Neutrik_NMJ6HCD2_Horizontal" H 6500 1300 50  0001 C CNN
-F 3 "~" H 6500 1300 50  0001 C CNN
-	1    6500 1300
-	1    0    0    -1  
-$EndComp
 Text Notes 6025 800  0    50   ~ 0
 Hi-Hat Control Input
 Wire Notes Line
@@ -302,16 +289,12 @@ Wire Wire Line
 	8100 1250 7750 1250
 Wire Wire Line
 	7250 1250 7250 1400
-Connection ~ 7250 1400
-Wire Wire Line
-	7250 1400 6700 1400
 Wire Notes Line
 	5975 2300 8675 2300
 Wire Notes Line
 	5975 700  8675 700 
 Wire Notes Line
 	8675 700  8675 2300
-NoConn ~ 6700 1300
 NoConn ~ 8275 3975
 NoConn ~ 8275 3775
 NoConn ~ 8275 3375
@@ -478,9 +461,6 @@ Connection ~ 2400 3100
 Wire Wire Line
 	1900 3200 2400 3200
 Connection ~ 2400 3200
-Connection ~ 1900 2650
-Wire Wire Line
-	1400 2650 1900 2650
 Wire Wire Line
 	2900 2950 2900 3350
 Connection ~ 2900 2950
@@ -499,17 +479,6 @@ F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 2650 2650 50 
 	-1   0    0    1   
 $EndComp
 Connection ~ 2900 2650
-$Comp
-L Connector:AudioJack3 J2
-U 1 1 61D71AE9
-P 1200 3100
-F 0 "J2" H 1150 2775 50  0000 C CNN
-F 1 "Hi-Hat" H 1150 2850 50  0000 C CNN
-F 2 "edrumulus:Jack_6.35mm_Neutrik_NMJ6HCD2_Horizontal" H 1200 3100 50  0001 C CNN
-F 3 "~" H 1200 3100 50  0001 C CNN
-	1    1200 3100
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	1900 3350 1900 3650
 Text Notes 750  2450 0    50   ~ 0
@@ -522,8 +491,6 @@ Text GLabel 1800 3650 0    50   Input ~ 0
 GND
 Connection ~ 1900 3650
 Wire Wire Line
-	1400 2650 1400 3000
-Wire Wire Line
 	1800 3650 1900 3650
 Wire Wire Line
 	2900 1000 3000 1000
@@ -533,8 +500,6 @@ Text GLabel 7225 1850 0    50   Input ~ 0
 GND
 Wire Wire Line
 	7225 1850 7300 1850
-Wire Wire Line
-	6800 1200 6700 1200
 NoConn ~ 8275 3175
 $Comp
 L doit-esp32-devkit-v1:ESP32-DEVKIT-V1 U1
@@ -555,9 +520,6 @@ Wire Wire Line
 Text GLabel 4425 3475 0    50   Input ~ 0
 GND
 Wire Wire Line
-	4000 2825 4100 2825
-NoConn ~ 4000 2925
-Wire Wire Line
 	5000 3025 5400 3025
 Connection ~ 5500 3475
 Wire Wire Line
@@ -566,21 +528,8 @@ Text GLabel 5400 3025 2    50   Input ~ 0
 GPIO39
 Wire Wire Line
 	4500 3175 4500 3475
-$Comp
-L Connector:AudioJack3 J7
-U 1 1 62004AA6
-P 3800 2925
-F 0 "J7" H 3750 2575 50  0000 C CNN
-F 1 "Tom1" H 3750 2675 50  0000 C CNN
-F 2 "edrumulus:Jack_6.35mm_Neutrik_NMJ6HCD2_Horizontal" H 3800 2925 50  0001 C CNN
-F 3 "~" H 3800 2925 50  0001 C CNN
-	1    3800 2925
-	1    0    0    -1  
-$EndComp
 Text GLabel 5550 3475 2    50   Input ~ 0
 3V3
-Text GLabel 4100 2825 2    50   Input ~ 0
-GND
 Connection ~ 5000 3025
 Wire Wire Line
 	4500 3025 5000 3025
@@ -660,15 +609,12 @@ Wire Wire Line
 	4450 1850 4525 1850
 Text GLabel 4450 1850 0    50   Input ~ 0
 GND
-Wire Wire Line
-	4025 1200 4125 1200
 Wire Notes Line
 	700  3950 3300 3950
 Wire Notes Line
 	3300 2350 3300 3950
 Wire Notes Line
 	3300 2350 700  2350
-NoConn ~ 4025 1300
 Wire Wire Line
 	5025 1400 5425 1400
 Connection ~ 5525 1850
@@ -698,21 +644,8 @@ Wire Notes Line
 	5950 700  3350 700 
 Wire Wire Line
 	4525 1550 4525 1850
-$Comp
-L Connector:AudioJack3 J5
-U 1 1 61D09D89
-P 3825 1300
-F 0 "J5" H 3775 950 50  0000 C CNN
-F 1 "Kick" H 3775 1050 50  0000 C CNN
-F 2 "edrumulus:Jack_6.35mm_Neutrik_NMJ6HCD2_Horizontal" H 3825 1300 50  0001 C CNN
-F 3 "~" H 3825 1300 50  0001 C CNN
-	1    3825 1300
-	1    0    0    -1  
-$EndComp
 Text GLabel 5575 1850 2    50   Input ~ 0
 3V3
-Text GLabel 4125 1200 2    50   Input ~ 0
-GND
 Connection ~ 5025 1400
 Wire Wire Line
 	4525 1400 5025 1400
@@ -804,12 +737,9 @@ F 3 " ~" H 9275 2025 50  0001 C CNN
 	1    9275 2025
 	-1   0    0    -1  
 $EndComp
-Connection ~ 1400 2650
-Wire Wire Line
-	1300 2650 1400 2650
-Text GLabel 1300 2650 0    50   Input ~ 0
+Text GLabel 1800 2650 0    50   Input ~ 0
 GND
-Text GLabel 1300 2650 0    50   Input ~ 0
+Text GLabel 1800 2650 0    50   Input ~ 0
 GND
 Text GLabel 9575 825  2    50   Input ~ 0
 KICK-TIP
@@ -949,21 +879,8 @@ Wire Wire Line
 Wire Wire Line
 	4500 4650 5000 4650
 Connection ~ 5000 4650
-Text GLabel 4100 4450 2    50   Input ~ 0
-GND
 Text GLabel 5550 5100 2    50   Input ~ 0
 3V3
-$Comp
-L Connector:AudioJack3 J8
-U 1 1 62096962
-P 3800 4550
-F 0 "J8" H 3750 4200 50  0000 C CNN
-F 1 "Tom2" H 3750 4300 50  0000 C CNN
-F 2 "edrumulus:Jack_6.35mm_Neutrik_NMJ6HCD2_Horizontal" H 3800 4550 50  0001 C CNN
-F 3 "~" H 3800 4550 50  0001 C CNN
-	1    3800 4550
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	4500 4800 4500 5100
 Text GLabel 5400 4650 2    50   Input ~ 0
@@ -973,9 +890,6 @@ Wire Wire Line
 Connection ~ 5500 5100
 Wire Wire Line
 	5000 4650 5400 4650
-NoConn ~ 4000 4550
-Wire Wire Line
-	4000 4450 4100 4450
 Text GLabel 4425 5100 0    50   Input ~ 0
 GND
 Wire Wire Line
@@ -987,9 +901,6 @@ Wire Wire Line
 Text GLabel 4400 6750 0    50   Input ~ 0
 GND
 Wire Wire Line
-	3975 6100 4075 6100
-NoConn ~ 3975 6200
-Wire Wire Line
 	4975 6300 5375 6300
 Connection ~ 5475 6750
 Wire Wire Line
@@ -998,21 +909,8 @@ Text GLabel 5375 6300 2    50   Input ~ 0
 GPIO15
 Wire Wire Line
 	4475 6450 4475 6750
-$Comp
-L Connector:AudioJack3 J6
-U 1 1 620E0068
-P 3775 6200
-F 0 "J6" H 3725 5850 50  0000 C CNN
-F 1 "Tom3" H 3725 5950 50  0000 C CNN
-F 2 "edrumulus:Jack_6.35mm_Neutrik_NMJ6HCD2_Horizontal" H 3775 6200 50  0001 C CNN
-F 3 "~" H 3775 6200 50  0001 C CNN
-	1    3775 6200
-	1    0    0    -1  
-$EndComp
 Text GLabel 5525 6750 2    50   Input ~ 0
 3V3
-Text GLabel 4075 6100 2    50   Input ~ 0
-GND
 Connection ~ 4975 6300
 Wire Wire Line
 	4475 6300 4975 6300
@@ -1093,11 +991,6 @@ Wire Wire Line
 	2900 4300 3000 4300
 Wire Wire Line
 	1800 6950 1900 6950
-Connection ~ 1400 5950
-Wire Wire Line
-	1300 5950 1400 5950
-Wire Wire Line
-	1400 5950 1400 6300
 Connection ~ 1900 6950
 Text GLabel 1800 6950 0    50   Input ~ 0
 GND
@@ -1115,17 +1008,6 @@ Wire Notes Line
 	3300 5650 700  5650
 Wire Wire Line
 	1900 6650 1900 6950
-$Comp
-L Connector:AudioJack3 J4
-U 1 1 61E10278
-P 1200 6400
-F 0 "J4" H 1150 6075 50  0000 C CNN
-F 1 "Ride" H 1150 6150 50  0000 C CNN
-F 2 "edrumulus:Jack_6.35mm_Neutrik_NMJ6HCD2_Horizontal" H 1200 6400 50  0001 C CNN
-F 3 "~" H 1200 6400 50  0001 C CNN
-	1    1200 6400
-	1    0    0    -1  
-$EndComp
 Connection ~ 2900 5950
 $Comp
 L Diode:BAT85 D15
@@ -1144,11 +1026,8 @@ Connection ~ 2900 6650
 Connection ~ 2900 6250
 Wire Wire Line
 	2900 6250 2900 6650
-Text GLabel 1300 5950 0    50   Input ~ 0
+Text GLabel 1800 5950 0    50   Input ~ 0
 GND
-Wire Wire Line
-	1400 5950 1900 5950
-Connection ~ 1900 5950
 Connection ~ 2400 6500
 Wire Wire Line
 	1900 6500 2400 6500
@@ -1296,11 +1175,6 @@ F 3 "~" H 1650 6400 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	1800 5300 1900 5300
-Connection ~ 1400 4300
-Wire Wire Line
-	1300 4300 1400 4300
-Wire Wire Line
-	1400 4300 1400 4650
 Connection ~ 1900 5300
 Text GLabel 1800 5300 0    50   Input ~ 0
 GND
@@ -1312,17 +1186,6 @@ Text Notes 750  4100 0    50   ~ 0
 Crash Trigger Input
 Wire Wire Line
 	1900 5000 1900 5300
-$Comp
-L Connector:AudioJack3 J3
-U 1 1 61DC57C7
-P 1200 4750
-F 0 "J3" H 1150 4425 50  0000 C CNN
-F 1 "Crash" H 1150 4500 50  0000 C CNN
-F 2 "edrumulus:Jack_6.35mm_Neutrik_NMJ6HCD2_Horizontal" H 1200 4750 50  0001 C CNN
-F 3 "~" H 1200 4750 50  0001 C CNN
-	1    1200 4750
-	1    0    0    -1  
-$EndComp
 Connection ~ 2900 4300
 $Comp
 L Diode:BAT85 D13
@@ -1341,11 +1204,8 @@ Connection ~ 2900 5000
 Connection ~ 2900 4600
 Wire Wire Line
 	2900 4600 2900 5000
-Text GLabel 1300 4300 0    50   Input ~ 0
+Text GLabel 1800 4300 0    50   Input ~ 0
 GND
-Wire Wire Line
-	1400 4300 1900 4300
-Connection ~ 1900 4300
 Connection ~ 2400 4850
 Wire Wire Line
 	1900 4850 2400 4850
@@ -1565,4 +1425,38 @@ Text GLabel 1400 1450 0    50   Input ~ 0
 SNARE-RING
 NoConn ~ 8275 3475
 NoConn ~ 8275 3575
+Text GLabel 1400 3200 0    50   Input ~ 0
+HI-HAT-TIP
+Text GLabel 1400 3100 0    50   Input ~ 0
+HI-HAT-RING
+Wire Wire Line
+	1900 2650 1800 2650
+Connection ~ 1900 2650
+Text GLabel 1400 4850 0    50   Input ~ 0
+CRASH1-TIP
+Text GLabel 1400 4750 0    50   Input ~ 0
+CRASH1-RING
+Wire Wire Line
+	1900 4300 1800 4300
+Connection ~ 1900 4300
+Text GLabel 1400 6400 0    50   Input ~ 0
+RIDE-RING
+Text GLabel 1400 6500 0    50   Input ~ 0
+RIDE-TIP
+Wire Wire Line
+	1900 5950 1800 5950
+Connection ~ 1900 5950
+Text GLabel 4025 1400 0    50   Input ~ 0
+KICK-TIP
+Text GLabel 4000 3025 0    50   Input ~ 0
+TOM1-TIP
+Text GLabel 4000 4650 0    50   Input ~ 0
+TOM2-TIP
+Text GLabel 3975 6300 0    50   Input ~ 0
+TOM3-TIP
+Text GLabel 7125 1400 0    50   Input ~ 0
+HI-HAT-CONTROL-TIP
+Wire Wire Line
+	7250 1400 7125 1400
+Connection ~ 7250 1400
 $EndSCHEMATC
