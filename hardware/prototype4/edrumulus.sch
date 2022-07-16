@@ -19,7 +19,7 @@ U 1 1 61BE1FA0
 P 1650 1450
 F 0 "R3" V 1825 1400 50  0000 L CNN
 F 1 "100 kOhm" V 1750 1250 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 1650 1450 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 1650 1450 50  0001 C CNN
 F 3 "~" H 1650 1450 50  0001 C CNN
 	1    1650 1450
 	0    -1   -1   0   
@@ -30,7 +30,7 @@ U 1 1 61BFFA7F
 P 2650 1300
 F 0 "R17" V 2475 1225 50  0000 L CNN
 F 1 "22 kOhm" V 2550 1150 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 2650 1300 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2650 1300 50  0001 C CNN
 F 3 "~" H 2650 1300 50  0001 C CNN
 	1    2650 1300
 	0    1    1    0   
@@ -55,7 +55,7 @@ U 1 1 61BFFA9A
 P 2150 1300
 F 0 "R9" V 1975 1250 50  0000 L CNN
 F 1 "22 kOhm" V 2050 1150 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 2150 1300 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2150 1300 50  0001 C CNN
 F 3 "~" H 2150 1300 50  0001 C CNN
 	1    2150 1300
 	0    1    1    0   
@@ -66,7 +66,7 @@ U 1 1 61C0679C
 P 2650 2000
 F 0 "R18" V 2825 1925 50  0000 L CNN
 F 1 "22 kOhm" V 2750 1850 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 2650 2000 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2650 2000 50  0001 C CNN
 F 3 "~" H 2650 2000 50  0001 C CNN
 	1    2650 2000
 	0    1    1    0   
@@ -77,7 +77,7 @@ U 1 1 61C067A2
 P 2150 1700
 F 0 "D2" H 2200 1900 50  0000 R CNN
 F 1 "BAT85" H 2250 1825 50  0000 R CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 2150 1525 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2150 1525 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 2150 1700 50  0001 C CNN
 	1    2150 1700
 	-1   0    0    1   
@@ -99,7 +99,7 @@ U 1 1 61C067AF
 P 2650 1700
 F 0 "D10" H 2650 1900 50  0000 C CNN
 F 1 "BAT85" H 2650 1825 50  0000 C CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 2650 1525 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2650 1525 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 2650 1700 50  0001 C CNN
 	1    2650 1700
 	-1   0    0    1   
@@ -111,7 +111,7 @@ U 1 1 61C067B7
 P 2150 2000
 F 0 "R10" V 2325 1925 50  0000 L CNN
 F 1 "22 kOhm" V 2250 1850 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 2150 2000 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2150 2000 50  0001 C CNN
 F 3 "~" H 2150 2000 50  0001 C CNN
 	1    2150 2000
 	0    1    1    0   
@@ -122,7 +122,7 @@ U 1 1 61C30414
 P 1650 1550
 F 0 "R1" V 1475 1500 50  0000 L CNN
 F 1 "100 kOhm" V 1550 1350 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 1650 1550 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 1650 1550 50  0001 C CNN
 F 3 "~" H 1650 1550 50  0001 C CNN
 	1    1650 1550
 	0    -1   -1   0   
@@ -143,7 +143,7 @@ U 1 1 61BFFA85
 P 2150 1000
 F 0 "D1" H 2200 800 50  0000 R CNN
 F 1 "BAT85" H 2250 900 50  0000 R CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 2150 825 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2150 825 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 2150 1000 50  0001 C CNN
 	1    2150 1000
 	-1   0    0    1   
@@ -180,7 +180,7 @@ U 1 1 61BFFA92
 P 2650 1000
 F 0 "D9" H 2650 800 50  0000 C CNN
 F 1 "BAT85" H 2650 900 50  0000 C CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 2650 825 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2650 825 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 2650 1000 50  0001 C CNN
 	1    2650 1000
 	-1   0    0    1   
@@ -220,7 +220,7 @@ U 1 1 61D81CAE
 P 7950 1850
 F 0 "R38" V 8125 1775 50  0000 L CNN
 F 1 "10 kOhm" V 8050 1700 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 7950 1850 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 7950 1850 50  0001 C CNN
 F 3 "~" H 7950 1850 50  0001 C CNN
 	1    7950 1850
 	0    1    1    0   
@@ -231,7 +231,7 @@ U 1 1 61D81CB4
 P 7450 1850
 F 0 "D25" H 7525 2050 50  0000 R CNN
 F 1 "BAT85" H 7550 1975 50  0000 R CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 7450 1675 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 7450 1675 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 7450 1850 50  0001 C CNN
 	1    7450 1850
 	-1   0    0    1   
@@ -249,7 +249,7 @@ U 1 1 61D81CC0
 P 7950 1550
 F 0 "D26" H 7950 1750 50  0000 C CNN
 F 1 "BAT85" H 7950 1675 50  0000 C CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 7950 1375 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 7950 1375 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 7950 1550 50  0001 C CNN
 	1    7950 1550
 	-1   0    0    1   
@@ -260,7 +260,7 @@ U 1 1 61D81CC7
 P 7500 1250
 F 0 "R37" V 7325 1175 50  0000 L CNN
 F 1 "10 kOhm" V 7400 1100 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 7500 1250 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 7500 1250 50  0001 C CNN
 F 3 "~" H 7500 1250 50  0001 C CNN
 	1    7500 1250
 	0    1    1    0   
@@ -319,7 +319,7 @@ U 1 1 61D71A8A
 P 1650 3100
 F 0 "R2" V 1825 3050 50  0000 L CNN
 F 1 "100 kOhm" V 1750 2900 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 1650 3100 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 1650 3100 50  0001 C CNN
 F 3 "~" H 1650 3100 50  0001 C CNN
 	1    1650 3100
 	0    -1   -1   0   
@@ -330,7 +330,7 @@ U 1 1 61D71A90
 P 2650 2950
 F 0 "R19" V 2475 2875 50  0000 L CNN
 F 1 "22 kOhm" V 2550 2800 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 2650 2950 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2650 2950 50  0001 C CNN
 F 3 "~" H 2650 2950 50  0001 C CNN
 	1    2650 2950
 	0    1    1    0   
@@ -355,7 +355,7 @@ U 1 1 61D71A9E
 P 2150 2950
 F 0 "R11" V 1975 2900 50  0000 L CNN
 F 1 "22 kOhm" V 2050 2800 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 2150 2950 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2150 2950 50  0001 C CNN
 F 3 "~" H 2150 2950 50  0001 C CNN
 	1    2150 2950
 	0    1    1    0   
@@ -366,7 +366,7 @@ U 1 1 61D71AA4
 P 2650 3650
 F 0 "R20" V 2825 3575 50  0000 L CNN
 F 1 "22 kOhm" V 2750 3500 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 2650 3650 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2650 3650 50  0001 C CNN
 F 3 "~" H 2650 3650 50  0001 C CNN
 	1    2650 3650
 	0    1    1    0   
@@ -377,7 +377,7 @@ U 1 1 61D71AAA
 P 2150 3350
 F 0 "D4" H 2200 3550 50  0000 R CNN
 F 1 "BAT85" H 2250 3475 50  0000 R CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 2150 3175 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2150 3175 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 2150 3350 50  0001 C CNN
 	1    2150 3350
 	-1   0    0    1   
@@ -399,7 +399,7 @@ U 1 1 61D71AB6
 P 2650 3350
 F 0 "D12" H 2650 3550 50  0000 C CNN
 F 1 "BAT85" H 2650 3475 50  0000 C CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 2650 3175 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2650 3175 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 2650 3350 50  0001 C CNN
 	1    2650 3350
 	-1   0    0    1   
@@ -411,7 +411,7 @@ U 1 1 61D71ABD
 P 2150 3650
 F 0 "R12" V 2325 3575 50  0000 L CNN
 F 1 "22 kOhm" V 2250 3500 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 2150 3650 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2150 3650 50  0001 C CNN
 F 3 "~" H 2150 3650 50  0001 C CNN
 	1    2150 3650
 	0    1    1    0   
@@ -422,7 +422,7 @@ U 1 1 61D71AC3
 P 1650 3200
 F 0 "R4" V 1475 3150 50  0000 L CNN
 F 1 "100 kOhm" V 1550 3000 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 1650 3200 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 1650 3200 50  0001 C CNN
 F 3 "~" H 1650 3200 50  0001 C CNN
 	1    1650 3200
 	0    -1   -1   0   
@@ -435,7 +435,7 @@ U 1 1 61D71ACA
 P 2150 2650
 F 0 "D3" H 2200 2450 50  0000 R CNN
 F 1 "BAT85" H 2250 2550 50  0000 R CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 2150 2475 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2150 2475 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 2150 2650 50  0001 C CNN
 	1    2150 2650
 	-1   0    0    1   
@@ -470,7 +470,7 @@ U 1 1 61D71AE1
 P 2650 2650
 F 0 "D11" H 2650 2450 50  0000 C CNN
 F 1 "BAT85" H 2650 2550 50  0000 C CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 2650 2475 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2650 2475 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 2650 2650 50  0001 C CNN
 	1    2650 2650
 	-1   0    0    1   
@@ -540,7 +540,7 @@ U 1 1 62004A9A
 P 4250 3025
 F 0 "R27" V 4075 2950 50  0000 L CNN
 F 1 "100 kOhm" V 4150 2825 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 4250 3025 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 4250 3025 50  0001 C CNN
 F 3 "~" H 4250 3025 50  0001 C CNN
 	1    4250 3025
 	0    -1   -1   0   
@@ -551,7 +551,7 @@ U 1 1 62004A94
 P 4750 3475
 F 0 "R31" V 4925 3400 50  0000 L CNN
 F 1 "22 kOhm" V 4850 3325 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 4750 3475 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 4750 3475 50  0001 C CNN
 F 3 "~" H 4750 3475 50  0001 C CNN
 	1    4750 3475
 	0    1    1    0   
@@ -563,7 +563,7 @@ U 1 1 62004A8D
 P 5250 3175
 F 0 "D23" H 5250 3375 50  0000 C CNN
 F 1 "BAT85" H 5250 3300 50  0000 C CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 5250 3000 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 5250 3000 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 5250 3175 50  0001 C CNN
 	1    5250 3175
 	-1   0    0    1   
@@ -585,7 +585,7 @@ U 1 1 62004A81
 P 4750 3175
 F 0 "D19" H 4825 3375 50  0000 R CNN
 F 1 "BAT85" H 4850 3300 50  0000 R CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 4750 3000 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 4750 3000 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 4750 3175 50  0001 C CNN
 	1    4750 3175
 	-1   0    0    1   
@@ -596,7 +596,7 @@ U 1 1 62004A7B
 P 5250 3475
 F 0 "R35" V 5425 3400 50  0000 L CNN
 F 1 "22 kOhm" V 5350 3325 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 5250 3475 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 5250 3475 50  0001 C CNN
 F 3 "~" H 5250 3475 50  0001 C CNN
 	1    5250 3475
 	0    1    1    0   
@@ -656,7 +656,7 @@ U 1 1 61D09D5D
 P 4275 1400
 F 0 "R25" V 4100 1325 50  0000 L CNN
 F 1 "100 kOhm" V 4175 1200 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 4275 1400 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 4275 1400 50  0001 C CNN
 F 3 "~" H 4275 1400 50  0001 C CNN
 	1    4275 1400
 	0    -1   -1   0   
@@ -667,7 +667,7 @@ U 1 1 61D09D57
 P 4775 1850
 F 0 "R29" V 4950 1775 50  0000 L CNN
 F 1 "22 kOhm" V 4875 1700 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 4775 1850 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 4775 1850 50  0001 C CNN
 F 3 "~" H 4775 1850 50  0001 C CNN
 	1    4775 1850
 	0    1    1    0   
@@ -679,7 +679,7 @@ U 1 1 61D09D50
 P 5275 1550
 F 0 "D21" H 5275 1750 50  0000 C CNN
 F 1 "BAT85" H 5275 1675 50  0000 C CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 5275 1375 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 5275 1375 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 5275 1550 50  0001 C CNN
 	1    5275 1550
 	-1   0    0    1   
@@ -701,7 +701,7 @@ U 1 1 61D09D44
 P 4775 1550
 F 0 "D17" H 4850 1750 50  0000 R CNN
 F 1 "BAT85" H 4875 1675 50  0000 R CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 4775 1375 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 4775 1375 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 4775 1550 50  0001 C CNN
 	1    4775 1550
 	-1   0    0    1   
@@ -712,7 +712,7 @@ U 1 1 61D09D3E
 P 5275 1850
 F 0 "R33" V 5450 1775 50  0000 L CNN
 F 1 "22 kOhm" V 5375 1700 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 5275 1850 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 5275 1850 50  0001 C CNN
 F 3 "~" H 5275 1850 50  0001 C CNN
 	1    5275 1850
 	0    1    1    0   
@@ -724,12 +724,12 @@ Wire Notes Line
 Wire Notes Line
 	3300 700  700  700 
 $Comp
-L Connector:DB25_Female_MountingHoles J?
+L Connector:DB25_Female_MountingHoles J1
 U 1 1 62DF6D0B
 P 9275 2025
-F 0 "J?" H 9193 3517 50  0000 C CNN
+F 0 "J1" H 9193 3517 50  0000 C CNN
 F 1 "Trigger Connector" H 9193 3426 50  0000 C CNN
-F 2 "" H 9275 2025 50  0001 C CNN
+F 2 "Connector_Dsub:DSUB-25_Female_Vertical_P2.77x2.84mm" H 9275 2025 50  0001 C CNN
 F 3 " ~" H 9275 2025 50  0001 C CNN
 	1    9275 2025
 	-1   0    0    -1  
@@ -744,8 +744,6 @@ Text GLabel 9575 925  2    50   Input ~ 0
 TOM1-TIP
 Text GLabel 9575 1025 2    50   Input ~ 0
 KICK-SLEEVE
-Text GLabel 9575 1125 2    50   Input ~ 0
-TOM1-RING
 Text GLabel 9575 1225 2    50   Input ~ 0
 SNARE-TIP
 Text GLabel 9575 1325 2    50   Input ~ 0
@@ -756,8 +754,6 @@ Text GLabel 9575 1525 2    50   Input ~ 0
 TOM2-TIP
 Text GLabel 9575 1625 2    50   Input ~ 0
 SNARE-SLEEVE
-Text GLabel 9575 1725 2    50   Input ~ 0
-TOM2-RING
 Text GLabel 9575 1825 2    50   Input ~ 0
 HI-HAT-SLEEVE&TOM2-SLEEVE
 Text GLabel 9575 1925 2    50   Input ~ 0
@@ -768,8 +764,6 @@ Text GLabel 9575 2125 2    50   Input ~ 0
 TOM3-TIP
 Text GLabel 9575 2225 2    50   Input ~ 0
 HI-HAT-RING
-Text GLabel 9575 2325 2    50   Input ~ 0
-TOM3-RING
 Text GLabel 9575 2425 2    50   Input ~ 0
 HI-HAT-CONTROL-SLEEVE
 Text GLabel 9575 2525 2    50   Input ~ 0
@@ -784,8 +778,6 @@ Text GLabel 9575 2925 2    50   Input ~ 0
 RIDE-TIP
 Text GLabel 9575 3025 2    50   Input ~ 0
 CRASH1-TIP
-Text GLabel 9575 3125 2    50   Input ~ 0
-RIDE-BELL-RING
 Text GLabel 9575 3225 2    50   Input ~ 0
 CRASH1-RING
 Wire Notes Line
@@ -808,7 +800,7 @@ U 1 1 62096937
 P 5250 5100
 F 0 "R36" V 5425 5025 50  0000 L CNN
 F 1 "22 kOhm" V 5350 4950 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 5250 5100 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 5250 5100 50  0001 C CNN
 F 3 "~" H 5250 5100 50  0001 C CNN
 	1    5250 5100
 	0    1    1    0   
@@ -819,7 +811,7 @@ U 1 1 6209693D
 P 4750 4800
 F 0 "D20" H 4825 5000 50  0000 R CNN
 F 1 "BAT85" H 4850 4925 50  0000 R CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 4750 4625 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 4750 4625 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 4750 4800 50  0001 C CNN
 	1    4750 4800
 	-1   0    0    1   
@@ -841,7 +833,7 @@ U 1 1 62096949
 P 5250 4800
 F 0 "D24" H 5250 5000 50  0000 C CNN
 F 1 "BAT85" H 5250 4925 50  0000 C CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 5250 4625 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 5250 4625 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 5250 4800 50  0001 C CNN
 	1    5250 4800
 	-1   0    0    1   
@@ -853,7 +845,7 @@ U 1 1 62096950
 P 4750 5100
 F 0 "R32" V 4925 5025 50  0000 L CNN
 F 1 "22 kOhm" V 4850 4950 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 4750 5100 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 4750 5100 50  0001 C CNN
 F 3 "~" H 4750 5100 50  0001 C CNN
 	1    4750 5100
 	0    1    1    0   
@@ -864,7 +856,7 @@ U 1 1 62096956
 P 4250 4650
 F 0 "R28" V 4075 4575 50  0000 L CNN
 F 1 "100 kOhm" V 4150 4450 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 4250 4650 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 4250 4650 50  0001 C CNN
 F 3 "~" H 4250 4650 50  0001 C CNN
 	1    4250 4650
 	0    -1   -1   0   
@@ -921,7 +913,7 @@ U 1 1 620E005C
 P 4225 6300
 F 0 "R26" V 4050 6225 50  0000 L CNN
 F 1 "100 kOhm" V 4125 6100 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 4225 6300 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 4225 6300 50  0001 C CNN
 F 3 "~" H 4225 6300 50  0001 C CNN
 	1    4225 6300
 	0    -1   -1   0   
@@ -932,7 +924,7 @@ U 1 1 620E0056
 P 4725 6750
 F 0 "R30" V 4900 6675 50  0000 L CNN
 F 1 "22 kOhm" V 4825 6600 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 4725 6750 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 4725 6750 50  0001 C CNN
 F 3 "~" H 4725 6750 50  0001 C CNN
 	1    4725 6750
 	0    1    1    0   
@@ -944,7 +936,7 @@ U 1 1 620E004F
 P 5225 6450
 F 0 "D22" H 5225 6650 50  0000 C CNN
 F 1 "BAT85" H 5225 6575 50  0000 C CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 5225 6275 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 5225 6275 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 5225 6450 50  0001 C CNN
 	1    5225 6450
 	-1   0    0    1   
@@ -966,7 +958,7 @@ U 1 1 620E0043
 P 4725 6450
 F 0 "D18" H 4800 6650 50  0000 R CNN
 F 1 "BAT85" H 4825 6575 50  0000 R CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 4725 6275 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 4725 6275 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 4725 6450 50  0001 C CNN
 	1    4725 6450
 	-1   0    0    1   
@@ -977,7 +969,7 @@ U 1 1 620E003D
 P 5225 6750
 F 0 "R34" V 5400 6675 50  0000 L CNN
 F 1 "22 kOhm" V 5325 6600 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 5225 6750 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 5225 6750 50  0001 C CNN
 F 3 "~" H 5225 6750 50  0001 C CNN
 	1    5225 6750
 	0    1    1    0   
@@ -1012,7 +1004,7 @@ U 1 1 61E10270
 P 2650 5950
 F 0 "D15" H 2650 5750 50  0000 C CNN
 F 1 "BAT85" H 2650 5850 50  0000 C CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 2650 5775 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2650 5775 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 2650 5950 50  0001 C CNN
 	1    2650 5950
 	-1   0    0    1   
@@ -1049,7 +1041,7 @@ U 1 1 61E10259
 P 2150 5950
 F 0 "D7" H 2200 5750 50  0000 R CNN
 F 1 "BAT85" H 2250 5850 50  0000 R CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 2150 5775 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2150 5775 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 2150 5950 50  0001 C CNN
 	1    2150 5950
 	-1   0    0    1   
@@ -1062,7 +1054,7 @@ U 1 1 61E10252
 P 1650 6500
 F 0 "R8" V 1475 6450 50  0000 L CNN
 F 1 "100 kOhm" V 1550 6300 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 1650 6500 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 1650 6500 50  0001 C CNN
 F 3 "~" H 1650 6500 50  0001 C CNN
 	1    1650 6500
 	0    -1   -1   0   
@@ -1073,7 +1065,7 @@ U 1 1 61E1024C
 P 2150 6950
 F 0 "R16" V 2325 6875 50  0000 L CNN
 F 1 "22 kOhm" V 2250 6800 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 2150 6950 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2150 6950 50  0001 C CNN
 F 3 "~" H 2150 6950 50  0001 C CNN
 	1    2150 6950
 	0    1    1    0   
@@ -1085,7 +1077,7 @@ U 1 1 61E10245
 P 2650 6650
 F 0 "D16" H 2650 6850 50  0000 C CNN
 F 1 "BAT85" H 2650 6775 50  0000 C CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 2650 6475 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2650 6475 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 2650 6650 50  0001 C CNN
 	1    2650 6650
 	-1   0    0    1   
@@ -1107,7 +1099,7 @@ U 1 1 61E10239
 P 2150 6650
 F 0 "D8" H 2200 6850 50  0000 R CNN
 F 1 "BAT85" H 2250 6775 50  0000 R CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 2150 6475 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2150 6475 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 2150 6650 50  0001 C CNN
 	1    2150 6650
 	-1   0    0    1   
@@ -1118,7 +1110,7 @@ U 1 1 61E10233
 P 2650 6950
 F 0 "R24" V 2825 6875 50  0000 L CNN
 F 1 "22 kOhm" V 2750 6800 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 2650 6950 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2650 6950 50  0001 C CNN
 F 3 "~" H 2650 6950 50  0001 C CNN
 	1    2650 6950
 	0    1    1    0   
@@ -1129,7 +1121,7 @@ U 1 1 61E1022D
 P 2150 6250
 F 0 "R15" V 1975 6200 50  0000 L CNN
 F 1 "22 kOhm" V 2050 6100 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 2150 6250 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2150 6250 50  0001 C CNN
 F 3 "~" H 2150 6250 50  0001 C CNN
 	1    2150 6250
 	0    1    1    0   
@@ -1154,7 +1146,7 @@ U 1 1 61E1021F
 P 2650 6250
 F 0 "R23" V 2475 6175 50  0000 L CNN
 F 1 "22 kOhm" V 2550 6100 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 2650 6250 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2650 6250 50  0001 C CNN
 F 3 "~" H 2650 6250 50  0001 C CNN
 	1    2650 6250
 	0    1    1    0   
@@ -1165,7 +1157,7 @@ U 1 1 61E10219
 P 1650 6400
 F 0 "R7" V 1825 6350 50  0000 L CNN
 F 1 "100 kOhm" V 1750 6200 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 1650 6400 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 1650 6400 50  0001 C CNN
 F 3 "~" H 1650 6400 50  0001 C CNN
 	1    1650 6400
 	0    -1   -1   0   
@@ -1190,7 +1182,7 @@ U 1 1 61DC57BF
 P 2650 4300
 F 0 "D13" H 2650 4100 50  0000 C CNN
 F 1 "BAT85" H 2650 4200 50  0000 C CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 2650 4125 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2650 4125 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 2650 4300 50  0001 C CNN
 	1    2650 4300
 	-1   0    0    1   
@@ -1227,7 +1219,7 @@ U 1 1 61DC57A8
 P 2150 4300
 F 0 "D5" H 2200 4100 50  0000 R CNN
 F 1 "BAT85" H 2250 4200 50  0000 R CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 2150 4125 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2150 4125 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 2150 4300 50  0001 C CNN
 	1    2150 4300
 	-1   0    0    1   
@@ -1240,7 +1232,7 @@ U 1 1 61DC57A1
 P 1650 4850
 F 0 "R6" V 1475 4800 50  0000 L CNN
 F 1 "100 kOhm" V 1550 4650 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 1650 4850 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 1650 4850 50  0001 C CNN
 F 3 "~" H 1650 4850 50  0001 C CNN
 	1    1650 4850
 	0    -1   -1   0   
@@ -1251,7 +1243,7 @@ U 1 1 61DC579B
 P 2150 5300
 F 0 "R14" V 2325 5225 50  0000 L CNN
 F 1 "22 kOhm" V 2250 5150 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 2150 5300 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2150 5300 50  0001 C CNN
 F 3 "~" H 2150 5300 50  0001 C CNN
 	1    2150 5300
 	0    1    1    0   
@@ -1263,7 +1255,7 @@ U 1 1 61DC5794
 P 2650 5000
 F 0 "D14" H 2650 5200 50  0000 C CNN
 F 1 "BAT85" H 2650 5125 50  0000 C CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 2650 4825 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2650 4825 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 2650 5000 50  0001 C CNN
 	1    2650 5000
 	-1   0    0    1   
@@ -1285,7 +1277,7 @@ U 1 1 61DC5788
 P 2150 5000
 F 0 "D6" H 2200 5200 50  0000 R CNN
 F 1 "BAT85" H 2250 5125 50  0000 R CNN
-F 2 "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal" H 2150 4825 50  0001 C CNN
+F 2 "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2150 4825 50  0001 C CNN
 F 3 "https://assets.nexperia.com/documents/data-sheet/BAT85.pdf" H 2150 5000 50  0001 C CNN
 	1    2150 5000
 	-1   0    0    1   
@@ -1296,7 +1288,7 @@ U 1 1 61DC5782
 P 2650 5300
 F 0 "R22" V 2825 5225 50  0000 L CNN
 F 1 "22 kOhm" V 2750 5150 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 2650 5300 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2650 5300 50  0001 C CNN
 F 3 "~" H 2650 5300 50  0001 C CNN
 	1    2650 5300
 	0    1    1    0   
@@ -1307,7 +1299,7 @@ U 1 1 61DC577C
 P 2150 4600
 F 0 "R13" V 1975 4550 50  0000 L CNN
 F 1 "22 kOhm" V 2050 4450 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 2150 4600 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2150 4600 50  0001 C CNN
 F 3 "~" H 2150 4600 50  0001 C CNN
 	1    2150 4600
 	0    1    1    0   
@@ -1332,7 +1324,7 @@ U 1 1 61DC576E
 P 2650 4600
 F 0 "R21" V 2475 4525 50  0000 L CNN
 F 1 "22 kOhm" V 2550 4450 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 2650 4600 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 2650 4600 50  0001 C CNN
 F 3 "~" H 2650 4600 50  0001 C CNN
 	1    2650 4600
 	0    1    1    0   
@@ -1343,7 +1335,7 @@ U 1 1 61DC5768
 P 1650 4750
 F 0 "R5" V 1825 4700 50  0000 L CNN
 F 1 "100 kOhm" V 1750 4550 50  0000 L CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" H 1650 4750 50  0001 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 1650 4750 50  0001 C CNN
 F 3 "~" H 1650 4750 50  0001 C CNN
 	1    1650 4750
 	0    -1   -1   0   
@@ -1454,45 +1446,80 @@ HI-HAT-CONTROL-TIP
 Wire Wire Line
 	7250 1400 7125 1400
 Connection ~ 7250 1400
-$Comp
-L Connector_Generic_MountingPin:Conn_02x20_Odd_Even_MountingPin J?
-U 1 1 62D10684
-P 9775 4875
-F 0 "J?" H 9825 5992 50  0000 C CNN
-F 1 "Raspberry Pi GPIO pins" H 9825 5901 50  0000 C CNN
-F 2 "" H 9775 4875 50  0001 C CNN
-F 3 "~" H 9775 4875 50  0001 C CNN
-	1    9775 4875
-	1    0    0    -1  
-$EndComp
-Text GLabel 10075 4175 2    50   Input ~ 0
-GND
-Text GLabel 10075 4575 2    50   Input ~ 0
-GND
-Text GLabel 10075 4875 2    50   Input ~ 0
-GND
-Text GLabel 10075 5375 2    50   Input ~ 0
-GND
-Text GLabel 10075 5575 2    50   Input ~ 0
-GND
-Text GLabel 9575 5875 0    50   Input ~ 0
-GND
-Text GLabel 9575 5175 0    50   Input ~ 0
-GND
-Text GLabel 9575 4375 0    50   Input ~ 0
-GND
 Text GLabel 8275 2875 2    50   Input ~ 0
 ESP-UART0-TX
 Text GLabel 8275 2975 2    50   Input ~ 0
 ESP-UART0-RX
-Text GLabel 10075 4375 2    50   Input ~ 0
-ESP-UART0-TX
-Text GLabel 10075 4275 2    50   Input ~ 0
-ESP-UART0-RX
 Text GLabel 6425 4075 0    50   Input ~ 0
-ESP-VIN
-Text GLabel 10075 3975 2    50   Input ~ 0
 ESP-VIN
 NoConn ~ 8275 3475
 NoConn ~ 8275 3575
+Text GLabel 9925 3975 2    50   Input ~ 0
+ESP-VIN
+Text GLabel 9925 4275 2    50   Input ~ 0
+ESP-UART0-RX
+Text GLabel 9925 4375 2    50   Input ~ 0
+ESP-UART0-TX
+Text GLabel 9425 4375 0    50   Input ~ 0
+GND
+Text GLabel 9425 5175 0    50   Input ~ 0
+GND
+Text GLabel 9425 5875 0    50   Input ~ 0
+GND
+Text GLabel 9925 5575 2    50   Input ~ 0
+GND
+Text GLabel 9925 5375 2    50   Input ~ 0
+GND
+Text GLabel 9925 4875 2    50   Input ~ 0
+GND
+Text GLabel 9925 4575 2    50   Input ~ 0
+GND
+Text GLabel 9925 4175 2    50   Input ~ 0
+GND
+$Comp
+L Connector_Generic_MountingPin:Conn_02x20_Odd_Even_MountingPin J2
+U 1 1 62D10684
+P 9625 4875
+F 0 "J2" H 9675 5992 50  0000 C CNN
+F 1 "Raspberry Pi GPIO pins" H 9675 5901 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x20_P2.54mm_Vertical" H 9625 4875 50  0001 C CNN
+F 3 "~" H 9625 4875 50  0001 C CNN
+	1    9625 4875
+	1    0    0    -1  
+$EndComp
+NoConn ~ 9925 4775
+NoConn ~ 9925 4975
+NoConn ~ 9925 5075
+NoConn ~ 9925 5175
+NoConn ~ 9925 5275
+NoConn ~ 9925 5475
+NoConn ~ 9925 5675
+NoConn ~ 9925 5775
+NoConn ~ 9925 5875
+NoConn ~ 9425 5775
+NoConn ~ 9425 5675
+NoConn ~ 9425 5575
+NoConn ~ 9425 5475
+NoConn ~ 9425 5375
+NoConn ~ 9425 5275
+NoConn ~ 9425 5075
+NoConn ~ 9425 4975
+NoConn ~ 9425 4875
+NoConn ~ 9425 4775
+NoConn ~ 9425 4675
+NoConn ~ 9425 4575
+NoConn ~ 9425 4475
+NoConn ~ 9425 4275
+NoConn ~ 9425 4175
+NoConn ~ 9425 4075
+NoConn ~ 9425 3975
+NoConn ~ 9925 4075
+NoConn ~ 9925 4475
+NoConn ~ 9925 4675
+NoConn ~ 9675 6075
+NoConn ~ 9275 3425
+NoConn ~ 9575 3125
+NoConn ~ 9575 2325
+NoConn ~ 9575 1725
+NoConn ~ 9575 1125
 $EndSCHEMATC
