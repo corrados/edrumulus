@@ -723,62 +723,51 @@ Wire Notes Line
 	3300 700  3300 2300
 Wire Notes Line
 	3300 700  700  700 
-$Comp
-L Connector:DB25_Female_MountingHoles J1
-U 1 1 62DF6D0B
-P 9275 2025
-F 0 "J1" H 9193 3517 50  0000 C CNN
-F 1 "Trigger Connector" H 9193 3426 50  0000 C CNN
-F 2 "Connector_Dsub:DSUB-25_Female_Vertical_P2.77x2.84mm" H 9275 2025 50  0001 C CNN
-F 3 " ~" H 9275 2025 50  0001 C CNN
-	1    9275 2025
-	-1   0    0    -1  
-$EndComp
 Text GLabel 1800 2650 0    50   Input ~ 0
 GND
 Text GLabel 1800 2650 0    50   Input ~ 0
 GND
-Text GLabel 9575 825  2    50   Input ~ 0
+Text GLabel 9650 3475 2    50   Input ~ 0
 KICK-TIP
-Text GLabel 9575 925  2    50   Input ~ 0
+Text GLabel 9650 3375 2    50   Input ~ 0
 TOM1-TIP
-Text GLabel 9575 1025 2    50   Input ~ 0
+Text GLabel 9650 3275 2    50   Input ~ 0
 KICK-SLEEVE
-Text GLabel 9575 1225 2    50   Input ~ 0
+Text GLabel 9650 3075 2    50   Input ~ 0
 SNARE-TIP
-Text GLabel 9575 1325 2    50   Input ~ 0
+Text GLabel 9650 2975 2    50   Input ~ 0
 TOM1-SLEEVE
-Text GLabel 9575 1425 2    50   Input ~ 0
+Text GLabel 9650 2875 2    50   Input ~ 0
 SNARE-RING
-Text GLabel 9575 1525 2    50   Input ~ 0
+Text GLabel 9650 2775 2    50   Input ~ 0
 TOM2-TIP
-Text GLabel 9575 1625 2    50   Input ~ 0
+Text GLabel 9650 2675 2    50   Input ~ 0
 SNARE-SLEEVE
-Text GLabel 9575 1825 2    50   Input ~ 0
+Text GLabel 9650 2475 2    50   Input ~ 0
 HI-HAT-SLEEVE&TOM2-SLEEVE
-Text GLabel 9575 1925 2    50   Input ~ 0
+Text GLabel 9650 2375 2    50   Input ~ 0
 TOM3-SLEEVE
-Text GLabel 9575 2025 2    50   Input ~ 0
+Text GLabel 9650 2275 2    50   Input ~ 0
 HI-HAT-TIP
-Text GLabel 9575 2125 2    50   Input ~ 0
+Text GLabel 9650 2175 2    50   Input ~ 0
 TOM3-TIP
-Text GLabel 9575 2225 2    50   Input ~ 0
+Text GLabel 9650 2075 2    50   Input ~ 0
 HI-HAT-RING
-Text GLabel 9575 2425 2    50   Input ~ 0
+Text GLabel 9650 1875 2    50   Input ~ 0
 HI-HAT-CONTROL-SLEEVE
-Text GLabel 9575 2525 2    50   Input ~ 0
+Text GLabel 9650 1775 2    50   Input ~ 0
 RIDE-SLEEVE&RIDE-BELL_SLEEVE
-Text GLabel 9575 2625 2    50   Input ~ 0
+Text GLabel 9650 1675 2    50   Input ~ 0
 HI-HAT-CONTROL-TIP
-Text GLabel 9575 2725 2    50   Input ~ 0
+Text GLabel 9650 1575 2    50   Input ~ 0
 RIDE-RING
-Text GLabel 9575 2825 2    50   Input ~ 0
+Text GLabel 9650 1475 2    50   Input ~ 0
 CRASH1-SLEEVE
-Text GLabel 9575 2925 2    50   Input ~ 0
+Text GLabel 9650 1375 2    50   Input ~ 0
 RIDE-TIP
-Text GLabel 9575 3025 2    50   Input ~ 0
+Text GLabel 9650 1275 2    50   Input ~ 0
 CRASH1-TIP
-Text GLabel 9575 3225 2    50   Input ~ 0
+Text GLabel 9650 1075 2    50   Input ~ 0
 CRASH1-RING
 Wire Notes Line
 	5950 4000 3350 4000
@@ -1482,7 +1471,7 @@ U 1 1 62D10684
 P 9625 4875
 F 0 "J2" H 9675 5992 50  0000 C CNN
 F 1 "Raspberry Pi GPIO pins" H 9675 5901 50  0000 C CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x20_P2.54mm_Vertical" H 9625 4875 50  0001 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_2x20_P2.54mm_Vertical" H 9625 4875 50  0001 C CNN
 F 3 "~" H 9625 4875 50  0001 C CNN
 	1    9625 4875
 	1    0    0    -1  
@@ -1517,9 +1506,19 @@ NoConn ~ 9925 4075
 NoConn ~ 9925 4475
 NoConn ~ 9925 4675
 NoConn ~ 9675 6075
-NoConn ~ 9275 3425
-NoConn ~ 9575 3125
-NoConn ~ 9575 2325
-NoConn ~ 9575 1725
-NoConn ~ 9575 1125
+$Comp
+L Connector:DB25_Female J1
+U 1 1 62D47C5A
+P 9350 2275
+F 0 "J1" H 9268 783 50  0000 C CNN
+F 1 "Trigger Connector" H 9268 874 50  0000 C CNN
+F 2 "Connector_Dsub:DSUB-25_Female_Vertical_P2.77x2.84mm" H 9350 2275 50  0001 C CNN
+F 3 " ~" H 9350 2275 50  0001 C CNN
+	1    9350 2275
+	-1   0    0    1   
+$EndComp
+NoConn ~ 9650 3175
+NoConn ~ 9650 2575
+NoConn ~ 9650 1975
+NoConn ~ 9650 1175
 $EndSCHEMATC
