@@ -3420,7 +3420,13 @@
   (gr_line locked (start 106.566483 76.111756) (end 106.566194 126.610783) (layer "Edge.Cuts") (width 0.1) (tstamp e79bc387-3540-40c5-bfc6-626240a2ca86))
   (gr_arc locked (start 109.566816 129.608296) (mid 107.445783 128.730905) (end 106.566194 126.610783) (layer "Edge.Cuts") (width 0.1) (tstamp ec29c278-4576-4663-9f88-4fa484a7149f))
   (gr_circle locked (center 168.062863 126.108162) (end 169.437863 126.108162) (layer "Edge.Cuts") (width 0.1) (fill none) (tstamp eca431ea-fb5c-4141-ad79-ee3c03f0695e))
+  (gr_text "ESP32\n Ant" (at 129.794 86.614) (layer "F.SilkS") (tstamp 2d51710a-5034-4125-a1c4-2645789501a1)
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
   (gr_text "Edrumulus\nPrototype 4" (at 160.02 112.776) (layer "F.SilkS") (tstamp 65cd49ab-394d-46aa-8ee7-ed60cda84601)
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+  (gr_text "ESP32\n USB" (at 165.862 103.886) (layer "F.SilkS") (tstamp 66cf9899-100d-45fb-9b9f-8f866de8a3fe)
     (effects (font (size 1 1) (thickness 0.15)))
   )
 
