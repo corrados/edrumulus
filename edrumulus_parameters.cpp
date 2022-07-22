@@ -80,6 +80,15 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.rim_use_low_freq_bp  = false;
       break;
 
+    case PDX100:
+      pad_settings.decay_fact_db       = 2.0f;
+      pad_settings.decay_len2_ms       = 65.0f;
+      pad_settings.decay_grad_fact2    = 300.0f;
+      pad_settings.decay_len3_ms       = 350.0f;
+      pad_settings.decay_grad_fact3    = 150.0f;
+      pad_settings.pos_low_pass_cutoff = 120.0f;
+      break;
+
     case PDX8:
       pad_settings.velocity_sensitivity = 5;
       pad_settings.rim_shot_treshold    = 9;

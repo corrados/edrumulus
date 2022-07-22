@@ -47,8 +47,8 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd80r_no_hot_spot.wav");padtype='pd80r';
 %x = audioread("signals/pd80r_rimshot_issue.wav");padtype='pd80r';
 %x = audioread("signals/pda120ls.wav");x=x(:,1);padtype='pda120ls';x = x(1:630000, :);%x = x(1.06e6:end, :);%x = x(840000:930000, :);%
-x = audioread("signals/pda120ls_2.wav");x=x(:,1);padtype='pda120ls';x = x(1:210000, :);
-%x = audioread("signals/pdx100.wav");padtype='pdx100';
+%x = audioread("signals/pda120ls_2.wav");x=x(:,1);padtype='pda120ls';x = x(1:210000, :);
+x = audioread("signals/pdx100.wav");padtype='pdx100';%x = x(1:420000, :);
 %x = audioread("signals/pdx8.wav");padtype='pdx8';
 %x = audioread("signals/pd5.wav");padtype='pd5';
 %x = audioread("signals/pd6.wav");padtype='pd6';
@@ -118,10 +118,13 @@ switch padtype
     pad.hot_spot_attenuation_db         = 3;
     pad.hot_spot_peak_diff_limit_min_db = 4;
     pad.hot_spot_middle_diff_db         = 5;
-
   case 'pdx100'
-% TODO find the correct parameter set for the pad type
-
+    pad.decay_fact_db       = 2;
+    pad.decay_len_ms2       = 65;
+    pad.decay_grad_fact2    = 300;
+    pad.decay_len_ms3       = 350;
+    pad.decay_grad_fact3    = 150;
+    pad.pos_low_pass_cutoff = 120;
   case 'pdx8'
     % note: no changes needed to the default values
   case 'pd5'
