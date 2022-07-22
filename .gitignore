@@ -22,6 +22,9 @@ hardware/prototype4/edrumulus.sch-bak
 hardware/prototype4/fp-info-cache
 hardware/prototype4/edrumulus.kicad_pcb-bak
 hardware/prototype4/edrumulus-backups/
+hardware/prototype4/prototype4-gerber/
+
+
 
 # Prerequisites
 *.d
