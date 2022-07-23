@@ -48,7 +48,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd80r_rimshot_issue.wav");padtype='pd80r';
 %x = audioread("signals/pda120ls.wav");x=x(:,1);padtype='pda120ls';x = x(1:630000, :);%x = x(1.06e6:end, :);%x = x(840000:930000, :);%
 %x = audioread("signals/pda120ls_2.wav");x=x(:,1);padtype='pda120ls';x = x(1:210000, :);
-x = audioread("signals/pdx100.wav");padtype='pdx100';%x = x(1:420000, :);
+x = audioread("signals/pdx100.wav");padtype='pdx100';x = x(1:420000, :);
 %x = audioread("signals/pdx8.wav");padtype='pdx8';
 %x = audioread("signals/pd5.wav");padtype='pd5';
 %x = audioread("signals/pd6.wav");padtype='pd6';
