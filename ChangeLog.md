@@ -1,6 +1,16 @@
 # Edrumulus Project Log
 
 
+## 2022-07-23 Confusion about the PDA120LS pad
+
+  My assumption was that all Roland pads with mesh heads do support positional sensing. So, I
+  acciently recommended the PDA-120LS for having positional sensing support with Edrumulus.
+  After recording a test signal with that pad, I had trouble to find any parameters where the
+  positional sensing works at all. Finally I found out that this pad does not use a center-
+  mounted pizeo but three piezos at the edges of the mesh head. That explains why I could not
+  get the positional sensing working. So, be careful what kind of mesh head pad you buy if you
+  want to have positional sensing.
+
 ## 2022-07-02 Youtube video of prototype 3 (HD-1)
 
   A [Youtube Video](https://youtu.be/tBlKvivwAE4) of Edrumulus prototype 3 (HD-1) is
