@@ -58,6 +58,8 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.pos_threshold        = 7;
       pad_settings.pos_sensitivity      = 14;
       pad_settings.rim_shot_treshold    = 24;
+      pad_settings.pos_sense_is_used    = true;
+      pad_settings.rim_shot_is_used     = true;
       break;
 
     case PDA120LS:
@@ -70,6 +72,8 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.pre_scan_time_ms          = 3.5f;
       pad_settings.first_peak_diff_thresh_db = 7.0f;
       pad_settings.pos_invert                = true;
+      pad_settings.pos_sense_is_used         = true;
+      pad_settings.rim_shot_is_used          = true;
       break;
 
     case PD80R:
@@ -83,6 +87,8 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.decay_len3_ms        = 300.0f;
       pad_settings.decay_grad_fact3     = 100.0f;
       pad_settings.rim_use_low_freq_bp  = false;
+      pad_settings.pos_sense_is_used    = true;
+      pad_settings.rim_shot_is_used     = true;
       break;
 
     case PDX100:
@@ -97,13 +103,18 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.decay_len3_ms        = 350.0f;
       pad_settings.decay_grad_fact3     = 150.0f;
       pad_settings.pos_low_pass_cutoff  = 120.0f;
+      pad_settings.pos_sense_is_used    = true;
+      pad_settings.rim_shot_is_used     = true;
       break;
 
     case PDX8:
-      pad_settings.velocity_sensitivity = 5;
-      pad_settings.rim_shot_treshold    = 9;
-      pad_settings.pos_threshold        = 20;
-      pad_settings.pos_sensitivity      = 25;
+      pad_settings.velocity_threshold   = 6;
+      pad_settings.velocity_sensitivity = 4;
+      pad_settings.rim_shot_treshold    = 14;
+      pad_settings.pos_threshold        = 21;
+      pad_settings.pos_sensitivity      = 27;
+      pad_settings.pos_sense_is_used    = true;
+      pad_settings.rim_shot_is_used     = true;
       break;
 
     case PD5:
@@ -130,6 +141,8 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.decay_grad_fact2     = 600.0f;
       pad_settings.decay_len3_ms        = 150.0f;
       pad_settings.decay_grad_fact3     = 120.0f;
+      pad_settings.pos_sense_is_used    = true;
+      pad_settings.rim_shot_is_used     = true;
       break;
 
     case TP80:
@@ -143,6 +156,8 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.decay_len3_ms        = 700.0f;
       pad_settings.decay_grad_fact3     = 60.0f;
       pad_settings.pos_invert           = true;
+      pad_settings.pos_sense_is_used    = true;
+      pad_settings.rim_shot_is_used     = true;
       break;
 
     case FD8:
@@ -169,6 +184,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
     case KD7:
       pad_settings.velocity_threshold   = 11;
       pad_settings.velocity_sensitivity = 6;
+      pad_settings.curve_type           = LOG2; // less dynamic on kick (similar to other drum modules)
       pad_settings.scan_time_ms         = 2.0f;
       pad_settings.decay_est_delay_ms   = 8.0f;
       pad_settings.decay_fact_db        = 5.0f;
@@ -181,6 +197,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case KD8:
+      pad_settings.curve_type              = LOG2; // less dynamic on kick (similar to other drum modules)
       pad_settings.scan_time_ms            = 3.0f;
       pad_settings.mask_time_decay_fact_db = 10.0f;
       pad_settings.decay_grad_fact2        = 450.0f;
@@ -195,10 +212,12 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case CY5:
-      pad_settings.velocity_sensitivity = 6;
+      pad_settings.velocity_threshold   = 6;
+      pad_settings.velocity_sensitivity = 4;
       pad_settings.scan_time_ms         = 3.0f;
       pad_settings.mask_time_ms         = 8.0f;
       pad_settings.decay_fact_db        = 3.0f;
+      pad_settings.rim_shot_is_used     = true;
       break;
 
     case CY6:
@@ -207,6 +226,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.decay_grad_fact2 = 120.0f;
       pad_settings.decay_len3_ms    = 450.0f;
       pad_settings.decay_grad_fact3 = 30.0f;
+      pad_settings.rim_shot_is_used = true;
       break;
 
     case CY8:
@@ -221,6 +241,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.decay_grad_fact2     = 200.0f;
       pad_settings.decay_len3_ms        = 450.0f;
       pad_settings.decay_grad_fact3     = 30.0f;
+      pad_settings.rim_shot_is_used     = true;
       break;
 
     case DIABOLO12:
@@ -232,10 +253,14 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.decay_fact_db             = 6.0f;
       pad_settings.decay_est_delay_ms        = 20.0f;
       pad_settings.pos_low_pass_cutoff       = 50.0f; // positional sensing seems not to work correctly
+      pad_settings.pos_sense_is_used         = true;
+      pad_settings.rim_shot_is_used          = true;
       break;
 
     case HD1TOM:
-      pad_settings.velocity_sensitivity = 8;
+      pad_settings.velocity_threshold   = 8;
+      pad_settings.velocity_sensitivity = 5;
+      pad_settings.curve_type           = LOG1;
       pad_settings.scan_time_ms         = 1.5f;
       pad_settings.decay_grad_fact2     = 300.0f;
       pad_settings.pos_low_pass_cutoff  = 300.0f;
