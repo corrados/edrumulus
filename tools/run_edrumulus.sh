@@ -16,20 +16,26 @@ NCORES=$(nproc)
 
 # check of Teensy USB MIDI
 if aconnect -l|grep -q Edrumulus; then
-  echo "Edrumulus with Teensy hardware detected"
+  echo "-> Edrumulus with Teensy hardware detected"
   is_teensy=true
 fi
 
 # check if we are running on a Raspberry Pi by checking if the user name is pi
 if [ $USER = "pi" ]; then
-  echo "Running on a Raspberry pi"
+  echo "-> Running on a Raspberry pi"
   is_raspi=true
 fi
 
 # check if we are in Jamulus session mode
 if [[ "$1" == jamulus ]]; then
-  echo "Jamulus session mode enabled"
+  echo "-> Jamulus session mode enabled"
   is_jamulus=true
+fi
+
+# check if the GUI mode shall be used
+if [[ "$1" == gui ]]; then
+  echo "-> GUI mode enabled"
+  is_gui=true
 fi
 
 
@@ -117,21 +123,8 @@ jackd -R -T --silent -P70 -t2000 -d alsa -dhw:${ADEVICE} -p 128 -n 3 -r 48000 -s
 sleep 1
 
 
-# write Edrumulus trigger configuration ----------------------------------------
+# preparations -----------------------------------------------------------------
 if [[ -v is_teensy ]]; then
-  # diable spike cancellation for Teensy 4.0 prototype
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 110 0
-
-  # snare
-  SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 108 0 # pad 0
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 102 2 # PD8
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 103 1 # threshold
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 104 8 # sensitivity
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 107 16 # rim shot threshold
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 105 26 # positional sensing threshold
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 106 11 # positional sensing sensitivity
-  #SendMIDI/Builds/LinuxMakefile/build/sendmidi dev "Edrumulus" ch 10 cc 111 3 # both, rim shot and positional sensing
-
   # connect ALSA MIDI to Jack Audio MIDI
   a2jmidid -e >/dev/null 2>&1 &
   sleep 1
@@ -139,22 +132,8 @@ if [[ -v is_teensy ]]; then
   # get Edrumulus MIDI name
   MIDIJACKPORT=$(jack_lsp|grep "(capture): Edrumulus MIDI")
 else
-  # prepare serial output interface for sending MIDI configuration messages
-  stty 38400 -F /dev/ttyUSB0
-
-  # snare
-  echo -n -e '\xB9\x6C\x00' > /dev/ttyUSB0 # select pad: 0
-  #echo -n -e '\xB9\x6D\x03' > /dev/ttyUSB0 # MIDI curve type: LOG1
-  #echo -n -e '\xB9\x66\x02' > /dev/ttyUSB0 # pad type: PD8
-  #echo -n -e '\xB9\x67\x05' > /dev/ttyUSB0 # threshold
-  #echo -n -e '\xB9\x68\x08' > /dev/ttyUSB0 # sensitivity
-  #echo -n -e '\xB9\x6B\x10' > /dev/ttyUSB0 # rim shot threshold
-  #echo -n -e '\xB9\x69\x1A' > /dev/ttyUSB0 # positional sensing threshold
-  #echo -n -e '\xB9\x6A\x0B' > /dev/ttyUSB0 # positional sensing sensitivity
-  #echo -n -e '\xB9\x6F\x03' > /dev/ttyUSB0 # rim/pos: both, rim shot and positional sensing
-
   # start MIDI tool to convert serial MIDI to Jack Audio MIDI
-  # note that to get access to /dev/ttyUSB0 we need to be in group tty/dialout
+  # note that to get access to /dev/ttyUSB0 you need to be in group tty/dialout
   mod-ttymidi/ttymidi -b 38400 &
   MIDIJACKPORT=ttymidi:MIDI_in
 fi
@@ -174,7 +153,7 @@ jack_connect $KITJACKPORTRIGHT system:playback_2
 
 
 # either use direct MIDI connection or through EdrumulusGUI
-if [[ "$1" == gui ]]; then
+if [[ -v is_gui ]]; then
   ./EdrumulusGUI DrumGizmo:drumgizmo_midiin
 elif [[ -v is_jamulus ]]; then
   jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
