@@ -61,10 +61,15 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case PDA120LS:
+      pad_settings.velocity_threshold        = 11;
+      pad_settings.velocity_sensitivity      = 7;
+      pad_settings.pos_threshold             = 31;
+      pad_settings.pos_sensitivity           = 16;
+      pad_settings.rim_shot_treshold         = 30;
       pad_settings.decay_grad_fact2          = 250.0f;
       pad_settings.pre_scan_time_ms          = 3.5f;
       pad_settings.first_peak_diff_thresh_db = 7.0f;
-      pad_settings.pos_low_pass_cutoff       = 370.0f;
+      pad_settings.pos_invert                = true;
       break;
 
     case PD80R:
@@ -78,6 +83,20 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.decay_len3_ms        = 300.0f;
       pad_settings.decay_grad_fact3     = 100.0f;
       pad_settings.rim_use_low_freq_bp  = false;
+      break;
+
+    case PDX100:
+      pad_settings.velocity_threshold   = 6;
+      pad_settings.velocity_sensitivity = 5;
+      pad_settings.pos_threshold        = 9;
+      pad_settings.pos_sensitivity      = 16;
+      pad_settings.rim_shot_treshold    = 24;
+      pad_settings.decay_fact_db        = 2.0f;
+      pad_settings.decay_len2_ms        = 65.0f;
+      pad_settings.decay_grad_fact2     = 300.0f;
+      pad_settings.decay_len3_ms        = 350.0f;
+      pad_settings.decay_grad_fact3     = 150.0f;
+      pad_settings.pos_low_pass_cutoff  = 120.0f;
       break;
 
     case PDX8:
