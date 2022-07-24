@@ -15,6 +15,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 \******************************************************************************/
 
+//#define USE_PROTOTYPE1 // minimal drum set with only kick/snare/hi-hat
+//#define USE_PROTOTYPE3 // based on Roland HD-1 pads
+
 #define USE_MIDI
 
 #include "edrumulus.h"
@@ -36,15 +39,11 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 #endif
 
 Edrumulus edrumulus;
-#ifdef ESP_PLATFORM
-const int number_pads       = 9; // ESP32
-#else
-const int number_pads       = 8; // Teensy 4.0
-#endif
 const int status_LED_pin    = BOARD_LED_PIN; // internal LED used for overload indicator
 const int midi_channel      = 10;            // default for edrums is 10
 const int hihat_pad_idx     = 2;
 const int hihatctrl_pad_idx = 3;
+int       number_pads       = 0;             // initialization value, will be set in setup()
 bool      is_status_LED_on  = false;         // initialization value
 int       selected_pad      = 0;             // initialization value
 
@@ -64,15 +63,24 @@ void setup()
   // NOTE: avoid ESP32 GPIO 25/26 for piezo inputs since they are DAC pins which cause an incorrect DC offset
   //       estimation and DC offset drift which makes the spike cancellation algorithm not working correctly
   // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
+# ifdef USE_PROTOTYPE1
+  const int analog_pins[]         = { 12,    35,     15,       34 };
+  const int analog_pins_rimshot[] = { 13,    -1,     14,       -1 };
+# elif defined ( USE_PROTOTYPE3 )
+  const int analog_pins[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    13 };
+  const int analog_pins_rimshot[] = { 35,    -1,     26,       -1,         14,     -1,    -1,    -1,    -1 };
+# else
   const int analog_pins[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    15 };
   const int analog_pins_rimshot[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1 };
+# endif
 #endif
 #ifdef TEENSYDUINO
   // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
-  const int analog_pins[]         = { 10,    11,    12,        13,          1,      6,     4,     5,    17 };
-  const int analog_pins_rimshot[] = {  9,    -1,     0,        -1,          3,      8,     2,     7,    18 };
+  const int analog_pins[]         = { 10,    11,    12,        13,          1,      6,     4,     5 };
+  const int analog_pins_rimshot[] = {  9,    -1,     0,        -1,          3,      8,     2,     7 };
 #endif
 
+  number_pads = sizeof ( analog_pins ) / sizeof ( int );
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
   read_settings();
 
@@ -96,15 +104,32 @@ void preset_settings()
   edrumulus.set_midi_notes      ( 8, 43, 58 ); // tom 3
 
   // default drum kit setup
+#ifdef USE_PROTOTYPE1
+  edrumulus.set_pad_type ( 0, Edrumulus::PDX100 ); // snare
+  edrumulus.set_pad_type ( 1, Edrumulus::KD7 );    // kick
+  edrumulus.set_pad_type ( 2, Edrumulus::CY5 );    // Hi-Hat
+  edrumulus.set_pad_type ( 3, Edrumulus::FD8 );    // Hi-Hat-ctrl
+#elif defined ( USE_PROTOTYPE3 )
+  edrumulus.set_pad_type ( 0, Edrumulus::PDX8 );   // snare
+  edrumulus.set_pad_type ( 1, Edrumulus::KD7 );    // kick
+  edrumulus.set_pad_type ( 2, Edrumulus::CY5 );    // Hi-Hat
+  edrumulus.set_pad_type ( 3, Edrumulus::FD8 );    // Hi-Hat-ctrl
+  edrumulus.set_pad_type ( 4, Edrumulus::CY5 );    // crash
+  edrumulus.set_pad_type ( 5, Edrumulus::HD1TOM ); // tom 1
+  edrumulus.set_pad_type ( 6, Edrumulus::CY5 );    // ride
+  edrumulus.set_pad_type ( 7, Edrumulus::HD1TOM ); // tom 2
+  edrumulus.set_pad_type ( 8, Edrumulus::HD1TOM ); // tom 3
+#else
   edrumulus.set_pad_type ( 0, Edrumulus::PD80R ); // snare
-  edrumulus.set_pad_type ( 1, Edrumulus::KD7 ); // kick
-  edrumulus.set_pad_type ( 2, Edrumulus::CY5 ); // Hi-Hat, using rim switch
-  edrumulus.set_pad_type ( 3, Edrumulus::FD8 ); // Hi-Hat-ctrl
-  edrumulus.set_pad_type ( 4, Edrumulus::CY8 ); // crash, using rim switch
-  edrumulus.set_pad_type ( 5, Edrumulus::PD8 ); // tom 1
-  edrumulus.set_pad_type ( 6, Edrumulus::PD8 ); // ride, using rim switch
-  edrumulus.set_pad_type ( 7, Edrumulus::PD8 ); // tom 2
-  edrumulus.set_pad_type ( 8, Edrumulus::PD8 ); // tom 3
+  edrumulus.set_pad_type ( 1, Edrumulus::KD7 );   // kick
+  edrumulus.set_pad_type ( 2, Edrumulus::CY5 );   // Hi-Hat
+  edrumulus.set_pad_type ( 3, Edrumulus::FD8 );   // Hi-Hat-ctrl
+  edrumulus.set_pad_type ( 4, Edrumulus::CY8 );   // crash
+  edrumulus.set_pad_type ( 5, Edrumulus::PD8 );   // tom 1
+  edrumulus.set_pad_type ( 6, Edrumulus::PD8 );   // ride
+  edrumulus.set_pad_type ( 7, Edrumulus::PD8 );   // tom 2
+  edrumulus.set_pad_type ( 8, Edrumulus::PD8 );   // tom 3
+#endif
 }
 
 
