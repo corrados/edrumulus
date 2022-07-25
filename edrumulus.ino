@@ -82,7 +82,11 @@ void setup()
 
   number_pads = sizeof ( analog_pins ) / sizeof ( int );
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
+#ifdef ESP_PLATFORM // ### MARKER: ESP32 issue with read/write settings ###
+  preset_settings(); // for ESP32, the read/save is disabled -> therefore we need to apply the preset
+#else
   read_settings();
+#endif
 
   // initialize GPIO port for status LED
   pinMode ( status_LED_pin, OUTPUT );
@@ -110,15 +114,22 @@ void preset_settings()
   edrumulus.set_pad_type ( 2, Edrumulus::CY5 );    // Hi-Hat
   edrumulus.set_pad_type ( 3, Edrumulus::FD8 );    // Hi-Hat-ctrl
 #elif defined ( USE_PROTOTYPE3 )
-  edrumulus.set_pad_type ( 0, Edrumulus::PDX8 );   // snare
-  edrumulus.set_pad_type ( 1, Edrumulus::KD7 );    // kick
-  edrumulus.set_pad_type ( 2, Edrumulus::CY5 );    // Hi-Hat
-  edrumulus.set_pad_type ( 3, Edrumulus::FD8 );    // Hi-Hat-ctrl
-  edrumulus.set_pad_type ( 4, Edrumulus::CY5 );    // crash
-  edrumulus.set_pad_type ( 5, Edrumulus::HD1TOM ); // tom 1
-  edrumulus.set_pad_type ( 6, Edrumulus::CY5 );    // ride
-  edrumulus.set_pad_type ( 7, Edrumulus::HD1TOM ); // tom 2
-  edrumulus.set_pad_type ( 8, Edrumulus::HD1TOM ); // tom 3
+  edrumulus.set_pad_type     ( 0, Edrumulus::PDX8 );   // snare
+  edrumulus.set_cancellation ( 0, 5 );
+  edrumulus.set_pad_type     ( 1, Edrumulus::KD7 );    // kick
+  edrumulus.set_pad_type     ( 2, Edrumulus::CY5 );    // Hi-Hat
+  edrumulus.set_cancellation ( 2, 8 );
+  edrumulus.set_pad_type     ( 3, Edrumulus::FD8 );    // Hi-Hat-ctrl
+  edrumulus.set_pad_type     ( 4, Edrumulus::CY5 );    // crash
+  edrumulus.set_cancellation ( 4, 14 );
+  edrumulus.set_pad_type     ( 5, Edrumulus::HD1TOM ); // tom 1
+  edrumulus.set_cancellation ( 5, 4 );
+  edrumulus.set_pad_type     ( 6, Edrumulus::CY5 );    // ride
+  edrumulus.set_cancellation ( 6, 8 );
+  edrumulus.set_pad_type     ( 7, Edrumulus::HD1TOM ); // tom 2
+  edrumulus.set_cancellation ( 7, 4 );
+  edrumulus.set_pad_type     ( 8, Edrumulus::HD1TOM ); // tom 3
+  edrumulus.set_cancellation ( 8, 4 );
 #else
   edrumulus.set_pad_type ( 0, Edrumulus::PD80R ); // snare
   edrumulus.set_pad_type ( 1, Edrumulus::KD7 );   // kick

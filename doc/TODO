@@ -1,6 +1,10 @@
 
 
 
+- fix ### MARKER: ESP32 issue with read/write settings ###
+  -> ESP32 storage seems to be unreliable (which is maybe caused by the way we are dealing with the threads), i.e.,
+     some parameters are changed from time to time to a large value
+
 - use rim switch theshold in dB (not linear as it is implemented right now)
 
 - introduce defines for debugging functionality instead of /* */
