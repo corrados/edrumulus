@@ -15,7 +15,8 @@ which runs on a micro processor. It shall fulfill the following specifications:
 ## News
 
 Find all important updates of the Edrumulus project in the [change log file](ChangeLog.md)
-and in the [discussion forums](https://github.com/corrados/edrumulus/discussions).
+and in the [discussion forums](https://github.com/corrados/edrumulus/discussions). A road map
+of the Edrumulus project can be found in the [TODO file](doc/TODO.md).
 
 
 ## Features
