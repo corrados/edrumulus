@@ -37,7 +37,7 @@
   There is a new tool available to show/modify Edrumulus parameters in a Linux (remote) shell
   using the ncurses library. This comes handy if Edrumulus is used with Drumgizmo running on
   a headless Raspberry Pi. This GUI is coded in one single file tools/edrumulus_gui.cpp.
-  <br/>![Edrumulus console GUI](algorithm/images/edrumulus_console_gui.jpg)
+  <br/>![Edrumulus console GUI](images/edrumulus_console_gui.jpg)
 
 ## 2022-01-09 Edrumulus prototype 3 (HD-1)
 
@@ -48,7 +48,7 @@
   Of course, there is plenty of room for improvement. But for a first try it was
   a great experience. Even positional sensing was possible with the PDX-8
   mesh pad even that it does not have a center mounted piezo trigger.
-  <br/>![Prototype 3 (HD-1)](algorithm/images/edrumulus_prototype3_hd1.jpg)
+  <br/>![Prototype 3 (HD-1)](images/edrumulus_prototype3_hd1.jpg)
 
 ## 2022-01-09 Possible out-of-memory issue for the ESP32
 
@@ -95,7 +95,7 @@
   In the following picture, the current Hilbert filter based design is compared to the new
   Butterworth filter design where the peak detection threshold is tweaked for each scenario
   so that no false peaks are detected in the entire signal:
-  <br/>![Butterworth filter versus Hilbert filter](algorithm/images/butterworthvshilbert.png)<br/>
+  <br/>![Butterworth filter versus Hilbert filter](images/butterworthvshilbert.png)<br/>
   It can be seen that the new Butterworth filter design detects more peaks compared to
   the existing Hilber filter design.<br/>
   Note that the investigation and implementation is currently on a Git side branch. It will
@@ -127,7 +127,7 @@
   More investigations are needed to find out the cause of the problem.<br/>
   A detailed view of the curcuit board for the jack sockets which are based on the patchbay is
   shown in the following picture:
-  <br/>![Jack board](algorithm/images/jackboard.jpg)
+  <br/>![Jack board](images/jackboard.jpg)
 
 ## 2021-09-19 Some project logs
   - One outstanding serious issue is false triggering in case no pad is played. This may be caused
@@ -164,7 +164,7 @@
 
 ## 2021-05-09 Teensy 4.0 versus ESP32
   There is a new prototype, now using a Teensy 4.0 developer board:
-  <br/>![Teensy Prototype](algorithm/images/teensy_prototype.jpg)<br/>
+  <br/>![Teensy Prototype](images/teensy_prototype.jpg)<br/>
   Difference between ESP32 and Teensy 4.0 with regard to Edrumulus:
   Feature | ESP32 | Teensy 4.0
   --- | --- | ---
@@ -185,15 +185,15 @@
 ## 2021-05-01 Minimal drumset prototype
   There is another Edrumulus prototype which is a minimal
   drumset with kick/snare/hi-hat:
-  <br/>![Prototype 1 minimal](algorithm/images/edrumulus_prototype1_minimaldrumset.jpg)
+  <br/>![Prototype 1 minimal](images/edrumulus_prototype1_minimaldrumset.jpg)
 
 ## 2021-04-10 Prototype
   Here is what my current Edrumulus prototype looks like:
-  <br/>![Prototype 1](algorithm/images/edrumulus_prototype1.jpg)
+  <br/>![Prototype 1](images/edrumulus_prototype1.jpg)
 
 ## 2021-04-04 ADC spikes of the ESP32
   This is how the ESP32 ADC signal looks like:
-  <br/>![ESP32 ADC Signals](algorithm/images/esp32adc.png)<br/>
+  <br/>![ESP32 ADC Signals](images/esp32adc.png)<br/>
   These spikes seem to be a hardware restriction of the ESP32. I am trying to mitigate this
   effect by implementing a spike suppression algorithm.
 
@@ -225,7 +225,7 @@
   The retrigger cancellation algorithm is now improved. The decay power is now estimated
   and the decay curve adjusted accordingly. I also bought three used patchbays which have a lot of
   jack sockets which can be used as trigger inputs.
-  <br/>![Used patchbays](algorithm/images/patchbays.jpg)
+  <br/>![Used patchbays](images/patchbays.jpg)
 
 ## 2021-02-05 Using Drumgizmo
   I am currently evaluating the great [Drumgizmo](https://drumgizmo.org) software
@@ -281,5 +281,5 @@
   which start from the middle, move to the edge and go back to the middle of the pad where the hits are
   equally strong. As shown by the black markers, the positional sensing seems to work pretty well. Also,
   the peak detection and velocity estimation seems to be pretty good as well.
-  <br/>![First results plot](algorithm/images/first_results.jpg)
+  <br/>![First results plot](images/first_results.jpg)
 

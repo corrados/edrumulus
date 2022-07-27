@@ -14,7 +14,7 @@ which runs on a micro processor. It shall fulfill the following specifications:
 
 ## News
 
-Find all important updates of the Edrumulus project in the [change log file](ChangeLog.md)
+Find all important updates of the Edrumulus project in the [change log file](doc/ChangeLog.md)
 and in the [discussion forums](https://github.com/corrados/edrumulus/discussions). A road map
 of the Edrumulus project can be found in the [TODO file](doc/TODO.md).
 
@@ -63,7 +63,7 @@ the signal processing and algorithm development is done in Octave. The developme
    sure the port was successful, we send test data to the micro controller, query the processed
    signal and compare it in Octave to the reference code.
 
-The algorithms are described in [this document](algorithm/README.md).
+The algorithms are described in [this document](doc/algorithm.md).
 
 
 ## Links
