@@ -1,6 +1,6 @@
 # Edrumulus
 
-<img width="100" height="100" src="algorithm/images/edrumulus_logo.png"/>
+<img width="100" height="100" src="doc/images/edrumulus_logo.png"/>
 
 [![PlatformIO CI](https://github.com/corrados/edrumulus/actions/workflows/main.yml/badge.svg)](https://github.com/corrados/edrumulus/actions/workflows/main.yml)
 
@@ -38,7 +38,7 @@ of the Edrumulus project can be found in the [TODO file](doc/TODO.md).
 
   A circuit diagram of a simplified prototype which only supports a mono piezo pad and
   a hi-hat controller input is given in the following picture:
-  <br/><img src="algorithm/images/edrumulus_testing.png" width="400"><br/>
+  <br/><img src="doc/images/edrumulus_testing.png" width="400"><br/>
 
   The full circuit diagram of Prototype2 is given in [this PDF file](hardware/prototype2/edrumulus.pdf).
 
