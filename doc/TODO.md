@@ -41,10 +41,11 @@ The road map items are sorted by priority.
   Probably caused by electrical interferers or noise in the microcontroller developer
   board itself. Either find a software solution or changes in the analog front end are needed.
 
-- [ ] **Fix `### MARKER: ESP32 issue with read/write settings ###`**
+- [ ] **Fix EEPROM issue on the ESP32**
 
   The ESP32 storage seems to be unreliable (which is maybe caused by the way we are dealing with the threads), i.e.,
-  some parameters are changed from time to time to a large value.
+  some parameters are changed from time to time to a large value. Search for `### MARKER: ESP32 issue with read/write settings ###`
+  in the code.
 
 - [ ] **Support hardware keyboard/display like Arduino LCD1602 Display Keypad Shield**
 
@@ -72,9 +73,9 @@ The road map items are sorted by priority.
 
 - [ ] **Possible memory issue on the ESP32**
 
-  See Git commit 406c31fd66aeb1609f75e22672d5fa9280749f37.
+  See Git commit [406c31fd66aeb1609f75e22672d5fa9280749f37](https://github.com/corrados/edrumulus/commit/406c31fd66aeb1609f75e22672d5fa9280749f37).
 
-- [ ] **Introduce defines for debugging functionality instead of /* */**
+- [ ] **Introduce defines for debugging functionality instead of `/* */`**
 
 - [ ] **Documentation**
 
