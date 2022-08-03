@@ -1,5 +1,19 @@
 # Edrumulus Project Log
 
+## 2022-08-03 Edrumulus prototype 4
+
+  There is a new Edrumulus prototype available which uses a custom PCB created with KiCad and
+  is intended to be used as a Raspberry Pi hat. It has a DB-25 trigger connector which is
+  compatible to the Roland TD9/TD11/TD15/TD25 multicore cable. The usage as a Raspberry Pi hat
+  is optional, i.e., this prototype can be used with a PC using a normal USB cable conntected
+  to the ESP32 development board. But make sure **not** to attach it to a Raspberry Pi and connect
+  the USB cable at the same time! If the prototype is connected to the Raspberry Pi, it gets
+  powered from the Raspberry Pi and this would interfere with the power from the PC via the USB
+  cable.<br/>
+  Unfortunately, there is a hardware bug which has to be fixed by soldering a capacitor
+  to the 3.3V and GND near the kick drum input (see the red circle on the last photo), otherwise
+  you get false triggering on that input.
+  <br/>![Edrumulus prototype 4](images/prototype4.jpg)
 
 ## 2022-07-23 Confusion about the PDA-120LS pad
 
