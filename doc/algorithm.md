@@ -143,6 +143,8 @@ To support a new pad type, test data should be recorded. If a second trigger is 
 stereo signal sampled at 8 kHz shall be used, otherwise use a monophonic recording. Make sure
 that the signal is never clipped, even for the highest velocity hits.
 
+## Normal test data capture
+
 The following hit sequence shall be recorded:
 
 - 5 single hits at medium velocity near the center of the pad
@@ -162,6 +164,20 @@ The following hit sequence shall be recorded:
 - press roll varying velocity from high to low and back to high near the middle of the pad
 - press roll varying velocity from high to low and back to high near the edge of the pad
   - the press rolls are for optimizing the parameters for the retrigger cancellation
+
+## Rim shot test data capture
+
+The rim shot test data capture is especially useful for mesh hat pads which use a rim shot
+piezo. The following hit sequence shall be recorded:
+
+- 5 hits at low velocity near the center of the pad
+- 5 rim shots at low velocity near the center of the pad
+- 5 hits at medium velocity near the center of the pad
+- 5 rim shots at medium velocity near the center of the pad
+- 5 hits at high velocity near the center of the pad
+- 5 rim shots at high velocity near the center of the pad
+- 5 hits at low velocity near the edge of the pad
+- 5 hits at high velocity near the edge of the pad
 
 
 # Latency between pad hit and audio output of the synthesized drum sound
