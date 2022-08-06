@@ -124,8 +124,9 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case PD6:
-      pad_settings.scan_time_ms     = 1.5f;
-      pad_settings.decay_grad_fact2 = 400.0f;
+      pad_settings.velocity_sensitivity = 4;
+      pad_settings.scan_time_ms         = 1.5f;
+      pad_settings.decay_grad_fact2     = 400.0f;
       break;
 
     case PD8:
@@ -146,7 +147,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case TP80:
-      pad_settings.velocity_sensitivity = 10;
+      pad_settings.velocity_sensitivity = 8;
       pad_settings.pos_threshold        = 22;
       pad_settings.pos_sensitivity      = 23;
       pad_settings.scan_time_ms         = 2.75f;
