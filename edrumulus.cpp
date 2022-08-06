@@ -182,8 +182,8 @@ Serial.println ( serial_print );
       bool overload_detected = false;
       for ( int j = 0; j < number_inputs[i]; j++ )
       {
-        // check for the two lowest/largest possible ADC range values
-        if ( ( sample_org_pad[j] >= ( ADC_MAX_RANGE - 2 ) ) || ( sample_org_pad[j] <= 1 ) )
+        // check for the lowest/largest possible ADC range values with noise consideration
+        if ( ( sample_org_pad[j] >= ( ADC_MAX_RANGE - ADC_MAX_NOISE_AMPL ) ) || ( sample_org_pad[j] <= ADC_MAX_NOISE_AMPL - 1 ) )
         {
           overload_LED_cnt  = overload_LED_on_time;
           overload_detected = true;
@@ -343,6 +343,8 @@ void Edrumulus::Pad::initialize()
   ctrl_velocity_threshold  = 5.0f; // use a fixed value (TODO make it adjustable)
   overload_hist_len        = scan_time + x_filt_delay;
   max_num_overloads        = 3; // maximum allowed number of overloaded samples until the overload special case is activated
+  overload_num_thresh_2db  = 5;
+  overload_num_thresh_3db  = 7;
 
   // The ESP32 ADC has 12 bits resulting in a range of 20*log10(2048)=66.2 dB.
   // The sensitivity parameter shall be in the range of 0..31. This range should then be mapped to the
@@ -662,10 +664,6 @@ float Edrumulus::Pad::process_sample ( const float* input,
         }
       }
 
-      // calculate the MIDI velocity value with clipping to allowed MIDI value range
-      stored_midi_velocity = velocity_factor * pow ( peak_val * ADC_noise_peak_velocity_scaling, velocity_exponent ) + velocity_offset;
-      stored_midi_velocity = max ( 1, min ( 127, stored_midi_velocity ) );
-
       // peak detection results
       peak_delay       = scan_time - ( peak_velocity_idx + 1 );
       first_peak_delay = total_scan_time - ( first_peak_idx + 1 );
@@ -684,7 +682,29 @@ float Edrumulus::Pad::process_sample ( const float* input,
       if ( number_overloaded_samples > max_num_overloads )
       {
         is_overloaded_state = true;
+
+        // overload correctdion: correct the peak value according to the number of clipped samples
+        if ( number_overloaded_samples <= max_num_overloads )
+        {
+          peak_val *= 1.2589; // 1 dB
+        }
+        else if ( number_overloaded_samples <= overload_num_thresh_2db )
+        {
+          peak_val *= 1.5849; // 2 dB
+        }
+        else if ( number_overloaded_samples <= overload_num_thresh_3db )
+        {
+          peak_val *= 2; // 3 dB
+        }
+        else
+        {
+          peak_val *= 2.5119; // 4 dB
+        }
       }
+
+      // calculate the MIDI velocity value with clipping to allowed MIDI value range
+      stored_midi_velocity = velocity_factor * pow ( peak_val * ADC_noise_peak_velocity_scaling, velocity_exponent ) + velocity_offset;
+      stored_midi_velocity = max ( 1, min ( 127, stored_midi_velocity ) );
     }
 
     // end condition of mask time

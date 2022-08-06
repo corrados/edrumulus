@@ -276,6 +276,8 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       int          number_inputs;
       int          overload_hist_len;
       int          max_num_overloads;
+      int          overload_num_thresh_2db;
+      int          overload_num_thresh_3db;
       bool         is_overloaded_state;
       int          scan_time;
       int          scan_time_cnt;

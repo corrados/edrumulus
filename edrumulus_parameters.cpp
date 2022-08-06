@@ -77,7 +77,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case PD80R:
-      pad_settings.velocity_sensitivity = 5;
+      pad_settings.velocity_sensitivity = 2;
       pad_settings.rim_shot_treshold    = 11;
       pad_settings.pos_threshold        = 11;
       pad_settings.pos_sensitivity      = 10;
