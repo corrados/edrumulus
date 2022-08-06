@@ -1,5 +1,16 @@
 # Edrumulus Project Log
 
+## 2022-08-06 [[r0.5](https://github.com/corrados/edrumulus/releases/tag/r0_5)] Simple overload correction
+
+  A simple signal overload correction is now supported. The initial idea in the TODO list was to
+  use a low-pass filter to recreate the clipped peak value. It is quite challanging to find the
+  correct filter parameters like cut-off, latency correction, amplitude correction, etc.
+  Therefore, a simpler approach was implemented now. We simply count the number of samples which
+  are detected to be clipped and assign these numbers to amplification values for the clipped
+  estimated peak value. Since the number of clipped samples might be incorrect because of noise
+  or even that not only the main peak is clipped but also the second main peak as well, only a
+  maximum of 4 dB is amplified and only the steps 1, 2, 3 and 4 dB are supported.
+
 ## 2022-08-03 Edrumulus prototype 4
 
   There is a new Edrumulus prototype available which uses a custom PCB created with KiCad and

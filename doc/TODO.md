@@ -10,10 +10,6 @@ The road map items are sorted by priority.
 
   Do not use a linear parameter as it is implemented right now.
 
-- [ ] **Signal overload correction**
-
-  Maybe based on low-pass filtering as suggested in https://github.com/corrados/edrumulus/discussions/17#discussion-3736264.
-
 - [ ] **Attach second piezo on mesh pad and experiment with improved velocity/position detection using the second piezo signal**
 
   Maybe use PDA-120L pad since it already has three pizeo sensors installed.
