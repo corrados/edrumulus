@@ -129,7 +129,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case PD8:
-      pad_settings.velocity_sensitivity = 5;
+      pad_settings.velocity_sensitivity = 3;
       pad_settings.pos_threshold        = 26;
       pad_settings.pos_sensitivity      = 11;
       pad_settings.rim_shot_treshold    = 16;
@@ -167,13 +167,14 @@ void Edrumulus::Pad::apply_preset_pad_settings()
 
     case VH12:
 // TODO if the Hi-Hat is open just a little bit, we get double triggers
-      pad_settings.scan_time_ms       = 4.0f;
-      pad_settings.decay_est_delay_ms = 9.0f;
-      pad_settings.decay_fact_db      = 5.0f;
-      pad_settings.decay_len2_ms      = 27.0f;
-      pad_settings.decay_grad_fact2   = 700.0f;
-      pad_settings.decay_len3_ms      = 600.0f; // must be long because of open Hi-Hat ringing
-      pad_settings.decay_grad_fact3   = 75.0f;
+      pad_settings.velocity_sensitivity = 5;
+      pad_settings.scan_time_ms         = 4.0f;
+      pad_settings.decay_est_delay_ms   = 9.0f;
+      pad_settings.decay_fact_db        = 5.0f;
+      pad_settings.decay_len2_ms        = 27.0f;
+      pad_settings.decay_grad_fact2     = 700.0f;
+      pad_settings.decay_len3_ms        = 600.0f; // must be long because of open Hi-Hat ringing
+      pad_settings.decay_grad_fact3     = 75.0f;
       break;
 
     case VH12CTRL:
@@ -197,6 +198,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case KD8:
+      pad_settings.velocity_sensitivity    = 2;
       pad_settings.curve_type              = LOG2; // less dynamic on kick (similar to other drum modules)
       pad_settings.scan_time_ms            = 3.0f;
       pad_settings.mask_time_decay_fact_db = 10.0f;
@@ -221,12 +223,13 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case CY6:
-      pad_settings.scan_time_ms     = 6.0f;
-      pad_settings.decay_len2_ms    = 150.0f;
-      pad_settings.decay_grad_fact2 = 120.0f;
-      pad_settings.decay_len3_ms    = 450.0f;
-      pad_settings.decay_grad_fact3 = 30.0f;
-      pad_settings.rim_shot_is_used = true;
+      pad_settings.velocity_sensitivity = 6;
+      pad_settings.scan_time_ms         = 6.0f;
+      pad_settings.decay_len2_ms        = 150.0f;
+      pad_settings.decay_grad_fact2     = 120.0f;
+      pad_settings.decay_len3_ms        = 450.0f;
+      pad_settings.decay_grad_fact3     = 30.0f;
+      pad_settings.rim_shot_is_used     = true;
       break;
 
     case CY8:
