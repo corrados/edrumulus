@@ -29,6 +29,8 @@ void Edrumulus::Pad::apply_preset_pad_settings()
   pad_settings.rim_shot_treshold         = 12; // 0..31
   pad_settings.cancellation              = 0;  // 0..31
   pad_settings.curve_type                = LINEAR;
+  pad_settings.is_control                = false;  // default is a normal pad
+  pad_settings.is_rim_switch             = false;  // default is a piezo for the rim sensor
   pad_settings.pos_sense_is_used         = false;  // must be explicitely enabled if it shall be used
   pad_settings.rim_shot_is_used          = false;  // must be explicitely enabled if it shall be used
   pad_settings.first_peak_diff_thresh_db = 8.0f;   // pad specific parameter: allowed difference between first peak and later peak in scan time
@@ -124,12 +126,14 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case PD6:
+      pad_settings.is_rim_switch        = true;
       pad_settings.velocity_sensitivity = 4;
       pad_settings.scan_time_ms         = 1.5f;
       pad_settings.decay_grad_fact2     = 400.0f;
       break;
 
     case PD8:
+      pad_settings.is_rim_switch        = true;
       pad_settings.velocity_sensitivity = 3;
       pad_settings.pos_threshold        = 26;
       pad_settings.pos_sensitivity      = 11;
@@ -147,6 +151,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case TP80:
+      pad_settings.is_rim_switch        = true;
       pad_settings.velocity_sensitivity = 8;
       pad_settings.pos_threshold        = 22;
       pad_settings.pos_sensitivity      = 23;
@@ -162,12 +167,14 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case FD8:
+      pad_settings.is_control           = true;
       pad_settings.velocity_threshold   = 5;
       pad_settings.velocity_sensitivity = 0;
       break;
 
     case VH12:
 // TODO if the Hi-Hat is open just a little bit, we get double triggers
+      pad_settings.is_rim_switch        = true;
       pad_settings.velocity_sensitivity = 5;
       pad_settings.scan_time_ms         = 4.0f;
       pad_settings.decay_est_delay_ms   = 9.0f;
@@ -179,6 +186,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case VH12CTRL:
+      pad_settings.is_control           = true;
       pad_settings.velocity_threshold   = 19;
       pad_settings.velocity_sensitivity = 28;
       break;
@@ -215,6 +223,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case CY5:
+      pad_settings.is_rim_switch        = true;
       pad_settings.velocity_threshold   = 6;
       pad_settings.velocity_sensitivity = 4;
       pad_settings.scan_time_ms         = 3.0f;
@@ -224,6 +233,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case CY6:
+      pad_settings.is_rim_switch        = true;
       pad_settings.velocity_sensitivity = 6;
       pad_settings.scan_time_ms         = 6.0f;
       pad_settings.decay_len2_ms        = 150.0f;
@@ -234,6 +244,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case CY8:
+      pad_settings.is_rim_switch        = true;
       pad_settings.velocity_threshold   = 13;
       pad_settings.velocity_sensitivity = 8;
       pad_settings.rim_shot_treshold    = 30;

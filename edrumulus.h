@@ -190,15 +190,8 @@ protected:
       int  get_cancellation         ()                                 { return pad_settings.cancellation; }
 
       float get_cancellation_factor() { return cancellation_factor; }
-      bool  get_is_control()          { return ( pad_settings.pad_type == FD8 ) ||
-                                               ( pad_settings.pad_type == VH12CTRL ); } // TODO check if new pads must be added here
-      bool  get_is_rim_switch()       { return ( pad_settings.pad_type == PD6 ) ||
-                                               ( pad_settings.pad_type == PD8 ) ||
-                                               ( pad_settings.pad_type == VH12 ) ||
-                                               ( pad_settings.pad_type == TP80 ) ||
-                                               ( pad_settings.pad_type == CY5 ) ||
-                                               ( pad_settings.pad_type == CY6 ) ||
-                                               ( pad_settings.pad_type == CY8 ); } // TODO check if new pads must be added here
+      bool  get_is_control()          { return pad_settings.is_control; }
+      bool  get_is_rim_switch()       { return pad_settings.is_rim_switch; }
 
       // definitions which can be used outside the pad class, too
       static const int control_midi_hysteresis       = ADC_MAX_NOISE_AMPL / 2; // MIDI hysteresis for the controller to suppress noise
@@ -215,6 +208,8 @@ protected:
         int        pos_sensitivity;      // 0..31, high values give higher sensitivity
         int        rim_shot_treshold;    // 0..31
         int        cancellation;         // 0..31
+        bool       is_control;           // whether it is a normal pad or a hi-hat control pedal
+        bool       is_rim_switch;        // whether the pad supports rim/egde sensor based on a physical switch (i.e. no piezo)
         bool       pos_sense_is_used;    // switches positional sensing support on or off
         bool       rim_shot_is_used;     // switches rim shot detection on or off
         Ecurvetype curve_type;
