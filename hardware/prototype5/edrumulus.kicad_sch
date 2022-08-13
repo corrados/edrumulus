@@ -1391,7 +1391,6 @@
     )
   )
 
-
   (junction (at 69.85 63.5) (diameter 0) (color 0 0 0 0)
     (uuid 003c2200-0632-4808-a662-8ddd5d30c768)
   )
@@ -4821,7 +4820,7 @@
     (uuid 00000000-0000-0000-0000-000062d47c5a)
     (property "Reference" "J1" (id 0) (at 138.43 103.0986 0))
     (property "Value" "Trigger Connector" (id 1) (at 138.43 105.41 0))
-    (property "Footprint" "Connector_Dsub:DSUB-25_Female_Vertical_P2.77x2.84mm" (id 2) (at 134.62 140.97 0)
+    (property "Footprint" "Connector_Dsub:DSUB-25_Female_Horizontal_P2.77x2.84mm_EdgePinOffset7.70mm_Housed_MountingHolesOffset9.12mm" (id 2) (at 134.62 140.97 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" " ~" (id 3) (at 134.62 140.97 0)
@@ -6017,7 +6016,7 @@
       (reference "D31") (unit 1) (value "BOARD-LED") (footprint "LED_SMD:LED_0603_1608Metric")
     )
     (path "/00000000-0000-0000-0000-000062d47c5a"
-      (reference "J1") (unit 1) (value "Trigger Connector") (footprint "Connector_Dsub:DSUB-25_Female_Vertical_P2.77x2.84mm")
+      (reference "J1") (unit 1) (value "Trigger Connector") (footprint "Connector_Dsub:DSUB-25_Female_Horizontal_P2.77x2.84mm_EdgePinOffset7.70mm_Housed_MountingHolesOffset9.12mm")
     )
     (path "/00000000-0000-0000-0000-000062d10684"
       (reference "J2") (unit 1) (value "Raspberry Pi GPIO pins") (footprint "Connector_PinHeader_2.54mm:PinHeader_2x20_P2.54mm_Vertical")
