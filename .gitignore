@@ -26,6 +26,7 @@ hardware/prototype4/prototype4-gerber/
 
 hardware/prototype5/edrumulus-backups/
 hardware/prototype5/#auto_saved_files#
+hardware/prototype5/fp-info-cache
 
 # Prerequisites
 *.d
