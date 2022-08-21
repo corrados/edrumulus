@@ -1383,7 +1383,6 @@
     )
   )
 
-
   (junction (at 69.85 63.5) (diameter 0) (color 0 0 0 0)
     (uuid 003c2200-0632-4808-a662-8ddd5d30c768)
   )
@@ -3856,7 +3855,7 @@
   (symbol (lib_id "pspice:R") (at 63.5 29.21 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061bffa7f)
-    (property "Reference" "R19" (id 0) (at 61.595 24.765 90)
+    (property "Reference" "R24" (id 0) (at 61.595 24.765 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22 kOhm" (id 1) (at 59.69 26.67 90)
@@ -3909,7 +3908,7 @@
   (symbol (lib_id "pspice:R") (at 50.8 29.21 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061bffa9a)
-    (property "Reference" "R10" (id 0) (at 49.53 24.765 90)
+    (property "Reference" "R15" (id 0) (at 49.53 24.765 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22 kOhm" (id 1) (at 46.99 26.67 90)
@@ -3928,7 +3927,7 @@
   (symbol (lib_id "pspice:R") (at 63.5 46.99 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061c0679c)
-    (property "Reference" "R20" (id 0) (at 61.595 51.435 90)
+    (property "Reference" "R25" (id 0) (at 61.595 51.435 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22 kOhm" (id 1) (at 59.69 49.53 90)
@@ -3981,7 +3980,7 @@
   (symbol (lib_id "pspice:R") (at 50.8 46.99 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061c067b7)
-    (property "Reference" "R11" (id 0) (at 48.895 51.435 90)
+    (property "Reference" "R16" (id 0) (at 48.895 51.435 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22 kOhm" (id 1) (at 46.99 49.53 90)
@@ -4072,7 +4071,7 @@
   (symbol (lib_id "pspice:R") (at 100.33 138.43 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061d09d57)
-    (property "Reference" "R34" (id 0) (at 98.425 142.875 90)
+    (property "Reference" "R36" (id 0) (at 98.425 142.875 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22 kOhm" (id 1) (at 96.52 140.97 90)
@@ -4091,7 +4090,7 @@
   (symbol (lib_id "pspice:R") (at 100.33 127 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061d09d5d)
-    (property "Reference" "R33" (id 0) (at 98.425 122.555 90)
+    (property "Reference" "R14" (id 0) (at 98.425 122.555 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "100 kOhm" (id 1) (at 95.25 124.46 90)
@@ -4129,7 +4128,7 @@
   (symbol (lib_id "pspice:R") (at 63.5 71.12 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061d71a90)
-    (property "Reference" "R21" (id 0) (at 61.595 66.675 90)
+    (property "Reference" "R26" (id 0) (at 61.595 66.675 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22 kOhm" (id 1) (at 59.69 68.58 90)
@@ -4148,7 +4147,7 @@
   (symbol (lib_id "pspice:R") (at 50.8 71.12 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061d71a9e)
-    (property "Reference" "R12" (id 0) (at 49.53 66.675 90)
+    (property "Reference" "R17" (id 0) (at 49.53 66.675 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22 kOhm" (id 1) (at 46.99 68.58 90)
@@ -4167,7 +4166,7 @@
   (symbol (lib_id "pspice:R") (at 63.5 88.9 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061d71aa4)
-    (property "Reference" "R22" (id 0) (at 61.595 93.345 90)
+    (property "Reference" "R27" (id 0) (at 61.595 93.345 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22 kOhm" (id 1) (at 59.69 91.44 90)
@@ -4220,7 +4219,7 @@
   (symbol (lib_id "pspice:R") (at 50.8 88.9 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061d71abd)
-    (property "Reference" "R13" (id 0) (at 48.895 93.345 90)
+    (property "Reference" "R18" (id 0) (at 48.895 93.345 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22 kOhm" (id 1) (at 46.99 91.44 90)
@@ -4345,7 +4344,7 @@
   (symbol (lib_id "pspice:R") (at 97.79 167.64 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061d81cc7)
-    (property "Reference" "R28" (id 0) (at 95.885 163.195 90)
+    (property "Reference" "R33" (id 0) (at 95.885 163.195 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "10 kOhm" (id 1) (at 93.98 165.1 90)
@@ -4383,7 +4382,7 @@
   (symbol (lib_id "pspice:R") (at 63.5 113.03 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061dc576e)
-    (property "Reference" "R23" (id 0) (at 61.595 108.585 90)
+    (property "Reference" "R28" (id 0) (at 61.595 108.585 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22 kOhm" (id 1) (at 59.69 110.49 90)
@@ -4402,7 +4401,7 @@
   (symbol (lib_id "pspice:R") (at 50.8 113.03 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061dc577c)
-    (property "Reference" "R14" (id 0) (at 49.53 108.585 90)
+    (property "Reference" "R19" (id 0) (at 49.53 108.585 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22 kOhm" (id 1) (at 46.99 110.49 90)
@@ -4421,7 +4420,7 @@
   (symbol (lib_id "pspice:R") (at 63.5 130.81 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061dc5782)
-    (property "Reference" "R24" (id 0) (at 61.595 135.255 90)
+    (property "Reference" "R29" (id 0) (at 61.595 135.255 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22 kOhm" (id 1) (at 59.69 133.35 90)
@@ -4474,7 +4473,7 @@
   (symbol (lib_id "pspice:R") (at 50.8 130.81 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061dc579b)
-    (property "Reference" "R15" (id 0) (at 48.895 135.255 90)
+    (property "Reference" "R20" (id 0) (at 48.895 135.255 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22 kOhm" (id 1) (at 46.99 133.35 90)
@@ -4565,7 +4564,7 @@
   (symbol (lib_id "pspice:R") (at 63.5 154.94 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061e1021f)
-    (property "Reference" "R25" (id 0) (at 61.595 150.495 90)
+    (property "Reference" "R30" (id 0) (at 61.595 150.495 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22 kOhm" (id 1) (at 59.69 152.4 90)
@@ -4584,7 +4583,7 @@
   (symbol (lib_id "pspice:R") (at 50.8 154.94 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061e1022d)
-    (property "Reference" "R16" (id 0) (at 49.53 150.495 90)
+    (property "Reference" "R21" (id 0) (at 49.53 150.495 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22 kOhm" (id 1) (at 46.99 152.4 90)
@@ -4603,7 +4602,7 @@
   (symbol (lib_id "pspice:R") (at 63.5 172.72 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061e10233)
-    (property "Reference" "R26" (id 0) (at 61.9219 176.7288 90)
+    (property "Reference" "R31" (id 0) (at 61.9219 176.7288 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22 kOhm" (id 1) (at 59.4575 174.9421 90)
@@ -4656,7 +4655,7 @@
   (symbol (lib_id "pspice:R") (at 50.8 172.72 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061e1024c)
-    (property "Reference" "R17" (id 0) (at 48.895 177.165 90)
+    (property "Reference" "R22" (id 0) (at 48.895 177.165 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22 kOhm" (id 1) (at 46.99 175.26 90)
@@ -4893,7 +4892,7 @@
   (symbol (lib_id "pspice:R") (at 50.8 190.5 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 1c2569f6-b2ab-4d60-a588-9032cd1c0f84)
-    (property "Reference" "R18" (id 0) (at 48.895 194.945 90)
+    (property "Reference" "R23" (id 0) (at 48.895 194.945 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22 kOhm" (id 1) (at 46.99 193.04 90)
@@ -4985,7 +4984,7 @@
   (symbol (lib_id "pspice:R") (at 100.33 66.04 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 3b1eda22-68c2-4669-9392-8f55c99c1375)
-    (property "Reference" "R29" (id 0) (at 98.425 61.595 90)
+    (property "Reference" "R12" (id 0) (at 98.425 61.595 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "100 kOhm" (id 1) (at 95.25 63.5 90)
@@ -5042,7 +5041,7 @@
   (symbol (lib_id "pspice:R") (at 101.6 35.56 90) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 3dd567e5-397e-4d17-ac9d-48170e0ebe5c)
-    (property "Reference" "R36" (id 0) (at 102.87 40.005 90)
+    (property "Reference" "R11" (id 0) (at 102.87 40.005 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "100 kOhm" (id 1) (at 106.68 38.1 90)
@@ -5352,7 +5351,7 @@
   (symbol (lib_id "pspice:R") (at 101.6 33.02 90) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 9f418bb8-f701-4687-b95c-03b23f21a6c3)
-    (property "Reference" "R35" (id 0) (at 102.87 28.575 90)
+    (property "Reference" "R10" (id 0) (at 102.87 28.575 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "100 kOhm" (id 1) (at 106.68 30.48 90)
@@ -5481,7 +5480,7 @@
   (symbol (lib_id "pspice:R") (at 100.33 77.47 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid c922b54d-1194-47a4-9287-97331f89d413)
-    (property "Reference" "R30" (id 0) (at 98.425 81.915 90)
+    (property "Reference" "R34" (id 0) (at 98.425 81.915 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22 kOhm" (id 1) (at 96.52 80.01 90)
@@ -5534,7 +5533,7 @@
   (symbol (lib_id "pspice:R") (at 63.5 190.5 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid d5fcc91f-424d-4974-8da7-c6b3d5333645)
-    (property "Reference" "R27" (id 0) (at 61.595 194.945 90)
+    (property "Reference" "R32" (id 0) (at 61.595 194.945 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22 kOhm" (id 1) (at 59.69 193.04 90)
@@ -5572,7 +5571,7 @@
   (symbol (lib_id "pspice:R") (at 100.33 107.95 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid eac77c4f-d704-4cea-b809-bdc1c970e758)
-    (property "Reference" "R32" (id 0) (at 98.425 112.395 90)
+    (property "Reference" "R35" (id 0) (at 98.425 112.395 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22 kOhm" (id 1) (at 96.52 110.49 90)
@@ -5629,7 +5628,7 @@
   (symbol (lib_id "pspice:R") (at 100.33 96.52 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid fe5fade4-574b-4a06-a4c6-b4ecd772c596)
-    (property "Reference" "R31" (id 0) (at 98.425 92.075 90)
+    (property "Reference" "R13" (id 0) (at 98.425 92.075 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "100 kOhm" (id 1) (at 95.25 93.98 90)
@@ -5809,86 +5808,86 @@
     (path "/8f4f70b3-408b-47c1-b64d-3221c5e9ea0b"
       (reference "R9") (unit 1) (value "100 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
     )
-    (path "/00000000-0000-0000-0000-000061bffa9a"
-      (reference "R10") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
-    )
-    (path "/00000000-0000-0000-0000-000061c067b7"
-      (reference "R11") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
-    )
-    (path "/00000000-0000-0000-0000-000061d71a9e"
-      (reference "R12") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
-    )
-    (path "/00000000-0000-0000-0000-000061d71abd"
-      (reference "R13") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
-    )
-    (path "/00000000-0000-0000-0000-000061dc577c"
-      (reference "R14") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
-    )
-    (path "/00000000-0000-0000-0000-000061dc579b"
-      (reference "R15") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
-    )
-    (path "/00000000-0000-0000-0000-000061e1022d"
-      (reference "R16") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
-    )
-    (path "/00000000-0000-0000-0000-000061e1024c"
-      (reference "R17") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
-    )
-    (path "/1c2569f6-b2ab-4d60-a588-9032cd1c0f84"
-      (reference "R18") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
-    )
-    (path "/00000000-0000-0000-0000-000061bffa7f"
-      (reference "R19") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
-    )
-    (path "/00000000-0000-0000-0000-000061c0679c"
-      (reference "R20") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
-    )
-    (path "/00000000-0000-0000-0000-000061d71a90"
-      (reference "R21") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
-    )
-    (path "/00000000-0000-0000-0000-000061d71aa4"
-      (reference "R22") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
-    )
-    (path "/00000000-0000-0000-0000-000061dc576e"
-      (reference "R23") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
-    )
-    (path "/00000000-0000-0000-0000-000061dc5782"
-      (reference "R24") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
-    )
-    (path "/00000000-0000-0000-0000-000061e1021f"
-      (reference "R25") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
-    )
-    (path "/00000000-0000-0000-0000-000061e10233"
-      (reference "R26") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
-    )
-    (path "/d5fcc91f-424d-4974-8da7-c6b3d5333645"
-      (reference "R27") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
-    )
-    (path "/00000000-0000-0000-0000-000061d81cc7"
-      (reference "R28") (unit 1) (value "10 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
-    )
-    (path "/3b1eda22-68c2-4669-9392-8f55c99c1375"
-      (reference "R29") (unit 1) (value "100 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
-    )
-    (path "/c922b54d-1194-47a4-9287-97331f89d413"
-      (reference "R30") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
-    )
-    (path "/fe5fade4-574b-4a06-a4c6-b4ecd772c596"
-      (reference "R31") (unit 1) (value "100 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
-    )
-    (path "/eac77c4f-d704-4cea-b809-bdc1c970e758"
-      (reference "R32") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
-    )
-    (path "/00000000-0000-0000-0000-000061d09d5d"
-      (reference "R33") (unit 1) (value "100 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
-    )
-    (path "/00000000-0000-0000-0000-000061d09d57"
-      (reference "R34") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
-    )
     (path "/9f418bb8-f701-4687-b95c-03b23f21a6c3"
-      (reference "R35") (unit 1) (value "100 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+      (reference "R10") (unit 1) (value "100 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
     )
     (path "/3dd567e5-397e-4d17-ac9d-48170e0ebe5c"
-      (reference "R36") (unit 1) (value "100 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+      (reference "R11") (unit 1) (value "100 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+    )
+    (path "/3b1eda22-68c2-4669-9392-8f55c99c1375"
+      (reference "R12") (unit 1) (value "100 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+    )
+    (path "/fe5fade4-574b-4a06-a4c6-b4ecd772c596"
+      (reference "R13") (unit 1) (value "100 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+    )
+    (path "/00000000-0000-0000-0000-000061d09d5d"
+      (reference "R14") (unit 1) (value "100 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+    )
+    (path "/00000000-0000-0000-0000-000061bffa9a"
+      (reference "R15") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+    )
+    (path "/00000000-0000-0000-0000-000061c067b7"
+      (reference "R16") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+    )
+    (path "/00000000-0000-0000-0000-000061d71a9e"
+      (reference "R17") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+    )
+    (path "/00000000-0000-0000-0000-000061d71abd"
+      (reference "R18") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+    )
+    (path "/00000000-0000-0000-0000-000061dc577c"
+      (reference "R19") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+    )
+    (path "/00000000-0000-0000-0000-000061dc579b"
+      (reference "R20") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+    )
+    (path "/00000000-0000-0000-0000-000061e1022d"
+      (reference "R21") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+    )
+    (path "/00000000-0000-0000-0000-000061e1024c"
+      (reference "R22") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+    )
+    (path "/1c2569f6-b2ab-4d60-a588-9032cd1c0f84"
+      (reference "R23") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+    )
+    (path "/00000000-0000-0000-0000-000061bffa7f"
+      (reference "R24") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+    )
+    (path "/00000000-0000-0000-0000-000061c0679c"
+      (reference "R25") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+    )
+    (path "/00000000-0000-0000-0000-000061d71a90"
+      (reference "R26") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+    )
+    (path "/00000000-0000-0000-0000-000061d71aa4"
+      (reference "R27") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+    )
+    (path "/00000000-0000-0000-0000-000061dc576e"
+      (reference "R28") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+    )
+    (path "/00000000-0000-0000-0000-000061dc5782"
+      (reference "R29") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+    )
+    (path "/00000000-0000-0000-0000-000061e1021f"
+      (reference "R30") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+    )
+    (path "/00000000-0000-0000-0000-000061e10233"
+      (reference "R31") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+    )
+    (path "/d5fcc91f-424d-4974-8da7-c6b3d5333645"
+      (reference "R32") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+    )
+    (path "/00000000-0000-0000-0000-000061d81cc7"
+      (reference "R33") (unit 1) (value "10 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+    )
+    (path "/c922b54d-1194-47a4-9287-97331f89d413"
+      (reference "R34") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+    )
+    (path "/eac77c4f-d704-4cea-b809-bdc1c970e758"
+      (reference "R35") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+    )
+    (path "/00000000-0000-0000-0000-000061d09d57"
+      (reference "R36") (unit 1) (value "22 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
     )
     (path "/00000000-0000-0000-0000-000061d81cae"
       (reference "R37") (unit 1) (value "10 kOhm") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
