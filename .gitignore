@@ -28,6 +28,9 @@ hardware/prototype5/edrumulus-backups/
 hardware/prototype5/#auto_saved_files#
 hardware/prototype5/fp-info-cache
 
+hardware/prototype5/edrumulus_front_panel/edrumulus_front_panel-backups/
+hardware/prototype5/edrumulus_front_panel/fp-info-cache
+
 # Prerequisites
 *.d
 
