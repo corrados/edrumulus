@@ -217,15 +217,16 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case KT10:
-      pad_settings.scan_time_ms       = 2.0f;
-      pad_settings.decay_est_delay_ms = 8.0f;
-      pad_settings.decay_fact_db      = 5.0f;
-      pad_settings.decay_len1_ms      = 4.0f;
-      pad_settings.decay_grad_fact1   = 30.0f;
-      pad_settings.decay_len2_ms      = 30.0f;
-      pad_settings.decay_grad_fact2   = 350.0f;
-      pad_settings.decay_len3_ms      = 500.0f;
-      pad_settings.decay_grad_fact3   = 100.0f;
+      pad_settings.velocity_sensitivity = 6;
+      pad_settings.scan_time_ms         = 2.0f;
+      pad_settings.decay_est_delay_ms   = 8.0f;
+      pad_settings.decay_fact_db        = 5.0f;
+      pad_settings.decay_len1_ms        = 4.0f;
+      pad_settings.decay_grad_fact1     = 30.0f;
+      pad_settings.decay_len2_ms        = 30.0f;
+      pad_settings.decay_grad_fact2     = 350.0f;
+      pad_settings.decay_len3_ms        = 500.0f;
+      pad_settings.decay_grad_fact3     = 100.0f;
       break;
 
     case KD120:
