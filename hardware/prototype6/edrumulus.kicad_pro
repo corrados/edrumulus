@@ -55,10 +55,7 @@
           "width": 0.0
         }
       ],
-      "drc_exclusions": [
-        "courtyards_overlap|174850001|172502975|00000000-0000-0000-0000-000062d3be6c|23135731-a725-4910-9126-c36911bb0ede",
-        "courtyards_overlap|227980289|174688812|00000000-0000-0000-0000-000062d3be6c|0e9c595c-6874-4ece-8fcd-cff00f85026a"
-      ],
+      "drc_exclusions": [],
       "meta": {
         "filename": "board_design_settings.json",
         "version": 2
@@ -403,7 +400,6 @@
           "GPIO13",
           "GPIO14",
           "GPIO15",
-          "GPIO2",
           "GPIO25",
           "GPIO26",
           "GPIO27",
@@ -413,17 +409,14 @@
           "GPIO35",
           "GPIO36",
           "GPIO39",
-          "GPIO4",
           "HI-HAT-CONTROL-TIP",
           "HI-HAT-RING",
           "HI-HAT-TIP",
           "KICK-TIP",
-          "RIDE-BELL-TIP",
           "RIDE-RING",
           "RIDE-TIP",
           "SNARE-RING",
           "SNARE-TIP",
-          "TOM1-RING",
           "TOM1-TIP",
           "TOM2-TIP",
           "TOM3-TIP"
