@@ -49,7 +49,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pda120ls.wav");x=x(:,1);padtype='pda120ls';x = x(1:630000, :);%x = x(1.06e6:end, :);%x = x(840000:930000, :);%
 %x = audioread("signals/pda120ls_2.wav");x=x(:,1);padtype='pda120ls';x = x(1:210000, :);
 %x = audioread("signals/pdx100.wav");padtype='pdx100';x = x(1:420000, :);
-x = audioread("signals/pdx100_rimshot.wav");padtype='pdx100';
+%x = audioread("signals/pdx100_rimshot.wav");padtype='pdx100';
 %x = audioread("signals/pdx8.wav");padtype='pdx8';
 %x = audioread("signals/pd5.wav");padtype='pd5';
 %x = audioread("signals/pd6.wav");padtype='pd6';
@@ -62,6 +62,7 @@ x = audioread("signals/pdx100_rimshot.wav");padtype='pdx100';
 %x = audioread("signals/kd8.wav");padtype='kd8';%x = x(177050:178200, :);%
 %x = audioread("signals/kd7.wav");padtype='kd7';%x = x(1:170000, :);
 %x = audioread("signals/kd7_hard_hits.wav");padtype='kd7';x = x(1:3000, :);
+x = audioread("signals/kt10.wav");padtype='kt10';
 %x = audioread("signals/kd120.wav");padtype='kd120';
 %x = audioread("signals/tp80.wav");padtype='tp80';
 %x = audioread("signals/vh12.wav");padtype='vh12';%x = x(900000:end, :);%x = x(376000:420000, :);%x = x(1:140000, :);
