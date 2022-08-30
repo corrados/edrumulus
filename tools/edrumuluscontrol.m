@@ -145,8 +145,8 @@ GUI.val2 = uicontrol(GUI.set_panel, ...
 GUI.slider2 = uicontrol(GUI.set_panel, ...
   'style',      'slider', ...
   'min',        0, ...
-  'max',        19, ...               % change value here if new pad type was added
-  'SliderStep', [1 / 19, 1 / 19], ... % change value here if new pad type was added
+  'max',        20, ...               % change value here if new pad type was added
+  'SliderStep', [1 / 20, 1 / 20], ... % change value here if new pad type was added
   'units',      'normalized', ...
   'position',   [1 * slider_width, 0, slider_width, slider_hight], ...
   'callback',   @slider_callback);
@@ -488,6 +488,8 @@ switch hObject
         set(GUI.val2, 'string', 'PDA120LS');
       case 19
         set(GUI.val2, 'string', 'PDX100');
+      case 20
+        set(GUI.val2, 'string', 'KT10');
     end
     if do_send_midi
       midisend(GUI.midi_out_dev, midimsg("controlchange", 10, 102, value));

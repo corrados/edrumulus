@@ -21,11 +21,11 @@ const int   number_cmd   = 12;
 std::map<int, std::string> midi_map = { { 38, "snare" }, { 40, "snare" }, { 36, "kick" }, { 22, "hi-hat" }, { 26, "hi-hat" }, { 44, "pedal" },
                                         { 49, "crash" }, { 51, "ride" },  { 48, "tom1" }, { 45, "tom2" },   { 43, "tom3" } };
 std::vector<std::string> pad_names   { "snare", "kick", "hi-hat", "ctrl", "crash", "tom1", "ride", "tom2", "tom3" };
-std::vector<std::string> pad_types   { "PD120", "PD80R", "PD8", "FD8", "VH12", "VH12CTRL", "KD7", "TP80", "CY6", "CY8", "DIABOLO12", "CY5", "HD1TOM", "PD6", "KD8", "PDX8", "KD120", "PD5", "PDA120LS", "PDX100" };
+std::vector<std::string> pad_types   { "PD120", "PD80R", "PD8", "FD8", "VH12", "VH12CTRL", "KD7", "TP80", "CY6", "CY8", "DIABOLO12", "CY5", "HD1TOM", "PD6", "KD8", "PDX8", "KD120", "PD5", "PDA120LS", "PDX100", "KT10" };
 std::vector<std::string> curve_types { "LINEAR", "EXP1", "EXP2", "LOG1", "LOG2" };
 std::vector<std::string> cmd_names   { "type", "thresh", "sens", "pos thres", "pos sens", "rim thres", "curve", "spike", "rim/pos", "note", "note rim", "cross" };
 std::vector<int>         cmd_val     {    102,      103,    104,         105,        106,         107,     109,     110,       111,    112,        113,     114 };
-std::vector<int>         cmd_val_rng {     19,       31,     31,          31,         31,          31,       4,       4,         3,    127,        127,      31 };
+std::vector<int>         cmd_val_rng {     20,       31,     31,          31,         31,          31,       4,       4,         3,    127,        127,      31 };
 std::vector<int> param_set ( number_cmd, 0 );
 int          hi_hat_ctrl = 0; // current hi-hat control value
 WINDOW       *mainwin, *midiwin, *midigwin, *poswin, *posgwin, *ctrlwin;

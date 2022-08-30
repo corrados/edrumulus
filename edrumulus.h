@@ -50,7 +50,8 @@ public:
     KD120     = 16,
     PD5       = 17,
     PDA120LS  = 18,
-    PDX100    = 19
+    PDX100    = 19,
+    KT10      = 20
   };
 
   enum Ecurvetype // note that the enums need assigned integers for MIDI settings transfer
