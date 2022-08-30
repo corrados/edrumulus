@@ -180,19 +180,15 @@ switch padtype
     pad.decay_len_ms3           = 500;
     pad.decay_grad_fact3        = 45;
   case 'kt10'
-
-% TODO find the correct parameter set for the pad type (copy from kd7 for now)
-
-pad.scan_time_ms       = 2;
-pad.decay_est_delay_ms = 8;
-pad.decay_fact_db      = 5;
-pad.decay_len_ms1      = 4;
-pad.decay_grad_fact1   = 30;
-pad.decay_len_ms2      = 30;
-pad.decay_grad_fact2   = 450;
-pad.decay_len_ms3      = 500;
-pad.decay_grad_fact3   = 45;
-
+    pad.scan_time_ms       = 2;
+    pad.decay_est_delay_ms = 8;
+    pad.decay_fact_db      = 5;
+    pad.decay_len_ms1      = 4;
+    pad.decay_grad_fact1   = 30;
+    pad.decay_len_ms2      = 30;
+    pad.decay_grad_fact2   = 350;
+    pad.decay_len_ms3      = 500;
+    pad.decay_grad_fact3   = 100;
   case 'kd120'
     pad.scan_time_ms      = 6;
     pad.decay_fact_db     = 12;
