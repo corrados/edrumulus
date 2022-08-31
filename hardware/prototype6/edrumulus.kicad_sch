@@ -3162,7 +3162,7 @@
     (in_bom yes) (on_board yes)
     (uuid 03a8b23a-c991-47a6-b608-48bb34767196)
     (property "Reference" "J11" (id 0) (at 157.988 50.8 0))
-    (property "Value" "DIN-5" (id 1) (at 160.528 48.26 0))
+    (property "Value" "MIDI-OUT" (id 1) (at 160.528 48.26 0))
     (property "Footprint" "Connectors_UNITRA:DIN-5" (id 2) (at 168.148 52.07 0)
       (effects (font (size 1.27 1.27)) hide)
     )
@@ -4007,7 +4007,7 @@
     (in_bom yes) (on_board yes)
     (uuid 5eb66693-ab1b-4459-a77e-81bcb06ca4d6)
     (property "Reference" "J10" (id 0) (at 136.398 24.13 0))
-    (property "Value" "DIN-5" (id 1) (at 137.668 21.59 0))
+    (property "Value" "MIDI-IN" (id 1) (at 137.668 21.59 0))
     (property "Footprint" "Connectors_UNITRA:DIN-5" (id 2) (at 145.288 25.4 0)
       (effects (font (size 1.27 1.27)) hide)
     )
@@ -5278,10 +5278,10 @@
       (reference "J9") (unit 1) (value "Hi-Hat-Ctrl") (footprint "edrumulus:Jack_6.35mm_Neutrik_NMJ6HCD2_Horizontal")
     )
     (path "/5eb66693-ab1b-4459-a77e-81bcb06ca4d6"
-      (reference "J10") (unit 1) (value "DIN-5") (footprint "Connectors_UNITRA:DIN-5")
+      (reference "J10") (unit 1) (value "MIDI-IN") (footprint "Connectors_UNITRA:DIN-5")
     )
     (path "/03a8b23a-c991-47a6-b608-48bb34767196"
-      (reference "J11") (unit 1) (value "DIN-5") (footprint "Connectors_UNITRA:DIN-5")
+      (reference "J11") (unit 1) (value "MIDI-OUT") (footprint "Connectors_UNITRA:DIN-5")
     )
     (path "/add90365-59e6-451f-89f8-8665d94a32ba"
       (reference "R1") (unit 1) (value "100k") (footprint "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal")
