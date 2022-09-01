@@ -1337,7 +1337,7 @@
     (in_bom yes) (on_board yes)
     (uuid 7a4fc15d-3e02-4709-96a9-8c72ac60b42a)
     (property "Reference" "R13" (id 0) (at 92.075 85.598 90))
-    (property "Value" "470" (id 1) (at 92.075 88.138 90))
+    (property "Value" "1k" (id 1) (at 92.075 88.138 90))
     (property "Footprint" "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder" (id 2) (at 91.44 92.456 90)
       (effects (font (size 1.27 1.27)) hide)
     )
@@ -1611,7 +1611,7 @@
       (reference "R12") (unit 1) (value "1k") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
     )
     (path "/7a4fc15d-3e02-4709-96a9-8c72ac60b42a"
-      (reference "R13") (unit 1) (value "470") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
+      (reference "R13") (unit 1) (value "1k") (footprint "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder")
     )
     (path "/1c5e8fb0-f2a2-4d47-ad22-c6702a176120"
       (reference "RV1") (unit 1) (value "10k") (footprint "Potentiometer_THT:Potentiometer_ACP_CA9-H2,5_Horizontal")
