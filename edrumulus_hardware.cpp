@@ -205,7 +205,7 @@ void Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
     //       estimation and DC offset drift which makes the spike cancellation algorithm not working correctly
 
     // check bits
-    if ( ( bit1 > 0 ) && ( bit2 == 0 ) && ( bit3 == 0 ) && ( bit4 == 0 ) ) // prototype 5: 1, 0, 0, 0
+    if ( ( bit1 == 0 ) && ( bit2 == 0 ) && ( bit3 == 0 ) && ( bit4 == 0 ) ) // prototype 5: 0, 0, 0, 0
     {
       // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3      
       static int analog_pins5[]         = { 12,     2,     33,        4,         34,     15,    35,    27,    32 };
@@ -214,7 +214,7 @@ void Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
       *analog_pins_rimshot = analog_pins_rimshot5;
       *number_pins         = sizeof ( analog_pins5 ) / sizeof ( int );
     }
-    else if ( ( bit1 == 0 ) && ( bit2 > 0 ) && ( bit3 == 0 ) && ( bit4 == 0 ) ) // prototype 6: 0, 1, 0, 0
+    else if ( ( bit1 > 0 ) && ( bit2 == 0 ) && ( bit3 == 0 ) && ( bit4 == 0 ) ) // prototype 6: 1, 0, 0, 0
     {
       // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3      
       static int analog_pins6[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    15 };

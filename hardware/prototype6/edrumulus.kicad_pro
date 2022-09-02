@@ -395,7 +395,6 @@
           "3V3",
           "CRASH1-RING",
           "CRASH1-TIP",
-          "GND",
           "GPIO12",
           "GPIO13",
           "GPIO14",
