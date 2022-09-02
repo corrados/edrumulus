@@ -178,6 +178,55 @@ void Edrumulus_hardware::capture_samples ( const int number_pads,
 // -----------------------------------------------------------------------------
 #ifdef ESP_PLATFORM
 
+void Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
+                                              int** analog_pins_rimshot,
+                                              int*  number_pins )
+{
+  // Definition:
+  // - Pin 5 is "input enabled, pull-up resistor" -> if read value is 1, we know that we have a
+  //   legacy or custom board. Boards which support the identification set this pin to low.
+  // - Pin 18, 19, 22, 23 define a 4 bit sequence which identifies the prototype hardware.
+  pinMode ( 5, INPUT );
+
+  if ( digitalRead ( 5 ) > 0 )
+  {
+    // protoype does not support identification
+    return;
+  }
+  else
+  {
+    // read the identification bit field
+    pinMode ( 18, INPUT ); const int bit1 = digitalRead ( 18 );
+    pinMode ( 19, INPUT ); const int bit2 = digitalRead ( 19 );
+    pinMode ( 22, INPUT ); const int bit3 = digitalRead ( 22 );
+    pinMode ( 23, INPUT ); const int bit4 = digitalRead ( 23 );
+
+    // NOTE: avoid ESP32 GPIO 25/26 for piezo inputs since they are DAC pins which cause an incorrect DC offset
+    //       estimation and DC offset drift which makes the spike cancellation algorithm not working correctly
+
+    // check bits
+    if ( ( bit1 > 0 ) && ( bit2 == 0 ) && ( bit3 == 0 ) && ( bit4 == 0 ) ) // prototype 5: 1, 0, 0, 0
+    {
+      // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3      
+      static int analog_pins5[]         = { 12,     2,     33,        4,         34,     15,    35,    27,    32 };
+      static int analog_pins_rimshot5[] = { 14,    -1,     26,       -1,         36,     13,    25,    -1,    -1 };
+      *analog_pins         = analog_pins5;
+      *analog_pins_rimshot = analog_pins_rimshot5;
+      *number_pins         = sizeof ( analog_pins5 ) / sizeof ( int );
+    }
+    else if ( ( bit1 == 0 ) && ( bit2 > 0 ) && ( bit3 == 0 ) && ( bit4 == 0 ) ) // prototype 6: 0, 1, 0, 0
+    {
+      // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3      
+      static int analog_pins6[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    15 };
+      static int analog_pins_rimshot6[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1 };
+      *analog_pins         = analog_pins6;
+      *analog_pins_rimshot = analog_pins_rimshot6;
+      *number_pins         = sizeof ( analog_pins6 ) / sizeof ( int );
+    }
+  }
+}
+
+
 void Edrumulus_hardware::setup ( const int conf_Fs,
                                  const int number_pads,
                                  const int number_inputs[],

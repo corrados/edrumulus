@@ -59,28 +59,35 @@ void setup()
   Serial.begin ( 115200 );
 #endif
 
+  int* analog_pins         = nullptr;
+  int* analog_pins_rimshot = nullptr;
+
 #ifdef ESP_PLATFORM
-  // NOTE: avoid ESP32 GPIO 25/26 for piezo inputs since they are DAC pins which cause an incorrect DC offset
-  //       estimation and DC offset drift which makes the spike cancellation algorithm not working correctly
-  // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
-# ifdef USE_PROTOTYPE1
-  const int analog_pins[]         = { 12,    35,     15,       34 };
-  const int analog_pins_rimshot[] = { 13,    -1,     14,       -1 };
-# elif defined ( USE_PROTOTYPE3 )
-  const int analog_pins[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    13 };
-  const int analog_pins_rimshot[] = { 35,    -1,     26,       -1,         14,     -1,    -1,    -1,    -1 };
-# else
-  const int analog_pins[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    15 };
-  const int analog_pins_rimshot[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1 };
-# endif
+  // check for prototype board identification
+  Edrumulus_hardware::get_prototype_pins ( &analog_pins,
+                                           &analog_pins_rimshot,
+                                           &number_pads );
+
+  // if no GPIO prototype identification is available, we assume it is prototype 4
+  if ( number_pads == 0 )
+  {
+    // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3  
+    static int analog_pins4[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    15 };
+    static int analog_pins_rimshot4[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1 };
+    analog_pins         = analog_pins4;
+    analog_pins_rimshot = analog_pins_rimshot4;
+    number_pads = sizeof ( analog_pins4 ) / sizeof ( int );
+  }
 #endif
 #ifdef TEENSYDUINO
-  // analog pins setup:             snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
-  const int analog_pins[]         = { 10,    11,    12,        13,          1,      6,     4,     5 };
-  const int analog_pins_rimshot[] = {  9,    -1,     0,        -1,          3,      8,     2,     7 };
+  // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
+  static int analog_pins1[]         = { 10,    11,    12,        13,          1,      6,     4,     5 };
+  static int analog_pins_rimshot1[] = {  9,    -1,     0,        -1,          3,      8,     2,     7 };
+  analog_pins         = analog_pins1;
+  analog_pins_rimshot = analog_pins_rimshot1;
+  number_pads         = sizeof ( analog_pins1 ) / sizeof ( int );
 #endif
 
-  number_pads = sizeof ( analog_pins ) / sizeof ( int );
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
 #ifdef ESP_PLATFORM // ### MARKER: ESP32 issue with read/write settings ###
   preset_settings(); // for ESP32, the read/save is disabled -> therefore we need to apply the preset
