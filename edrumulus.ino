@@ -24,8 +24,13 @@
 
 #ifdef USE_MIDI
 # ifdef ESP_PLATFORM
+
+#include <BLEMIDI_Transport.h>
+#include <hardware/BLEMIDI_ESP32.h>
+BLEMIDI_CREATE_DEFAULT_INSTANCE();
+
 #  include <MIDI.h>
-MIDI_CREATE_DEFAULT_INSTANCE();
+//MIDI_CREATE_DEFAULT_INSTANCE();
 #  define MYMIDI                     MIDI
 #  define MIDI_CONTROL_CHANGE_TYPE   midi::ControlChange
 #  define MIDI_SEND_AFTER_TOUCH      sendAfterTouch
@@ -72,8 +77,8 @@ void setup()
   if ( number_pads == 0 )
   {
     // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3  
-    static int analog_pins4[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    15 };
-    static int analog_pins_rimshot4[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1 };
+    static int analog_pins4[]         = { 36};//,    33,     32};//,       25,         34,     39,    27,    12,    15 };
+    static int analog_pins_rimshot4[] = { 35};//,    -1,     26};//,       -1,         14,     -1,    13,    -1,    -1 };
     analog_pins         = analog_pins4;
     analog_pins_rimshot = analog_pins_rimshot4;
     number_pads = sizeof ( analog_pins4 ) / sizeof ( int );
@@ -138,6 +143,7 @@ void preset_settings()
   edrumulus.set_pad_type     ( 8, Edrumulus::HD1TOM ); // tom 3
   edrumulus.set_cancellation ( 8, 4 );
 #else
+/*
   edrumulus.set_pad_type ( 0, Edrumulus::PDX100 );   // snare
   edrumulus.set_pad_type ( 1, Edrumulus::KD8 );      // kick
   edrumulus.set_pad_type ( 2, Edrumulus::VH12 );     // Hi-Hat
@@ -147,6 +153,7 @@ void preset_settings()
   edrumulus.set_pad_type ( 6, Edrumulus::CY8 );      // ride
   edrumulus.set_pad_type ( 7, Edrumulus::PD80R );    // tom 2
   edrumulus.set_pad_type ( 8, Edrumulus::PD80R );    // tom 3
+*/  
 #endif
 }
 
