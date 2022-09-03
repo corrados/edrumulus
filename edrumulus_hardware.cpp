@@ -31,6 +31,20 @@ Edrumulus_hardware::Edrumulus_hardware()
 // -----------------------------------------------------------------------------
 #ifdef TEENSYDUINO
 
+void Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
+                                              int** analog_pins_rimshot,
+                                              int*  number_pins )
+{
+
+  // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
+  static int analog_pins1[]         = { 10,    11,    12,        13,          1,      6,     4,     5 };
+  static int analog_pins_rimshot1[] = {  9,    -1,     0,        -1,          3,      8,     2,     7 };
+  *analog_pins         = analog_pins1;
+  *analog_pins_rimshot = analog_pins_rimshot1;
+  *number_pins         = sizeof ( analog_pins1 ) / sizeof ( int );
+}
+
+
 void Edrumulus_hardware::setup ( const int conf_Fs,
                                  const int number_pads,
                                  const int number_inputs[],
@@ -186,44 +200,50 @@ void Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
   // - Pin 5 is "input enabled, pull-up resistor" -> if read value is 1, we know that we have a
   //   legacy or custom board. Boards which support the identification set this pin to low.
   // - Pin 18, 19, 22, 23 define a 4 bit sequence which identifies the prototype hardware.
+  // NOTE: avoid ESP32 GPIO 25/26 for piezo inputs since they are DAC pins which cause an incorrect DC offset
+  //       estimation and DC offset drift which makes the spike cancellation algorithm not working correctly
   pinMode ( 5, INPUT );
 
-  if ( digitalRead ( 5 ) > 0 )
+  // check support of protoype board identification
+  if ( digitalRead ( 5 ) == 0 )
   {
-    // protoype does not support identification
-    return;
-  }
-  else
-  {
-    // read the identification bit field
+    // read the identification bit field and check the states
     pinMode ( 18, INPUT ); const int bit1 = digitalRead ( 18 );
     pinMode ( 19, INPUT ); const int bit2 = digitalRead ( 19 );
     pinMode ( 22, INPUT ); const int bit3 = digitalRead ( 22 );
     pinMode ( 23, INPUT ); const int bit4 = digitalRead ( 23 );
 
-    // NOTE: avoid ESP32 GPIO 25/26 for piezo inputs since they are DAC pins which cause an incorrect DC offset
-    //       estimation and DC offset drift which makes the spike cancellation algorithm not working correctly
-
-    // check bits
-    if ( ( bit1 == 0 ) && ( bit2 == 0 ) && ( bit3 == 0 ) && ( bit4 == 0 ) ) // prototype 5: 0, 0, 0, 0
+    if ( ( bit1 == 0 ) && ( bit2 == 0 ) && ( bit3 == 0 ) && ( bit4 == 0 ) )
     {
+      // Prototype 5: 0, 0, 0, 0 -----------------------------------------------
       // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3      
       static int analog_pins5[]         = { 12,     2,     33,        4,         34,     15,    35,    27,    32 };
       static int analog_pins_rimshot5[] = { 14,    -1,     26,       -1,         36,     13,    25,    -1,    -1 };
       *analog_pins         = analog_pins5;
       *analog_pins_rimshot = analog_pins_rimshot5;
       *number_pins         = sizeof ( analog_pins5 ) / sizeof ( int );
+      return;
     }
-    else if ( ( bit1 > 0 ) && ( bit2 == 0 ) && ( bit3 == 0 ) && ( bit4 == 0 ) ) // prototype 6: 1, 0, 0, 0
+    else if ( ( bit1 > 0 ) && ( bit2 == 0 ) && ( bit3 == 0 ) && ( bit4 == 0 ) )
     {
+      // Prototype 6: 1, 0, 0, 0 -----------------------------------------------
       // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3      
       static int analog_pins6[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    15 };
       static int analog_pins_rimshot6[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1 };
       *analog_pins         = analog_pins6;
       *analog_pins_rimshot = analog_pins_rimshot6;
       *number_pins         = sizeof ( analog_pins6 ) / sizeof ( int );
+      return;
     }
   }
+
+  // if no GPIO prototype identification is available, we assume it is Prototype 4
+  // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3  
+  static int analog_pins4[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    15 };
+  static int analog_pins_rimshot4[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1 };
+  *analog_pins         = analog_pins4;
+  *analog_pins_rimshot = analog_pins_rimshot4;
+  *number_pins         = sizeof ( analog_pins4 ) / sizeof ( int );
 }
 
 
