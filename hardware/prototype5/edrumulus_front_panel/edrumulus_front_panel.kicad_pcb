@@ -1096,7 +1096,7 @@
   )
 
   (footprint "Display:WC1602A" (layer "F.Cu")
-    (tedit 5A02FE80) (tstamp d71f0cba-ee35-4c7d-8e36-e6e267833f6a)
+    (tedit 6314F14D) (tstamp d71f0cba-ee35-4c7d-8e36-e6e267833f6a)
     (at 114.9604 83.1088)
     (descr "LCD 16x2 http://www.wincomlcd.com/pdf/WC1602A-SFYLYHTC06.pdf")
     (tags "LCD 16x2 Alphanumeric 16pin")
@@ -1146,9 +1146,7 @@
     (fp_line (start -8 33.5) (end -8 -2.5) (layer "F.Fab") (width 0.1) (tstamp cb4d8b56-fff0-4e32-bb68-134e4476c746))
     (fp_line (start 1 -2.5) (end 0 -1.5) (layer "F.Fab") (width 0.1) (tstamp f9960147-0877-4502-ad52-336fc5c83a18))
     (pad "" thru_hole circle (at -5.4991 0) (size 3 3) (drill 2.5) (layers *.Cu *.Mask) (tstamp bd5bb503-514b-468b-8abd-7e31ffd332b7))
-    (pad "" thru_hole circle (at 69.5 0) (size 3 3) (drill 2.5) (layers *.Cu *.Mask) (tstamp d2524e3e-228a-471d-b6ab-7febc5f574b2))
     (pad "" thru_hole circle (at -5.4991 31.0007) (size 3 3) (drill 2.5) (layers *.Cu *.Mask) (tstamp e6e4ba06-5100-4065-b809-01784b64c06b))
-    (pad "" thru_hole circle (at 69.49948 31.0007) (size 3 3) (drill 2.5) (layers *.Cu *.Mask) (tstamp f1084b0d-b992-4d4c-9074-1c148a908ad5))
     (pad "1" thru_hole rect (at 0 0) (size 1.8 2.6) (drill 1.2) (layers *.Cu *.Mask)
       (net 1 "GND") (pinfunction "VSS") (pintype "power_in") (tstamp 8bdf40b7-7312-4b98-8ee3-177dfa3c1a46))
     (pad "2" thru_hole oval (at 2.54 0) (size 1.8 2.6) (drill 1.2) (layers *.Cu *.Mask)
