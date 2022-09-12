@@ -11,29 +11,28 @@ from RPLCD.gpio import CharLCD
 database = [0] * 128;
 
 # init jack
-client       = jack.Client('edrumulus_front_panel')
-port_in      = client.midi_inports.register('input')
-port_out     = client.midi_outports.register('output')
-port_through = client.midi_outports.register('through')
+client   = jack.Client('edrumulus_front_panel')
+port_in  = client.midi_inports.register('input')
+port_out = client.midi_outports.register('output')
 
 # init 16x2 LCD
-lcd = CharLCD(pin_rs=27, pin_rw=None, pin_e=17, pins_data=[22, 23, 24, 10],
-              numbering_mode=GPIO.BOARD, cols=16, rows=2)
+lcd = CharLCD(pin_rs = 27, pin_rw = None, pin_e = 17, pins_data = [22, 23, 24, 10],
+              numbering_mode = GPIO.BOARD, cols = 16, rows = 2)
 
 # init buttons
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(25, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-GPIO.add_event_detect(25, GPIO.RISING, callback=button_handler, bouncetime=10)
+GPIO.add_event_detect(25, GPIO.RISING, callback = button_handler, bouncetime = 10)
 GPIO.setup(11, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-GPIO.add_event_detect(11, GPIO.RISING, callback=button_handler, bouncetime=10)
+GPIO.add_event_detect(11, GPIO.RISING, callback = button_handler, bouncetime = 10)
 GPIO.setup(8, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-GPIO.add_event_detect(8, GPIO.RISING, callback=button_handler, bouncetime=10)
+GPIO.add_event_detect(8, GPIO.RISING, callback = button_handler, bouncetime = 10)
 GPIO.setup(7, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-GPIO.add_event_detect(7, GPIO.RISING, callback=button_handler, bouncetime=10)
+GPIO.add_event_detect(7, GPIO.RISING, callback = button_handler, bouncetime = 10)
 GPIO.setup(12, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-GPIO.add_event_detect(12, GPIO.RISING, callback=button_handler, bouncetime=10)
+GPIO.add_event_detect(12, GPIO.RISING, callback = button_handler, bouncetime = 10)
 GPIO.setup(13, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-GPIO.add_event_detect(13, GPIO.RISING, callback=button_handler, bouncetime=10)
+GPIO.add_event_detect(13, GPIO.RISING, callback = button_handler, bouncetime = 10)
 
 def button_handler(pin):
   print("pin %s's value is %s" % (pin, GPIO.input(pin)))
@@ -41,9 +40,7 @@ def button_handler(pin):
 @client.set_process_callback
 def process(frames):
   port_out.clear_buffer()
-  port_through.clear_buffer()
   for offset, data in port_in.incoming_midi_events():
-    port_through.write_midi_event(offset, data) # pass through
     if len(data) == 3:
       if int.from_bytes(data[0], "big") == 0x80:
         key   = int.from_bytes(data[1], "big")
