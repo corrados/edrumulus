@@ -17,22 +17,7 @@ port_out = client.midi_outports.register('output')
 
 # init 16x2 LCD
 lcd = CharLCD(pin_rs = 27, pin_rw = None, pin_e = 17, pins_data = [22, 23, 24, 10],
-              numbering_mode = GPIO.BOARD, cols = 16, rows = 2)
-
-# init buttons
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(25, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-GPIO.add_event_detect(25, GPIO.RISING, callback = button_handler, bouncetime = 10)
-GPIO.setup(11, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-GPIO.add_event_detect(11, GPIO.RISING, callback = button_handler, bouncetime = 10)
-GPIO.setup(8, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-GPIO.add_event_detect(8, GPIO.RISING, callback = button_handler, bouncetime = 10)
-GPIO.setup(7, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-GPIO.add_event_detect(7, GPIO.RISING, callback = button_handler, bouncetime = 10)
-GPIO.setup(12, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-GPIO.add_event_detect(12, GPIO.RISING, callback = button_handler, bouncetime = 10)
-GPIO.setup(13, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-GPIO.add_event_detect(13, GPIO.RISING, callback = button_handler, bouncetime = 10)
+              numbering_mode = GPIO.BCM, cols = 16, rows = 2)
 
 def button_handler(pin):
   print("pin %s's value is %s" % (pin, GPIO.input(pin)))
@@ -56,11 +41,26 @@ def process(frames):
 with client:
   print('press Return to quit')
 
+  # init buttons
+  GPIO.setmode(GPIO.BCM)
+  GPIO.setup(25, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+  GPIO.add_event_detect(25, GPIO.RISING, callback = button_handler, bouncetime = 10)
+  GPIO.setup(11, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+  GPIO.add_event_detect(11, GPIO.RISING, callback = button_handler, bouncetime = 10)
+  GPIO.setup(8, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+  GPIO.add_event_detect(8, GPIO.RISING, callback = button_handler, bouncetime = 10)
+  GPIO.setup(7, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+  GPIO.add_event_detect(7, GPIO.RISING, callback = button_handler, bouncetime = 10)
+  GPIO.setup(12, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+  GPIO.add_event_detect(12, GPIO.RISING, callback = button_handler, bouncetime = 10)
+  GPIO.setup(13, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+  GPIO.add_event_detect(13, GPIO.RISING, callback = button_handler, bouncetime = 10)
+
   # testing LCD
   lcd.clear()
-  lcd.cursor_pos = (1, 4)
+  lcd.cursor_pos = (0, 4)
   lcd.write_string('Edrumulus')
-  lcd.cursor_pos = (2, 0)
+  lcd.cursor_pos = (1, 0)
   lcd.write_string('press Return to quit')
 
   port_in.connect('ttymidi:MIDI_in')
