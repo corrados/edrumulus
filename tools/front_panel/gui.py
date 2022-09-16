@@ -20,7 +20,8 @@ lcd = CharLCD(pin_rs = 27, pin_rw = None, pin_e = 17, pins_data = [22, 23, 24, 1
               numbering_mode = GPIO.BCM, cols = 16, rows = 2)
 
 def button_handler(pin):
-  print("pin %s's value is %s" % (pin, GPIO.input(pin)))
+  if GPIO.input(pin) == 1:
+    print("pin %s's value is %s" % (pin, GPIO.input(pin)))
 
 @client.set_process_callback
 def process(frames):
@@ -44,17 +45,17 @@ with client:
   # init buttons
   GPIO.setmode(GPIO.BCM)
   GPIO.setup(25, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-  GPIO.add_event_detect(25, GPIO.RISING, callback = button_handler, bouncetime = 10)
+  GPIO.add_event_detect(25, GPIO.RISING, callback = button_handler, bouncetime = 20)
   GPIO.setup(11, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-  GPIO.add_event_detect(11, GPIO.RISING, callback = button_handler, bouncetime = 10)
+  GPIO.add_event_detect(11, GPIO.RISING, callback = button_handler, bouncetime = 20)
   GPIO.setup(8, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-  GPIO.add_event_detect(8, GPIO.RISING, callback = button_handler, bouncetime = 10)
+  GPIO.add_event_detect(8, GPIO.RISING, callback = button_handler, bouncetime = 20)
   GPIO.setup(7, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-  GPIO.add_event_detect(7, GPIO.RISING, callback = button_handler, bouncetime = 10)
+  GPIO.add_event_detect(7, GPIO.RISING, callback = button_handler, bouncetime = 20)
   GPIO.setup(12, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-  GPIO.add_event_detect(12, GPIO.RISING, callback = button_handler, bouncetime = 10)
+  GPIO.add_event_detect(12, GPIO.RISING, callback = button_handler, bouncetime = 20)
   GPIO.setup(13, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-  GPIO.add_event_detect(13, GPIO.RISING, callback = button_handler, bouncetime = 10)
+  GPIO.add_event_detect(13, GPIO.RISING, callback = button_handler, bouncetime = 20)
 
   # testing LCD
   lcd.clear()
