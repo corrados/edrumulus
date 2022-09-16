@@ -1,5 +1,17 @@
 # Edrumulus Project Log
 
+## 2022-08-16 Edrumulus prototype 6
+
+  A new prototype 6 is ready. It uses normal audio jack connectors and features standard DIN-5
+  MIDI connectors. The schematics are changed a bit to support a separate voltage regulator
+  just for the bias resistors and add some more capacitors to try to reduce the ADC spikes of
+  the ESP32. The new MIDI connectors work fine but, unfortunately, the ADC spike reduction was
+  not successful. Even with that new design, there are still a lot of spikes visible in the ADC
+  readings.
+  <br/> Soon, prototype 5 will be ready, too, which uses a much more advanced PCB design to
+  eliminate ADC spikes. We will see if that design yields better results.
+  <br/>![Edrumulus prototype 6](images/prototype6.jpg)
+
 ## 2022-08-06 [[r0.5](https://github.com/corrados/edrumulus/releases/tag/r0_5)] Simple overload correction
 
   A simple signal overload correction is now supported. The initial idea in the TODO list was to
