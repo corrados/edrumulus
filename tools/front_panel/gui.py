@@ -21,6 +21,20 @@ lcd = CharLCD(pin_rs = 27, pin_rw = None, pin_e = 17, pins_data = [22, 23, 24, 1
 
 def button_handler(pin):
   if GPIO.input(pin) == 1:
+    lcd.clear()
+    lcd.cursor_pos = (0, 0)
+    if pin == 25:
+      lcd.write_string("Button 1")
+    if pin == 11:
+      lcd.write_string("Button 2")
+    if pin == 8:
+      lcd.write_string("Button 3")
+    if pin == 7:
+      lcd.write_string("Button 4")
+    if pin == 12:
+      lcd.write_string("Button 5")
+    if pin == 13:
+      lcd.write_string("Button 6")
     print("pin %s's value is %s" % (pin, GPIO.input(pin)))
 
 @client.set_process_callback
@@ -59,10 +73,10 @@ with client:
 
   # testing LCD
   lcd.clear()
-  lcd.cursor_pos = (0, 4)
+  lcd.cursor_pos = (0, 3)
   lcd.write_string('Edrumulus')
   lcd.cursor_pos = (1, 0)
-  lcd.write_string('press Return to quit')
+  lcd.write_string('Prototype 5')
 
   port_in.connect('ttymidi:MIDI_in')
   port_out.connect('ttymidi:MIDI_out')
