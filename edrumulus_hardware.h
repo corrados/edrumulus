@@ -60,7 +60,8 @@ public:
 
   static void get_prototype_pins ( int** analog_pins,
                                    int** analog_pins_rimshot,
-                                   int*  number_pins );
+                                   int*  number_pins,
+                                   int*  status_LED_pin );
 
   void setup ( const int conf_Fs,
                const int number_pads,
@@ -124,7 +125,8 @@ public:
 
   static void get_prototype_pins ( int** analog_pins,
                                    int** analog_pins_rimshot,
-                                   int*  number_pins );
+                                   int*  number_pins,
+                                   int*  status_LED_pin );
 
   void setup ( const int conf_Fs,
                const int number_pads,

@@ -36,11 +36,11 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 #endif
 
 Edrumulus edrumulus;
-const int status_LED_pin    = BOARD_LED_PIN; // internal LED used for overload indicator
 const int midi_channel      = 10;            // default for edrums is 10
 const int hihat_pad_idx     = 2;
 const int hihatctrl_pad_idx = 3;
 int       number_pads       = 0;             // initialization value, will be set in setup()
+int       status_LED_pin    = 0;             // initialization value, will be set in setup()
 bool      is_status_LED_on  = false;         // initialization value
 int       selected_pad      = 0;             // initialization value
 
@@ -61,7 +61,8 @@ void setup()
   int* analog_pins_rimshot = nullptr;
   Edrumulus_hardware::get_prototype_pins ( &analog_pins,
                                            &analog_pins_rimshot,
-                                           &number_pads );
+                                           &number_pads,
+                                           &status_LED_pin );
 
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
 #ifdef ESP_PLATFORM // ### MARKER: ESP32 issue with read/write settings ###
