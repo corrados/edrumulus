@@ -134,8 +134,17 @@ if [[ -v is_teensy ]]; then
 else
   # start MIDI tool to convert serial MIDI to Jack Audio MIDI
   # note that to get access to /dev/ttyUSB0 you need to be in group tty/dialout
-  mod-ttymidi/ttymidi -b 38400 &
   MIDIJACKPORT=ttymidi:MIDI_in
+
+  if [[ -v is_raspi ]]; then
+    mod-ttymidi/ttymidi -s /dev/serial0 -b 38400 &
+    # on prototype 5 the ESP32 has to be started by setting GPIO9 to high (on other prototypes this should not hurt)
+    sudo systemctl start pigpiod
+    pigs modes 9 w
+    pigs w 9 1
+  else
+    mod-ttymidi/ttymidi -b 38400 &
+  fi
 fi
 
 
