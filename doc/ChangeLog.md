@@ -1,14 +1,25 @@
 # Edrumulus Project Log
 
-## 2022-08-16 Edrumulus prototype 6
+## 2022-08-18 Edrumulus prototype 5 (advanced Raspberry Pi hat PCB)
+
+  The most advanced Edrumulus, prototype 5, is now build. It is a Raspberry Pi hat design where
+  we use a 4 layer PCB. The PCB layout was optimized for minizing the ESP32 ADC spikes and was
+  done by [jstma](https://github.com/jstma) (thank you very much for that!).<br/>
+  Prototype 5 features a display/button front panel which is stacked on top of the Edrumulus hat.
+  First tests showed an improved performance of this prototype compared to other ESP32 prototypes
+  where the spike cancellation could be turned off using the same pad threshold settings and also
+  almost no "ghost strikes" were seen in the initial test.
+  <br/>![Edrumulus prototype 5](images/prototype5.jpg)
+
+## 2022-08-16 Edrumulus prototype 6 (PCB with audio jacks and DIN5 MIDI ports)
 
   A new prototype 6 is ready. It uses normal audio jack connectors and features standard DIN-5
   MIDI connectors. The schematics are changed a bit to support a separate voltage regulator
   just for the bias resistors and add some more capacitors to try to reduce the ADC spikes of
   the ESP32. The new MIDI connectors work fine but, unfortunately, the ADC spike reduction was
   not successful. Even with that new design, there are still a lot of spikes visible in the ADC
-  readings.
-  <br/> Soon, prototype 5 will be ready, too, which uses a much more advanced PCB design to
+  readings.<br/>
+  Soon, prototype 5 will be ready, too, which uses a much more advanced PCB design to
   eliminate ADC spikes. We will see if that design yields better results.
   <br/>![Edrumulus prototype 6](images/prototype6.jpg)
 
@@ -23,7 +34,7 @@
   or even that not only the main peak is clipped but also the second main peak as well, only a
   maximum of 4 dB is amplified and only the steps 1, 2, 3 and 4 dB are supported.
 
-## 2022-08-03 Edrumulus prototype 4
+## 2022-08-03 Edrumulus prototype 4 (Raspberry Pi hat PCB)
 
   There is a new Edrumulus prototype available which uses a custom PCB created with KiCad and
   is intended to be used as a Raspberry Pi hat. It has a DB-25 trigger connector which is
