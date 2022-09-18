@@ -2,7 +2,7 @@
 
 ## 2022-08-18 Edrumulus prototype 5 (advanced Raspberry Pi hat PCB)
 
-  The most advanced Edrumulus, prototype 5, is now build. It is a Raspberry Pi hat design where
+  The most advanced Edrumulus prototype up to now was build. It is a Raspberry Pi hat design where
   we use a 4 layer PCB. The PCB layout was optimized for minizing the ESP32 ADC spikes and was
   done by [jstma](https://github.com/jstma) (thank you very much for that!).<br/>
   Prototype 5 features a display/button front panel which is stacked on top of the Edrumulus hat.
