@@ -49,7 +49,7 @@ pigs w 9 1
 #esptool.py -p /dev/serial0 flash_id
 #esptool.py -p /dev/serial0 erase_flash
 
-esptool.py --chip esp32 --port /dev/serial0 write_flash -z --flash_mode dio --flash_freq 80m --flash_size detect 0xe000 arduino-esp32/tools/partitions/boot_app0.bin 0x1000 arduino-esp32/tools/sdk/esp32/bin/bootloader_dio_80m.bin 0x10000 ../../edrumulus_plotadc.ino.doitESP32devkitV1.bin 0x8000 ../../edrumulus.ino.partitions.bin 
+esptool.py --chip esp32 --port /dev/serial0 write_flash -z --flash_mode dio --flash_freq 80m --flash_size detect 0xe000 arduino-esp32/tools/partitions/boot_app0.bin 0x1000 arduino-esp32/tools/sdk/esp32/bin/bootloader_dio_80m.bin 0x10000 ../../edrumulus.ino.doitESP32devkitV1.bin 0x8000 ../../edrumulus.ino.partitions.bin 
 
 #esptool.py --chip esp32 --port /dev/serial0 write_flash -z --flash_mode dio --flash_freq 80m --flash_size detect 0xe000 boot_app0.bin 0x1000 bootloader_dio_80m.bin 0x10000 edrumulus.ino.bin 0x8000 edrumulus.ino.partitions.bin 
 
