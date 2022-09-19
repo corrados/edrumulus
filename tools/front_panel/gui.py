@@ -2,6 +2,7 @@
 
 # required libraries: sudo pip install RPLCD
 
+import time
 import jack
 import binascii
 import RPi.GPIO as GPIO
@@ -26,9 +27,13 @@ settings_tab = [ # [settings name], [MIDI note], [settings range]
   ["note rim",  113, 127],
   ["cross",     114,  31] ]
 button_pin = {25: 0, 11: 1, 8: 2, 7: 3, 12: 4, 13: 5}
+button_name = {25: 'back', 11: 'OK', 8: 'left', 7: 'down', 12: 'up', 13: 'right'}
+
+# button 0: back;  button 1: OK;  button 2: left;  button 3: down;  button 4: up;  button 5: right;
 
 # general initializations
 database = [0] * 128;
+selected_menu_item = 0
 
 # init jack
 client   = jack.Client('edrumulus_front_panel')
@@ -40,17 +45,63 @@ lcd = CharLCD(pin_rs = 27, pin_rw = None, pin_e = 17, pins_data = [22, 23, 24, 1
               numbering_mode = GPIO.BCM, cols = 16, rows = 2, auto_linebreaks = False)
 
 def button_handler(pin):
+  global selected_menu_item
   if GPIO.input(pin) == 1:
     lcd.clear()
+    if button_name[pin] == 'up':
+      if selected_menu_item == 0:
+        selected_menu_item = 11
+        lcd.curser_pos = (0, 6)
+        lcd.write_string("%s" % settings_tab[11][0])
+      elif selected_menu_item == 1:
+        selected_menu_item = 0
+        lcd.curser_pos = (0, 6)
+        lcd.write_string("%s" % settings_tab[0][0])
+      elif selected_menu_item == 2:
+        selected_menu_item = 1
+        lcd.curser_pos = (0, 5)
+        lcd.write_string("%s" % settings_tab[1][0])
+      elif selected_menu_item == 3:
+        selected_menu_item = 2
+        lcd.curser_pos = (0, 6)
+        lcd.write_string("%s" % settings_tab[2][0])
+      elif selected_menu_item == 4:
+        selected_menu_item = 3
+        lcd.curser_pos = (0, 4)
+        lcd.write_string("%s" % settings_tab[3][0])
+      elif selected_menu_item == 5:
+        selected_menu_item = 4
+        lcd.curser_pos = (0, 4)
+        lcd.write_string("%s" % settings_tab[4][0])
+      elif selected_menu_item == 6:
+        selected_menu_item = 5
+        lcd.curser_pos = (0, 4)
+        lcd.write_string("%s" % settings_tab[5][0])
+      elif selected_menu_item == 7:
+        selected_menu_item = 6
+        lcd.curser_pos = (0, 6)
+        lcd.write_string("%s" % settings_tab[6][0])
+      elif selected_menu_item == 8:
+        selected_menu_item = 7
+        lcd.curser_pos = (0, 6)
+        lcd.write_string("%s" % settings_tab[7][0])
+      elif selected_menu_item == 9:
+        selected_menu_item = 8
+        lcd.curser_pos = (0, 5)
+        lcd.write_string("%s" % settings_tab[8][0]) 
+      elif selected_menu_item == 10:
+        selected_menu_item = 9
+        lcd.curser_pos = (0, 6)
+        lcd.write_string("%s" % settings_tab[9][0])       
+      elif selected_menu_item == 11:
+        selected_menu_item = 10
+        lcd.curser_pos = (0, 4)
+        lcd.write_string("%s" % settings_tab[10][0])
+              
+    #lcd.write_string("%s" % settings_tab[selected_menu_item][0])
 
-    # TEST show pressed button value on console
-    print("pin %s's value is %s" % (pin, GPIO.input(pin)))
-
-    # TEST show dummy outputs on a button press
-    lcd.cursor_pos = (0, 0)
-    lcd.write_string("%d: setting" % button_pin[pin])
-    lcd.cursor_pos = (1, 0)
-    lcd.write_string("%s" % settings_tab[button_pin[pin]])
+    # TEST2
+    #lcd.write_string("%s" % button_name[pin])
 
 @client.set_process_callback
 def process(frames):
@@ -92,6 +143,8 @@ with client:
   lcd.write_string('Edrumulus')
   lcd.cursor_pos = (1, 2)
   lcd.write_string('Prototype 5')
+  time.sleep(1)
+  lcd.clear()
 
   port_in.connect('ttymidi:MIDI_in')
   port_out.connect('ttymidi:MIDI_out')
