@@ -13,19 +13,19 @@ enum_pad_types = ["PD120", "PD80R", "PD8", "FD8", "VH12", "VH12CTRL", "KD7", "TP
   "DIABOLO12", "CY5", "HD1TOM", "PD6", "KD8", "PDX8", "KD120", "PD5", "PDA120LS", "PDX100", "KT10"]
 enum_curve_types = ["LINEAR", "EXP1", "EXP2", "LOG1", "LOG2"]
 enum_pad_names = ["snare", "kick", "hi-hat", "ctrl", "crash", "tom1", "ride", "tom2", "tom3"]
-settings_tab = [ # [settings name], [MIDI note], [settings range]
-  ["type",      102,  20],
-  ["thresh",    103,  31],
-  ["sens",      104,  31],
-  ["pos thres", 105,  31],
-  ["pos sens",  106,  31],
-  ["rim thres", 107,  31],
-  ["curve",     109,   4],
-  ["spike",     110,   4],
-  ["rim/pos",   111,   3],
-  ["note",      112, 127],
-  ["note rim",  113, 127],
-  ["cross",     114,  31] ]
+settings_tab = [ # [settings name], [MIDI note], [settings range], [cursor pos],
+  ["type",      102,  20,   6],
+  ["thresh",    103,  31,   5],
+  ["sens",      104,  31,   6],
+  ["pos thres", 105,  31,   4],
+  ["pos sens",  106,  31,   4],
+  ["rim thres", 107,  31,   4],
+  ["curve",     109,   4,   5],
+  ["spike",     110,   4,   5],
+  ["rim/pos",   111,   3,   4],
+  ["note",      112, 127,   6],
+  ["note rim",  113, 127,   4],
+  ["cross",     114,  31,   6] ]
 button_pin = {25: 0, 11: 1, 8: 2, 7: 3, 12: 4, 13: 5}
 button_name = {25: 'back', 11: 'OK', 8: 'left', 7: 'down', 12: 'up', 13: 'right'}
 
@@ -45,59 +45,43 @@ lcd = CharLCD(pin_rs = 27, pin_rw = None, pin_e = 17, pins_data = [22, 23, 24, 1
               numbering_mode = GPIO.BCM, cols = 16, rows = 2, auto_linebreaks = False)
 
 def button_handler(pin):
-  global selected_menu_item
+  global selected_menu_item, lcd, database
   if GPIO.input(pin) == 1:
     lcd.clear()
     if button_name[pin] == 'up':
       if selected_menu_item == 0:
         selected_menu_item = 11
-        lcd.curser_pos = (0, 6)
-        lcd.write_string("%s" % settings_tab[11][0])
-      elif selected_menu_item == 1:
+        lcd.cursor_pos = (0, settings_tab[selected_menu_item][3])
+        lcd.write_string("%s" % settings_tab[selected_menu_item][0])
+      else:
+        selected_menu_item = selected_menu_item - 1
+        lcd.cursor_pos = (0, settings_tab[selected_menu_item][3])
+        lcd.write_string("%s" % settings_tab[selected_menu_item][0])
+
+    if button_name[pin] == 'down':
+      if selected_menu_item == 11:
         selected_menu_item = 0
-        lcd.curser_pos = (0, 6)
-        lcd.write_string("%s" % settings_tab[0][0])
-      elif selected_menu_item == 2:
-        selected_menu_item = 1
-        lcd.curser_pos = (0, 5)
-        lcd.write_string("%s" % settings_tab[1][0])
-      elif selected_menu_item == 3:
-        selected_menu_item = 2
-        lcd.curser_pos = (0, 6)
-        lcd.write_string("%s" % settings_tab[2][0])
-      elif selected_menu_item == 4:
-        selected_menu_item = 3
-        lcd.curser_pos = (0, 4)
-        lcd.write_string("%s" % settings_tab[3][0])
-      elif selected_menu_item == 5:
-        selected_menu_item = 4
-        lcd.curser_pos = (0, 4)
-        lcd.write_string("%s" % settings_tab[4][0])
-      elif selected_menu_item == 6:
-        selected_menu_item = 5
-        lcd.curser_pos = (0, 4)
-        lcd.write_string("%s" % settings_tab[5][0])
-      elif selected_menu_item == 7:
-        selected_menu_item = 6
-        lcd.curser_pos = (0, 6)
-        lcd.write_string("%s" % settings_tab[6][0])
-      elif selected_menu_item == 8:
-        selected_menu_item = 7
-        lcd.curser_pos = (0, 6)
-        lcd.write_string("%s" % settings_tab[7][0])
-      elif selected_menu_item == 9:
-        selected_menu_item = 8
-        lcd.curser_pos = (0, 5)
-        lcd.write_string("%s" % settings_tab[8][0]) 
-      elif selected_menu_item == 10:
-        selected_menu_item = 9
-        lcd.curser_pos = (0, 6)
-        lcd.write_string("%s" % settings_tab[9][0])       
-      elif selected_menu_item == 11:
-        selected_menu_item = 10
-        lcd.curser_pos = (0, 4)
-        lcd.write_string("%s" % settings_tab[10][0])
-              
+        lcd.cursor_pos = (0, settings_tab[selected_menu_item][3])
+        lcd.write_string("%s" % settings_tab[selected_menu_item][0])
+      else:
+        selected_menu_item = selected_menu_item + 1
+        lcd.cursor_pos = (0, settings_tab[selected_menu_item][3])
+        lcd.write_string("%s" % settings_tab[selected_menu_item][0])
+    
+    if button_name[pin] == 'right':
+      database [selected_menu_item] = database [selected_menu_item] + 1
+      if database [selected_menu_item] >= settings_tab [selected_menu_item][2]:
+        database [selected_menu_item] = database [selected_menu_item] - 1
+    
+    if button_name[pin] == 'left':
+      database [selected_menu_item] = database [selected_menu_item] - 1
+      if database [selected_menu_item] <= 0:
+        database [selected_menu_item] = database [selected_menu_item] + 1
+            
+    lcd.cursor_pos = (1, 6)
+    lcd.write_string("<%d>" % database [selected_menu_item])
+  
+  
     #lcd.write_string("%s" % settings_tab[selected_menu_item][0])
 
     # TEST2
