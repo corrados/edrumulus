@@ -2,6 +2,11 @@
 
 The road map items are sorted by priority.
 
+- [ ] **Bug fix in GUI**
+
+  If a pad type is changed, the Edrumulus firmware resets a lot of the pad parameters. Therefore the GUI
+  must send a 108 with the current selected pad to update all of its pad parameters.
+
 - [ ] **Improve rim shot detection**
 
   Especially for pads like the PDA-120L where the piezos are located near the edge, the rim shot detection does perform poorly.
