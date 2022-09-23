@@ -38,11 +38,20 @@ if [[ "$1" == gui ]]; then
   is_gui=true
 fi
 
+# special mode: UART connection with c++ GUI
+if [[ "$1" == uartgui ]]; then
+  echo "-> UART GUI mode enabled"
+  is_gui=true
+  is_raspi=true # UART connection to ESP32 is only supported on Raspberry Pi
+  is_uart=true
+fi
+
 # check if the LCD GUI mode shall be used
 if [[ "$1" == lcdgui ]]; then
   echo "-> LCD GUI mode enabled"
   is_lcdgui=true
   is_raspi=true # LCD GUI is only supported on Raspberry Pi
+  is_uart=true
 fi
 
 
@@ -143,7 +152,7 @@ else
   # note that to get access to /dev/ttyUSB0 you need to be in group tty/dialout
   MIDIJACKPORT=ttymidi:MIDI_in
 
-  if [[ -v is_lcdgui ]]; then
+  if [[ -v is_uart ]]; then
     mod-ttymidi/ttymidi -s /dev/serial0 -b 38400 &
     # on prototype 5 the ESP32 has to be started by setting GPIO9 to high
     sudo systemctl start pigpiod
@@ -189,7 +198,6 @@ else
   jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
   if [[ -v is_lcdgui ]]; then
     ./lcd_gui.py
-    sudo systemctl stop pigpiod
   else
     echo "###---------- PRESS ANY KEY TO TERMINATE THE EDRUMULUS SESSION ---------###"
     read -n 1 -s -r -p ""
@@ -206,5 +214,9 @@ if [[ -v is_teensy ]]; then
   killall a2jmidid
 else
   killall ttymidi
+fi
+
+if [[ -v is_uart ]]; then
+  sudo systemctl stop pigpiod
 fi
 
