@@ -186,12 +186,13 @@ elif [[ -v is_jamulus ]]; then
   echo "###---------- PRESS ANY KEY TO TERMINATE THE EDRUMULUS/JAMULUS SESSION ---------###"
   read -n 1 -s -r -p ""
 else
+  jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
   if [[ -v is_lcdgui ]]; then
     ./lcd_gui.py
+  else
+    echo "###---------- PRESS ANY KEY TO TERMINATE THE EDRUMULUS SESSION ---------###"
+    read -n 1 -s -r -p ""
   fi
-  jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
-  echo "###---------- PRESS ANY KEY TO TERMINATE THE EDRUMULUS SESSION ---------###"
-  read -n 1 -s -r -p ""
 fi
 
 killall drumgizmo
