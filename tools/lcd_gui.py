@@ -96,7 +96,7 @@ def button_handler(pin):
         database [selected_menu_item] = database [selected_menu_item] + 1
             
     lcd.cursor_pos = (1, 6)
-    lcd.write_string("<%d>" % database [selected_menu_item])
+    lcd.write_string("<%d>" % database [settings_tab[selected_menu_item][1]])
   
   
     #lcd.write_string("%s" % settings_tab[selected_menu_item][0])

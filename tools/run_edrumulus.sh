@@ -189,6 +189,7 @@ else
   jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
   if [[ -v is_lcdgui ]]; then
     ./lcd_gui.py
+    sudo systemctl stop pigpiod
   else
     echo "###---------- PRESS ANY KEY TO TERMINATE THE EDRUMULUS SESSION ---------###"
     read -n 1 -s -r -p ""
