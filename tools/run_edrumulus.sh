@@ -38,6 +38,13 @@ if [[ "$1" == gui ]]; then
   is_gui=true
 fi
 
+# check if the LCD GUI mode shall be used
+if [[ "$1" == lcdgui ]]; then
+  echo "-> LCD GUI mode enabled"
+  is_lcdgui=true
+  is_raspi=true # LCD GUI is only supported on Raspberry Pi
+fi
+
 
 # install required packages ----------------------------------------------------
 pkgs='git htop vim alsamixergui build-essential libasound2-dev jackd2 cmake libglib2.0-dev autoconf automake libtool lv2-dev xorg-dev libsndfile1-dev libjack-jackd2-dev libsmf-dev gettext a2jmidid libncurses5-dev'
@@ -136,9 +143,9 @@ else
   # note that to get access to /dev/ttyUSB0 you need to be in group tty/dialout
   MIDIJACKPORT=ttymidi:MIDI_in
 
-  if [[ -v is_raspi ]]; then
+  if [[ -v is_lcdgui ]]; then
     mod-ttymidi/ttymidi -s /dev/serial0 -b 38400 &
-    # on prototype 5 the ESP32 has to be started by setting GPIO9 to high (on other prototypes this should not hurt)
+    # on prototype 5 the ESP32 has to be started by setting GPIO9 to high
     sudo systemctl start pigpiod
     pigs modes 9 w
     pigs w 9 1
@@ -179,6 +186,9 @@ elif [[ -v is_jamulus ]]; then
   echo "###---------- PRESS ANY KEY TO TERMINATE THE EDRUMULUS/JAMULUS SESSION ---------###"
   read -n 1 -s -r -p ""
 else
+  if [[ -v is_lcdgui ]]; then
+    ./lcd_gui.py
+  fi
   jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
   echo "###---------- PRESS ANY KEY TO TERMINATE THE EDRUMULUS SESSION ---------###"
   read -n 1 -s -r -p ""
