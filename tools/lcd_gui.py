@@ -49,20 +49,23 @@ button_name = {25: 'back', 11: 'OK', 8: 'left', 7: 'down', 12: 'up', 13: 'right'
 # button 0: back;  button 1: OK;  button 2: left;  button 3: down;  button 4: up;  button 5: right;
 
 # general initializations
-database = [0] * 128;
+database = [0] * 128
 selected_menu_item = 0
 
 # init jack
 client   = jack.Client('edrumulus_front_panel')
 port_in  = client.midi_inports.register('input')
 port_out = client.midi_outports.register('output')
+midi_send_cmd          = -1 # invalidate per default
+midi_previous_send_cmd = -1
+midi_send_val          = 0
 
 # init 16x2 LCD
 lcd = CharLCD(pin_rs = 27, pin_rw = None, pin_e = 17, pins_data = [22, 23, 24, 10],
               numbering_mode = GPIO.BCM, cols = 16, rows = 2, auto_linebreaks = False)
 
 def button_handler(pin):
-  global selected_menu_item, lcd, database
+  global selected_menu_item, lcd, database, midi_send_val, midi_send_cmd
   if GPIO.input(pin) == 1:
     lcd.cursor_pos = (1, 0)
     lcd.write_string("               ")
@@ -94,23 +97,23 @@ def button_handler(pin):
       database [settings_tab[selected_menu_item][1]] = database [settings_tab[selected_menu_item][1]] + 1
       if database [settings_tab[selected_menu_item][1]] > settings_tab [selected_menu_item][2]:
         database [settings_tab[selected_menu_item][1]] = database [settings_tab[selected_menu_item][1]] - 1
+      midi_send_val = database [settings_tab[selected_menu_item][1]];
+      midi_send_cmd = settings_tab[selected_menu_item][1];
     
     if button_name[pin] == 'left':
       database [settings_tab[selected_menu_item][1]] = database [settings_tab[selected_menu_item][1]] - 1
       if database [settings_tab[selected_menu_item][1]] < 0:
         database [settings_tab[selected_menu_item][1]] = database [settings_tab[selected_menu_item][1]] + 1
+      midi_send_val = database [settings_tab[selected_menu_item][1]];
+      midi_send_cmd = settings_tab[selected_menu_item][1];
 
     lcd.cursor_pos = (1, 6)
     lcd.write_string("<%d>" % database [settings_tab[selected_menu_item][1]])
 
 
-    #lcd.write_string("%s" % settings_tab[selected_menu_item][0])
-
-    # TEST2
-    #lcd.write_string("%s" % button_name[pin])
-
 @client.set_process_callback
 def process(frames):
+  global client, port_in, port_out, database, midi_send_val, midi_send_cmd
   port_out.clear_buffer()
   for offset, data in port_in.incoming_midi_events():
     if len(data) == 3:
@@ -120,10 +123,15 @@ def process(frames):
         database[key] = value
 
       # for debugging
-      #print('{}, {}'.format(key, value))
       print('{}: 0x{}'.format(client.last_frame_time + offset,
                               binascii.hexlify(data).decode()))
       print(database)
+
+  if midi_send_cmd >= 0:
+    port_out.write_midi_event(0, (185, midi_send_cmd, midi_send_val))
+    midi_previous_send_cmd = midi_send_cmd # store previous value
+    midi_send_cmd          = -1 # invalidate current command to prepare for next command
+
 
 with client:
   print('press Return to quit')
