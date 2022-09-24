@@ -345,23 +345,17 @@ void Edrumulus_hardware::write_setting ( const int  pad_index,
                                          const int  address,
                                          const byte value )
 {
-// ### MARKER: ESP32 issue with read/write settings ###
-/*
   setup_timer ( true ); // clear timer to avoid a crash during writing the EEPROM settings
   eeprom_settings.write ( pad_index * MAX_NUM_SET_PER_PAD + address, value );
   eeprom_settings.commit(); // needed to update actual flash memory, will only be written if different
   setup_timer(); // restart timer
-*/
 }
 
 
 byte Edrumulus_hardware::read_setting ( const int pad_index,
                                         const int address )
 {
-// ### MARKER: ESP32 issue with read/write settings ###
-/*
   return eeprom_settings.read ( pad_index * MAX_NUM_SET_PER_PAD + address );
-*/
 }
 
 
