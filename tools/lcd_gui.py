@@ -64,41 +64,46 @@ lcd = CharLCD(pin_rs = 27, pin_rw = None, pin_e = 17, pins_data = [22, 23, 24, 1
 def button_handler(pin):
   global selected_menu_item, lcd, database
   if GPIO.input(pin) == 1:
-    lcd.clear()
+    lcd.cursor_pos = (1, 0)
+    lcd.write_string("               ")
     if button_name[pin] == 'up':
       if selected_menu_item == 0:
         selected_menu_item = 11
+        lcd.clear()
         lcd.cursor_pos = (0, settings_tab[selected_menu_item][3])
         lcd.write_string("%s" % settings_tab[selected_menu_item][0])
       else:
         selected_menu_item = selected_menu_item - 1
+        lcd.clear()
         lcd.cursor_pos = (0, settings_tab[selected_menu_item][3])
         lcd.write_string("%s" % settings_tab[selected_menu_item][0])
 
     if button_name[pin] == 'down':
       if selected_menu_item == 11:
         selected_menu_item = 0
+        lcd.clear()
         lcd.cursor_pos = (0, settings_tab[selected_menu_item][3])
         lcd.write_string("%s" % settings_tab[selected_menu_item][0])
       else:
         selected_menu_item = selected_menu_item + 1
+        lcd.clear()
         lcd.cursor_pos = (0, settings_tab[selected_menu_item][3])
         lcd.write_string("%s" % settings_tab[selected_menu_item][0])
     
     if button_name[pin] == 'right':
       database [settings_tab[selected_menu_item][1]] = database [settings_tab[selected_menu_item][1]] + 1
-      if database [settings_tab[selected_menu_item][1]] >= settings_tab [selected_menu_item][2]:
+      if database [settings_tab[selected_menu_item][1]] > settings_tab [selected_menu_item][2]:
         database [settings_tab[selected_menu_item][1]] = database [settings_tab[selected_menu_item][1]] - 1
     
     if button_name[pin] == 'left':
       database [settings_tab[selected_menu_item][1]] = database [settings_tab[selected_menu_item][1]] - 1
-      if database [settings_tab[selected_menu_item][1]] <= 0:
+      if database [settings_tab[selected_menu_item][1]] < 0:
         database [settings_tab[selected_menu_item][1]] = database [settings_tab[selected_menu_item][1]] + 1
-            
+
     lcd.cursor_pos = (1, 6)
     lcd.write_string("<%d>" % database [settings_tab[selected_menu_item][1]])
-  
-  
+
+
     #lcd.write_string("%s" % settings_tab[selected_menu_item][0])
 
     # TEST2
