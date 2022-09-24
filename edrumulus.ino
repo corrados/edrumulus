@@ -367,6 +367,7 @@ void loop()
 }
 
 
+#ifdef USE_MIDI
 // give feedback to the controller GUI via MIDI Note Off
 void confirm_setting ( const int  controller,
                        const int  value,
@@ -397,6 +398,7 @@ void confirm_setting ( const int  controller,
     MYMIDI.sendNoteOff ( controller, value, 1 ); // can be checked, e.g., in the log file
   }
 }
+#endif
 
 
 void read_settings()
