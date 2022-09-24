@@ -21,14 +21,6 @@ if ! dpkg -s $pkgs >/dev/null 2>&1; then
 fi
 
 
-# download ESP32 IDF -----------------------------------------------------------
-if [ -d "arduino-esp32" ]; then
-  echo "The arduino-esp32 directory is present. We assume the ESP32 arduino-esp32 is correctly downloaded."
-else
-  git clone https://github.com/espressif/arduino-esp32.git
-fi
-
-
 # prepare the ESP32 for flashing -----------------------------------------------
 # We assume that the following hardware wiring is used:
 # PI-GPIO9 -> ESP32 EN
@@ -44,21 +36,18 @@ sleep 1
 pigs w 9 1
 
 
+# flash the ESP32 via UART using the esptool.py --------------------------------
+
 
 # Testing the flashing of the ESP32
 #esptool.py -p /dev/serial0 flash_id
 #esptool.py -p /dev/serial0 erase_flash
 
-esptool.py --chip esp32 --port /dev/serial0 write_flash -z --flash_mode dio --flash_freq 80m --flash_size detect 0xe000 arduino-esp32/tools/partitions/boot_app0.bin 0x1000 arduino-esp32/tools/sdk/esp32/bin/bootloader_dio_80m.bin 0x10000 ../../edrumulus.ino.doitESP32devkitV1.bin 0x8000 ../../edrumulus.ino.partitions.bin 
 
-#esptool.py --chip esp32 --port /dev/serial0 write_flash -z --flash_mode dio --flash_freq 80m --flash_size detect 0xe000 boot_app0.bin 0x1000 bootloader_dio_80m.bin 0x10000 edrumulus.ino.bin 0x8000 edrumulus.ino.partitions.bin 
-
-#arduino-esp32/tools/sdk/esp32/bin/bootloader_dio_80m.bin
-#arduino-esp32/tools/partitions/boot_app0.bin
+esptool.py --chip esp32 --port /dev/serial0 write_flash -z --flash_mode dio --flash_freq 80m --flash_size detect 0xe000 flash_esp32_bin/boot_app0.bin 0x1000 flash_esp32_bin/bootloader_dio_80m.bin 0x10000 flash_esp32_bin/edrumulus.ino.doitESP32devkitV1.bin 0x8000 flash_esp32_bin/edrumulus.ino.partitions.bin
 
 
-
-# set IO0 to non-flash mode and reboot ESP32
+# set IO0 to non-flash mode and reboot ESP32 -----------------------------------
 pigs w 4 1
 pigs w 9 0
 sleep 1
