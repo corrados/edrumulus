@@ -26,6 +26,7 @@ fi
 # PI-GPIO9 -> ESP32 EN
 # PI-GPIO4 -> ESP32 IO0
 sudo systemctl start pigpiod
+sleep 1
 pigs modes 9 w
 pigs modes 4 w
 
