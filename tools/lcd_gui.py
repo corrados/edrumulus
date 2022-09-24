@@ -86,14 +86,14 @@ def button_handler(pin):
         lcd.write_string("%s" % settings_tab[selected_menu_item][0])
     
     if button_name[pin] == 'right':
-      database [selected_menu_item] = database [selected_menu_item] + 1
-      if database [selected_menu_item] >= settings_tab [selected_menu_item][2]:
-        database [selected_menu_item] = database [selected_menu_item] - 1
+      database [settings_tab[selected_menu_item][1]] = database [settings_tab[selected_menu_item][1]] + 1
+      if database [settings_tab[selected_menu_item][1]] >= settings_tab [selected_menu_item][2]:
+        database [settings_tab[selected_menu_item][1]] = database [settings_tab[selected_menu_item][1]] - 1
     
     if button_name[pin] == 'left':
-      database [selected_menu_item] = database [selected_menu_item] - 1
-      if database [selected_menu_item] <= 0:
-        database [selected_menu_item] = database [selected_menu_item] + 1
+      database [settings_tab[selected_menu_item][1]] = database [settings_tab[selected_menu_item][1]] - 1
+      if database [settings_tab[selected_menu_item][1]] <= 0:
+        database [settings_tab[selected_menu_item][1]] = database [settings_tab[selected_menu_item][1]] + 1
             
     lcd.cursor_pos = (1, 6)
     lcd.write_string("<%d>" % database [settings_tab[selected_menu_item][1]])
