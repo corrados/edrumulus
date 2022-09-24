@@ -39,12 +39,14 @@ int          version_major           = -1;
 int          version_minor           = -1;
 bool         do_update_param_outputs = false;
 int          midi_send_cmd           = -1; // invalidate per default
+int          midi_previous_send_cmd  = -1;
 int          midi_send_val;
 bool         auto_pad_sel = false; // no auto pad selection per default
 
 // parse command parameter
 std::string parse_cmd_param ( int cmd )
 {
+  // check for "pad type" and "curve type" special cases, otherwise convert integer in string
   return cmd == 0 ? pad_types[param_set[cmd]] : cmd == 6 ? curve_types[param_set[cmd]] : std::to_string ( param_set[cmd] );
 }
 
@@ -108,7 +110,6 @@ int process ( jack_nframes_t nframes, void *arg )
   jack_midi_clear_buffer ( out_midi );
   jack_midi_clear_buffer ( through_midi );
 
-
   for ( jack_nframes_t j = 0; j < event_count; j++ )
   {
     jack_midi_event_t in_event;
@@ -118,9 +119,13 @@ int process ( jack_nframes_t nframes, void *arg )
       auto it = std::find ( cmd_val.begin(), cmd_val.end(), in_event.buffer[1] );
       if ( it != cmd_val.end() && ( in_event.buffer[0] & 0xF0 ) == 0x80 )
       {
-        int cur_cmd             = std::distance ( cmd_val.begin(), it );
-        param_set[cur_cmd]      = std::max ( 0, std::min ( cmd_val_rng[cur_cmd], (int) in_event.buffer[2] ) );
-        do_update_param_outputs = true;
+        const int cur_cmd = std::distance ( cmd_val.begin(), it );
+        // do not update command which was just changed to avoid the value jumps back to old value
+        if ( midi_previous_send_cmd != cmd_val[cur_cmd] )
+        {
+          param_set[cur_cmd]      = std::max ( 0, std::min ( cmd_val_rng[cur_cmd], (int) in_event.buffer[2] ) );
+          do_update_param_outputs = true;
+        }
       }
 
       if ( in_event.buffer[1] == 127 && ( in_event.buffer[0] & 0xF0 ) == 0x80 )
@@ -192,10 +197,11 @@ int process ( jack_nframes_t nframes, void *arg )
   if ( midi_send_cmd >= 0 )
   {
     jack_midi_data_t* midi_out_buffer = jack_midi_event_reserve ( out_midi, 0, 3 );
-    midi_out_buffer[0] = 185; // control change MIDI message on channel 10
-    midi_out_buffer[1] = midi_send_cmd;
-    midi_out_buffer[2] = midi_send_val;
-    midi_send_cmd      = -1; // invalidate current command to prepare for next command
+    midi_out_buffer[0]     = 185; // control change MIDI message on channel 10
+    midi_out_buffer[1]     = midi_send_cmd;
+    midi_out_buffer[2]     = midi_send_val;
+    midi_previous_send_cmd = midi_send_cmd; // store previous value
+    midi_send_cmd          = -1; // invalidate current command to prepare for next command
   }
 
   return 0;
