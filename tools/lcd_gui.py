@@ -31,18 +31,18 @@ enum_pad_types = ["PD120", "PD80R", "PD8", "FD8", "VH12", "VH12CTRL", "KD7", "TP
 enum_curve_types = ["LINEAR", "EXP1", "EXP2", "LOG1", "LOG2"]
 enum_pad_names = ["snare", "kick", "hi-hat", "ctrl", "crash", "tom1", "ride", "tom2", "tom3"]
 settings_tab = [ # [settings name], [MIDI note], [settings range], [cursor pos],
-  ["type",      102,  20,   6],
-  ["thresh",    103,  31,   5],
-  ["sens",      104,  31,   6],
-  ["pos thres", 105,  31,   4],
-  ["pos sens",  106,  31,   4],
-  ["rim thres", 107,  31,   4],
-  ["curve",     109,   4,   5],
-  ["spike",     110,   4,   5],
-  ["rim/pos",   111,   3,   4],
-  ["note",      112, 127,   6],
-  ["note rim",  113, 127,   4],
-  ["cross",     114,  31,   6] ]
+  ["type",      102,  20],
+  ["thresh",    103,  31],
+  ["sens",      104,  31],
+  ["pos thres", 105,  31],
+  ["pos sens",  106,  31],
+  ["rim thres", 107,  31],
+  ["curve",     109,   4],
+  ["spike",     110,   4],
+  ["rim/pos",   111,   3],
+  ["note",      112, 127],
+  ["note rim",  113, 127],
+  ["cross",     114,  31] ]
 button_pin = {25: 0, 11: 1, 8: 2, 7: 3, 12: 4, 13: 5}
 button_name = {25: 'back', 11: 'OK', 8: 'left', 7: 'down', 12: 'up', 13: 'right'}
 
@@ -51,6 +51,7 @@ button_name = {25: 'back', 11: 'OK', 8: 'left', 7: 'down', 12: 'up', 13: 'right'
 # general initializations
 database = [0] * 128
 selected_menu_item = 0
+selected_pad       = 0
 
 # init jack
 client   = jack.Client('edrumulus_front_panel')
@@ -65,7 +66,7 @@ lcd = CharLCD(pin_rs = 27, pin_rw = None, pin_e = 17, pins_data = [22, 23, 24, 1
               numbering_mode = GPIO.BCM, cols = 16, rows = 2, auto_linebreaks = False)
 
 def button_handler(pin):
-  global selected_menu_item, lcd, database, midi_send_val, midi_send_cmd
+  global selected_menu_item, selected_pad, lcd, database, midi_send_val, midi_send_cmd
   if GPIO.input(pin) == 1:
     database_index = settings_tab[selected_menu_item][1]
 
@@ -73,41 +74,50 @@ def button_handler(pin):
       if selected_menu_item == 0:
         selected_menu_item = 11
       else:
-        selected_menu_item = selected_menu_item - 1
+        selected_menu_item -= 1
 
     if button_name[pin] == 'down':
       if selected_menu_item == 11:
         selected_menu_item = 0
       else:
-        selected_menu_item = selected_menu_item + 1
+        selected_menu_item += 1
     
     if (button_name[pin] == 'right') and (database [database_index] < settings_tab [selected_menu_item][2]):
-      database [database_index] = database [database_index] + 1
-      midi_send_val             = database [database_index]; # send value to Edrumulus
-      midi_send_cmd             = database_index;            # send value to Edrumulus
+      database [database_index] += 1
+      midi_send_val = database [database_index]; # send value to Edrumulus
+      midi_send_cmd = database_index;            # send value to Edrumulus
 
     if (button_name[pin] == 'left') and (database [database_index] > 0):
-      database [database_index] = database [database_index] - 1
-      midi_send_val             = database [database_index]; # send value to Edrumulus
-      midi_send_cmd             = database_index;            # send value to Edrumulus
+      database [database_index] -= 1
+      midi_send_val = database [database_index]; # send value to Edrumulus
+      midi_send_cmd = database_index;            # send value to Edrumulus
+
+    if (button_name[pin] == 'OK') and (selected_pad < 8):
+      selected_pad += 1
+      midi_send_val = selected_pad;
+      midi_send_cmd = 108;
+
+    if (button_name[pin] == 'back') and (selected_pad > 0):
+      selected_pad -= 1
+      midi_send_val = selected_pad;
+      midi_send_cmd = 108;
 
     update_lcd()
 
 
 def update_lcd():
-  global lcd, settings_tab, selected_menu_item, database
+  global lcd, settings_tab, selected_menu_item, database, selected_pad
   lcd.clear()
-  lcd.cursor_pos = (0, settings_tab[selected_menu_item][3])
-  lcd.write_string("%s" % settings_tab[selected_menu_item][0])
-  
-  if selected_menu_item == 0:
+  lcd.cursor_pos = (0, 0)
+  lcd.write_string("%s:%s" % (enum_pad_names [selected_pad], settings_tab[selected_menu_item][0]))
+
+  if selected_menu_item == 0:   # enum_pad_types
     lcd.cursor_pos = (1, 3)
     lcd.write_string("<%s>" % enum_pad_types [database [settings_tab [selected_menu_item] [1]]])
-  elif selected_menu_item == 6:
+  elif selected_menu_item == 6: # enum_curve_types
     lcd.cursor_pos = (1, 4)
     lcd.write_string("<%s>" % enum_curve_types [database [settings_tab [selected_menu_item] [1]]])
-
-  else:
+  else:                         # use a number
     lcd.cursor_pos = (1, 6)
     lcd.write_string("<%d>" % database [settings_tab [selected_menu_item][1]])
 
@@ -159,10 +169,10 @@ with client:
   lcd.cursor_pos = (1, 2)
   lcd.write_string('Prototype 5')
   time.sleep(1)
-  lcd.clear()
+  update_lcd()
 
   port_in.connect('ttymidi:MIDI_in')
   port_out.connect('ttymidi:MIDI_out')
-  port_out.write_midi_event(0, (185, 108, 0))
+  port_out.write_midi_event(0, (185, 108, selected_pad))
   input()
 
