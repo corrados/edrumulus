@@ -83,13 +83,13 @@ def button_handler(pin):
     
     if (button_name[pin] == 'right') and (database [database_index] < settings_tab [selected_menu_item][2]):
       database [database_index] = database [database_index] + 1
-      midi_send_val             = database [database_index];
-      midi_send_cmd             = database_index;
+      midi_send_val             = database [database_index]; # send value to Edrumulus
+      midi_send_cmd             = database_index;            # send value to Edrumulus
 
-    if (button_name[pin] == 'left') and (database [database_index] >= 0):
+    if (button_name[pin] == 'left') and (database [database_index] > 0):
       database [database_index] = database [database_index] - 1
-      midi_send_val             = database [database_index];
-      midi_send_cmd             = database_index;
+      midi_send_val             = database [database_index]; # send value to Edrumulus
+      midi_send_cmd             = database_index;            # send value to Edrumulus
 
     update_lcd()
 
@@ -99,8 +99,17 @@ def update_lcd():
   lcd.clear()
   lcd.cursor_pos = (0, settings_tab[selected_menu_item][3])
   lcd.write_string("%s" % settings_tab[selected_menu_item][0])
-  lcd.cursor_pos = (1, 6)
-  lcd.write_string("<%d>" % database [settings_tab[selected_menu_item][1]])
+  
+  if selected_menu_item == 0:
+    lcd.cursor_pos = (1, 3)
+    lcd.write_string("<%s>" % enum_pad_types [database [settings_tab [selected_menu_item] [1]]])
+  elif selected_menu_item == 6:
+    lcd.cursor_pos = (1, 4)
+    lcd.write_string("<%s>" % enum_curve_types [database [settings_tab [selected_menu_item] [1]]])
+
+  else:
+    lcd.cursor_pos = (1, 6)
+    lcd.write_string("<%d>" % database [settings_tab [selected_menu_item][1]])
 
 
 @client.set_process_callback
