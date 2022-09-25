@@ -67,48 +67,40 @@ lcd = CharLCD(pin_rs = 27, pin_rw = None, pin_e = 17, pins_data = [22, 23, 24, 1
 def button_handler(pin):
   global selected_menu_item, lcd, database, midi_send_val, midi_send_cmd
   if GPIO.input(pin) == 1:
-    lcd.cursor_pos = (1, 0)
-    lcd.write_string("               ")
+    database_index = settings_tab[selected_menu_item][1]
+
     if button_name[pin] == 'up':
       if selected_menu_item == 0:
         selected_menu_item = 11
-        lcd.clear()
-        lcd.cursor_pos = (0, settings_tab[selected_menu_item][3])
-        lcd.write_string("%s" % settings_tab[selected_menu_item][0])
       else:
         selected_menu_item = selected_menu_item - 1
-        lcd.clear()
-        lcd.cursor_pos = (0, settings_tab[selected_menu_item][3])
-        lcd.write_string("%s" % settings_tab[selected_menu_item][0])
 
     if button_name[pin] == 'down':
       if selected_menu_item == 11:
         selected_menu_item = 0
-        lcd.clear()
-        lcd.cursor_pos = (0, settings_tab[selected_menu_item][3])
-        lcd.write_string("%s" % settings_tab[selected_menu_item][0])
       else:
         selected_menu_item = selected_menu_item + 1
-        lcd.clear()
-        lcd.cursor_pos = (0, settings_tab[selected_menu_item][3])
-        lcd.write_string("%s" % settings_tab[selected_menu_item][0])
     
-    if button_name[pin] == 'right':
-      database [settings_tab[selected_menu_item][1]] = database [settings_tab[selected_menu_item][1]] + 1
-      if database [settings_tab[selected_menu_item][1]] > settings_tab [selected_menu_item][2]:
-        database [settings_tab[selected_menu_item][1]] = database [settings_tab[selected_menu_item][1]] - 1
-      midi_send_val = database [settings_tab[selected_menu_item][1]];
-      midi_send_cmd = settings_tab[selected_menu_item][1];
-    
-    if button_name[pin] == 'left':
-      database [settings_tab[selected_menu_item][1]] = database [settings_tab[selected_menu_item][1]] - 1
-      if database [settings_tab[selected_menu_item][1]] < 0:
-        database [settings_tab[selected_menu_item][1]] = database [settings_tab[selected_menu_item][1]] + 1
-      midi_send_val = database [settings_tab[selected_menu_item][1]];
-      midi_send_cmd = settings_tab[selected_menu_item][1];
+    if (button_name[pin] == 'right') and (database [database_index] < settings_tab [selected_menu_item][2]):
+      database [database_index] = database [database_index] + 1
+      midi_send_val             = database [database_index];
+      midi_send_cmd             = database_index;
 
-    lcd.cursor_pos = (1, 6)
-    lcd.write_string("<%d>" % database [settings_tab[selected_menu_item][1]])
+    if (button_name[pin] == 'left') and (database [database_index] >= 0):
+      database [database_index] = database [database_index] - 1
+      midi_send_val             = database [database_index];
+      midi_send_cmd             = database_index;
+
+    update_lcd()
+
+
+def update_lcd():
+  global lcd, settings_tab, selected_menu_item, database
+  lcd.clear()
+  lcd.cursor_pos = (0, settings_tab[selected_menu_item][3])
+  lcd.write_string("%s" % settings_tab[selected_menu_item][0])
+  lcd.cursor_pos = (1, 6)
+  lcd.write_string("<%d>" % database [settings_tab[selected_menu_item][1]])
 
 
 @client.set_process_callback
@@ -151,7 +143,7 @@ with client:
   GPIO.setup(13, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
   GPIO.add_event_detect(13, GPIO.RISING, callback = button_handler, bouncetime = 20)
 
-  # testing LCD
+  # startup message on LCD
   lcd.clear()
   lcd.cursor_pos = (0, 3)
   lcd.write_string('Edrumulus')
