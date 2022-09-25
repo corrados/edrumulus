@@ -156,6 +156,7 @@ else
     mod-ttymidi/ttymidi -s /dev/serial0 -b 38400 &
     # on prototype 5 the ESP32 has to be started by setting GPIO9 to high
     sudo systemctl start pigpiod
+    sleep 1
     pigs modes 9 w
     pigs w 9 1
   else
