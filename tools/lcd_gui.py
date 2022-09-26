@@ -26,11 +26,11 @@ import RPi.GPIO as GPIO
 from RPLCD.gpio import CharLCD
 
 # tables
-enum_pad_types = ["PD120", "PD80R", "PD8", "FD8", "VH12", "VH12CTRL", "KD7", "TP80", "CY6", "CY8",
-  "DIABOLO12", "CY5", "HD1TOM", "PD6", "KD8", "PDX8", "KD120", "PD5", "PDA120LS", "PDX100", "KT10"]
 enum_curve_types = ["LINEAR", "EXP1", "EXP2", "LOG1", "LOG2"]
-enum_pad_names = ["snare", "kick", "hi-hat", "ctrl", "crash", "tom1", "ride", "tom2", "tom3"]
-settings_tab = [ # [settings name], [MIDI note], [settings range], [cursor pos],
+enum_pad_names   = ["snare", "kick", "hi-hat", "ctrl", "crash", "tom1", "ride", "tom2", "tom3"]
+enum_pad_types   = ["PD120", "PD80R", "PD8", "FD8", "VH12", "VH12CTRL", "KD7", "TP80", "CY6", "CY8", "DIABOLO12",
+                    "CY5", "HD1TOM", "PD6", "KD8", "PDX8", "KD120", "PD5", "PDA120LS", "PDX100", "KT10"]
+settings_tab = [ # [settings name], [MIDI note], [settings range]
   ["type",      102,  20],
   ["thresh",    103,  31],
   ["sens",      104,  31],
@@ -43,20 +43,19 @@ settings_tab = [ # [settings name], [MIDI note], [settings range], [cursor pos],
   ["note",      112, 127],
   ["note rim",  113, 127],
   ["cross",     114,  31] ]
-button_pin = {25: 0, 11: 1, 8: 2, 7: 3, 12: 4, 13: 5}
+button_pin  = {25: 0, 11: 1, 8: 2, 7: 3, 12: 4, 13: 5}
+# button 0: back;  button 1: OK;  button 2: left;  button 3: down;  button 4: up;  button 5: right
 button_name = {25: 'back', 11: 'OK', 8: 'left', 7: 'down', 12: 'up', 13: 'right'}
 
-# button 0: back;  button 1: OK;  button 2: left;  button 3: down;  button 4: up;  button 5: right;
-
 # general initializations
-database = [0] * 128
+database           = [0] * 128
 selected_menu_item = 0
 selected_pad       = 0
 
 # init jack
-client   = jack.Client('edrumulus_front_panel')
-port_in  = client.midi_inports.register('input')
-port_out = client.midi_outports.register('output')
+client                 = jack.Client('edrumulus_front_panel')
+port_in                = client.midi_inports.register('input')
+port_out               = client.midi_outports.register('output')
 midi_send_cmd          = -1 # invalidate per default
 midi_previous_send_cmd = -1
 midi_send_val          = 0
@@ -64,6 +63,7 @@ midi_send_val          = 0
 # init 16x2 LCD
 lcd = CharLCD(pin_rs = 27, pin_rw = None, pin_e = 17, pins_data = [22, 23, 24, 10],
               numbering_mode = GPIO.BCM, cols = 16, rows = 2, auto_linebreaks = False)
+
 
 def button_handler(pin):
   global selected_menu_item, selected_pad, lcd, database, midi_send_val, midi_send_cmd
@@ -132,11 +132,6 @@ def process(frames):
         key   = int.from_bytes(data[1], "big")
         value = int.from_bytes(data[2], "big")
         database[key] = value
-
-      # for debugging
-      print('{}: 0x{}'.format(client.last_frame_time + offset,
-                              binascii.hexlify(data).decode()))
-      print(database)
 
   if midi_send_cmd >= 0:
     port_out.write_midi_event(0, (185, midi_send_cmd, midi_send_val))
