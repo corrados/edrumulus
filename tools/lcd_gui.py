@@ -67,17 +67,25 @@ lcd = CharLCD(pin_rs = 27, pin_rw = None, pin_e = 17, pins_data = [22, 23, 24, 1
 
 def button_handler(pin):
   if GPIO.input(pin) == 0: # note that button is inverted
-    name = button_name[pin] # current button name
-    on_button_pressed(name) # initial button press action
+    name       = button_name[pin] # current button name
+    start_time = time.time()
     # auto press functionality for up/down/left/right buttons
     if (name == 'left') or (name == 'down') or (name == 'up') or (name == 'right'):
-      start_time       = time.time()
+      on_button_pressed(name) # initial button press action
       auto_press_index = 0
       while GPIO.input(pin) == 0: # wait for the button up
         time.sleep(0.01)
         if time.time() - start_time - 0.7 - auto_press_index * 0.1 > 0: # after 0.7 s, auto press every 100 ms
           on_button_pressed(name)
           auto_press_index += 1
+    else:
+      while GPIO.input(pin) == 0: # wait for the button up
+        time.sleep(0.01)
+      if time.time() - start_time < 0.7:
+        on_button_pressed(name) # on button up
+      else:
+        # TODO: implementation of going a menu level up...
+        pass
 
 
 def on_button_pressed(button_name):
@@ -144,14 +152,16 @@ def update_lcd():
 
 @client.set_process_callback
 def process(frames):
-  global client, port_in, port_out, database, midi_send_val, midi_send_cmd
+  global client, port_in, port_out, database, midi_send_val, midi_send_cmd, midi_previous_send_cmd
   port_out.clear_buffer()
   for offset, data in port_in.incoming_midi_events():
     if len(data) == 3:
       if int.from_bytes(data[0], "big") == 0x80:
         key   = int.from_bytes(data[1], "big")
         value = int.from_bytes(data[2], "big")
-        database[key] = value
+        # do not update command which was just changed to avoid the value jumps back to old value
+        if midi_previous_send_cmd != key:
+          database[key] = value
 
   if midi_send_cmd >= 0:
     port_out.write_midi_event(0, (185, midi_send_cmd, midi_send_val))
