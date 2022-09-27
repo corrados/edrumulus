@@ -67,17 +67,26 @@ lcd = CharLCD(pin_rs = 27, pin_rw = None, pin_e = 17, pins_data = [22, 23, 24, 1
 
 def button_handler(pin):
   if GPIO.input(pin) == 0: # note that button is inverted
-    on_button_pressed(button_name[pin]) # initial button press action
-    start_time       = time.time()
-    auto_press_index = 0
-    while GPIO.input(pin) == 0: # wait for the button up
-      time.sleep(0.01)
-      if time.time() - start_time - 0.7 - auto_press_index * 0.1 > 0: # after 0.7 s, auto press every 100 ms
-        on_button_pressed(button_name[pin])
-        auto_press_index += 1
+    name = button_name[pin] # current button name
+    on_button_pressed(name) # initial button press action
+    # auto press functionality for up/down/left/right buttons
+    if (name == 'left') or (name == 'down') or (name == 'up') or (name == 'right'):
+      start_time       = time.time()
+      auto_press_index = 0
+      while GPIO.input(pin) == 0: # wait for the button up
+        time.sleep(0.01)
+        if time.time() - start_time - 0.7 - auto_press_index * 0.1 > 0: # after 0.7 s, auto press every 100 ms
+          on_button_pressed(name)
+          auto_press_index += 1
 
 
 def on_button_pressed(button_name):
+  # TODO implement different menu levels here...
+  # if we are in trigger settings menu level
+  update_trigger_settings_menu(button_name)
+
+
+def update_trigger_settings_menu(button_name):
   global selected_menu_item, selected_pad, lcd, database, midi_send_val, midi_send_cmd
   database_index = settings_tab[selected_menu_item][1]
 
