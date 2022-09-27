@@ -66,43 +66,54 @@ lcd = CharLCD(pin_rs = 27, pin_rw = None, pin_e = 17, pins_data = [22, 23, 24, 1
 
 
 def button_handler(pin):
+  if GPIO.input(pin) == 0: # note that button is inverted
+    on_button_pressed(button_name[pin]) # initial button press action
+    start_time       = time.time()
+    auto_press_index = 0
+    while GPIO.input(pin) == 0: # wait for the button up
+      time.sleep(0.01)
+      if time.time() - start_time - 0.7 - auto_press_index * 0.1 > 0: # after 0.7 s, auto press every 100 ms
+        on_button_pressed(button_name[pin])
+        auto_press_index += 1
+
+
+def on_button_pressed(button_name):
   global selected_menu_item, selected_pad, lcd, database, midi_send_val, midi_send_cmd
-  if GPIO.input(pin) == 1:
-    database_index = settings_tab[selected_menu_item][1]
+  database_index = settings_tab[selected_menu_item][1]
 
-    if button_name[pin] == 'up':
-      if selected_menu_item == 0:
-        selected_menu_item = 11
-      else:
-        selected_menu_item -= 1
+  if button_name == 'up':
+    if selected_menu_item == 0:
+      selected_menu_item = 11
+    else:
+      selected_menu_item -= 1
 
-    if button_name[pin] == 'down':
-      if selected_menu_item == 11:
-        selected_menu_item = 0
-      else:
-        selected_menu_item += 1
-    
-    if (button_name[pin] == 'right') and (database [database_index] < settings_tab [selected_menu_item][2]):
-      database [database_index] += 1
-      midi_send_val = database [database_index]; # send value to Edrumulus
-      midi_send_cmd = database_index;            # send value to Edrumulus
+  if button_name == 'down':
+    if selected_menu_item == 11:
+      selected_menu_item = 0
+    else:
+      selected_menu_item += 1
 
-    if (button_name[pin] == 'left') and (database [database_index] > 0):
-      database [database_index] -= 1
-      midi_send_val = database [database_index]; # send value to Edrumulus
-      midi_send_cmd = database_index;            # send value to Edrumulus
+  if (button_name == 'right') and (database [database_index] < settings_tab [selected_menu_item][2]):
+    database [database_index] += 1
+    midi_send_val = database [database_index]; # send value to Edrumulus
+    midi_send_cmd = database_index;            # send value to Edrumulus
 
-    if (button_name[pin] == 'OK') and (selected_pad < 8):
-      selected_pad += 1
-      midi_send_val = selected_pad;
-      midi_send_cmd = 108;
+  if (button_name == 'left') and (database [database_index] > 0):
+    database [database_index] -= 1
+    midi_send_val = database [database_index]; # send value to Edrumulus
+    midi_send_cmd = database_index;            # send value to Edrumulus
 
-    if (button_name[pin] == 'back') and (selected_pad > 0):
-      selected_pad -= 1
-      midi_send_val = selected_pad;
-      midi_send_cmd = 108;
+  if (button_name == 'OK') and (selected_pad < 8):
+    selected_pad += 1
+    midi_send_val = selected_pad;
+    midi_send_cmd = 108;
 
-    update_lcd()
+  if (button_name == 'back') and (selected_pad > 0):
+    selected_pad -= 1
+    midi_send_val = selected_pad;
+    midi_send_cmd = 108;
+
+  update_lcd()
 
 
 def update_lcd():
@@ -145,17 +156,17 @@ with client:
   # init buttons
   GPIO.setmode(GPIO.BCM)
   GPIO.setup(25, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-  GPIO.add_event_detect(25, GPIO.RISING, callback = button_handler, bouncetime = 20)
+  GPIO.add_event_detect(25, GPIO.BOTH, callback = button_handler, bouncetime = 20)
   GPIO.setup(11, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-  GPIO.add_event_detect(11, GPIO.RISING, callback = button_handler, bouncetime = 20)
+  GPIO.add_event_detect(11, GPIO.BOTH, callback = button_handler, bouncetime = 20)
   GPIO.setup(8, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-  GPIO.add_event_detect(8, GPIO.RISING, callback = button_handler, bouncetime = 20)
+  GPIO.add_event_detect(8, GPIO.BOTH, callback = button_handler, bouncetime = 20)
   GPIO.setup(7, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-  GPIO.add_event_detect(7, GPIO.RISING, callback = button_handler, bouncetime = 20)
+  GPIO.add_event_detect(7, GPIO.BOTH, callback = button_handler, bouncetime = 20)
   GPIO.setup(12, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-  GPIO.add_event_detect(12, GPIO.RISING, callback = button_handler, bouncetime = 20)
+  GPIO.add_event_detect(12, GPIO.BOTH, callback = button_handler, bouncetime = 20)
   GPIO.setup(13, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-  GPIO.add_event_detect(13, GPIO.RISING, callback = button_handler, bouncetime = 20)
+  GPIO.add_event_detect(13, GPIO.BOTH, callback = button_handler, bouncetime = 20)
 
   # startup message on LCD
   lcd.clear()
@@ -170,4 +181,5 @@ with client:
   port_out.connect('ttymidi:MIDI_out')
   port_out.write_midi_event(0, (185, 108, selected_pad))
   input()
+  lcd.close()
 
