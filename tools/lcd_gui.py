@@ -193,12 +193,12 @@ with client:
   lcd.write_string('Edrumulus')
   lcd.cursor_pos = (1, 2)
   lcd.write_string('Prototype 5')
-  time.sleep(1)
-  update_lcd()
 
   port_in.connect('ttymidi:MIDI_in')
   port_out.connect('ttymidi:MIDI_out')
   port_out.write_midi_event(0, (185, 108, selected_pad))
+  time.sleep(1)
+  update_lcd()
   input()
   lcd.close()
 
