@@ -32,7 +32,7 @@ WINDOW       *mainwin, *midiwin, *midigwin, *poswin, *posgwin, *ctrlwin;
 int          col_start = 5;  // start column of parameter display
 int          row_start = 1;  // start row of parameter display
 int          box_len   = 17; // length of the output boxes
-jack_port_t  *input_port, *output_port, *through_port;
+jack_port_t  *input_port, *output_port;
 int          sel_pad                 = 0;
 int          sel_cmd                 = 0;
 int          version_major           = -1;
@@ -103,12 +103,10 @@ void update_pad_selection ( int midi_note_in, int midi_note1, int midi_note2, in
 // jack audio callback function
 int process ( jack_nframes_t nframes, void *arg )
 {
-  void*          in_midi      = jack_port_get_buffer      ( input_port,   nframes );
-  void*          out_midi     = jack_port_get_buffer      ( output_port,  nframes );
-  void*          through_midi = jack_port_get_buffer      ( through_port, nframes );
-  jack_nframes_t event_count  = jack_midi_get_event_count ( in_midi );
+  void*          in_midi     = jack_port_get_buffer      ( input_port,   nframes );
+  void*          out_midi    = jack_port_get_buffer      ( output_port,  nframes );
+  jack_nframes_t event_count = jack_midi_get_event_count ( in_midi );
   jack_midi_clear_buffer ( out_midi );
-  jack_midi_clear_buffer ( through_midi );
 
   for ( jack_nframes_t j = 0; j < event_count; j++ )
   {
@@ -188,10 +186,6 @@ int process ( jack_nframes_t nframes, void *arg )
         }
       }
     }
-
-    // MIDI through
-    jack_midi_data_t* midi_out_buffer = jack_midi_event_reserve ( through_midi, in_event.time, in_event.size );
-    std::memcpy ( midi_out_buffer, in_event.buffer, in_event.size );
   }
 
   if ( midi_send_cmd >= 0 )
@@ -229,7 +223,6 @@ int main ( int argc, char *argv[] )
   jack_client_t* client = jack_client_open   ( "EdrumulusGUI", JackNullOption, nullptr );
   input_port            = jack_port_register ( client, "MIDI_in",      JACK_DEFAULT_MIDI_TYPE, JackPortIsInput,  0 );
   output_port           = jack_port_register ( client, "MIDI_out",     JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0 );
-  through_port          = jack_port_register ( client, "MIDI_through", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0 );
   jack_set_process_callback ( client, process, nullptr );
   jack_activate             ( client );
   jack_connect              ( client, "ttymidi:MIDI_in",       "EdrumulusGUI:MIDI_in" ); // ESP32
@@ -240,10 +233,6 @@ int main ( int argc, char *argv[] )
   {
     jack_connect ( client, "EdrumulusGUI:MIDI_out", teensy_out[0] );          // Teensy
     jack_connect ( client, teensy_in[0],            "EdrumulusGUI:MIDI_in" ); // Teensy
-  }
-  if ( argc == 2 )
-  {
-    jack_connect ( client, "EdrumulusGUI:MIDI_through", argv[1] );
   }
 
   // initial pad selection for retrieving Edrumulus parameters for current selected pad
@@ -311,7 +300,6 @@ int main ( int argc, char *argv[] )
   jack_deactivate      ( client );
   jack_port_unregister ( client, input_port );
   jack_port_unregister ( client, output_port );
-  jack_port_unregister ( client, through_port );
   jack_client_close    ( client );
   return EXIT_SUCCESS;
 }

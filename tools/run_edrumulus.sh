@@ -176,13 +176,12 @@ fi
 
 jack_connect $KITJACKPORTLEFT system:playback_1
 jack_connect $KITJACKPORTRIGHT system:playback_2
-
+jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
 
 # either use direct MIDI connection or through EdrumulusGUI
 if [[ -v is_gui ]]; then
-  ./EdrumulusGUI DrumGizmo:drumgizmo_midiin
+  ./EdrumulusGUI
 elif [[ -v is_jamulus ]]; then
-  jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
   jack_disconnect $KITJACKPORTLEFT system:playback_1
   jack_disconnect $KITJACKPORTRIGHT system:playback_2
   if [ -z "$2" ]; then
@@ -196,7 +195,6 @@ elif [[ -v is_jamulus ]]; then
   echo "###---------- PRESS ANY KEY TO TERMINATE THE EDRUMULUS/JAMULUS SESSION ---------###"
   read -n 1 -s -r -p ""
 else
-  jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
   if [[ -v is_lcdgui ]]; then
     ./lcd_gui.py
   else
