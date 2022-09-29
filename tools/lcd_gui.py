@@ -112,23 +112,19 @@ def update_trigger_settings_menu(button_name):
 
   if (button_name == 'right') and (database [database_index] < settings_tab [selected_menu_item][2]):
     database [database_index] += 1
-    midi_send_val = database [database_index]; # send value to Edrumulus
-    midi_send_cmd = database_index;            # send value to Edrumulus
+    (midi_send_cmd, midi_send_val) = (database_index, database [database_index]); # send value to Edrumulus
 
   if (button_name == 'left') and (database [database_index] > 0):
     database [database_index] -= 1
-    midi_send_val = database [database_index]; # send value to Edrumulus
-    midi_send_cmd = database_index;            # send value to Edrumulus
+    (midi_send_cmd, midi_send_val) = (database_index, database [database_index]); # send value to Edrumulus
 
   if (button_name == 'OK') and (selected_pad < 8):
     selected_pad += 1
-    midi_send_val = selected_pad;
-    midi_send_cmd = 108;
+    (midi_send_cmd, midi_send_val) = (108, selected_pad); # send value to Edrumulus
 
   if (button_name == 'back') and (selected_pad > 0):
     selected_pad -= 1
-    midi_send_val = selected_pad;
-    midi_send_cmd = 108;
+    (midi_send_cmd, midi_send_val) = (108, selected_pad); # send value to Edrumulus
 
   update_lcd()
 
@@ -154,11 +150,34 @@ def store_settings():
   f = open("settings.txt", "w")
   for (pad_index, pad) in enumerate(enum_pad_names):
     port_out.write_midi_event(0, (185, 108, pad_index))
-    time.sleep(0.05)
+    time.sleep(0.05) # should be enough time to transfer all pad parameters
     for (param, midi_id, value_range) in settings_tab:
       database_index = settings_tab[selected_menu_item][1]
       database[midi_id]
-      f.write("%d, %d, %d\n" % (pad_index, midi_id, database[midi_id]))
+      f.write("%d,%d,%d\n" % (pad_index, midi_id, database[midi_id]))
+  f.close()
+
+
+def load_settings():
+  global midi_send_cmd, midi_send_val
+  f = open("settings.txt", "r")
+  selected_pad = -1 # initialize with illegal index
+  while True:
+    line = f.readline()
+    if len(line) == 0:
+      break
+
+    (pad, command, value) = line.replace('\n', '').split(',')
+
+    if selected_pad != int(pad):
+      selected_pad = int(pad)
+      (midi_send_cmd, midi_send_val) = (108, selected_pad); # send value to Edrumulus
+      while midi_send_cmd >= 0:
+        time.sleep(0.01)
+
+    (midi_send_cmd, midi_send_val) = (int(command), int(value)); # send value to Edrumulus
+    while midi_send_cmd >= 0:
+      time.sleep(0.01)
   f.close()
 
 
@@ -208,13 +227,14 @@ with client:
 
   port_in.connect('ttymidi:MIDI_in')
   port_out.connect('ttymidi:MIDI_out')
-  port_out.write_midi_event(0, (185, 108, selected_pad))
+  (midi_send_cmd, midi_send_val) = (108, selected_pad);
   time.sleep(1)
   update_lcd()
-  
+
   # TEST
   #store_settings()
-  
+  #load_settings()
+
   input()
   lcd.close()
 
