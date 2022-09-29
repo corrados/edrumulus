@@ -137,7 +137,7 @@ def update_lcd():
   global lcd, settings_tab, selected_menu_item, database, selected_pad
   lcd.clear()
   lcd.cursor_pos = (0, 0)
-  lcd.write_string("%s:%s" % (enum_pad_names [selected_pad], settings_tab[selected_menu_item][0]))
+  lcd.write_string("%s:%s" % (enum_pad_names [selected_pad], settings_tab[selected_menu_item] [0]))
 
   if selected_menu_item == 0:   # enum_pad_types
     lcd.cursor_pos = (1, 3)
@@ -148,6 +148,18 @@ def update_lcd():
   else:                         # use a number
     lcd.cursor_pos = (1, 6)
     lcd.write_string("<%d>" % database [settings_tab [selected_menu_item][1]])
+
+
+def store_settings():
+  f = open("settings.txt", "w")
+  for (pad_index, pad) in enumerate(enum_pad_names):
+    port_out.write_midi_event(0, (185, 108, pad_index))
+    time.sleep(0.05)
+    for (param, midi_id, value_range) in settings_tab:
+      database_index = settings_tab[selected_menu_item][1]
+      database[midi_id]
+      f.write("%d, %d, %d\n" % (pad_index, midi_id, database[midi_id]))
+  f.close()
 
 
 @client.set_process_callback
@@ -199,6 +211,10 @@ with client:
   port_out.write_midi_event(0, (185, 108, selected_pad))
   time.sleep(1)
   update_lcd()
+  
+  # TEST
+  #store_settings()
+  
   input()
   lcd.close()
 
