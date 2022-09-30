@@ -51,6 +51,7 @@ button_name = {25: 'back', 11: 'OK', 8: 'left', 7: 'down', 12: 'up', 13: 'right'
 database           = [0] * 128
 selected_menu_item = 0
 selected_pad       = 0
+is_load_settings   = False
 
 # init jack
 client                 = jack.Client('edrumulus_front_panel')
@@ -95,16 +96,16 @@ def on_button_pressed(button_name):
 
 
 def update_trigger_settings_menu(button_name):
-  global selected_menu_item, selected_pad, lcd, database, midi_send_val, midi_send_cmd
+  global selected_menu_item, selected_pad, database
   database_index = settings_tab[selected_menu_item][1]
 
-  if button_name == 'up':
+  if button_name == 'down':
     if selected_menu_item == 0:
       selected_menu_item = 11
     else:
       selected_menu_item -= 1
 
-  if button_name == 'down':
+  if button_name == 'up':
     if selected_menu_item == 11:
       selected_menu_item = 0
     else:
@@ -112,25 +113,24 @@ def update_trigger_settings_menu(button_name):
 
   if (button_name == 'right') and (database [database_index] < settings_tab [selected_menu_item][2]):
     database [database_index] += 1
-    (midi_send_cmd, midi_send_val) = (database_index, database [database_index]); # send value to Edrumulus
+    send_value_to_edrumulus(database_index, database [database_index])
 
   if (button_name == 'left') and (database [database_index] > 0):
     database [database_index] -= 1
-    (midi_send_cmd, midi_send_val) = (database_index, database [database_index]); # send value to Edrumulus
+    send_value_to_edrumulus(database_index, database [database_index])
 
   if (button_name == 'OK') and (selected_pad < 8):
     selected_pad += 1
-    (midi_send_cmd, midi_send_val) = (108, selected_pad); # send value to Edrumulus
+    send_value_to_edrumulus(108, selected_pad)
 
   if (button_name == 'back') and (selected_pad > 0):
     selected_pad -= 1
-    (midi_send_cmd, midi_send_val) = (108, selected_pad); # send value to Edrumulus
+    send_value_to_edrumulus(108, selected_pad)
 
   update_lcd()
 
 
 def update_lcd():
-  global lcd, settings_tab, selected_menu_item, database, selected_pad
   lcd.clear()
   lcd.cursor_pos = (0, 0)
   lcd.write_string("%s:%s" % (enum_pad_names [selected_pad], settings_tab[selected_menu_item] [0]))
@@ -147,43 +147,44 @@ def update_lcd():
 
 
 def store_settings():
-  f = open("settings.txt", "w")
-  for (pad_index, pad) in enumerate(enum_pad_names):
-    port_out.write_midi_event(0, (185, 108, pad_index))
-    time.sleep(0.05) # should be enough time to transfer all pad parameters
-    for (param, midi_id, value_range) in settings_tab:
-      database_index = settings_tab[selected_menu_item][1]
-      database[midi_id]
-      f.write("%d,%d,%d\n" % (pad_index, midi_id, database[midi_id]))
-  f.close()
+  with open("settings.txt", "w") as f:
+    for (pad_index, pad) in enumerate(enum_pad_names):
+      send_value_to_edrumulus(108, pad_index)
+      time.sleep(0.2) # should be enough time to transfer all pad parameters
+      for (param, midi_id, value_range) in settings_tab:
+        f.write("%d,%d,%d\n" % (pad_index, midi_id, database[midi_id]))
 
 
 def load_settings():
+  global database, is_load_settings
+  is_load_settings = True # to update database of current command
+  with open("settings.txt", "r") as f:
+    cur_pad = -1 # initialize with illegal index
+    while True:
+      line = f.readline()
+      if len(line) == 0:
+        break
+      (pad, command, value) = line.replace('\n', '').split(',')
+      if cur_pad != int(pad):
+        database = [0] * 128 # reset database
+        cur_pad  = int(pad)
+        send_value_to_edrumulus(108, cur_pad)
+      send_value_to_edrumulus(int(command), int(value))
+      while database[int(command)] != int(value): # wait for parameter to be applied in Edrumulus
+        time.sleep(0.001)
+  is_load_settings = False # we are done now
+
+
+def send_value_to_edrumulus(command, value):
   global midi_send_cmd, midi_send_val
-  f = open("settings.txt", "r")
-  selected_pad = -1 # initialize with illegal index
-  while True:
-    line = f.readline()
-    if len(line) == 0:
-      break
-
-    (pad, command, value) = line.replace('\n', '').split(',')
-
-    if selected_pad != int(pad):
-      selected_pad = int(pad)
-      (midi_send_cmd, midi_send_val) = (108, selected_pad); # send value to Edrumulus
-      while midi_send_cmd >= 0:
-        time.sleep(0.01)
-
-    (midi_send_cmd, midi_send_val) = (int(command), int(value)); # send value to Edrumulus
-    while midi_send_cmd >= 0:
-      time.sleep(0.01)
-  f.close()
+  (midi_send_cmd, midi_send_val) = (command, value);
+  while midi_send_cmd >= 0:
+    time.sleep(0.001)
 
 
 @client.set_process_callback
 def process(frames):
-  global client, port_in, port_out, database, midi_send_val, midi_send_cmd, midi_previous_send_cmd
+  global database, midi_send_val, midi_send_cmd, midi_previous_send_cmd
   port_out.clear_buffer()
   for offset, data in port_in.incoming_midi_events():
     if len(data) == 3:
@@ -191,7 +192,7 @@ def process(frames):
         key   = int.from_bytes(data[1], "big")
         value = int.from_bytes(data[2], "big")
         # do not update command which was just changed to avoid the value jumps back to old value
-        if midi_previous_send_cmd != key:
+        if (midi_previous_send_cmd != key) or is_load_settings:
           database[key] = value
 
   if midi_send_cmd >= 0:
@@ -203,7 +204,21 @@ def process(frames):
 with client:
   print('press Return to quit')
 
-  # init buttons
+  # startup message on LCD
+  lcd.clear()
+  lcd.cursor_pos = (0, 3)
+  lcd.write_string('Edrumulus')
+  lcd.cursor_pos = (1, 2)
+  lcd.write_string('Prototype 5')
+
+  port_in.connect('ttymidi:MIDI_in')
+  port_out.connect('ttymidi:MIDI_out')
+  load_settings()
+  send_value_to_edrumulus(108, selected_pad) # to query all Edrumulus current parameters
+  time.sleep(1)
+  update_lcd()
+
+  # init buttons (enables buttons AFTER startup only)
   GPIO.setmode(GPIO.BCM)
   GPIO.setup(25, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
   GPIO.add_event_detect(25, GPIO.BOTH, callback = button_handler, bouncetime = 20)
@@ -218,23 +233,7 @@ with client:
   GPIO.setup(13, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
   GPIO.add_event_detect(13, GPIO.BOTH, callback = button_handler, bouncetime = 20)
 
-  # startup message on LCD
-  lcd.clear()
-  lcd.cursor_pos = (0, 3)
-  lcd.write_string('Edrumulus')
-  lcd.cursor_pos = (1, 2)
-  lcd.write_string('Prototype 5')
-
-  port_in.connect('ttymidi:MIDI_in')
-  port_out.connect('ttymidi:MIDI_out')
-  (midi_send_cmd, midi_send_val) = (108, selected_pad);
-  time.sleep(1)
-  update_lcd()
-
-  # TEST
-  #store_settings()
-  #load_settings()
-
   input()
+  store_settings()
   lcd.close()
 
