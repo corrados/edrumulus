@@ -100,15 +100,12 @@ def update_trigger_settings_menu(button_name):
   database_index = settings_tab[selected_menu_item][1]
 
   if button_name == 'down':
-    if selected_menu_item == 0:
-      selected_menu_item = 11
-    else:
-      selected_menu_item -= 1
+
+      if selected_menu_item > 0:
+        selected_menu_item -= 1
 
   if button_name == 'up':
-    if selected_menu_item == 11:
-      selected_menu_item = 0
-    else:
+    if selected_menu_item < 11:
       selected_menu_item += 1
 
   if (button_name == 'right') and (database [database_index] < settings_tab [selected_menu_item][2]):
