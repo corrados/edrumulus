@@ -39,6 +39,10 @@ Fs = 8000; % Hz
 % x        = round(x / quant);
 % x        = x / max(abs(x)) * max_val;
 
+% TEST
+x_org = x;
+x = x_org(:, 1);
+
 % calculate peak detection, positional sensing and rim shot detection
 [x, x_filt, x_filt_delay] = filter_input_signal(x, Fs);
 [all_peaks, all_first_peaks, all_hot_spots, all_peaks_filt, scan_region, mask_region, pre_scan_region, hot_spot_region, decay_all, decay_est_rng, x_filt_decay] = ...
@@ -62,6 +66,36 @@ plot(all_peaks(~is_rim_shot), rim_metric_db(~is_rim_shot) + 40, '*');
 plot([1, length(x_filt)], [pad.threshold_db, pad.threshold_db], '--');
 title('Green marker: level; Black marker: position; Blue marker: first peak'); xlabel('samples'); ylabel('dB');
 ylim([-10, 90]);
+
+
+% TEST
+x1 = x_org(:, 2);
+[x, x_filt1, x_filt_delay1] = filter_input_signal(x1, Fs);
+[all_peaks1, all_first_peaks1, all_hot_spots1, all_peaks_filt1, scan_region1, mask_region1, pre_scan_region1, hot_spot_region1, decay_all1, decay_est_rng1, x_filt_decay1] = ...
+  calc_peak_detection(x1(:, 1), x_filt1, x_filt_delay1, Fs);
+[is_rim_shot, rim_metric_db] = detect_rim_shot(x1, all_peaks1, Fs);
+pos_sense_metric             = calc_pos_sense_metric(x1(:, 1), Fs, all_first_peaks1);
+figure
+plot(10 * log10([mask_region1, scan_region1, pre_scan_region1, decay_est_rng1, hot_spot_region1]), 'LineWidth', 20);
+grid on; hold on; set(gca, 'ColorOrderIndex', 1); % reset color order so that x1 trace is blue and so on
+plot(10 * log10([x1(:, 1) .^ 2, x_filt1, decay_all1, x_filt_decay1]));
+plot(all_first_peaks1, 10 * log10(x1(all_first_peaks1, 1) .^ 2), 'b*');
+plot(all_hot_spots1, 10 * log10(x1(all_hot_spots1, 1) .^ 2) - pad.hot_spot_attenuation_db, 'c*', "markersize", 15);
+plot(all_peaks1, 10 * log10(x1(all_peaks1, 1) .^ 2), 'g*');
+plot(all_peaks_filt1, 10 * log10(x_filt1(all_peaks_filt1)), 'y*');
+plot(all_first_peaks1, pos_sense_metric + 40, 'k*');
+plot(all_peaks1, rim_metric_db + 40, '*-');
+plot(all_peaks1(is_rim_shot), rim_metric_db(is_rim_shot) + 40, '*');
+plot(all_peaks1(~is_rim_shot), rim_metric_db(~is_rim_shot) + 40, '*');
+plot([1, length(x_filt1)], [pad.threshold_db, pad.threshold_db], '--');
+title('Green marker: level; Black marker: position; Blue marker: first peak'); xlabel('samples'); ylabel('dB');
+ylim([-10, 90]);
+
+figure;
+plot(all_first_peaks - all_first_peaks1, '*'); grid on
+ylabel('difference in samples')
+xlabel('detected peak index')
+ax = axis; axis([ax(1), 82, ax(3), ax(4)]);
 
 end
 
