@@ -15,7 +15,7 @@
 % 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 %*******************************************************************************
 
-function [vfP] = find_P(fEps, fLen, vfcD)
+function [vfP] = find_position_3sensors(fEps, fLen, vfcD)
 %  vfcD = [fD21, fD31]=[fL2-fL1, fL3-fL1]
 
   global  mfcP
