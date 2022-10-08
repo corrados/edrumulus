@@ -19,7 +19,16 @@
 
 import time
 import jack
-import pygame
+import matplotlib
+# ['GTK3Agg', 'GTK3Cairo', 'GTK4Agg', 'GTK4Cairo', 'MacOSX', 'nbAgg', 'QtAgg', 'QtCairo', 'Qt5Agg', 'Qt5Cairo', 'TkAgg', 
+# 'TkCairo', 'WebAgg', 'WX', 'WXAgg', 'WXCairo', 'agg', 'cairo', 'pdf', 'pgf', 'ps', 'svg', 'template']
+
+#matplotlib.use('QtAgg')
+#from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
+import matplotlib.markers as mkr
+import numpy as np
+#%matplotlib notebook
 
 
 # initializations
@@ -32,39 +41,64 @@ midi_send_val          = 0
 new_data               = False
 key                    = 0
 value                  = 0
+midi_values            = [0] * 100
 
 
 @client.set_process_callback
 def process(frames):
-  global key, value, new_data
+  global key, value, new_data, midi_values
   for offset, data in port_in.incoming_midi_events():
     if len(data) == 3:
       if int.from_bytes(data[0], "big") & 0xF0 == 0x90:
         key   = int.from_bytes(data[1], "big")
         value = int.from_bytes(data[2], "big")
-        new_data = True
-        while new_data:
-          time.sleep(0.001)
+        #midi_values.put(value)
+
+        midi_values.pop(0)
+        midi_values.append(value)
+
+        #new_data = True
+        #while new_data:
+        #  time.sleep(0.001)
 
 
 with client:
   print('press Return to quit')
   port_in.connect('ttymidi:MIDI_in')
   port_out.connect('ttymidi:MIDI_out')
-  
-  pygame.init()
-  screen = pygame.display.set_mode((640, 480))
-  pygame.display.set_caption("Edrumulus MIDI Analyzer")
-  screen.fill((255, 255, 255))
 
-  pygame.draw.line(screen, (0, 0, 0), (10, 10),  (10, 400))
-  pygame.draw.line(screen, (0, 0, 0), (10, 400), (600, 400))
-  pygame.display.flip()
+  #an = np.linspace(0, 2 * np.pi, 100)
+  #plt.plot(3 * np.cos(an), 3 * np.sin(an))
+  #plt.plot((1, 2), marker="o")
+  #plt.scatter([1, 1], [1, -2])
+  #plt.show(block=False)
 
-  while True:
-    if new_data:
-      pygame.draw.circle(screen, (0, 0, 255), (100, 200), value * 10, 1)
-      pygame.display.flip() 
-      new_data = False
-    time.sleep(0.01)
+  test = [1, 2, 3, 4]
+  print(test)
+  print(test.pop(0))
+  print(test)
+  test.append(22)
+  print(test)
+
+  for i in range(0, 50):
+    print(midi_values)
+    plt.ion()
+    print(plt.isinteractive())
+    print(plt.get_backend())
+    plt.clf()
+    plt.plot(midi_values)
+    #plt.draw()
+    plt.show()
+    plt.pause(0.5)
+#    time.sleep(1)
+
+  #while True:
+  #  if new_data:
+  #    # TODO
+  #    new_data = False
+  #    #print(midi_values)
+  #  time.sleep(0.01)
+
+  # TEST
+  #input()
 
