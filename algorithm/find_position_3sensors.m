@@ -65,7 +65,13 @@ function vfP = find_position(fEps, sensor_pos_norm, fLen, vfcD)
     %disp(sprintf('mydist([0,0], vfVal) %10.8f', fDelta))
 
     if (fDelta < fEps) || (iCount >= 20)
+
       bIterate = false;
+
+      if iCount >= 20
+        disp(['convergence problem: ' num2str(vfQ1)])
+      end
+
     end
 
     vfQ0   = vfQ1;
