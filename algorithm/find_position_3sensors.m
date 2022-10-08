@@ -15,7 +15,7 @@
 % 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 %*******************************************************************************
 
-function [vfP] = find_position_3sensors(fEps, fLen, vfcD)
+function [vfP] = find_P(fEps, fLen, vfcD)
 %  vfcD = [fD21, fD31]=[fL2-fL1, fL3-fL1]
 
   global  mfcP
@@ -34,8 +34,10 @@ function [vfP] = find_position_3sensors(fEps, fLen, vfcD)
     vfQ1      = vfQ0 - vfVal*mfInvDiff;
     
     
-    fDelta = mydist(vfQ0, vfQ1); 
-    disp(sprintf('mydist(vfQ0, vfQ1) %10.8f', fDelta))
+%    fDelta = mydist(vfQ0, vfQ1); 
+%    disp(sprintf('mydist(vfQ0, vfQ1) %10.8f', fDelta))
+    fDelta = mydist([0,0], vfVal);
+    disp(sprintf('mydist([0,0], vfVal) %10.8f', fDelta))
     if (fDelta < fEps) break; end
     vfQ0 = vfQ1;
   end 
@@ -51,7 +53,7 @@ end
 function [vfVal, mfDiff] = Fcalc(vfQ, vfcD)
   global mfcP
   
-  vfDist = [mydist(vfQ, mfcP(1,:)), mydist(vfQ, mfcP(2,:)) , mydist(vfQ, mfcP(3,:))];
+  vfDist = [mydist(vfQ, mfcP(1,:)), mydist(vfQ, mfcP(2,:)) , mydist(vfQ, mfcP(3,:))];     % =:[L1,L2,L3]
   vfVal  = [vfDist(2)-vfDist(1), vfDist(3)-vfDist(1)] - vfcD;
   mfDiff = [(vfQ-mfcP(2,:))/vfDist(2) - (vfQ-mfcP(1,:))/vfDist(1);
             (vfQ-mfcP(3,:))/vfDist(3) - (vfQ-mfcP(1,:))/vfDist(1) ];
