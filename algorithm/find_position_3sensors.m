@@ -20,7 +20,7 @@ function [vfP] = find_P(fEps, fLen, vfcD)
 
   global  mfcP
 
-  mfcP =  fLen*[0,-0.5; 0.5, 0; 0, sqrt(3)/2];
+  mfcP =  fLen*[-0.5, 0; 0.5, 0; 0, sqrt(3)/2];
   
   vfcP0 = [0, sqrt(3)/4]*fLen;
 
