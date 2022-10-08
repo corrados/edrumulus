@@ -15,50 +15,65 @@
 % 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 %*******************************************************************************
 
-function [vfP] = find_position_3sensors(fEps, fLen, vfcD)
+function find_position_3sensors()
+
+  sensor_pos = [-0.5, 0; 0.5, 0; 0, sqrt(3) / 2];
+
+  vfP = find_position_3sensors_intern(0.1, sensor_pos, 20, [0.1, 0.1]);
+
+vfP
+
+end
+
+
+function vfP = find_position_3sensors_intern(fEps, sensor_pos, fLen, vfcD)
 %  vfcD = [fD21, fD31]=[fL2-fL1, fL3-fL1]
 
-  global  mfcP
+  mfcP = fLen * sensor_pos;
 
-  mfcP =  fLen*[-0.5, 0; 0.5, 0; 0, sqrt(3)/2];
-  
-  vfcP0 = [0, sqrt(3)/4]*fLen;
+  vfcP0 = [0, sqrt(3) / 4] * fLen;
 
-  vfQ0 = vfcP0;
+  vfQ0     = vfcP0;
   bIterate = true;
-  while(bIterate) 
-    [vfVal, mfDiff] = Fcalc(vfQ0, vfcD);
-    fDet      =  mfDiff(1,1)*mfDiff(2,2)-mfDiff(1,2)*mfDiff(2,1);
-    mfInvDiff = [ mfDiff(2,2), -mfDiff(1,2); ...
-                 -mfDiff(2,1),  mfDiff(1,1)]/fDet;
-    vfQ1      = vfQ0 - vfVal*mfInvDiff;
-    
-    
-%    fDelta = mydist(vfQ0, vfQ1); 
-%    disp(sprintf('mydist(vfQ0, vfQ1) %10.8f', fDelta))
-    fDelta = mydist([0,0], vfVal);
-    disp(sprintf('mydist([0,0], vfVal) %10.8f', fDelta))
-    if (fDelta < fEps) break; end
+
+  while bIterate
+
+    [vfVal, mfDiff] = Fcalc(mfcP, vfQ0, vfcD);
+
+    fDet      =  mfDiff(1, 1) * mfDiff(2, 2) - mfDiff(1, 2) * mfDiff(2, 1);
+    mfInvDiff = [ mfDiff(2, 2), -mfDiff(1, 2); ...
+                 -mfDiff(2, 1),  mfDiff(1, 1)] / fDet;
+
+    vfQ1   = vfQ0 - vfVal * mfInvDiff;
+    fDelta = mydist([0, 0], vfVal);
+
+%    disp(sprintf('mydist([0,0], vfVal) %10.8f', fDelta))
+
+    if (fDelta < fEps)
+      break;
+    end
+
     vfQ0 = vfQ1;
-  end 
+
+  end
+
   vfP = vfQ1;
+
 end
 
 
-function [fDist] = mydist(vP,vQ)
-  vfDiff = vP-vQ;
-  fDist  = sqrt(vfDiff*vfDiff'); 
+function fDist = mydist(vP, vQ)
+
+  vfDiff = vP - vQ;
+  fDist  = sqrt(vfDiff * vfDiff');
+
 end 
 
-function [vfVal, mfDiff] = Fcalc(vfQ, vfcD)
-  global mfcP
+function [vfVal, mfDiff] = Fcalc(mfcP, vfQ, vfcD)
   
-  vfDist = [mydist(vfQ, mfcP(1,:)), mydist(vfQ, mfcP(2,:)) , mydist(vfQ, mfcP(3,:))];     % =:[L1,L2,L3]
-  vfVal  = [vfDist(2)-vfDist(1), vfDist(3)-vfDist(1)] - vfcD;
-  mfDiff = [(vfQ-mfcP(2,:))/vfDist(2) - (vfQ-mfcP(1,:))/vfDist(1);
-            (vfQ-mfcP(3,:))/vfDist(3) - (vfQ-mfcP(1,:))/vfDist(1) ];
+  vfDist = [mydist(vfQ, mfcP(1, :)), mydist(vfQ, mfcP(2, :)) , mydist(vfQ, mfcP(3, :))]; % =:[L1,L2,L3]
+  vfVal  = [vfDist(2) - vfDist(1), vfDist(3) - vfDist(1)] - vfcD;
+  mfDiff = [(vfQ-mfcP(2, :)) / vfDist(2) - (vfQ - mfcP(1, :)) / vfDist(1);
+            (vfQ-mfcP(3, :)) / vfDist(3) - (vfQ - mfcP(1, :)) / vfDist(1)];
 
-%  vfVal  = [ mydist(vfQ, mfcP(2,:)) - mydist(vfQ, mfcP(1,:)); ...
-%            mydist(vfQ, mfcP(3,:)) - mydist(vfQ, mfcP(1,:))] - vfcD;
 end
-
