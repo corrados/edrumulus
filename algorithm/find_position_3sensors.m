@@ -23,17 +23,16 @@ function find_position_3sensors()
   fLen            = 20;
 
 % TEST
-range = [0.1:0.1:1.5];
-%range = -[0.1:0.1:1.5];
+range = [-1.5:0.1:1.5];
 
   for d1 = range
 
 % TEST
 d2 = 0.1;%d1;
 
-    vfP = find_position_3sensors_intern(0.1, sensor_pos_norm, fLen, fLen * [d1, d2]);
+    vfP = find_position(0.1, sensor_pos_norm, fLen, fLen * [d1, d2]);
     plot(fLen * sensor_pos_norm(:, 1), fLen * sensor_pos_norm(:, 2), 'rx', 'MarkerSize', 20,'LineWidth', 4);
-    axis(fLen * [-0.8, 0.8, -0.5, 1.3]); hold on;
+    axis(fLen * [-0.8, 0.8, -0.5, 1.3]); grid on; hold on;
     plot(vfP(1), vfP(2), 'ko', 'MarkerSize', 10,'LineWidth', 4)
 
   end
@@ -41,7 +40,7 @@ d2 = 0.1;%d1;
 end
 
 
-function vfP = find_position_3sensors_intern(fEps, sensor_pos_norm, fLen, vfcD)
+function vfP = find_position(fEps, sensor_pos_norm, fLen, vfcD)
 %  vfcD = [fD21, fD31]=[fL2-fL1, fL3-fL1]
 
   mfcP = fLen * sensor_pos_norm;
