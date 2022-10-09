@@ -60,6 +60,8 @@ public:
 
   static void get_prototype_pins ( int** analog_pins,
                                    int** analog_pins_rimshot,
+                                   int** analog_pins_second,
+                                   int** analog_pins_third,
                                    int*  number_pins,
                                    int*  status_LED_pin );
 
@@ -125,6 +127,8 @@ public:
 
   static void get_prototype_pins ( int** analog_pins,
                                    int** analog_pins_rimshot,
+                                   int** analog_pins_second,
+                                   int** analog_pins_third,
                                    int*  number_pins,
                                    int*  status_LED_pin );
 

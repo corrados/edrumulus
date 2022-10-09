@@ -47,7 +47,9 @@ Edrumulus::Edrumulus() :
 
 void Edrumulus::setup ( const int  conf_num_pads,
                         const int* conf_analog_pins,
-                        const int* conf_analog_pins_rim_shot )
+                        const int* conf_analog_pins_rim_shot,
+                        const int* conf_analog_pins_second,
+                        const int* conf_analog_pins_third )
 {
   number_pads = min ( conf_num_pads, MAX_NUM_PADS );
 

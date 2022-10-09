@@ -59,12 +59,21 @@ void setup()
   // get the pin-to-pad assignments
   int* analog_pins         = nullptr;
   int* analog_pins_rimshot = nullptr;
+  int* analog_pins_second  = nullptr;
+  int* analog_pins_third   = nullptr;
   Edrumulus_hardware::get_prototype_pins ( &analog_pins,
                                            &analog_pins_rimshot,
+                                           &analog_pins_second,
+                                           &analog_pins_third,
                                            &number_pads,
                                            &status_LED_pin );
 
-  edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
+  edrumulus.setup ( number_pads,
+                    analog_pins,
+                    analog_pins_rimshot,
+                    analog_pins_second,
+                    analog_pins_third );
+
   read_settings();
 
   // initialize GPIO port for status LED

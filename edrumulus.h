@@ -68,7 +68,9 @@ public:
   // call this function during the Setup function of the main program
   void setup ( const int  conf_num_pads,
                const int* conf_analog_pins,
-               const int* conf_analog_pins_rim_shot );
+               const int* conf_analog_pins_rim_shot,
+               const int* conf_analog_pins_second,
+               const int* conf_analog_pins_third );
 
   // call the process function during the main loop
   void process();
