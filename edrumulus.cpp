@@ -58,7 +58,9 @@ void Edrumulus::setup ( const int  conf_num_pads,
     // set the pad GIOP pin numbers
     analog_pin[i][0] = conf_analog_pins[i];
     analog_pin[i][1] = conf_analog_pins_rim_shot[i];
-    number_inputs[i] = conf_analog_pins_rim_shot[i] >= 0 ? 2 : 1;
+    analog_pin[i][2] = conf_analog_pins_second[i];
+    analog_pin[i][3] = conf_analog_pins_third[i];
+    number_inputs[i] = conf_analog_pins_rim_shot[i] >= 0 ? ( conf_analog_pins_second[i] >= 0 ? 4 : 2 ) : 1;
 
     // setup the pad
     pad[i].setup ( Fs, number_inputs[i] );

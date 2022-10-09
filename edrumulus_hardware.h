@@ -31,7 +31,7 @@ enum Espikestate
 };
 
 #define MAX_NUM_PADS         12  // a maximum of 12 pads are supported
-#define MAX_NUM_PAD_INPUTS   2   // a maximum of 2 sensors per pad is supported
+#define MAX_NUM_PAD_INPUTS   4   // a maximum of 4 sensors per pad is supported
 #define MAX_EEPROM_SIZE      512 // bytes (Teensy 4.0: max 1024 bytes)
 #define MAX_NUM_SET_PER_PAD  30  // maximum number of settings which can be stored per pad
 
