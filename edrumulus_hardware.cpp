@@ -230,8 +230,8 @@ void Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
       // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3      
       static int analog_pins5[]         = { 12,     2,     33,        4,         34,     15,    35,    27,    32 };
       static int analog_pins_rimshot5[] = { 14,    -1,     26,       -1,         36,     13,    25,    -1,    -1 };
-      static int analog_pins_second5[]  = { -1,    -1,    -1,        -1,         -1,     -1,    -1,    -1,    -1 };
-      static int analog_pins_third5[]   = { -1,    -1,    -1,        -1,         -1,     -1,    -1,    -1,    -1 };
+      static int analog_pins_second5[]  = { -1,    -1,     -1,       -1,         -1,     -1,    -1,    -1,    -1 };
+      static int analog_pins_third5[]   = { -1,    -1,     -1,       -1,         -1,     -1,    -1,    -1,    -1 };
       *analog_pins         = analog_pins5;
       *analog_pins_rimshot = analog_pins_rimshot5;
       *analog_pins_second  = analog_pins_second5;
@@ -246,8 +246,8 @@ void Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
       // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3      
       static int analog_pins6[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    15 };
       static int analog_pins_rimshot6[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1 };
-      static int analog_pins_second6[]  = { -1,    -1,    -1,        -1,         -1,     -1,    -1,    -1,    -1 };
-      static int analog_pins_third6[]   = { -1,    -1,    -1,        -1,         -1,     -1,    -1,    -1,    -1 };
+      static int analog_pins_second6[]  = { -1,    -1,     -1,       -1,         -1,     -1,    -1,    -1,    -1 };
+      static int analog_pins_third6[]   = { -1,    -1,     -1,       -1,         -1,     -1,    -1,    -1,    -1 };
       *analog_pins         = analog_pins6;
       *analog_pins_rimshot = analog_pins_rimshot6;
       *analog_pins_second  = analog_pins_second6;
@@ -262,8 +262,8 @@ void Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
   // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3  
   static int analog_pins4[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    15 };
   static int analog_pins_rimshot4[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1 };
-  static int analog_pins_second4[]  = { -1,    -1,    -1,        -1,         -1,     -1,    -1,    -1,    -1 };
-  static int analog_pins_third4[]   = { -1,    -1,    -1,        -1,         -1,     -1,    -1,    -1,    -1 };
+  static int analog_pins_second4[]  = { -1,    -1,     -1,       -1,         -1,     -1,    -1,    -1,    -1 };
+  static int analog_pins_third4[]   = { -1,    -1,     -1,       -1,         -1,     -1,    -1,    -1,    -1 };
   *analog_pins         = analog_pins4;
   *analog_pins_rimshot = analog_pins_rimshot4;
   *analog_pins_second  = analog_pins_second4;
