@@ -95,7 +95,7 @@ figure;
 plot(all_first_peaks - all_first_peaks1, '*'); grid on
 ylabel('difference in samples')
 xlabel('detected peak index')
-ax = axis; axis([ax(1), 82, ax(3), ax(4)]);
+%ax = axis; axis([ax(1), 82, ax(3), ax(4)]);
 
 end
 
