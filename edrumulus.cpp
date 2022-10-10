@@ -299,6 +299,12 @@ void Edrumulus::Pad::setup ( const int conf_Fs,
   midi_note_open     = 46;
   midi_note_open_rim = 26;
   midi_ctrl_ch       = 4; // CC4, usually used for hi-hat
+
+  // invalidate memory for individual inputs (note that setup() must only be called once)
+  for ( int i = 0; i < number_inputs; i++ )
+  {
+    v_x_sq_hist[i] = nullptr;
+  }
 }
 
 
@@ -406,7 +412,6 @@ void Edrumulus::Pad::initialize()
   x_low_hist_len        = x_sq_hist_len + lp_filt_len;
 
   // allocate and initialize memory for vectors
-  allocate_initialize ( &x_sq_hist,         x_sq_hist_len );       // memory for sqr(x) history
   allocate_initialize ( &bp_filt_hist_x,    bp_filt_len );         // band-pass filter x-signal history
   allocate_initialize ( &bp_filt_hist_y,    bp_filt_len - 1 );     // band-pass filter y-signal history
   allocate_initialize ( &rim_bp_hist_x,     bp_filt_len );         // rim band-pass filter x-signal history
@@ -421,6 +426,11 @@ void Edrumulus::Pad::initialize()
   allocate_initialize ( &x_rim_switch_hist, rim_shot_window_len ); // memory for rim switch detection
   allocate_initialize ( &ctrl_hist,         ctrl_history_len );    // memory for Hi-Hat control pad hit detection
   allocate_initialize ( &overload_hist,     overload_hist_len );   // memory for overload detection status
+
+  for ( int i = 0; i < number_inputs; i++ )
+  {
+    allocate_initialize ( &v_x_sq_hist[i],         x_sq_hist_len );       // memory for sqr(x) history
+  }
 
   mask_back_cnt           = 0;
   was_above_threshold     = false;
@@ -526,6 +536,14 @@ float Edrumulus::Pad::process_sample ( const float* input,
   const bool pos_sense_is_used  = pad_settings.pos_sense_is_used;                         // can be applied directly without calling initialize()
   const bool rim_shot_is_used   = pad_settings.rim_shot_is_used && ( number_inputs > 1 ); // can be applied directly without calling initialize()
   const bool pos_sense_inverted = pad_settings.pos_invert;                                // can be applied directly without calling initialize()
+
+
+
+// TEST a loop is needed here...
+const int in = 0;
+float* x_sq_hist = v_x_sq_hist[in];
+
+
 
   // square input signal and store in FIFO buffer
   const float x_sq = input[0] * input[0];
