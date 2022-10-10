@@ -20,13 +20,16 @@
 import time
 import jack
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+import matplotlib.patches as mpatches
 
 
 # initializations
 client      = jack.Client('edrumulus_analyze_midi')
 port_in     = client.midi_inports.register('input')
-midi_values = [0] * 100
-midi_pos    = [0] * 100
+N           = 100
+midi_values = [0] * N
+midi_pos    = [0] * N
 
 
 @client.set_process_callback
@@ -49,8 +52,12 @@ def process(frames):
 with client:
   print('close plot window to quit')
   port_in.connect('ttymidi:MIDI_in')
-  fig, (ax0, ax1) = plt.subplots(2, 1)
-  fignum          = fig.number
+  fig    = plt.figure(tight_layout=True)
+  gs     = gridspec.GridSpec(2, 2)
+  ax0    = fig.add_subplot(gs[0, :])
+  ax1    = fig.add_subplot(gs[1, 0])
+  ax2    = fig.add_subplot(gs[1, 1])
+  fignum = fig.number
   plt.ion()
 
   while True:
@@ -64,6 +71,10 @@ with client:
     ax1.plot(midi_pos)
     ax1.set_ylim(0, 127)
     ax1.grid(True)
+    ax2.cla()
+    ax2.add_patch(mpatches.Circle((0.5, 0.5), 0.41, fill=False, linewidth=2))
+    for pos in midi_pos[N - 10:]:
+      ax2.add_patch(mpatches.Circle((0.5, 0.5), pos / 127 * 0.4, fill=False, color='b'))
     plt.show()
     plt.pause(0.1)
     if not plt.fignum_exists(fignum): # if plot window is closed then quit
