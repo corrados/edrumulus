@@ -260,10 +260,17 @@ void Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
 
   // if no GPIO prototype identification is available, we assume it is Prototype 4
   // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3  
-  static int analog_pins4[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    15 };
-  static int analog_pins_rimshot4[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1 };
-  static int analog_pins_second4[]  = { -1,    -1,     -1,       -1,         -1,     -1,    -1,    -1,    -1 };
-  static int analog_pins_third4[]   = { -1,    -1,     -1,       -1,         -1,     -1,    -1,    -1,    -1 };
+  //static int analog_pins4[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    15 };
+  //static int analog_pins_rimshot4[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1 };
+  //static int analog_pins_second4[]  = { -1,    -1,     -1,       -1,         -1,     -1,    -1,    -1,    -1 };
+  //static int analog_pins_third4[]   = { -1,    -1,     -1,       -1,         -1,     -1,    -1,    -1,    -1 };
+
+// TEST
+static int analog_pins4[]         = { 36,    33,     32,       25,         34,     39,    27,    12 };
+static int analog_pins_rimshot4[] = { 35,    -1,     -1,       -1,         14,     -1,    13,    -1 };
+static int analog_pins_second4[]  = { 26,    -1,     -1,       -1,         -1,     -1,    -1,    -1 };
+static int analog_pins_third4[]   = { 15,    -1,     -1,       -1,         -1,     -1,    -1,    -1 };
+
   *analog_pins         = analog_pins4;
   *analog_pins_rimshot = analog_pins_rimshot4;
   *analog_pins_second  = analog_pins_second4;
