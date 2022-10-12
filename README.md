@@ -70,7 +70,7 @@ The algorithms are described in [this document](doc/algorithm.md).
 
 - [eXaDrums](https://exadrums.com) ([Hackaday](https://hackaday.io/project/9350-exadrums), [Source code](https://github.com/SpintroniK/libeXaDrums))
 
-- [Drumidy](https://hackaday.io/project/176712-drumidy-electronic-midi-drum-controller ([Source code](https://github.com/EvgenyD/Drumidy)). Uses a STM32 processor with 18 inputs and supports re-trigger cancellation.
+- [Drumidy](https://hackaday.io/project/176712-drumidy-electronic-midi-drum-controller) ([Source code](https://github.com/EvgenyD/Drumidy)). Uses a STM32 processor with 18 inputs and supports re-trigger cancellation.
 
 - [open e-drums](https://open-e-drums.com) ([Source code](https://github.com/RyoKosaka/HelloDrum-arduino-Library))
 
