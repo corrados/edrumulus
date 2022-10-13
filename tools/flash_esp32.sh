@@ -10,7 +10,7 @@ fi
 
 
 # install required packages ----------------------------------------------------
-pkgs='git python3-pip'
+pkgs='git python3-pip pigpio'
 if ! dpkg -s $pkgs >/dev/null 2>&1; then
   read -p "Do you want to install missing packages? " -n 1 -r
   echo

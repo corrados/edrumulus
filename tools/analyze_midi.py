@@ -22,6 +22,7 @@ import jack
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.patches as mpatches
+import matplotlib.cm as cm
 
 
 # initializations
@@ -52,6 +53,7 @@ def process(frames):
 with client:
   print('close plot window to quit')
   port_in.connect('ttymidi:MIDI_in')
+  cmap   = cm.get_cmap('YlOrRd')
   fig    = plt.figure(tight_layout=True)
   gs     = gridspec.GridSpec(2, 2)
   ax0    = fig.add_subplot(gs[0, :])
@@ -73,8 +75,8 @@ with client:
     ax1.grid(True)
     ax2.cla()
     ax2.add_patch(mpatches.Circle((0.5, 0.5), 0.41, fill=False, linewidth=2))
-    for pos in midi_pos[N - 10:]:
-      ax2.add_patch(mpatches.Circle((0.5, 0.5), pos / 127 * 0.4, fill=False, color='b'))
+    for i, pos in enumerate(midi_pos):
+      ax2.add_patch(mpatches.Circle((0.5, 0.5), pos / 127 * 0.4, fill=False, color=cmap(i / N * i / N)))
     plt.show()
     plt.pause(0.1)
     if not plt.fignum_exists(fignum): # if plot window is closed then quit
