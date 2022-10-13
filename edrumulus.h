@@ -254,24 +254,24 @@ protected:
 const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
 #endif
 
-      float* bp_filt_hist_x    = nullptr;
-      float* bp_filt_hist_y    = nullptr;
-      float* decay             = nullptr;
-      float* lp_filt_b         = nullptr;
-      float* x_low_hist        = nullptr;
-      float* lp_filt_hist      = nullptr;
-      float* rim_bp_hist_x     = nullptr;
-      float* rim_bp_hist_y     = nullptr;
-      float* rim_bp_filt_a     = nullptr;
-      float* rim_bp_filt_b     = nullptr;
-      float* x_rim_hist        = nullptr;
-      float* x_rim_switch_hist = nullptr;
-      float* ctrl_hist         = nullptr;
-      float* overload_hist     = nullptr;
+      float* decay         = nullptr;
+      float* lp_filt_b     = nullptr;
+      float* rim_bp_filt_a = nullptr;
+      float* rim_bp_filt_b = nullptr;
+      float* ctrl_hist     = nullptr;
 
       struct SSensor
       {
-        float* x_sq_hist = nullptr;
+        float* x_sq_hist         = nullptr;
+        float* bp_filt_hist_x    = nullptr;
+        float* bp_filt_hist_y    = nullptr;
+        float* x_low_hist        = nullptr;
+        float* lp_filt_hist      = nullptr;
+        float* rim_bp_hist_x     = nullptr;
+        float* rim_bp_hist_y     = nullptr;
+        float* x_rim_hist        = nullptr;
+        float* x_rim_switch_hist = nullptr;
+        float* overload_hist     = nullptr;
       };
       SSensor      sSensor[MAX_NUM_PAD_INPUTS];
 

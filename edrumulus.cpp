@@ -406,24 +406,24 @@ void Edrumulus::Pad::initialize()
   x_low_hist_len        = x_sq_hist_len + lp_filt_len;
 
   // allocate and initialize memory for vectors
-  allocate_initialize ( &bp_filt_hist_x,    bp_filt_len );         // band-pass filter x-signal history
-  allocate_initialize ( &bp_filt_hist_y,    bp_filt_len - 1 );     // band-pass filter y-signal history
-  allocate_initialize ( &rim_bp_hist_x,     bp_filt_len );         // rim band-pass filter x-signal history
-  allocate_initialize ( &rim_bp_hist_y,     bp_filt_len - 1 );     // rim band-pass filter y-signal history
-  allocate_initialize ( &rim_bp_filt_b,     bp_filt_len );         // rim band-pass filter coefficients b
-  allocate_initialize ( &rim_bp_filt_a,     bp_filt_len - 1 );     // rim band-pass filter coefficients a
-  allocate_initialize ( &decay,             decay_len );           // memory for decay function
-  allocate_initialize ( &lp_filt_b,         lp_filt_len );         // memory for low-pass filter coefficients
-  allocate_initialize ( &lp_filt_hist,      lp_filt_len );         // memory for low-pass filter input
-  allocate_initialize ( &x_low_hist,        x_low_hist_len );      // memory for low-pass filter result
-  allocate_initialize ( &x_rim_hist,        x_rim_hist_len );      // memory for rim shot detection
-  allocate_initialize ( &x_rim_switch_hist, rim_shot_window_len ); // memory for rim switch detection
-  allocate_initialize ( &ctrl_hist,         ctrl_history_len );    // memory for Hi-Hat control pad hit detection
-  allocate_initialize ( &overload_hist,     overload_hist_len );   // memory for overload detection status
+  allocate_initialize ( &rim_bp_filt_b, bp_filt_len );      // rim band-pass filter coefficients b
+  allocate_initialize ( &rim_bp_filt_a, bp_filt_len - 1 );  // rim band-pass filter coefficients a
+  allocate_initialize ( &decay,         decay_len );        // memory for decay function
+  allocate_initialize ( &lp_filt_b,     lp_filt_len );      // memory for low-pass filter coefficients
+  allocate_initialize ( &ctrl_hist,     ctrl_history_len ); // memory for Hi-Hat control pad hit detection
 
   for ( int i = 0; i < number_inputs; i++ )
   {
-    allocate_initialize ( &sSensor[i].x_sq_hist, x_sq_hist_len ); // memory for sqr(x) history
+    allocate_initialize ( &sSensor[i].x_sq_hist,         x_sq_hist_len );       // memory for sqr(x) history
+    allocate_initialize ( &sSensor[i].bp_filt_hist_x,    bp_filt_len );         // band-pass filter x-signal history
+    allocate_initialize ( &sSensor[i].bp_filt_hist_y,    bp_filt_len - 1 );     // band-pass filter y-signal history
+    allocate_initialize ( &sSensor[i].x_low_hist,        x_low_hist_len );      // memory for low-pass filter result
+    allocate_initialize ( &sSensor[i].lp_filt_hist,      lp_filt_len );         // memory for low-pass filter input
+    allocate_initialize ( &sSensor[i].rim_bp_hist_x,     bp_filt_len );         // rim band-pass filter x-signal history
+    allocate_initialize ( &sSensor[i].rim_bp_hist_y,     bp_filt_len - 1 );     // rim band-pass filter y-signal history
+    allocate_initialize ( &sSensor[i].x_rim_hist,        x_rim_hist_len );      // memory for rim shot detection
+    allocate_initialize ( &sSensor[i].x_rim_switch_hist, rim_shot_window_len ); // memory for rim switch detection
+    allocate_initialize ( &sSensor[i].overload_hist,     overload_hist_len );   // memory for overload detection status
   }
 
   mask_back_cnt           = 0;
@@ -542,26 +542,26 @@ SSensor& s = sSensor[in];
   // square input signal and store in FIFO buffer
   const float x_sq = input[0] * input[0];
   update_fifo ( x_sq,                            x_sq_hist_len,     s.x_sq_hist );
-  update_fifo ( overload_detected ? 1.0f : 0.0f, overload_hist_len, overload_hist );
+  update_fifo ( overload_detected ? 1.0f : 0.0f, overload_hist_len, s.overload_hist );
 
 
   // Calculate peak detection -----------------------------------------------------
   // IIR band-pass filter
-  update_fifo ( input[0], bp_filt_len, bp_filt_hist_x );
+  update_fifo ( input[0], bp_filt_len, s.bp_filt_hist_x );
 
   float sum_b = 0.0f;
   float sum_a = 0.0f;
   for ( int i = 0; i < bp_filt_len; i++ )
   {
-    sum_b += bp_filt_hist_x[i] * bp_filt_b[i];
+    sum_b += s.bp_filt_hist_x[i] * bp_filt_b[i];
   }
   for ( int i = 0; i < bp_filt_len - 1; i++ )
   {
-    sum_a += bp_filt_hist_y[i] * bp_filt_a[i];
+    sum_a += s.bp_filt_hist_y[i] * bp_filt_a[i];
   }
   float x_filt = sum_b - sum_a;
 
-  update_fifo ( x_filt, bp_filt_len - 1, bp_filt_hist_y );
+  update_fifo ( x_filt, bp_filt_len - 1, s.bp_filt_hist_y );
   x_filt = x_filt * x_filt; // calculate power of filter result
 
 
@@ -690,7 +690,7 @@ SSensor& s = sSensor[in];
       int number_overloaded_samples = 0;
       for ( int i = 0; i < overload_hist_len; i++ )
       {
-        if ( overload_hist[i] > 0.0f )
+        if ( s.overload_hist[i] > 0.0f )
         {
           number_overloaded_samples++;
         }
@@ -764,15 +764,15 @@ SSensor& s = sSensor[in];
   if ( pos_sense_is_used )
   {
     // low pass filter of the input signal and store results in a FIFO
-    update_fifo ( input[0], lp_filt_len, lp_filt_hist );
+    update_fifo ( input[0], lp_filt_len, s.lp_filt_hist );
 
     float x_low = 0.0f;
     for ( int i = 0; i < lp_filt_len; i++ )
     {
-      x_low += ( lp_filt_hist[i] * lp_filt_b[i] );
+      x_low += ( s.lp_filt_hist[i] * lp_filt_b[i] );
     }
 
-    update_fifo ( x_low * x_low, x_low_hist_len, x_low_hist );
+    update_fifo ( x_low * x_low, x_low_hist_len, s.x_low_hist );
 
     // start condition of delay process to fill up the required buffers
     if ( first_peak_found && ( !was_pos_sense_ready ) && ( pos_sense_cnt == 0 ) )
@@ -794,7 +794,7 @@ SSensor& s = sSensor[in];
         float peak_energy_low = 0.0f;
         for ( int i = 0; i < lp_filt_len; i++ )
         {
-          peak_energy_low = max ( peak_energy_low, x_low_hist[x_low_hist_idx + i] );
+          peak_energy_low = max ( peak_energy_low, s.x_low_hist[x_low_hist_idx + i] );
         }
 
         float pos_sense_metric;
@@ -827,7 +827,7 @@ SSensor& s = sSensor[in];
       const bool rim_switch_on = ( input[1] < rim_switch_treshold );
 
       // as a quick hack we re-use the length parameter for the switch on detection
-      update_fifo ( rim_switch_on, rim_shot_window_len, x_rim_switch_hist );
+      update_fifo ( rim_switch_on, rim_shot_window_len, s.x_rim_switch_hist );
 
       // at the end of the scan time search the history buffer for any switch on
       if ( was_peak_found )
@@ -836,7 +836,7 @@ SSensor& s = sSensor[in];
 
         for ( int i = 0; i < rim_shot_window_len; i++ )
         {
-          if ( x_rim_switch_hist[i] > 0 )
+          if ( s.x_rim_switch_hist[i] > 0 )
           {
             stored_is_rimshot = true;
           }
@@ -870,23 +870,23 @@ SSensor& s = sSensor[in];
     else
     {
       // band-pass filter the rim signal (two types are supported)
-      update_fifo ( input[1], bp_filt_len, rim_bp_hist_x );
+      update_fifo ( input[1], bp_filt_len, s.rim_bp_hist_x );
 
       float sum_b = 0.0f;
       float sum_a = 0.0f;
       for ( int i = 0; i < bp_filt_len; i++ )
       {
-        sum_b += rim_bp_hist_x[i] * rim_bp_filt_b[i];
+        sum_b += s.rim_bp_hist_x[i] * rim_bp_filt_b[i];
       }
       for ( int i = 0; i < bp_filt_len - 1; i++ )
       {
-        sum_a += rim_bp_hist_y[i] * rim_bp_filt_a[i];
+        sum_a += s.rim_bp_hist_y[i] * rim_bp_filt_a[i];
       }
       float x_rim_bp = sum_b - sum_a;
 
-      update_fifo ( x_rim_bp, bp_filt_len - 1, rim_bp_hist_y );
+      update_fifo ( x_rim_bp, bp_filt_len - 1, s.rim_bp_hist_y );
       x_rim_bp = x_rim_bp * x_rim_bp; // calculate power of filter result
-      update_fifo ( x_rim_bp, x_rim_hist_len, x_rim_hist );
+      update_fifo ( x_rim_bp, x_rim_hist_len, s.x_rim_hist );
 
       // start condition of delay process to fill up the required buffers
       if ( was_peak_found && ( !was_rim_shot_ready ) && ( rim_shot_cnt == 0 ) )
@@ -908,7 +908,7 @@ SSensor& s = sSensor[in];
           float rim_max_pow = 0;
           for ( int i = 0; i < rim_shot_window_len; i++ )
           {
-            rim_max_pow = max ( rim_max_pow, x_rim_hist[x_rim_hist_idx + i] );
+            rim_max_pow = max ( rim_max_pow, s.x_rim_hist[x_rim_hist_idx + i] );
           }
 
           const float rim_metric_db = 10 * log10 ( rim_max_pow / peak_val );
