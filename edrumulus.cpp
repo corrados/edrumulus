@@ -414,39 +414,41 @@ void Edrumulus::Pad::initialize()
 
   for ( int i = 0; i < number_inputs; i++ )
   {
-    allocate_initialize ( &sSensor[i].x_sq_hist,         x_sq_hist_len );       // memory for sqr(x) history
-    allocate_initialize ( &sSensor[i].bp_filt_hist_x,    bp_filt_len );         // band-pass filter x-signal history
-    allocate_initialize ( &sSensor[i].bp_filt_hist_y,    bp_filt_len - 1 );     // band-pass filter y-signal history
-    allocate_initialize ( &sSensor[i].x_low_hist,        x_low_hist_len );      // memory for low-pass filter result
-    allocate_initialize ( &sSensor[i].lp_filt_hist,      lp_filt_len );         // memory for low-pass filter input
-    allocate_initialize ( &sSensor[i].rim_bp_hist_x,     bp_filt_len );         // rim band-pass filter x-signal history
-    allocate_initialize ( &sSensor[i].rim_bp_hist_y,     bp_filt_len - 1 );     // rim band-pass filter y-signal history
-    allocate_initialize ( &sSensor[i].x_rim_hist,        x_rim_hist_len );      // memory for rim shot detection
-    allocate_initialize ( &sSensor[i].x_rim_switch_hist, rim_shot_window_len ); // memory for rim switch detection
-    allocate_initialize ( &sSensor[i].overload_hist,     overload_hist_len );   // memory for overload detection status
+    SSensor& s = sSensor[i];
+    allocate_initialize ( &s.x_sq_hist,         x_sq_hist_len );       // memory for sqr(x) history
+    allocate_initialize ( &s.bp_filt_hist_x,    bp_filt_len );         // band-pass filter x-signal history
+    allocate_initialize ( &s.bp_filt_hist_y,    bp_filt_len - 1 );     // band-pass filter y-signal history
+    allocate_initialize ( &s.x_low_hist,        x_low_hist_len );      // memory for low-pass filter result
+    allocate_initialize ( &s.lp_filt_hist,      lp_filt_len );         // memory for low-pass filter input
+    allocate_initialize ( &s.rim_bp_hist_x,     bp_filt_len );         // rim band-pass filter x-signal history
+    allocate_initialize ( &s.rim_bp_hist_y,     bp_filt_len - 1 );     // rim band-pass filter y-signal history
+    allocate_initialize ( &s.x_rim_hist,        x_rim_hist_len );      // memory for rim shot detection
+    allocate_initialize ( &s.x_rim_switch_hist, rim_shot_window_len ); // memory for rim switch detection
+    allocate_initialize ( &s.overload_hist,     overload_hist_len );   // memory for overload detection status
+
+    s.was_above_threshold     = false;
+    s.is_overloaded_state     = false;
+    s.mask_back_cnt           = 0;
+    s.first_peak_val          = 0.0f;
+    s.peak_val                = 0.0f;
+    s.decay_back_cnt          = 0;
+    s.decay_scaling           = 1.0f;
+    s.scan_time_cnt           = 0;
+    s.decay_pow_est_start_cnt = 0;
+    s.decay_pow_est_cnt       = 0;
+    s.decay_pow_est_sum       = 0.0f;
+    s.pos_sense_cnt           = 0;
+    s.x_low_hist_idx          = 0;
+    s.rim_shot_cnt            = 0;
+    s.rim_switch_on_cnt       = 0;
+    s.max_x_filt_val          = 0.0f;
+    s.max_mask_x_filt_val     = 0.0f;
+    s.was_peak_found          = false;
+    s.was_pos_sense_ready     = false;
+    s.was_rim_shot_ready      = false;
+    s.stored_is_rimshot       = false;
   }
 
-  mask_back_cnt           = 0;
-  was_above_threshold     = false;
-  is_overloaded_state     = false;
-  first_peak_val          = 0.0f;
-  peak_val                = 0.0f;
-  decay_back_cnt          = 0;
-  decay_scaling           = 1.0f;
-  scan_time_cnt           = 0;
-  decay_pow_est_start_cnt = 0;
-  decay_pow_est_cnt       = 0;
-  decay_pow_est_sum       = 0.0f;
-  pos_sense_cnt           = 0;
-  x_low_hist_idx          = 0;
-  rim_shot_cnt            = 0;
-  rim_switch_on_cnt       = 0;
-  max_x_filt_val          = 0.0f;
-  max_mask_x_filt_val     = 0.0f;
-  was_peak_found          = false;
-  was_pos_sense_ready     = false;
-  was_rim_shot_ready      = false;
-  stored_is_rimshot       = false;
   prev_ctrl_value         = 0;
 
   // calculate positional sensing low-pass filter coefficients
@@ -540,14 +542,14 @@ SSensor& s = sSensor[in];
 
 
   // square input signal and store in FIFO buffer
-  const float x_sq = input[0] * input[0];
+  const float x_sq = input[in] * input[in];
   update_fifo ( x_sq,                            x_sq_hist_len,     s.x_sq_hist );
   update_fifo ( overload_detected ? 1.0f : 0.0f, overload_hist_len, s.overload_hist );
 
 
   // Calculate peak detection -----------------------------------------------------
   // IIR band-pass filter
-  update_fifo ( input[0], bp_filt_len, s.bp_filt_hist_x );
+  update_fifo ( input[in], bp_filt_len, s.bp_filt_hist_x );
 
   float sum_b = 0.0f;
   float sum_a = 0.0f;
@@ -569,12 +571,12 @@ SSensor& s = sSensor[in];
   float cur_decay    = 1; // initialization value (0 dB) only used for debugging
   float x_filt_decay = x_filt;
 
-  if ( decay_back_cnt > 0 )
+  if ( s.decay_back_cnt > 0 )
   {
     // subtract decay (with clipping at zero)
-    cur_decay    = decay_scaling * decay[decay_len - decay_back_cnt];
+    cur_decay    = s.decay_scaling * decay[decay_len - s.decay_back_cnt];
     x_filt_decay = x_filt - cur_decay;
-    decay_back_cnt--;
+    s.decay_back_cnt--;
 
     if ( x_filt_decay < 0.0f )
     {
@@ -586,63 +588,63 @@ SSensor& s = sSensor[in];
   // during the mask time we apply a constant value to the decay way above the
   // detected peak to avoid missing a loud hit which is preceeded with a very
   // low volume hit which mask period would delete the loud hit
-  if ( ( mask_back_cnt > 0 ) && ( mask_back_cnt <= mask_time ) )
+  if ( ( s.mask_back_cnt > 0 ) && ( s.mask_back_cnt <= mask_time ) )
   {
-    if ( x_filt > max_mask_x_filt_val * decay_mask_fact )
+    if ( x_filt > s.max_mask_x_filt_val * decay_mask_fact )
     {
-      was_above_threshold = false;  // reset the peak detection (note that x_filt_decay is always > threshold now)
-      x_filt_decay        = x_filt; // remove decay subtraction
-      pos_sense_cnt       = 0;      // needed since we reset the peak detection
-      was_pos_sense_ready = false;  // needed since we reset the peak detection
-      rim_shot_cnt        = 0;      // needed since we reset the peak detection
-      was_rim_shot_ready  = false;  // needed since we reset the peak detection
+      s.was_above_threshold = false;  // reset the peak detection (note that x_filt_decay is always > threshold now)
+      x_filt_decay          = x_filt; // remove decay subtraction
+      s.pos_sense_cnt       = 0;      // needed since we reset the peak detection
+      s.was_pos_sense_ready = false;  // needed since we reset the peak detection
+      s.rim_shot_cnt        = 0;      // needed since we reset the peak detection
+      s.was_rim_shot_ready  = false;  // needed since we reset the peak detection
     }
   }
 
 
   // threshold test
-  if ( ( ( x_filt_decay > threshold ) || was_above_threshold ) )
+  if ( ( ( x_filt_decay > threshold ) || s.was_above_threshold ) )
   {
     // initializations at the time when the signal was above threshold for the
     // first time for the current peak
-    if ( !was_above_threshold )
+    if ( !s.was_above_threshold )
     {
-      decay_pow_est_start_cnt = max ( 1, decay_est_delay - x_filt_delay + 1 );
-      scan_time_cnt           = max ( 1, scan_time - x_filt_delay );
-      mask_back_cnt           = scan_time + mask_time;
-      decay_back_cnt          = 0;      // reset in case it was active from previous peak
-      max_x_filt_val          = x_filt; // initialize maximum value with first value
-      max_mask_x_filt_val     = x_filt; // initialize maximum value with first value
-      is_overloaded_state     = false;
+      s.decay_pow_est_start_cnt = max ( 1, decay_est_delay - x_filt_delay + 1 );
+      s.scan_time_cnt           = max ( 1, scan_time - x_filt_delay );
+      s.mask_back_cnt           = scan_time + mask_time;
+      s.decay_back_cnt          = 0;      // reset in case it was active from previous peak
+      s.max_x_filt_val          = x_filt; // initialize maximum value with first value
+      s.max_mask_x_filt_val     = x_filt; // initialize maximum value with first value
+      s.is_overloaded_state     = false;
 
       // this flag ensures that we always enter the if condition after the very first
       // time the signal was above the threshold (this flag is then reset when the
       // scan time is expired)
-      was_above_threshold = true;
+      s.was_above_threshold = true;
     }
 
     // search from above threshold to corrected scan+mask time for highest peak in
     // filtered signal (needed for decay power estimation)
-    if ( x_filt > max_x_filt_val )
+    if ( x_filt > s.max_x_filt_val )
     {
-      max_x_filt_val = x_filt;
+      s.max_x_filt_val = x_filt;
     }
 
     // search from above threshold in scan time region needed for decay mask factor
-    if ( ( mask_back_cnt > mask_time ) && ( x_filt > max_mask_x_filt_val ) )
+    if ( ( s.mask_back_cnt > mask_time ) && ( x_filt > s.max_mask_x_filt_val ) )
     {
-      max_mask_x_filt_val = x_filt;
+      s.max_mask_x_filt_val = x_filt;
     }
   
-    scan_time_cnt--;
-    mask_back_cnt--;
+    s.scan_time_cnt--;
+    s.mask_back_cnt--;
 
     // end condition of scan time
-    if ( scan_time_cnt == 0 )
+    if ( s.scan_time_cnt == 0 )
     {
       // climb to the maximum of the first peak (using the unfiltered signal)
       first_peak_found   = false;
-      first_peak_val     = s.x_sq_hist[x_sq_hist_len - total_scan_time];
+      s.first_peak_val   = s.x_sq_hist[x_sq_hist_len - total_scan_time];
       int first_peak_idx = 0;
 
       for ( int idx = 1; idx < total_scan_time; idx++ )
@@ -650,32 +652,32 @@ SSensor& s = sSensor[in];
         const float cur_x_sq_hist_val  = s.x_sq_hist[x_sq_hist_len - total_scan_time + idx];
         const float prev_x_sq_hist_val = s.x_sq_hist[x_sq_hist_len - total_scan_time + idx - 1];
 
-        if ( ( first_peak_val < cur_x_sq_hist_val ) && !first_peak_found )
+        if ( ( s.first_peak_val < cur_x_sq_hist_val ) && !first_peak_found )
         {
-          first_peak_val = cur_x_sq_hist_val;
-          first_peak_idx = idx;
+          s.first_peak_val = cur_x_sq_hist_val;
+          first_peak_idx   = idx;
         }
         else
         {
           first_peak_found = true;
 
           // check if there is a much larger first peak
-          if ( ( prev_x_sq_hist_val > cur_x_sq_hist_val ) && ( first_peak_val * first_peak_diff_thresh < prev_x_sq_hist_val ) )
+          if ( ( prev_x_sq_hist_val > cur_x_sq_hist_val ) && ( s.first_peak_val * first_peak_diff_thresh < prev_x_sq_hist_val ) )
           {
-            first_peak_val = prev_x_sq_hist_val;
-            first_peak_idx = idx - 1;
+            s.first_peak_val = prev_x_sq_hist_val;
+            first_peak_idx   = idx - 1;
           }
         }
       }
 
       // get the maximum velocity in the scan time using the unfiltered signal
-      peak_val              = 0.0f;
+      s.peak_val            = 0.0f;
       int peak_velocity_idx = 0;
       for ( int i = 0; i < scan_time; i++ )
       {
-        if ( s.x_sq_hist[x_sq_hist_len - scan_time + i] > peak_val )
+        if ( s.x_sq_hist[x_sq_hist_len - scan_time + i] > s.peak_val )
         {
-          peak_val          = s.x_sq_hist[x_sq_hist_len - scan_time + i];
+          s.peak_val        = s.x_sq_hist[x_sq_hist_len - scan_time + i];
           peak_velocity_idx = i;
         }
       }
@@ -684,7 +686,7 @@ SSensor& s = sSensor[in];
       peak_delay       = scan_time - ( peak_velocity_idx + 1 );
       first_peak_delay = total_scan_time - ( first_peak_idx + 1 );
       first_peak_found = true; // for special case signal only increments, the peak found would be false -> correct this
-      was_peak_found   = true;
+      s.was_peak_found = true;
 
       // check overload status
       int number_overloaded_samples = 0;
@@ -697,65 +699,65 @@ SSensor& s = sSensor[in];
       }
       if ( number_overloaded_samples > max_num_overloads )
       {
-        is_overloaded_state = true;
+        s.is_overloaded_state = true;
 
         // overload correctdion: correct the peak value according to the number of clipped samples
         if ( number_overloaded_samples <= max_num_overloads )
         {
-          peak_val *= 1.2589; // 1 dB
+          s.peak_val *= 1.2589; // 1 dB
         }
         else if ( number_overloaded_samples <= overload_num_thresh_2db )
         {
-          peak_val *= 1.5849; // 2 dB
+          s.peak_val *= 1.5849; // 2 dB
         }
         else if ( number_overloaded_samples <= overload_num_thresh_3db )
         {
-          peak_val *= 2; // 3 dB
+          s.peak_val *= 2; // 3 dB
         }
         else
         {
-          peak_val *= 2.5119; // 4 dB
+          s.peak_val *= 2.5119; // 4 dB
         }
       }
 
       // calculate the MIDI velocity value with clipping to allowed MIDI value range
-      stored_midi_velocity = velocity_factor * pow ( peak_val * ADC_noise_peak_velocity_scaling, velocity_exponent ) + velocity_offset;
-      stored_midi_velocity = max ( 1, min ( 127, stored_midi_velocity ) );
+      s.stored_midi_velocity = velocity_factor * pow ( s.peak_val * ADC_noise_peak_velocity_scaling, velocity_exponent ) + velocity_offset;
+      s.stored_midi_velocity = max ( 1, min ( 127, s.stored_midi_velocity ) );
     }
 
     // end condition of mask time
-    if ( mask_back_cnt == 0 )
+    if ( s.mask_back_cnt == 0 )
     {
-      decay_back_cnt      = decay_len; // per definition decay starts right after mask time
-      decay_scaling       = decay_fact * max_x_filt_val; // take maximum of filtered signal in scan+mask time
-      was_above_threshold = false;
+      s.decay_back_cnt      = decay_len; // per definition decay starts right after mask time
+      s.decay_scaling       = decay_fact * s.max_x_filt_val; // take maximum of filtered signal in scan+mask time
+      s.was_above_threshold = false;
     }
   }
 
 
   // decay power estimation
-  if ( decay_pow_est_start_cnt > 0 )
+  if ( s.decay_pow_est_start_cnt > 0 )
   {
-    decay_pow_est_start_cnt--;
+    s.decay_pow_est_start_cnt--;
 
     // end condition
-    if ( decay_pow_est_start_cnt == 0 )
+    if ( s.decay_pow_est_start_cnt == 0 )
     {
-      decay_pow_est_cnt = decay_est_len; // now the power estimation can start
+      s.decay_pow_est_cnt = decay_est_len; // now the power estimation can start
     }
   }
 
-  if ( decay_pow_est_cnt > 0 )
+  if ( s.decay_pow_est_cnt > 0 )
   {
-    decay_pow_est_sum += x_filt; // sum up the powers in pre-defined interval
-    decay_pow_est_cnt--;
+    s.decay_pow_est_sum += x_filt; // sum up the powers in pre-defined interval
+    s.decay_pow_est_cnt--;
 
     // end condition
-    if ( decay_pow_est_cnt == 0 )
+    if ( s.decay_pow_est_cnt == 0 )
     {
-      const float decay_power = decay_pow_est_sum / decay_est_len;                   // calculate average power
-      decay_pow_est_sum       = 0.0f;                                                // we have to reset the sum for the next calculation
-      decay_scaling           = min ( decay_scaling, decay_est_fact * decay_power ); // adjust the decay curve
+      const float decay_power = s.decay_pow_est_sum / decay_est_len;                   // calculate average power
+      s.decay_pow_est_sum     = 0.0f;                                                  // we have to reset the sum for the next calculation
+      s.decay_scaling         = min ( s.decay_scaling, decay_est_fact * decay_power ); // adjust the decay curve
     }
   }
 
@@ -764,7 +766,7 @@ SSensor& s = sSensor[in];
   if ( pos_sense_is_used )
   {
     // low pass filter of the input signal and store results in a FIFO
-    update_fifo ( input[0], lp_filt_len, s.lp_filt_hist );
+    update_fifo ( input[in], lp_filt_len, s.lp_filt_hist );
 
     float x_low = 0.0f;
     for ( int i = 0; i < lp_filt_len; i++ )
@@ -775,26 +777,26 @@ SSensor& s = sSensor[in];
     update_fifo ( x_low * x_low, x_low_hist_len, s.x_low_hist );
 
     // start condition of delay process to fill up the required buffers
-    if ( first_peak_found && ( !was_pos_sense_ready ) && ( pos_sense_cnt == 0 ) )
+    if ( first_peak_found && ( !s.was_pos_sense_ready ) && ( s.pos_sense_cnt == 0 ) )
     {
       // a peak was found, we now have to start the delay process to fill up the
       // required buffer length for our metric
-      pos_sense_cnt  = max ( 1, lp_filt_len - first_peak_delay );
-      x_low_hist_idx = x_low_hist_len - lp_filt_len - max ( 0, first_peak_delay - lp_filt_len + 1 );
+      s.pos_sense_cnt  = max ( 1, lp_filt_len - first_peak_delay );
+      s.x_low_hist_idx = x_low_hist_len - lp_filt_len - max ( 0, first_peak_delay - lp_filt_len + 1 );
     }
   
-    if ( pos_sense_cnt > 0 )
+    if ( s.pos_sense_cnt > 0 )
     {
-      pos_sense_cnt--;
+      s.pos_sense_cnt--;
   
       // end condition
-      if ( pos_sense_cnt == 0 )
+      if ( s.pos_sense_cnt == 0 )
       {
         // the buffers are filled, now calculate the metric
         float peak_energy_low = 0.0f;
         for ( int i = 0; i < lp_filt_len; i++ )
         {
-          peak_energy_low = max ( peak_energy_low, s.x_low_hist[x_low_hist_idx + i] );
+          peak_energy_low = max ( peak_energy_low, s.x_low_hist[s.x_low_hist_idx + i] );
         }
 
         float pos_sense_metric;
@@ -802,18 +804,18 @@ SSensor& s = sSensor[in];
         if ( pos_sense_inverted )
         {
           // add offset (dB) to get to similar range as non-inverted metric
-          pos_sense_metric = peak_energy_low / first_peak_val * 10000.0f;
+          pos_sense_metric = peak_energy_low / s.first_peak_val * 10000.0f;
         }
         else
         {
-          pos_sense_metric = first_peak_val / peak_energy_low;
+          pos_sense_metric = s.first_peak_val / peak_energy_low;
         }
 
-        was_pos_sense_ready = true;
+        s.was_pos_sense_ready = true;
 
         // positional sensing MIDI mapping with clipping to allowed MIDI value range
-        stored_midi_pos = static_cast<int> ( ( 10 * log10 ( pos_sense_metric / pos_threshold ) / pos_range_db ) * 127 );
-        stored_midi_pos = max ( 1, min ( 127, stored_midi_pos ) );
+        s.stored_midi_pos = static_cast<int> ( ( 10 * log10 ( pos_sense_metric / pos_threshold ) / pos_range_db ) * 127 );
+        s.stored_midi_pos = max ( 1, min ( 127, s.stored_midi_pos ) );
       }
     }
   }
@@ -830,39 +832,39 @@ SSensor& s = sSensor[in];
       update_fifo ( rim_switch_on, rim_shot_window_len, s.x_rim_switch_hist );
 
       // at the end of the scan time search the history buffer for any switch on
-      if ( was_peak_found )
+      if ( s.was_peak_found )
       {
-        stored_is_rimshot = false;
+        s.stored_is_rimshot = false;
 
         for ( int i = 0; i < rim_shot_window_len; i++ )
         {
           if ( s.x_rim_switch_hist[i] > 0 )
           {
-            stored_is_rimshot = true;
+            s.stored_is_rimshot = true;
           }
         }
 
-        was_rim_shot_ready = true;
+        s.was_rim_shot_ready = true;
       }
 
       // choke detection
       if ( rim_switch_on )
       {
-        rim_switch_on_cnt++;
+        s.rim_switch_on_cnt++;
       }
       else
       {
         // if choke switch on was detected, send choke off message now
-        if ( rim_switch_on_cnt > rim_switch_on_cnt_thresh )
+        if ( s.rim_switch_on_cnt > rim_switch_on_cnt_thresh )
         {
           is_choke_off = true;
         }
 
-        rim_switch_on_cnt = 0;
+        s.rim_switch_on_cnt = 0;
       }
 
       // only send choke on message once we detected a choke (i.e. do not test for ">" threshold but for "==")
-      if ( rim_switch_on_cnt == rim_switch_on_cnt_thresh )
+      if ( s.rim_switch_on_cnt == rim_switch_on_cnt_thresh )
       {
         is_choke_on = true;
       }
@@ -889,32 +891,32 @@ SSensor& s = sSensor[in];
       update_fifo ( x_rim_bp, x_rim_hist_len, s.x_rim_hist );
 
       // start condition of delay process to fill up the required buffers
-      if ( was_peak_found && ( !was_rim_shot_ready ) && ( rim_shot_cnt == 0 ) )
+      if ( s.was_peak_found && ( !s.was_rim_shot_ready ) && ( s.rim_shot_cnt == 0 ) )
       {
         // a peak was found, we now have to start the delay process to fill up the
         // required buffer length for our metric
-        rim_shot_cnt   = max ( 1, rim_shot_window_len - peak_delay );
-        x_rim_hist_idx = x_rim_hist_len - rim_shot_window_len - max ( 0, peak_delay - rim_shot_window_len + 1 );
+        s.rim_shot_cnt   = max ( 1, rim_shot_window_len - peak_delay );
+        s.x_rim_hist_idx = x_rim_hist_len - rim_shot_window_len - max ( 0, peak_delay - rim_shot_window_len + 1 );
       }
 
-      if ( rim_shot_cnt > 0 )
+      if ( s.rim_shot_cnt > 0 )
       {
-        rim_shot_cnt--;
+        s.rim_shot_cnt--;
 
         // end condition
-        if ( rim_shot_cnt == 0 )
+        if ( s.rim_shot_cnt == 0 )
         {
           // the buffers are filled, now calculate the metric
           float rim_max_pow = 0;
           for ( int i = 0; i < rim_shot_window_len; i++ )
           {
-            rim_max_pow = max ( rim_max_pow, s.x_rim_hist[x_rim_hist_idx + i] );
+            rim_max_pow = max ( rim_max_pow, s.x_rim_hist[s.x_rim_hist_idx + i] );
           }
 
-          const float rim_metric_db = 10 * log10 ( rim_max_pow / peak_val );
-          stored_is_rimshot         = ( rim_metric_db > rim_shot_treshold_dB ) && ( rim_max_pow > rim_max_power_low_limit );
-          rim_shot_cnt              = 0;
-          was_rim_shot_ready        = true;
+          const float rim_metric_db = 10 * log10 ( rim_max_pow / s.peak_val );
+          s.stored_is_rimshot       = ( rim_metric_db > rim_shot_treshold_dB ) && ( rim_max_pow > rim_max_power_low_limit );
+          s.rim_shot_cnt            = 0;
+          s.was_rim_shot_ready      = true;
         }
       }
     }
@@ -922,14 +924,14 @@ SSensor& s = sSensor[in];
 
   // check for all estimations are ready and we can set the peak found flag and
   // return all results
-  if ( was_peak_found && ( !pos_sense_is_used || was_pos_sense_ready ) && ( !rim_shot_is_used || was_rim_shot_ready ) )
+  if ( s.was_peak_found && ( !pos_sense_is_used || s.was_pos_sense_ready ) && ( !rim_shot_is_used || s.was_rim_shot_ready ) )
   {
 
 // TODO in case of signal clipping, we cannot use the positional sensing and rim shot detection results
-if ( is_overloaded_state )
+if ( s.is_overloaded_state )
 {
-  stored_is_rimshot = false; // as a quick hack, assume we do not have a rim shot
-  stored_midi_pos   = 0;     // overloads will only happen if the strike is located near the middle of the pad
+  s.stored_is_rimshot = false; // as a quick hack, assume we do not have a rim shot
+  s.stored_midi_pos   = 0;     // overloads will only happen if the strike is located near the middle of the pad
 }
 
 // TODO:
@@ -937,23 +939,23 @@ if ( is_overloaded_state )
 // - only use one counter instead of rim_shot_cnt and pos_sense_cnt
 // - as long as counter is not finished, do check "hil_filt_new > threshold" again to see if we have a higher peak in that
 //   time window -> if yes, restart everything using the new detected peak
-if ( stored_is_rimshot )
+if ( s.stored_is_rimshot )
 {
-  stored_midi_pos = 0; // as a quick hack, disable positional sensing if a rim shot is detected
+  s.stored_midi_pos = 0; // as a quick hack, disable positional sensing if a rim shot is detected
 }
 
-    midi_velocity = stored_midi_velocity;
-    midi_pos      = stored_midi_pos;
+    midi_velocity = s.stored_midi_velocity;
+    midi_pos      = s.stored_midi_pos;
     peak_found    = true;
-    is_rim_shot   = stored_is_rimshot;
+    is_rim_shot   = s.stored_is_rimshot;
 
-    was_peak_found      = false;
-    was_pos_sense_ready = false;
-    was_rim_shot_ready  = false;
+    s.was_peak_found      = false;
+    s.was_pos_sense_ready = false;
+    s.was_rim_shot_ready  = false;
     DEBUG_START_PLOTTING();
   }
 
-  DEBUG_ADD_VALUES ( input[0] * input[0], x_filt, scan_time_cnt > 0 ? 0.5 : mask_back_cnt > 0 ? 0.2 : cur_decay, threshold );
+  DEBUG_ADD_VALUES ( input[0] * input[0], x_filt, sSensor[0].scan_time_cnt > 0 ? 0.5 : sSensor[0].mask_back_cnt > 0 ? 0.2 : cur_decay, threshold );
   return x_filt; // here, you can return debugging values for verification with Ocatve
 }
 
