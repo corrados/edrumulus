@@ -299,12 +299,6 @@ void Edrumulus::Pad::setup ( const int conf_Fs,
   midi_note_open     = 46;
   midi_note_open_rim = 26;
   midi_ctrl_ch       = 4; // CC4, usually used for hi-hat
-
-  // invalidate memory for individual inputs (note that setup() must only be called once)
-  for ( int i = 0; i < number_inputs; i++ )
-  {
-    v_x_sq_hist[i] = nullptr;
-  }
 }
 
 
@@ -429,7 +423,7 @@ void Edrumulus::Pad::initialize()
 
   for ( int i = 0; i < number_inputs; i++ )
   {
-    allocate_initialize ( &v_x_sq_hist[i],         x_sq_hist_len );       // memory for sqr(x) history
+    allocate_initialize ( &sSensor[i].x_sq_hist, x_sq_hist_len ); // memory for sqr(x) history
   }
 
   mask_back_cnt           = 0;
@@ -541,13 +535,13 @@ float Edrumulus::Pad::process_sample ( const float* input,
 
 // TEST a loop is needed here...
 const int in = 0;
-float* x_sq_hist = v_x_sq_hist[in];
+SSensor& s = sSensor[in];
 
 
 
   // square input signal and store in FIFO buffer
   const float x_sq = input[0] * input[0];
-  update_fifo ( x_sq,                            x_sq_hist_len,     x_sq_hist );
+  update_fifo ( x_sq,                            x_sq_hist_len,     s.x_sq_hist );
   update_fifo ( overload_detected ? 1.0f : 0.0f, overload_hist_len, overload_hist );
 
 
@@ -648,13 +642,13 @@ float* x_sq_hist = v_x_sq_hist[in];
     {
       // climb to the maximum of the first peak (using the unfiltered signal)
       first_peak_found   = false;
-      first_peak_val     = x_sq_hist[x_sq_hist_len - total_scan_time];
+      first_peak_val     = s.x_sq_hist[x_sq_hist_len - total_scan_time];
       int first_peak_idx = 0;
 
       for ( int idx = 1; idx < total_scan_time; idx++ )
       {
-        const float cur_x_sq_hist_val  = x_sq_hist[x_sq_hist_len - total_scan_time + idx];
-        const float prev_x_sq_hist_val = x_sq_hist[x_sq_hist_len - total_scan_time + idx - 1];
+        const float cur_x_sq_hist_val  = s.x_sq_hist[x_sq_hist_len - total_scan_time + idx];
+        const float prev_x_sq_hist_val = s.x_sq_hist[x_sq_hist_len - total_scan_time + idx - 1];
 
         if ( ( first_peak_val < cur_x_sq_hist_val ) && !first_peak_found )
         {
@@ -679,9 +673,9 @@ float* x_sq_hist = v_x_sq_hist[in];
       int peak_velocity_idx = 0;
       for ( int i = 0; i < scan_time; i++ )
       {
-        if ( x_sq_hist[x_sq_hist_len - scan_time + i] > peak_val )
+        if ( s.x_sq_hist[x_sq_hist_len - scan_time + i] > peak_val )
         {
-          peak_val          = x_sq_hist[x_sq_hist_len - scan_time + i];
+          peak_val          = s.x_sq_hist[x_sq_hist_len - scan_time + i];
           peak_velocity_idx = i;
         }
       }

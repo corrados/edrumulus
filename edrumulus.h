@@ -268,7 +268,12 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       float* x_rim_switch_hist = nullptr;
       float* ctrl_hist         = nullptr;
       float* overload_hist     = nullptr;
-      float* v_x_sq_hist[MAX_NUM_PAD_INPUTS];
+
+      struct SSensor
+      {
+        float* x_sq_hist = nullptr;
+      };
+      SSensor      sSensor[MAX_NUM_PAD_INPUTS];
 
       int          Fs;
       int          number_inputs;
