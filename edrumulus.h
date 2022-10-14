@@ -142,7 +142,7 @@ protected:
                    const int conf_number_inputs = 1 );
 
       float process_sample ( const float* input,
-                             const bool   overload_detected,
+                             const bool*  overload_detected,
                              bool&        peak_found,
                              int&         midi_velocity,
                              int&         midi_pos,

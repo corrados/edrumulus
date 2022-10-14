@@ -111,6 +111,7 @@ void Edrumulus::setup ( const int  conf_num_pads,
 void Edrumulus::process()
 {
   float sample[MAX_NUM_PAD_INPUTS];
+  bool  overload_detected[MAX_NUM_PAD_INPUTS];
 
 /*
 // TEST for debugging: take samples from Octave, process and return result to Octave
@@ -183,14 +184,17 @@ Serial.println ( serial_print );
       }
 
       // overload detection
-      bool overload_detected = false;
       for ( int j = 0; j < number_inputs[i]; j++ )
       {
         // check for the lowest/largest possible ADC range values with noise consideration
         if ( ( sample_org_pad[j] >= ( ADC_MAX_RANGE - ADC_MAX_NOISE_AMPL ) ) || ( sample_org_pad[j] <= ADC_MAX_NOISE_AMPL - 1 ) )
         {
-          overload_LED_cnt  = overload_LED_on_time;
-          overload_detected = true;
+          overload_LED_cnt     = overload_LED_on_time;
+          overload_detected[j] = true;
+        }
+        else
+        {
+          overload_detected[j] = false;
         }
       }
 
@@ -511,7 +515,7 @@ void Edrumulus::Pad::initialize()
 
 
 float Edrumulus::Pad::process_sample ( const float* input,
-                                       const bool   overload_detected,
+                                       const bool*  overload_detected,
                                        bool&        peak_found,
                                        int&         midi_velocity,
                                        int&         midi_pos,
@@ -519,20 +523,16 @@ float Edrumulus::Pad::process_sample ( const float* input,
                                        bool&        is_choke_on,
                                        bool&        is_choke_off )
 {
-  // initialize return parameter
+  // initialize return parameters and configuration parameters
   peak_found                    = false;
   midi_velocity                 = 0;
   midi_pos                      = 0;
   is_rim_shot                   = false;
   is_choke_on                   = false;
   is_choke_off                  = false;
-  bool       first_peak_found   = false; // only used internally
-  int        peak_delay         = 0;     // only used internally
-  int        first_peak_delay   = 0;     // only used internally
   const bool pos_sense_is_used  = pad_settings.pos_sense_is_used;                         // can be applied directly without calling initialize()
   const bool rim_shot_is_used   = pad_settings.rim_shot_is_used && ( number_inputs > 1 ); // can be applied directly without calling initialize()
   const bool pos_sense_inverted = pad_settings.pos_invert;                                // can be applied directly without calling initialize()
-
 
 
 // TEST a loop is needed here...
@@ -540,11 +540,14 @@ const int in = 0;
 SSensor& s = sSensor[in];
 
 
+  bool first_peak_found = false; // only used internally
+  int  peak_delay       = 0;     // only used internally
+  int  first_peak_delay = 0;     // only used internally
 
   // square input signal and store in FIFO buffer
   const float x_sq = input[in] * input[in];
-  update_fifo ( x_sq,                            x_sq_hist_len,     s.x_sq_hist );
-  update_fifo ( overload_detected ? 1.0f : 0.0f, overload_hist_len, s.overload_hist );
+  update_fifo ( x_sq,                                x_sq_hist_len,     s.x_sq_hist );
+  update_fifo ( overload_detected[in] ? 1.0f : 0.0f, overload_hist_len, s.overload_hist );
 
 
   // Calculate peak detection -----------------------------------------------------
