@@ -266,10 +266,10 @@ void Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
   //static int analog_pins_third4[]   = { -1,    -1,     -1,       -1,         -1,     -1,    -1,    -1,    -1 };
 
 // TEST
-static int analog_pins4[]         = { 36,    33,     32,       25,         34,     39,    27,    12 };
-static int analog_pins_rimshot4[] = { 35,    -1,     -1,       -1,         14,     -1,    13,    -1 };
-static int analog_pins_second4[]  = { 26,    -1,     -1,       -1,         -1,     -1,    -1,    -1 };
-static int analog_pins_third4[]   = { 15,    -1,     -1,       -1,         -1,     -1,    -1,    -1 };
+static int analog_pins4[]         = { 36,    33,     32,       25,         34,     39 };
+static int analog_pins_rimshot4[] = { 35,    -1,     26,       -1,         14,     -1 };
+static int analog_pins_second4[]  = { 27,    -1,     -1,       -1,         -1,     -1 };
+static int analog_pins_third4[]   = { 13,    -1,     -1,       -1,         -1,     -1 };
 
   *analog_pins         = analog_pins4;
   *analog_pins_rimshot = analog_pins_rimshot4;
