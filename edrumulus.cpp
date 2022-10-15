@@ -993,17 +993,14 @@ const int max_sensor_sample_diff = 20; // 2.5 ms at 8 kHz sampling rate
       multiple_sensor_cnt--;
 
       // store current head sensor results
-      if ( any_sensor_has_results )
+      for ( int head_sensor_cnt = 0; head_sensor_cnt < number_head_sensors; head_sensor_cnt++ )
       {
-        for ( int head_sensor_cnt = 0; head_sensor_cnt < number_head_sensors; head_sensor_cnt++ )
+        if ( sSensor[head_sensor_cnt].sResults.peak_found )
         {
-          if ( sSensor[head_sensor_cnt].sResults.peak_found )
-          {
-            sSensorResults[head_sensor_cnt].midi_velocity = sSensor[head_sensor_cnt].sResults.midi_velocity;
-            sSensorResults[head_sensor_cnt].midi_pos      = sSensor[head_sensor_cnt].sResults.midi_pos;
-            sSensorResults[head_sensor_cnt].peak_found    = sSensor[head_sensor_cnt].sResults.peak_found;
-            sSensorResults[head_sensor_cnt].is_rim_shot   = sSensor[head_sensor_cnt].sResults.is_rim_shot;
-          }
+          sSensorResults[head_sensor_cnt].midi_velocity = sSensor[head_sensor_cnt].sResults.midi_velocity;
+          sSensorResults[head_sensor_cnt].midi_pos      = sSensor[head_sensor_cnt].sResults.midi_pos;
+          sSensorResults[head_sensor_cnt].peak_found    = sSensor[head_sensor_cnt].sResults.peak_found;
+          sSensorResults[head_sensor_cnt].is_rim_shot   = sSensor[head_sensor_cnt].sResults.is_rim_shot;
         }
       }
 
