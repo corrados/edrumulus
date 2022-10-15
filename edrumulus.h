@@ -260,6 +260,14 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       float* rim_bp_filt_b = nullptr;
       float* ctrl_hist     = nullptr;
 
+      struct SResults
+      {
+        int  midi_velocity;
+        int  midi_pos;
+        bool peak_found;
+        bool is_rim_shot;
+      };
+
       struct SSensor
       {
         float* x_sq_hist         = nullptr;
@@ -273,33 +281,35 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
         float* x_rim_switch_hist = nullptr;
         float* overload_hist     = nullptr;
 
-        int   mask_back_cnt;
-        int   decay_back_cnt;
-        int   scan_time_cnt;
-        float max_x_filt_val;
-        float max_mask_x_filt_val;
-        float first_peak_val;
-        float peak_val;
-        bool  was_above_threshold;
-        bool  was_peak_found;
-        bool  was_pos_sense_ready;
-        bool  was_rim_shot_ready;
-        bool  is_overloaded_state;
-        float decay_scaling;
-        int   decay_pow_est_start_cnt;
-        int   decay_pow_est_cnt;
-        float decay_pow_est_sum;
-        int   pos_sense_cnt;
-        int   x_low_hist_idx;
-        int   x_rim_hist_idx;
-        int   rim_switch_on_cnt;
-        int   rim_shot_cnt;
-        bool  stored_is_rimshot;
-        int   stored_midi_velocity;
-        int   stored_midi_pos;
+        int      mask_back_cnt;
+        int      decay_back_cnt;
+        int      scan_time_cnt;
+        float    max_x_filt_val;
+        float    max_mask_x_filt_val;
+        float    first_peak_val;
+        float    peak_val;
+        bool     was_above_threshold;
+        bool     was_peak_found;
+        bool     was_pos_sense_ready;
+        bool     was_rim_shot_ready;
+        bool     is_overloaded_state;
+        float    decay_scaling;
+        int      decay_pow_est_start_cnt;
+        int      decay_pow_est_cnt;
+        float    decay_pow_est_sum;
+        int      pos_sense_cnt;
+        int      x_low_hist_idx;
+        int      x_rim_hist_idx;
+        int      rim_switch_on_cnt;
+        int      rim_shot_cnt;
+        bool     stored_is_rimshot;
+        int      stored_midi_velocity;
+        int      stored_midi_pos;
+        SResults sResults;
       };
-      SSensor      sSensor[MAX_NUM_PAD_INPUTS];
 
+      SSensor      sSensor[MAX_NUM_PAD_INPUTS];
+      SResults     sSensorResults[MAX_NUM_PAD_INPUTS];
       int          Fs;
       int          number_inputs;
       int          number_head_sensors;
@@ -346,6 +356,7 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       int          prev_ctrl_value;
       float        cancellation_factor;
       float        rim_max_power_low_limit;
+      int          multiple_sensor_cnt;
 
       // real-time debugging support
 #ifdef USE_SERIAL_DEBUG_PLOTTING

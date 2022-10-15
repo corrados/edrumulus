@@ -416,7 +416,8 @@ void Edrumulus::Pad::initialize()
   allocate_initialize ( &decay,         decay_len );        // memory for decay function
   allocate_initialize ( &lp_filt_b,     lp_filt_len );      // memory for low-pass filter coefficients
   allocate_initialize ( &ctrl_hist,     ctrl_history_len ); // memory for Hi-Hat control pad hit detection
-  prev_ctrl_value = 0;
+  prev_ctrl_value     = 0;
+  multiple_sensor_cnt = 0;
 
   for ( int in = 0; in < number_head_sensors; in++ )
   {
@@ -432,27 +433,31 @@ void Edrumulus::Pad::initialize()
     allocate_initialize ( &s.x_rim_switch_hist, rim_shot_window_len ); // memory for rim switch detection
     allocate_initialize ( &s.overload_hist,     overload_hist_len );   // memory for overload detection status
 
-    s.was_above_threshold     = false;
-    s.is_overloaded_state     = false;
-    s.mask_back_cnt           = 0;
-    s.first_peak_val          = 0.0f;
-    s.peak_val                = 0.0f;
-    s.decay_back_cnt          = 0;
-    s.decay_scaling           = 1.0f;
-    s.scan_time_cnt           = 0;
-    s.decay_pow_est_start_cnt = 0;
-    s.decay_pow_est_cnt       = 0;
-    s.decay_pow_est_sum       = 0.0f;
-    s.pos_sense_cnt           = 0;
-    s.x_low_hist_idx          = 0;
-    s.rim_shot_cnt            = 0;
-    s.rim_switch_on_cnt       = 0;
-    s.max_x_filt_val          = 0.0f;
-    s.max_mask_x_filt_val     = 0.0f;
-    s.was_peak_found          = false;
-    s.was_pos_sense_ready     = false;
-    s.was_rim_shot_ready      = false;
-    s.stored_is_rimshot       = false;
+    s.was_above_threshold            = false;
+    s.is_overloaded_state            = false;
+    s.mask_back_cnt                  = 0;
+    s.first_peak_val                 = 0.0f;
+    s.peak_val                       = 0.0f;
+    s.decay_back_cnt                 = 0;
+    s.decay_scaling                  = 1.0f;
+    s.scan_time_cnt                  = 0;
+    s.decay_pow_est_start_cnt        = 0;
+    s.decay_pow_est_cnt              = 0;
+    s.decay_pow_est_sum              = 0.0f;
+    s.pos_sense_cnt                  = 0;
+    s.x_low_hist_idx                 = 0;
+    s.rim_shot_cnt                   = 0;
+    s.rim_switch_on_cnt              = 0;
+    s.max_x_filt_val                 = 0.0f;
+    s.max_mask_x_filt_val            = 0.0f;
+    s.was_peak_found                 = false;
+    s.was_pos_sense_ready            = false;
+    s.was_rim_shot_ready             = false;
+    s.stored_is_rimshot              = false;
+    sSensorResults[in].midi_velocity = 0;
+    sSensorResults[in].midi_pos      = 0;
+    sSensorResults[in].peak_found    = false;
+    sSensorResults[in].is_rim_shot   = false;
   }
 
   // calculate positional sensing low-pass filter coefficients
@@ -524,17 +529,18 @@ float Edrumulus::Pad::process_sample ( const float* input,
                                        bool&        is_choke_off )
 {
   // initialize return parameters and configuration parameters
-  peak_found                    = false;
-  midi_velocity                 = 0;
-  midi_pos                      = 0;
-  is_rim_shot                   = false;
-  is_choke_on                   = false;
-  is_choke_off                  = false;
-  const bool pos_sense_is_used  = pad_settings.pos_sense_is_used;                         // can be applied directly without calling initialize()
-  const bool rim_shot_is_used   = pad_settings.rim_shot_is_used && ( number_inputs > 1 ); // can be applied directly without calling initialize()
-  const bool pos_sense_inverted = pad_settings.pos_invert;                                // can be applied directly without calling initialize()
-  float      x_filt             = 0.0f; // needed for debugging
-  float      cur_decay          = 1;    // needed for debugging, initialization value (0 dB) only used for debugging
+  peak_found                        = false;
+  midi_velocity                     = 0;
+  midi_pos                          = 0;
+  is_rim_shot                       = false;
+  is_choke_on                       = false;
+  is_choke_off                      = false;
+  const bool pos_sense_is_used      = pad_settings.pos_sense_is_used;                         // can be applied directly without calling initialize()
+  const bool rim_shot_is_used       = pad_settings.rim_shot_is_used && ( number_inputs > 1 ); // can be applied directly without calling initialize()
+  const bool pos_sense_inverted     = pad_settings.pos_invert;                                // can be applied directly without calling initialize()
+  float      x_filt                 = 0.0f; // needed for debugging
+  float      cur_decay              = 1;    // needed for debugging, initialization value (0 dB) only used for debugging
+  bool       any_sensor_has_results = false;
 
   for ( int head_sensor_cnt = 0; head_sensor_cnt < number_head_sensors; head_sensor_cnt++ )
   {
@@ -543,6 +549,10 @@ float Edrumulus::Pad::process_sample ( const float* input,
     bool      first_peak_found = false; // only used internally
     int       peak_delay       = 0;     // only used internally
     int       first_peak_delay = 0;     // only used internally
+    s.sResults.midi_velocity   = 0;
+    s.sResults.midi_pos        = 0;
+    s.sResults.peak_found      = false;
+    s.sResults.is_rim_shot     = false;
 
     // square input signal and store in FIFO buffer
     const float x_sq = input[in] * input[in];
@@ -946,15 +956,83 @@ if ( s.stored_is_rimshot )
   s.stored_midi_pos = 0; // as a quick hack, disable positional sensing if a rim shot is detected
 }
 
-      midi_velocity = s.stored_midi_velocity;
-      midi_pos      = s.stored_midi_pos;
-      peak_found    = true;
-      is_rim_shot   = s.stored_is_rimshot;
-
-      s.was_peak_found      = false;
-      s.was_pos_sense_ready = false;
-      s.was_rim_shot_ready  = false;
+      any_sensor_has_results   = true;
+      s.sResults.midi_velocity = s.stored_midi_velocity;
+      s.sResults.midi_pos      = s.stored_midi_pos;
+      s.sResults.peak_found    = true;
+      s.sResults.is_rim_shot   = s.stored_is_rimshot;
+      s.was_peak_found         = false;
+      s.was_pos_sense_ready    = false;
+      s.was_rim_shot_ready     = false;
       DEBUG_START_PLOTTING();
+    }
+  }
+
+  if ( number_head_sensors == 1 )
+  {
+    // normal case: only one head sensor -> use detection results directly
+    midi_velocity = sSensor[0].sResults.midi_velocity;
+    midi_pos      = sSensor[0].sResults.midi_pos;
+    peak_found    = sSensor[0].sResults.peak_found;
+    is_rim_shot   = sSensor[0].sResults.is_rim_shot;
+  }
+  else
+  {
+    // start condition of delay process to query all head sensor results
+    if ( any_sensor_has_results && ( multiple_sensor_cnt == 0 ) )
+    {
+// TODO put number somewhere else
+const int max_sensor_sample_diff = 20; // 2.5 ms at 8 kHz sampling rate
+
+      multiple_sensor_cnt = max_sensor_sample_diff;
+    }
+
+    // special case with multiple head sensors
+    if ( multiple_sensor_cnt > 0 )
+    {
+      multiple_sensor_cnt--;
+
+      // store current head sensor results
+      if ( any_sensor_has_results )
+      {
+        for ( int head_sensor_cnt = 0; head_sensor_cnt < number_head_sensors; head_sensor_cnt++ )
+        {
+          if ( sSensor[head_sensor_cnt].sResults.peak_found )
+          {
+            sSensorResults[head_sensor_cnt].midi_velocity = sSensor[head_sensor_cnt].sResults.midi_velocity;
+            sSensorResults[head_sensor_cnt].midi_pos      = sSensor[head_sensor_cnt].sResults.midi_pos;
+            sSensorResults[head_sensor_cnt].peak_found    = sSensor[head_sensor_cnt].sResults.peak_found;
+            sSensorResults[head_sensor_cnt].is_rim_shot   = sSensor[head_sensor_cnt].sResults.is_rim_shot;
+          }
+        }
+      }
+
+      // end condition
+      if ( multiple_sensor_cnt == 0 )
+      {
+
+// TODO quick hack test -> take results of any sensor
+for ( int head_sensor_cnt = 0; head_sensor_cnt < number_head_sensors; head_sensor_cnt++ )
+{
+  if ( sSensorResults[head_sensor_cnt].peak_found )
+  {
+    midi_velocity = sSensorResults[head_sensor_cnt].midi_velocity;
+    midi_pos      = sSensorResults[head_sensor_cnt].midi_pos;
+    peak_found    = sSensorResults[head_sensor_cnt].peak_found;
+    is_rim_shot   = sSensorResults[head_sensor_cnt].is_rim_shot;
+  }
+}
+
+// clear all sensor results
+for ( int head_sensor_cnt = 0; head_sensor_cnt < number_head_sensors; head_sensor_cnt++ )
+{
+  sSensorResults[head_sensor_cnt].midi_velocity = 0;
+  sSensorResults[head_sensor_cnt].midi_pos      = 0;
+  sSensorResults[head_sensor_cnt].peak_found    = false;
+  sSensorResults[head_sensor_cnt].is_rim_shot   = false;
+}
+
+      }
     }
   }
 
