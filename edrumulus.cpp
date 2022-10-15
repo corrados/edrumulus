@@ -539,7 +539,7 @@ float Edrumulus::Pad::process_sample ( const float* input,
   for ( int head_sensor_cnt = 0; head_sensor_cnt < number_head_sensors; head_sensor_cnt++ )
   {
     const int in               = head_sensor_cnt == 0 ? 0 : head_sensor_cnt + 1; // exclude rim input
-    SSensor&  s                = sSensor[in];
+    SSensor&  s                = sSensor[head_sensor_cnt];
     bool      first_peak_found = false; // only used internally
     int       peak_delay       = 0;     // only used internally
     int       first_peak_delay = 0;     // only used internally
