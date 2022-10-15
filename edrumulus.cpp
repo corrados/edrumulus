@@ -1028,8 +1028,12 @@ if ( all_head_sensors_have_results )
   peak_found    = sSensorResults[head_sensor_idx_highest_velocity].peak_found;
   is_rim_shot   = sSensorResults[head_sensor_idx_highest_velocity].is_rim_shot;
 
-// TEST first peak time difference between head sensor 1 and 0
-midi_pos = min ( 127, max ( 0, 60 + 4 * ( sSensorResults[1].first_peak_delay - sSensorResults[0].first_peak_delay ) ) );
+// TEST use maximum offset for middle from each sensor pair
+const int diff_1_0 = sSensorResults[1].first_peak_delay - sSensorResults[0].first_peak_delay;
+const int diff_2_0 = sSensorResults[2].first_peak_delay - sSensorResults[0].first_peak_delay;
+const int diff_2_1 = sSensorResults[2].first_peak_delay - sSensorResults[1].first_peak_delay;
+//midi_pos = min ( 127, max ( 0, 60 + 4 * ( diff_2_1 ) ) );
+midi_pos = min ( 127, max ( 0, 8 * ( max ( max ( abs ( diff_1_0 ), abs ( diff_2_0 ) ), abs ( diff_2_1 ) ) ) ) );
 }
 
         // clear all sensor results
