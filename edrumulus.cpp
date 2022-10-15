@@ -536,12 +536,13 @@ float Edrumulus::Pad::process_sample ( const float* input,
   float      x_filt             = 0.0f; // needed for debugging
   float      cur_decay          = 1;    // needed for debugging, initialization value (0 dB) only used for debugging
 
-  for ( int in = 0; in < number_head_sensors; in++ )
+  for ( int head_sensor_cnt = 0; head_sensor_cnt < number_head_sensors; head_sensor_cnt++ )
   {
-    SSensor& s                = sSensor[in];
-    bool     first_peak_found = false; // only used internally
-    int      peak_delay       = 0;     // only used internally
-    int      first_peak_delay = 0;     // only used internally
+    const int in               = head_sensor_cnt == 0 ? 0 : head_sensor_cnt + 1; // exclude rim input
+    SSensor&  s                = sSensor[in];
+    bool      first_peak_found = false; // only used internally
+    int       peak_delay       = 0;     // only used internally
+    int       first_peak_delay = 0;     // only used internally
 
     // square input signal and store in FIFO buffer
     const float x_sq = input[in] * input[in];
