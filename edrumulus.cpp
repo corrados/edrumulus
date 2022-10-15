@@ -454,10 +454,7 @@ void Edrumulus::Pad::initialize()
     s.was_pos_sense_ready            = false;
     s.was_rim_shot_ready             = false;
     s.stored_is_rimshot              = false;
-    sSensorResults[in].midi_velocity = 0;
-    sSensorResults[in].midi_pos      = 0;
-    sSensorResults[in].peak_found    = false;
-    sSensorResults[in].is_rim_shot   = false;
+    sSensorResults[in].Clear();
   }
 
   // calculate positional sensing low-pass filter coefficients
@@ -549,10 +546,7 @@ float Edrumulus::Pad::process_sample ( const float* input,
     bool      first_peak_found = false; // only used internally
     int       peak_delay       = 0;     // only used internally
     int       first_peak_delay = 0;     // only used internally
-    s.sResults.midi_velocity   = 0;
-    s.sResults.midi_pos        = 0;
-    s.sResults.peak_found      = false;
-    s.sResults.is_rim_shot     = false;
+    s.sResults.Clear();
 
     // square input signal and store in FIFO buffer
     const float x_sq = input[in] * input[in];
@@ -997,10 +991,7 @@ const int max_sensor_sample_diff = 20; // 2.5 ms at 8 kHz sampling rate
       {
         if ( sSensor[head_sensor_cnt].sResults.peak_found )
         {
-          sSensorResults[head_sensor_cnt].midi_velocity = sSensor[head_sensor_cnt].sResults.midi_velocity;
-          sSensorResults[head_sensor_cnt].midi_pos      = sSensor[head_sensor_cnt].sResults.midi_pos;
-          sSensorResults[head_sensor_cnt].peak_found    = sSensor[head_sensor_cnt].sResults.peak_found;
-          sSensorResults[head_sensor_cnt].is_rim_shot   = sSensor[head_sensor_cnt].sResults.is_rim_shot;
+          sSensorResults[head_sensor_cnt] = sSensor[head_sensor_cnt].sResults;
         }
       }
 
@@ -1020,15 +1011,11 @@ for ( int head_sensor_cnt = 0; head_sensor_cnt < number_head_sensors; head_senso
   }
 }
 
-// clear all sensor results
-for ( int head_sensor_cnt = 0; head_sensor_cnt < number_head_sensors; head_sensor_cnt++ )
-{
-  sSensorResults[head_sensor_cnt].midi_velocity = 0;
-  sSensorResults[head_sensor_cnt].midi_pos      = 0;
-  sSensorResults[head_sensor_cnt].peak_found    = false;
-  sSensorResults[head_sensor_cnt].is_rim_shot   = false;
-}
-
+        // clear all sensor results
+        for ( int head_sensor_cnt = 0; head_sensor_cnt < number_head_sensors; head_sensor_cnt++ )
+        {
+          sSensorResults[head_sensor_cnt].Clear();
+        }
       }
     }
   }

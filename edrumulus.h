@@ -266,6 +266,14 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
         int  midi_pos;
         bool peak_found;
         bool is_rim_shot;
+
+        void Clear()
+        {
+          midi_velocity = 0;
+          midi_pos      = 0;
+          peak_found    = false;
+          is_rim_shot   = false;
+        }
       };
 
       struct SSensor
