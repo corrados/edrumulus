@@ -45,7 +45,7 @@ def process(frames):
       if int.from_bytes(data[0], "big") & 0xF0 == 0xB0: # controller
         key   = int.from_bytes(data[1], "big")
         value = int.from_bytes(data[2], "big")
-        if key == 16: # positional sensing
+        if (key == 16) or (key == 18): # positional sensing
           midi_pos.pop(0)
           midi_pos.append(value)
 
