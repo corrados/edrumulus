@@ -264,15 +264,17 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       {
         int  midi_velocity;
         int  midi_pos;
+        int  first_peak_delay;
         bool peak_found;
         bool is_rim_shot;
 
         void Clear()
         {
-          midi_velocity = 0;
-          midi_pos      = 0;
-          peak_found    = false;
-          is_rim_shot   = false;
+          midi_velocity    = 0;
+          midi_pos         = 0;
+          first_peak_delay = 0;
+          peak_found       = false;
+          is_rim_shot      = false;
         }
       };
 
@@ -295,6 +297,7 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
         float    max_x_filt_val;
         float    max_mask_x_filt_val;
         float    first_peak_val;
+        int      first_peak_delay;
         float    peak_val;
         bool     was_above_threshold;
         bool     was_peak_found;

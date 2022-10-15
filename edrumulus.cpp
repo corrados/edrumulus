@@ -543,9 +543,9 @@ float Edrumulus::Pad::process_sample ( const float* input,
   {
     const int in               = head_sensor_cnt == 0 ? 0 : head_sensor_cnt + 1; // exclude rim input
     SSensor&  s                = sSensor[head_sensor_cnt];
-    bool      first_peak_found = false; // only used internally
-    int       peak_delay       = 0;     // only used internally
-    int       first_peak_delay = 0;     // only used internally
+    bool      first_peak_found = false;
+    int       peak_delay       = 0;
+    s.first_peak_delay++; // increment first peak delay for each new sample
     s.sResults.Clear();
 
     // square input signal and store in FIFO buffer
@@ -689,10 +689,10 @@ float Edrumulus::Pad::process_sample ( const float* input,
         }
 
         // peak detection results
-        peak_delay       = scan_time - ( peak_velocity_idx + 1 );
-        first_peak_delay = total_scan_time - ( first_peak_idx + 1 );
-        first_peak_found = true; // for special case signal only increments, the peak found would be false -> correct this
-        s.was_peak_found = true;
+        peak_delay         = scan_time - ( peak_velocity_idx + 1 );
+        s.first_peak_delay = total_scan_time - ( first_peak_idx + 1 );
+        first_peak_found   = true; // for special case signal only increments, the peak found would be false -> correct this
+        s.was_peak_found   = true;
 
         // check overload status
         int number_overloaded_samples = 0;
@@ -787,8 +787,8 @@ float Edrumulus::Pad::process_sample ( const float* input,
       {
         // a peak was found, we now have to start the delay process to fill up the
         // required buffer length for our metric
-        s.pos_sense_cnt  = max ( 1, lp_filt_len - first_peak_delay );
-        s.x_low_hist_idx = x_low_hist_len - lp_filt_len - max ( 0, first_peak_delay - lp_filt_len + 1 );
+        s.pos_sense_cnt  = max ( 1, lp_filt_len - s.first_peak_delay );
+        s.x_low_hist_idx = x_low_hist_len - lp_filt_len - max ( 0, s.first_peak_delay - lp_filt_len + 1 );
       }
 
       if ( s.pos_sense_cnt > 0 )
@@ -950,14 +950,15 @@ if ( s.stored_is_rimshot )
   s.stored_midi_pos = 0; // as a quick hack, disable positional sensing if a rim shot is detected
 }
 
-      any_sensor_has_results   = true;
-      s.sResults.midi_velocity = s.stored_midi_velocity;
-      s.sResults.midi_pos      = s.stored_midi_pos;
-      s.sResults.peak_found    = true;
-      s.sResults.is_rim_shot   = s.stored_is_rimshot;
-      s.was_peak_found         = false;
-      s.was_pos_sense_ready    = false;
-      s.was_rim_shot_ready     = false;
+      any_sensor_has_results      = true;
+      s.sResults.first_peak_delay = s.first_peak_delay;
+      s.sResults.midi_velocity    = s.stored_midi_velocity;
+      s.sResults.midi_pos         = s.stored_midi_pos;
+      s.sResults.peak_found       = true;
+      s.sResults.is_rim_shot      = s.stored_is_rimshot;
+      s.was_peak_found            = false;
+      s.was_pos_sense_ready       = false;
+      s.was_rim_shot_ready        = false;
       DEBUG_START_PLOTTING();
     }
   }
@@ -989,6 +990,8 @@ const int max_sensor_sample_diff = 20; // 2.5 ms at 8 kHz sampling rate
       // store current head sensor results
       for ( int head_sensor_cnt = 0; head_sensor_cnt < number_head_sensors; head_sensor_cnt++ )
       {
+        sSensorResults[head_sensor_cnt].first_peak_delay++;
+
         if ( sSensor[head_sensor_cnt].sResults.peak_found )
         {
           sSensorResults[head_sensor_cnt] = sSensor[head_sensor_cnt].sResults;
@@ -999,16 +1002,34 @@ const int max_sensor_sample_diff = 20; // 2.5 ms at 8 kHz sampling rate
       if ( multiple_sensor_cnt == 0 )
       {
 
-// TODO quick hack test -> take results of any sensor
+// TODO quick hack tests
+bool all_head_sensors_have_results    = true;
+int  head_sensor_idx_highest_velocity = 0;
+int  max_velocity                     = 0;
 for ( int head_sensor_cnt = 0; head_sensor_cnt < number_head_sensors; head_sensor_cnt++ )
 {
-  if ( sSensorResults[head_sensor_cnt].peak_found )
+  if ( !sSensorResults[head_sensor_cnt].peak_found )
   {
-    midi_velocity = sSensorResults[head_sensor_cnt].midi_velocity;
-    midi_pos      = sSensorResults[head_sensor_cnt].midi_pos;
-    peak_found    = sSensorResults[head_sensor_cnt].peak_found;
-    is_rim_shot   = sSensorResults[head_sensor_cnt].is_rim_shot;
+    all_head_sensors_have_results = false;
   }
+  else
+  {
+    if ( sSensorResults[head_sensor_cnt].midi_velocity > max_velocity )
+    {
+      max_velocity                     = sSensorResults[head_sensor_cnt].midi_velocity;
+      head_sensor_idx_highest_velocity = head_sensor_cnt;
+    }
+  }
+}
+if ( all_head_sensors_have_results )
+{
+  midi_velocity = sSensorResults[head_sensor_idx_highest_velocity].midi_velocity;
+  midi_pos      = sSensorResults[head_sensor_idx_highest_velocity].midi_pos;
+  peak_found    = sSensorResults[head_sensor_idx_highest_velocity].peak_found;
+  is_rim_shot   = sSensorResults[head_sensor_idx_highest_velocity].is_rim_shot;
+
+// TEST first peak time difference between head sensor 1 and 0
+midi_pos = min ( 127, max ( 0, 60 + 4 * ( sSensorResults[1].first_peak_delay - sSensorResults[0].first_peak_delay ) ) );
 }
 
         // clear all sensor results
