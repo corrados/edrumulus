@@ -1034,6 +1034,9 @@ const int diff_2_0 = sSensorResults[2].first_peak_delay - sSensorResults[0].firs
 const int diff_2_1 = sSensorResults[2].first_peak_delay - sSensorResults[1].first_peak_delay;
 //midi_pos = min ( 127, max ( 0, 60 + 4 * ( diff_2_1 ) ) );
 midi_pos = min ( 127, max ( 0, 8 * ( max ( max ( abs ( diff_1_0 ), abs ( diff_2_0 ) ), abs ( diff_2_1 ) ) ) ) );
+
+// TEST use average MIDI velocity
+midi_velocity = ( sSensorResults[0].midi_velocity + sSensorResults[1].midi_velocity + sSensorResults[2].midi_velocity ) / 3;
 }
 
         // clear all sensor results
