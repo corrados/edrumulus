@@ -1,5 +1,23 @@
 # Edrumulus Project Log
 
+## 2022-10-16 Multiple head sensors
+
+  The PDA120LS pad has three mesh head piezo sensors which are combined into one output signal.
+  I have modified this pad to output each sensor signal separately. On a Git branch I have
+  implemented a proof of concept to utilize the multiple head sensor signals to improve the
+  positional sensing and eliminate the hot spot problem. The new positional sensing algorithm
+  measures the time difference of the first peak location of all three sensors. The transverse
+  wave emitted from a strike travells slower than the speed of sound. The measured time difference
+  of 20 cm distance is approx. 2 ms or 16 samples at 8 kHz sampling rate. This is enough to
+  measure the position with a good precision.<br/>
+  The challenge is to detect the first peak of each sensor correctly. Also, since we process
+  each sensor separately, it is important to combine the three peaks correctly. Otherwise we get
+  double trigger problems. Another issue is to derive the position from the measured distances.
+  Right now I am using a simple approximation.<br/>
+  A simple way to eliminate the hot spots is to average the detected velocities of all sensors.
+  First tests showed that this works very well. The detected velocity is consistent independent
+  on the strike position, i.e., even on the edge of the pad and if a piezo sensor is hit directly.
+
 ## 2022-08-18 Edrumulus prototype 5 (advanced Raspberry Pi hat PCB)
 
   The most advanced Edrumulus prototype up to now was build. It is a Raspberry Pi hat design where
