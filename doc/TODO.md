@@ -10,17 +10,6 @@ The road map items are sorted by priority.
 
   Do not use a linear parameter as it is implemented right now.
 
-- [ ] **Attach second piezo on mesh pad and experiment with improved velocity/position detection using the second piezo signal**
-
-  Maybe use PDA-120L pad since it already has three pizeo sensors installed.
-
-  Possible algorithms:
-  1. Apply current positional sensing on each of the piezos and triangulate the position (easiest solution).
-  2. Try out if a velocity-based algorithm gives any reasonable results.
-  3. Estimate the time difference between first peaks (at 8 kHz sampling rate the sample distance would be
-     equivalent to approx. 8 cm which is not usable, some interpolation must be supported or the sampling rate
-     must be enlarged).
-
 - [ ] **Improve Edrumulus/Drumgizmo usage on Raspberry Pi (Pi4, Pi 3+ and Pi Zero)**
 
   Maybe use ecasound to mix all the Drumgizmo audio channels in real-time to change the sound of the
@@ -32,18 +21,11 @@ The road map items are sorted by priority.
 
   Striking directly on the piezo results in detected velocity values which are much too high.
 
-- [ ] **Fix ghost strikes**
-
-  Probably caused by electrical interferers or noise in the microcontroller developer
-  board itself. Either find a software solution or changes in the analog front end are needed.
-
 - [ ] **Fix EEPROM issue on the ESP32**
 
   The ESP32 storage seems to be unreliable (which is maybe caused by the way we are dealing with the threads), i.e.,
   some parameters are changed from time to time to a large value. Search for `### MARKER: ESP32 issue with read/write settings ###`
   in the code.
-
-- [ ] **Support hardware keyboard/display like Arduino LCD1602 Display Keypad Shield**
 
 - [ ] **Improve dynamics for Drumgizmo**
 
@@ -57,9 +39,9 @@ The road map items are sorted by priority.
 
   Maybe Bent can help out here.
 
-- [ ] **Documentation**
+- [ ] **Documentation (user manual)**
 
-  Create a Edrumulus manual which describes the hardware/software setup, parameter description, HOWTOs, etc.
+  Create an Edrumulus manual which describes the hardware/software setup, parameter description, HOWTOs, etc.
 
 - [ ] **Should we consider pre-scan time high peaks for velocity estimation?**
 
@@ -73,11 +55,7 @@ The road map items are sorted by priority.
 
 - [ ] **Introduce defines for debugging functionality instead of `/* */`**
 
-- [ ] **Documentation**
+- [ ] **Algorihm documentation**
 
   The algorithm description should be improved. Especially, improve retrigger cancellation section.
-
-- [ ] **Create Qt application for controlling Edrumulus via MIDI using the rtmidi library**
-
-
 
