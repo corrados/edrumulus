@@ -78,7 +78,7 @@ with client:
     for i, pos in enumerate(midi_pos):
       ax2.add_patch(mpatches.Circle((0.5, 0.5), pos / 127 * 0.4, fill=False, color=cmap(i / N * i / N)))
     plt.show()
-    plt.pause(0.1)
+    plt.pause(0.3)
     if not plt.fignum_exists(fignum): # if plot window is closed then quit
       break
 

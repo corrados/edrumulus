@@ -990,6 +990,7 @@ const int max_sensor_sample_diff = 20; // 2.5 ms at 8 kHz sampling rate
       // store current head sensor results
       for ( int head_sensor_cnt = 0; head_sensor_cnt < number_head_sensors; head_sensor_cnt++ )
       {
+        // for sensors which already had results we need to increment the first peak delay for each new sample
         sSensorResults[head_sensor_cnt].first_peak_delay++;
 
         if ( sSensor[head_sensor_cnt].sResults.peak_found )
@@ -1003,17 +1004,17 @@ const int max_sensor_sample_diff = 20; // 2.5 ms at 8 kHz sampling rate
       {
 
 // TODO quick hack tests
-bool all_head_sensors_have_results    = true;
+int  number_sensors_with_results      = 0;
 int  head_sensor_idx_highest_velocity = 0;
 int  max_velocity                     = 0;
+int  velocity_sum                     = 0;
 for ( int head_sensor_cnt = 0; head_sensor_cnt < number_head_sensors; head_sensor_cnt++ )
 {
-  if ( !sSensorResults[head_sensor_cnt].peak_found )
+  if ( sSensorResults[head_sensor_cnt].peak_found )
   {
-    all_head_sensors_have_results = false;
-  }
-  else
-  {
+    number_sensors_with_results++;
+    velocity_sum += sSensorResults[head_sensor_cnt].midi_velocity;
+
     if ( sSensorResults[head_sensor_cnt].midi_velocity > max_velocity )
     {
       max_velocity                     = sSensorResults[head_sensor_cnt].midi_velocity;
@@ -1021,23 +1022,31 @@ for ( int head_sensor_cnt = 0; head_sensor_cnt < number_head_sensors; head_senso
     }
   }
 }
-if ( all_head_sensors_have_results )
+
+// TEST only return peak found if at least two sensors have results
+if ( number_sensors_with_results > 1 )
 {
-  midi_velocity = sSensorResults[head_sensor_idx_highest_velocity].midi_velocity;
-  midi_pos      = sSensorResults[head_sensor_idx_highest_velocity].midi_pos;
-  peak_found    = sSensorResults[head_sensor_idx_highest_velocity].peak_found;
+  if ( number_sensors_with_results == 3 )
+  {
+    // TEST use maximum offset for middle from each sensor pair
+    const int diff_1_0 = sSensorResults[1].first_peak_delay - sSensorResults[0].first_peak_delay;
+    const int diff_2_0 = sSensorResults[2].first_peak_delay - sSensorResults[0].first_peak_delay;
+    const int diff_2_1 = sSensorResults[2].first_peak_delay - sSensorResults[1].first_peak_delay;
+    const int max_abs_diff = ( max ( max ( abs ( diff_1_0 ), abs ( diff_2_0 ) ), abs ( diff_2_1 ) ) );
+    midi_pos = min ( 127, max ( 0, pad_settings.pos_sensitivity * ( max_abs_diff - pad_settings.pos_threshold ) ) );
+  }
+  else
+  {
+
+// TODO
+midi_pos = 0;
+
+  }
+
+  // TEST use average MIDI velocity
+  midi_velocity = velocity_sum / number_sensors_with_results;
   is_rim_shot   = sSensorResults[head_sensor_idx_highest_velocity].is_rim_shot;
-
-// TEST use maximum offset for middle from each sensor pair
-const int diff_1_0 = sSensorResults[1].first_peak_delay - sSensorResults[0].first_peak_delay;
-const int diff_2_0 = sSensorResults[2].first_peak_delay - sSensorResults[0].first_peak_delay;
-const int diff_2_1 = sSensorResults[2].first_peak_delay - sSensorResults[1].first_peak_delay;
-//midi_pos = min ( 127, max ( 0, 60 + 4 * ( diff_2_1 ) ) );
-const int max_abs_diff = ( max ( max ( abs ( diff_1_0 ), abs ( diff_2_0 ) ), abs ( diff_2_1 ) ) );
-midi_pos = min ( 127, max ( 0, pad_settings.pos_sensitivity * ( max_abs_diff - pad_settings.pos_threshold ) ) );
-
-// TEST use average MIDI velocity
-midi_velocity = ( sSensorResults[0].midi_velocity + sSensorResults[1].midi_velocity + sSensorResults[2].midi_velocity ) / 3;
+  peak_found    = true;
 }
 
         // clear all sensor results
