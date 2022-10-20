@@ -950,12 +950,24 @@ if ( s.stored_is_rimshot )
   s.stored_midi_pos = 0; // as a quick hack, disable positional sensing if a rim shot is detected
 }
 
-      any_sensor_has_results      = true;
-      s.sResults.first_peak_delay = s.first_peak_delay;
-      s.sResults.midi_velocity    = s.stored_midi_velocity;
-      s.sResults.midi_pos         = s.stored_midi_pos;
-      s.sResults.peak_found       = true;
-      s.sResults.is_rim_shot      = s.stored_is_rimshot;
+      if ( number_head_sensors == 1 )
+      {
+        // normal case: only one head sensor -> use detection results directly
+        midi_velocity = s.stored_midi_velocity;
+        midi_pos      = s.stored_midi_pos;
+        peak_found    = true;
+        is_rim_shot   = s.stored_is_rimshot;
+      }
+      else
+      {
+        any_sensor_has_results      = true;
+        s.sResults.first_peak_delay = s.first_peak_delay;
+        s.sResults.midi_velocity    = s.stored_midi_velocity;
+        s.sResults.midi_pos         = s.stored_midi_pos;
+        s.sResults.peak_found       = true;
+        s.sResults.is_rim_shot      = s.stored_is_rimshot;
+      }
+
       s.was_peak_found            = false;
       s.was_pos_sense_ready       = false;
       s.was_rim_shot_ready        = false;
@@ -963,15 +975,7 @@ if ( s.stored_is_rimshot )
     }
   }
 
-  if ( number_head_sensors == 1 )
-  {
-    // normal case: only one head sensor -> use detection results directly
-    midi_velocity = sSensor[0].sResults.midi_velocity;
-    midi_pos      = sSensor[0].sResults.midi_pos;
-    peak_found    = sSensor[0].sResults.peak_found;
-    is_rim_shot   = sSensor[0].sResults.is_rim_shot;
-  }
-  else
+  if ( number_head_sensors > 1 )
   {
     // start condition of delay process to query all head sensor results
     if ( any_sensor_has_results && ( multiple_sensor_cnt == 0 ) )
