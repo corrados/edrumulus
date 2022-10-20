@@ -51,7 +51,8 @@ public:
     PD5       = 17,
     PDA120LS  = 18,
     PDX100    = 19,
-    KT10      = 20
+    KT10      = 20,
+    SNARE_2_3 = 21 // special type: head sensors 2 and 3 of snare
   };
 
   enum Ecurvetype // note that the enums need assigned integers for MIDI settings transfer
@@ -68,9 +69,7 @@ public:
   // call this function during the Setup function of the main program
   void setup ( const int  conf_num_pads,
                const int* conf_analog_pins,
-               const int* conf_analog_pins_rim_shot,
-               const int* conf_analog_pins_second,
-               const int* conf_analog_pins_third );
+               const int* conf_analog_pins_rim_shot );
 
   // call the process function during the main loop
   void process();
@@ -93,7 +92,7 @@ public:
   bool get_midi_ctrl_is_open   ( const int pad_idx ) { return midi_ctrl_value[pad_idx] < Pad::hi_hat_is_open_MIDI_threshold; }
 
   // configure the pads
-  void set_pad_type             ( const int pad_idx, const Epadtype   new_pad_type )  { pad[pad_idx].set_pad_type ( new_pad_type ); }
+  void set_pad_type             ( const int pad_idx, const Epadtype   new_pad_type )  { pad[pad_idx].set_pad_type ( new_pad_type ) ? pad[0].set_add_sensor_pad_idx ( pad_idx ) : pad[0].set_add_sensor_pad_idx ( -1 ); }
   Epadtype get_pad_type         ( const int pad_idx )                                 { return pad[pad_idx].get_pad_type(); }
   void set_velocity_threshold   ( const int pad_idx, const int        new_threshold ) { pad[pad_idx].set_velocity_threshold ( new_threshold ); }
   int  get_velocity_threshold   ( const int pad_idx )                                 { return pad[pad_idx].get_velocity_threshold(); }
@@ -138,10 +137,10 @@ protected:
   class Pad
   {
     public:
-      void setup ( const int conf_Fs,
-                   const int conf_number_inputs = 1 );
+      void setup ( const int conf_Fs );
 
       float process_sample ( const float* input,
+                             const int    input_len,
                              const bool*  overload_detected,
                              bool&        peak_found,
                              int&         midi_velocity,
@@ -156,7 +155,7 @@ protected:
                                     bool&      peak_found,
                                     int&       midi_velocity );
 
-      void set_pad_type ( const Epadtype new_pad_type );
+      bool set_pad_type ( const Epadtype new_pad_type );
       Epadtype get_pad_type() { return pad_settings.pad_type; }
       void set_midi_notes         ( const int new_midi_note, const int new_midi_note_rim ) { midi_note = new_midi_note; midi_note_rim = new_midi_note_rim; }
       void set_midi_notes_open    ( const int new_midi_note, const int new_midi_note_rim ) { midi_note_open = new_midi_note; midi_note_open_rim = new_midi_note_rim; }
@@ -191,6 +190,8 @@ protected:
       Ecurvetype get_curve          ()                                 { return pad_settings.curve_type; }
       void set_cancellation         ( const int        new_cancel )    { pad_settings.cancellation = new_cancel; initialize(); }
       int  get_cancellation         ()                                 { return pad_settings.cancellation; }
+      void set_add_sensor_pad_idx   ( const int        new_idx )       { add_sensor_pad_idx = new_idx; initialize(); }
+      int  get_add_sensor_pad_idx   ()                                 { return add_sensor_pad_idx; }
 
       float get_cancellation_factor() { return cancellation_factor; }
       bool  get_is_control()          { return pad_settings.is_control; }
@@ -321,6 +322,7 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
 
       SSensor      sSensor[MAX_NUM_PAD_INPUTS];
       SResults     sSensorResults[MAX_NUM_PAD_INPUTS];
+      int          add_sensor_pad_idx;
       int          Fs;
       int          number_inputs;
       int          number_head_sensors;

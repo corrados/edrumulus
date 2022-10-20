@@ -47,9 +47,7 @@ Edrumulus::Edrumulus() :
 
 void Edrumulus::setup ( const int  conf_num_pads,
                         const int* conf_analog_pins,
-                        const int* conf_analog_pins_rim_shot,
-                        const int* conf_analog_pins_second,
-                        const int* conf_analog_pins_third )
+                        const int* conf_analog_pins_rim_shot )
 {
   number_pads = min ( conf_num_pads, MAX_NUM_PADS );
 
@@ -58,12 +56,10 @@ void Edrumulus::setup ( const int  conf_num_pads,
     // set the pad GIOP pin numbers
     analog_pin[i][0] = conf_analog_pins[i];
     analog_pin[i][1] = conf_analog_pins_rim_shot[i];
-    analog_pin[i][2] = conf_analog_pins_second[i];
-    analog_pin[i][3] = conf_analog_pins_third[i];
-    number_inputs[i] = conf_analog_pins_rim_shot[i] >= 0 ? ( conf_analog_pins_second[i] >= 0 ? 4 : 2 ) : 1;
+    number_inputs[i] = conf_analog_pins_rim_shot[i] >= 0 ? 2 : 1;
 
     // setup the pad
-    pad[i].setup ( Fs, number_inputs[i] );
+    pad[i].setup ( Fs );
   }
 
   // setup the ESP32 specific object, this has to be done after assigning the analog
@@ -199,7 +195,7 @@ Serial.println ( serial_print );
       }
 
       // process sample
-      pad[i].process_sample ( sample,         overload_detected,
+      pad[i].process_sample ( sample,         number_inputs[i], overload_detected,
                               peak_found[i],  midi_velocity[i], midi_pos[i],
                               is_rim_shot[i], is_choke_on[i],   is_choke_off[i] );
     }
@@ -289,13 +285,10 @@ Serial.println ( serial_print2 );
 // -----------------------------------------------------------------------------
 // Pad -------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-void Edrumulus::Pad::setup ( const int conf_Fs,
-                             const int conf_number_inputs )
+void Edrumulus::Pad::setup ( const int conf_Fs )
 {
   // set essential parameters
-  Fs                  = conf_Fs;
-  number_inputs       = conf_number_inputs;
-  number_head_sensors = max ( 1, number_inputs - 1 ); // exclude rim input: 1 or 3 head sensor inputs
+  Fs = conf_Fs;
 
   // initialize with default pad type and other defaults
   set_pad_type ( PD120 );
@@ -304,21 +297,27 @@ void Edrumulus::Pad::setup ( const int conf_Fs,
   midi_note_open     = 46;
   midi_note_open_rim = 26;
   midi_ctrl_ch       = 4; // CC4, usually used for hi-hat
+  add_sensor_pad_idx = -1; // initialize with invalid index
 }
 
 
-void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
+bool Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
 {
   // apply new pad type and set all parameters to the default values for that pad type
   pad_settings.pad_type = new_pad_type;
 
   apply_preset_pad_settings();
   initialize();
+
+  return ( new_pad_type == SNARE_2_3 );
 }
 
 
 void Edrumulus::Pad::initialize()
 {
+  // in case we have a coupled sensor pad, the number of head sensors is 3
+  number_head_sensors = add_sensor_pad_idx > 0 ? 3 : 1; // 1 or 3 head sensor inputs
+
   // set algorithm parameters
   const float threshold_db = 20 * log10 ( ADC_MAX_NOISE_AMPL ) - 16.0f + pad_settings.velocity_threshold; // threshold range considering the maximum ADC noise level
   threshold                = pow   ( 10.0f, threshold_db / 10 );                   // linear power threshold
@@ -517,6 +516,7 @@ void Edrumulus::Pad::initialize()
 
 
 float Edrumulus::Pad::process_sample ( const float* input,
+                                       const int    input_len,
                                        const bool*  overload_detected,
                                        bool&        peak_found,
                                        int&         midi_velocity,
@@ -532,9 +532,9 @@ float Edrumulus::Pad::process_sample ( const float* input,
   is_rim_shot                       = false;
   is_choke_on                       = false;
   is_choke_off                      = false;
-  const bool pos_sense_is_used      = pad_settings.pos_sense_is_used;                         // can be applied directly without calling initialize()
-  const bool rim_shot_is_used       = pad_settings.rim_shot_is_used && ( number_inputs > 1 ); // can be applied directly without calling initialize()
-  const bool pos_sense_inverted     = pad_settings.pos_invert;                                // can be applied directly without calling initialize()
+  const bool pos_sense_is_used      = pad_settings.pos_sense_is_used;                     // can be applied directly without calling initialize()
+  const bool rim_shot_is_used       = pad_settings.rim_shot_is_used && ( input_len > 1 ); // can be applied directly without calling initialize()
+  const bool pos_sense_inverted     = pad_settings.pos_invert;                            // can be applied directly without calling initialize()
   float      x_filt                 = 0.0f; // needed for debugging
   float      cur_decay              = 1;    // needed for debugging, initialization value (0 dB) only used for debugging
   bool       any_sensor_has_results = false;
