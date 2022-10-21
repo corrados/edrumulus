@@ -123,7 +123,9 @@ public:
   bool get_pos_sense_is_used   ( const int pad_idx )                         { return pad[pad_idx].get_pos_sense_is_used(); }
 
   void set_spike_cancel_level ( const int new_level ) { spike_cancel_level = new_level; }
-  int  get_spike_cancel_level()                       { return spike_cancel_level; }
+  int  get_spike_cancel_level ()                      { return spike_cancel_level; }
+  void set_coupled_pad_idx    ( const int new_idx )   { coupled_pad_idx = new_idx; pad[0].set_use_coupling ( new_idx > 0 ); }
+  int  get_coupled_pad_idx    ()                      { return coupled_pad_idx; }
 
   // overload and error handling
   bool get_status_is_overload() { return status_is_overload; }
@@ -447,6 +449,7 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
   int                Fs;
   Edrumulus_hardware edrumulus_hardware;
   int                number_pads;
+  int                coupled_pad_idx;
   int                number_inputs[MAX_NUM_PADS];
   int                analog_pin[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   double             dc_offset[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS]; // must be double type for IIR filter

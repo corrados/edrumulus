@@ -37,6 +37,7 @@ Edrumulus::Edrumulus() :
   cancel_cnt                 = 0;
   cancel_MIDI_velocity       = 1;
   cancel_pad_index           = 0;
+  coupled_pad_idx            = 0; // disable coupling
 
   // calculate DC offset IIR1 low pass filter parameters, see
   // http://www.tsdconseil.fr/tutos/tuto-iir1-en.pdf: gamma = exp(-Ts/tau)
@@ -195,11 +196,6 @@ Serial.println ( serial_print );
           overload_detected[j] = false;
         }
       }
-
-
-// TEST
-const int coupled_pad_idx = -1;
-
 
       // process sample
       if ( ( coupled_pad_idx > 0 ) && ( ( i == coupled_pad_idx ) || ( i == 0 ) ) )
