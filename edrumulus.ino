@@ -67,6 +67,9 @@ void setup()
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
   read_settings();
 
+// TEST
+//edrumulus.set_coupled_pad_idx ( 6 );
+
   // initialize GPIO port for status LED
   pinMode ( status_LED_pin, OUTPUT );
 }
