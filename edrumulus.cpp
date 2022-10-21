@@ -107,7 +107,9 @@ void Edrumulus::setup ( const int  conf_num_pads,
 void Edrumulus::process()
 {
   float sample[MAX_NUM_PAD_INPUTS];
+  float stored_sample[MAX_NUM_PAD_INPUTS];
   bool  overload_detected[MAX_NUM_PAD_INPUTS];
+  bool  stored_overload_detected[MAX_NUM_PAD_INPUTS];
 
 /*
 // TEST for debugging: take samples from Octave, process and return result to Octave
@@ -194,10 +196,48 @@ Serial.println ( serial_print );
         }
       }
 
+
+// TEST
+const int coupled_pad_idx = -1;
+
+
       // process sample
-      pad[i].process_sample ( sample,         number_inputs[i], overload_detected,
-                              peak_found[i],  midi_velocity[i], midi_pos[i],
-                              is_rim_shot[i], is_choke_on[i],   is_choke_off[i] );
+      if ( ( coupled_pad_idx > 0 ) && ( ( i == coupled_pad_idx ) || ( i == 0 ) ) )
+      {
+        if ( i == 0 )
+        {
+          // store the current input for pad 0
+          for ( int j = 0; j < number_inputs[0]; j++ )
+          {
+            stored_sample[j]            = sample[j];
+            stored_overload_detected[j] = overload_detected[j];
+          }
+        }
+        else
+        {
+          // combine samples and process pad 0 which is the couple master per definition
+          for ( int j = number_inputs[i] - 1; j >= 0; j-- ) // count backwards to avoid overwriting
+          {
+            sample[j + number_inputs[0]]            = sample[j];
+            overload_detected[j + number_inputs[0]] = overload_detected[j];
+          }
+          for ( int j = 0; j < number_inputs[0]; j++ )
+          {
+            sample[j]            = stored_sample[j];
+            overload_detected[j] = stored_overload_detected[j];
+          }
+
+          pad[0].process_sample ( sample, number_inputs[0] + number_inputs[i], overload_detected,
+                                  peak_found[0],  midi_velocity[0], midi_pos[0],
+                                  is_rim_shot[0], is_choke_on[0],   is_choke_off[0] );
+        }
+      }
+      else
+      {
+        pad[i].process_sample ( sample,         number_inputs[i], overload_detected,
+                                peak_found[i],  midi_velocity[i], midi_pos[i],
+                                is_rim_shot[i], is_choke_on[i],   is_choke_off[i] );
+      }
     }
   }
 
@@ -297,7 +337,7 @@ void Edrumulus::Pad::setup ( const int conf_Fs )
   midi_note_open     = 46;
   midi_note_open_rim = 26;
   midi_ctrl_ch       = 4; // CC4, usually used for hi-hat
-  add_sensor_pad_idx = -1; // initialize with invalid index
+  use_coupling       = false;
 }
 
 
@@ -314,7 +354,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
 void Edrumulus::Pad::initialize()
 {
   // in case we have a coupled sensor pad, the number of head sensors is 3
-  number_head_sensors = add_sensor_pad_idx > 0 ? 3 : 1; // 1 or 3 head sensor inputs
+  number_head_sensors = use_coupling ? 3 : 1; // 1 or 3 head sensor inputs
 
   // set algorithm parameters
   const float threshold_db = 20 * log10 ( ADC_MAX_NOISE_AMPL ) - 16.0f + pad_settings.velocity_threshold; // threshold range considering the maximum ADC noise level

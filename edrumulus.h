@@ -190,8 +190,8 @@ protected:
       Ecurvetype get_curve          ()                                 { return pad_settings.curve_type; }
       void set_cancellation         ( const int        new_cancel )    { pad_settings.cancellation = new_cancel; initialize(); }
       int  get_cancellation         ()                                 { return pad_settings.cancellation; }
-      void set_add_sensor_pad_idx   ( const int        new_idx )       { add_sensor_pad_idx = new_idx; initialize(); }
-      int  get_add_sensor_pad_idx   ()                                 { return add_sensor_pad_idx; }
+      void set_use_coupling         ( const bool       new_coupling )  { use_coupling = new_coupling; initialize(); }
+      int  get_use_coupling         ()                                 { return use_coupling; }
 
       float get_cancellation_factor() { return cancellation_factor; }
       bool  get_is_control()          { return pad_settings.is_control; }
@@ -322,7 +322,7 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
 
       SSensor      sSensor[MAX_NUM_PAD_INPUTS];
       SResults     sSensorResults[MAX_NUM_PAD_INPUTS];
-      int          add_sensor_pad_idx;
+      bool         use_coupling;
       int          Fs;
       int          number_inputs;
       int          number_head_sensors;
