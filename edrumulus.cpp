@@ -301,15 +301,13 @@ void Edrumulus::Pad::setup ( const int conf_Fs )
 }
 
 
-bool Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
+void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
 {
   // apply new pad type and set all parameters to the default values for that pad type
   pad_settings.pad_type = new_pad_type;
 
   apply_preset_pad_settings();
   initialize();
-
-  return ( new_pad_type == SNARE_2_3 );
 }
 
 

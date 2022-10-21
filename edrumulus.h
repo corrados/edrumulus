@@ -51,8 +51,7 @@ public:
     PD5       = 17,
     PDA120LS  = 18,
     PDX100    = 19,
-    KT10      = 20,
-    SNARE_2_3 = 21 // special type: head sensors 2 and 3 of snare
+    KT10      = 20
   };
 
   enum Ecurvetype // note that the enums need assigned integers for MIDI settings transfer
@@ -92,7 +91,7 @@ public:
   bool get_midi_ctrl_is_open   ( const int pad_idx ) { return midi_ctrl_value[pad_idx] < Pad::hi_hat_is_open_MIDI_threshold; }
 
   // configure the pads
-  void set_pad_type             ( const int pad_idx, const Epadtype   new_pad_type )  { pad[pad_idx].set_pad_type ( new_pad_type ) ? pad[0].set_add_sensor_pad_idx ( pad_idx ) : pad[0].set_add_sensor_pad_idx ( -1 ); }
+  void set_pad_type             ( const int pad_idx, const Epadtype   new_pad_type )  { pad[pad_idx].set_pad_type ( new_pad_type ); }
   Epadtype get_pad_type         ( const int pad_idx )                                 { return pad[pad_idx].get_pad_type(); }
   void set_velocity_threshold   ( const int pad_idx, const int        new_threshold ) { pad[pad_idx].set_velocity_threshold ( new_threshold ); }
   int  get_velocity_threshold   ( const int pad_idx )                                 { return pad[pad_idx].get_velocity_threshold(); }
@@ -111,19 +110,20 @@ public:
   void set_cancellation         ( const int pad_idx, const int        new_cancel )    { pad[pad_idx].set_cancellation ( new_cancel ); }
   int  get_cancellation         ( const int pad_idx )                                 { return pad[pad_idx].get_cancellation(); }
 
-  void set_midi_notes           ( const int pad_idx, const int new_midi_note, const int new_midi_note_rim ) { pad[pad_idx].set_midi_notes ( new_midi_note, new_midi_note_rim ); }
-  void set_midi_note_norm       ( const int pad_idx, const int new_midi_note )                              { pad[pad_idx].set_midi_note ( new_midi_note ); }
-  void set_midi_note_rim        ( const int pad_idx, const int new_midi_note_rim )                          { pad[pad_idx].set_midi_note_rim ( new_midi_note_rim ); }
-  void set_midi_notes_open      ( const int pad_idx, const int new_midi_note, const int new_midi_note_rim ) { pad[pad_idx].set_midi_notes_open ( new_midi_note, new_midi_note_rim ); }
-  void set_midi_note_open_norm  ( const int pad_idx, const int new_midi_note)                               { pad[pad_idx].set_midi_note_open ( new_midi_note ); }
-  void set_midi_note_open_rim   ( const int pad_idx, const int new_midi_note_rim )                          { pad[pad_idx].set_midi_note_open_rim ( new_midi_note_rim ); }
-  void set_midi_ctrl_ch         ( const int pad_idx, const int new_midi_ctrl_ch )                           { pad[pad_idx].set_midi_ctrl_ch ( new_midi_ctrl_ch ); }
-  void set_rim_shot_is_used     ( const int pad_idx, const bool new_is_used ) { pad[pad_idx].set_rim_shot_is_used ( new_is_used ); }
-  bool get_rim_shot_is_used     ( const int pad_idx )                         { return pad[pad_idx].get_rim_shot_is_used(); }
-  void set_pos_sense_is_used    ( const int pad_idx, const bool new_is_used ) { pad[pad_idx].set_pos_sense_is_used ( new_is_used ); }
-  bool get_pos_sense_is_used    ( const int pad_idx )                         { return pad[pad_idx].get_pos_sense_is_used(); }
-  void set_spike_cancel_level   ( const int new_level )                       { spike_cancel_level = new_level; }
-  int  get_spike_cancel_level   ()                                            { return spike_cancel_level; }
+  void set_midi_notes          ( const int pad_idx, const int new_midi_note, const int new_midi_note_rim ) { pad[pad_idx].set_midi_notes ( new_midi_note, new_midi_note_rim ); }
+  void set_midi_note_norm      ( const int pad_idx, const int new_midi_note )                              { pad[pad_idx].set_midi_note ( new_midi_note ); }
+  void set_midi_note_rim       ( const int pad_idx, const int new_midi_note_rim )                          { pad[pad_idx].set_midi_note_rim ( new_midi_note_rim ); }
+  void set_midi_notes_open     ( const int pad_idx, const int new_midi_note, const int new_midi_note_rim ) { pad[pad_idx].set_midi_notes_open ( new_midi_note, new_midi_note_rim ); }
+  void set_midi_note_open_norm ( const int pad_idx, const int new_midi_note)                               { pad[pad_idx].set_midi_note_open ( new_midi_note ); }
+  void set_midi_note_open_rim  ( const int pad_idx, const int new_midi_note_rim )                          { pad[pad_idx].set_midi_note_open_rim ( new_midi_note_rim ); }
+  void set_midi_ctrl_ch        ( const int pad_idx, const int new_midi_ctrl_ch )                           { pad[pad_idx].set_midi_ctrl_ch ( new_midi_ctrl_ch ); }
+  void set_rim_shot_is_used    ( const int pad_idx, const bool new_is_used ) { pad[pad_idx].set_rim_shot_is_used ( new_is_used ); }
+  bool get_rim_shot_is_used    ( const int pad_idx )                         { return pad[pad_idx].get_rim_shot_is_used(); }
+  void set_pos_sense_is_used   ( const int pad_idx, const bool new_is_used ) { pad[pad_idx].set_pos_sense_is_used ( new_is_used ); }
+  bool get_pos_sense_is_used   ( const int pad_idx )                         { return pad[pad_idx].get_pos_sense_is_used(); }
+
+  void set_spike_cancel_level ( const int new_level ) { spike_cancel_level = new_level; }
+  int  get_spike_cancel_level()                       { return spike_cancel_level; }
 
   // overload and error handling
   bool get_status_is_overload() { return status_is_overload; }
@@ -155,7 +155,7 @@ protected:
                                     bool&      peak_found,
                                     int&       midi_velocity );
 
-      bool set_pad_type ( const Epadtype new_pad_type );
+      void set_pad_type ( const Epadtype new_pad_type );
       Epadtype get_pad_type() { return pad_settings.pad_type; }
       void set_midi_notes         ( const int new_midi_note, const int new_midi_note_rim ) { midi_note = new_midi_note; midi_note_rim = new_midi_note_rim; }
       void set_midi_notes_open    ( const int new_midi_note, const int new_midi_note_rim ) { midi_note_open = new_midi_note; midi_note_open_rim = new_midi_note_rim; }
