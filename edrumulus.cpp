@@ -966,9 +966,9 @@ if ( s.stored_is_rimshot )
         s.sResults.is_rim_shot      = s.stored_is_rimshot;
       }
 
-      s.was_peak_found            = false;
-      s.was_pos_sense_ready       = false;
-      s.was_rim_shot_ready        = false;
+      s.was_peak_found      = false;
+      s.was_pos_sense_ready = false;
+      s.was_rim_shot_ready  = false;
       DEBUG_START_PLOTTING();
     }
   }
