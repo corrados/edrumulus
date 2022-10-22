@@ -200,6 +200,7 @@ Serial.println ( serial_print );
       // process sample
       if ( ( coupled_pad_idx > 0 ) && ( ( i == coupled_pad_idx ) || ( i == 0 ) ) )
       {
+        // special case: couple pad inputs for multiple head sensor capturing
         if ( i == 0 )
         {
           // store the current input for pad 0
@@ -230,6 +231,7 @@ Serial.println ( serial_print );
       }
       else
       {
+        // normal case: process samples directly
         pad[i].process_sample ( sample,         number_inputs[i], overload_detected,
                                 peak_found[i],  midi_velocity[i], midi_pos[i],
                                 is_rim_shot[i], is_choke_on[i],   is_choke_off[i] );
