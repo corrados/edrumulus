@@ -1011,6 +1011,8 @@ if ( s.stored_is_rimshot )
     }
   }
 
+
+  // Multiple head sensor management ----------------------------------------------
   if ( number_head_sensors > 1 )
   {
     // start condition of delay process to query all head sensor results
