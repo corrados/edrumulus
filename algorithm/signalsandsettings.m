@@ -46,10 +46,10 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd80r_hot_spot.wav");padtype='pd80r';%x = x(191700:192400, :);%
 %x = audioread("signals/pd80r_no_hot_spot.wav");padtype='pd80r';
 %x = audioread("signals/pd80r_rimshot_issue.wav");padtype='pd80r';
-%x = audioread("signals/pda120ls.wav");x=x(:,1);padtype='pda120ls';x = x(1:630000, :);%x = x(1.06e6:end, :);%x = x(840000:930000, :);%
+x = audioread("signals/pda120ls.wav");x=x(:,1);padtype='pda120ls';x = x(1:630000, :);%x = x(1.06e6:end, :);%x = x(840000:930000, :);%
 %x = audioread("signals/pda120ls_2.wav");x=x(:,1);padtype='pda120ls';x = x(1:210000, :);
 %x = audioread("signals/pda120ls_multpiezotest.wav");padtype='pda120ls';
-x = audioread("signals/pda120ls_multpiezotest2.wav");padtype='pda120ls';
+%x = audioread("signals/pda120ls_multpiezotest2.wav");padtype='pda120ls';
 %x = audioread("signals/pdx100.wav");padtype='pdx100';x = x(1:420000, :);
 %x = audioread("signals/pdx100_rimshot.wav");padtype='pdx100';
 %x = audioread("signals/pdx8.wav");padtype='pdx8';
@@ -113,10 +113,6 @@ switch padtype
     pad.pre_scan_time_ms          = 3.5;
     pad.first_peak_diff_thresh_db = 7;
     pad.pos_invert                = true;
-
-% TEST
-pad.mask_time_ms = 20;
-
   case 'pd80r'
     pad.scan_time_ms                    = 3;
     pad.decay_len_ms2                   = 75;

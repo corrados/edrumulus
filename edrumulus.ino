@@ -67,7 +67,8 @@ void setup()
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
   read_settings();
 
-// TEST
+/*
+// TEST use the ride input for 2nd/3rd head sensor input for the snare
 edrumulus.set_coupled_pad_idx      ( 6 );
 edrumulus.set_pad_type             ( 0, Edrumulus::PDA120LS );
 edrumulus.set_velocity_threshold   ( 0, 4 );
@@ -75,6 +76,7 @@ edrumulus.set_velocity_sensitivity ( 0, 7 );
 edrumulus.set_pos_threshold        ( 0, 3 );
 edrumulus.set_pos_sensitivity      ( 0, 12 );
 edrumulus.set_rim_shot_treshold    ( 0, 24 );
+*/
 
   // initialize GPIO port for status LED
   pinMode ( status_LED_pin, OUTPUT );
