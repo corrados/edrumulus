@@ -2,6 +2,24 @@
 
 The road map items are sorted by priority.
 
+- [ ] **For 3 head sensor usage, introduce a fourth signal which is the sum of all sensors**
+
+  Use this signal for peak detection to avoid having false additional peaks caused by separate
+  peak detection on each of the sensor signals. The individual sensor signals are only used for
+  improving the positional sensing and hot spot elimination.
+
+- [ ] **Introduce a first peak detection reliability**
+
+  This can be used to improve the positional sensing. E.g., if the reliability is low, we could
+  use the position of the last detected peak if it is close to the current peak in time (e.g., if
+  we have a fast roll situation).
+
+- [ ] **Increase data rate on UART serial bus for MIDI signals for prototype 5**
+
+  The UART MIDI communication on prototype 5 is a direct connection to the Raspberry Pi and does
+  not need a standard MIDI data rate. The faster the rate, the less samples are lost during MIDI
+  signal transmission.
+
 - [ ] **Improve rim shot detection**
 
   Especially for pads like the PDA-120L where the piezos are located near the edge, the rim shot detection does perform poorly.
