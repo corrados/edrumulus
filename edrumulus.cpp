@@ -213,16 +213,20 @@ Serial.println ( serial_print );
         else
         {
           // combine samples and process pad 0 which is the couple master per definition
+          float sample_sum = 0.0f; // input 0 is the sum of the head sensor signal per definition
           for ( int j = number_inputs[i] - 1; j >= 0; j-- ) // count backwards to avoid overwriting
           {
-            sample[j + number_inputs[0]]            = sample[j];
-            overload_detected[j + number_inputs[0]] = overload_detected[j];
+            // note that we use "+ 1" because of the sum of three sensor signals which uses channel 0
+            sample_sum                                 += sample[j];
+            sample[j + number_inputs[0] + 1]            = sample[j];
+            overload_detected[j + number_inputs[0] + 1] = overload_detected[j];
           }
-          for ( int j = 0; j < number_inputs[0]; j++ )
-          {
-            sample[j]            = stored_sample[j];
-            overload_detected[j] = stored_overload_detected[j];
-          }
+          sample[1]            = stored_sample[1]; // copy rim signal on second input channel
+          overload_detected[1] = stored_overload_detected[1];
+          sample[2]            = stored_sample[0]; // copy head sensor signal of first channel after rim signal
+          overload_detected[2] = stored_overload_detected[0];
+          sample_sum          += stored_sample[0]; // only use head sensor and not the rim sensor for the sum
+          sample[0]            = sample_sum / ( 1 + number_inputs[i] ); // per definition: sum is on channel 0
 
           pad[0].process_sample ( sample, number_inputs[0] + number_inputs[i], overload_detected,
                                   peak_found[0],  midi_velocity[0], midi_pos[0],
@@ -351,8 +355,8 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
 
 void Edrumulus::Pad::initialize()
 {
-  // in case we have a coupled sensor pad, the number of head sensors is 3
-  number_head_sensors = use_coupling ? 3 : 1; // 1 or 3 head sensor inputs
+  // in case we have a coupled sensor pad, the number of head sensors is 4, where 3 sensor signals and one sum
+  number_head_sensors = use_coupling ? 4 : 1; // 1 or 4 head sensor inputs
 
   // set algorithm parameters
   const float threshold_db = 20 * log10 ( ADC_MAX_NOISE_AMPL ) - 16.0f + pad_settings.velocity_threshold; // threshold range considering the maximum ADC noise level
