@@ -216,10 +216,10 @@ Serial.println ( serial_print );
           float sample_sum = 0.0f; // input 0 is the sum of the head sensor signal per definition
           for ( int j = number_inputs[i] - 1; j >= 0; j-- ) // count backwards to avoid overwriting
           {
-            // note that we use "+ 1" because of the sum of three sensor signals which uses channel 0
-            sample_sum                                 += sample[j];
-            sample[j + number_inputs[0] + 1]            = sample[j];
-            overload_detected[j + number_inputs[0] + 1] = overload_detected[j];
+            // "+ 3" because channel: sum, rim, 1st head
+            sample_sum              += sample[j];
+            sample[j + 3]            = sample[j];
+            overload_detected[j + 3] = overload_detected[j];
           }
           sample[1]            = stored_sample[1]; // copy rim signal on second input channel
           overload_detected[1] = stored_overload_detected[1];
@@ -228,7 +228,7 @@ Serial.println ( serial_print );
           sample_sum          += stored_sample[0]; // only use head sensor and not the rim sensor for the sum
           sample[0]            = sample_sum / ( 1 + number_inputs[i] ); // per definition: sum is on channel 0
 
-          pad[0].process_sample ( sample, number_inputs[0] + number_inputs[i], overload_detected,
+          pad[0].process_sample ( sample, 3 + number_inputs[i], overload_detected,
                                   peak_found[0],  midi_velocity[0], midi_pos[0],
                                   is_rim_shot[0], is_choke_on[0],   is_choke_off[0] );
         }
