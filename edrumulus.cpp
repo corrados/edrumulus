@@ -583,6 +583,7 @@ float Edrumulus::Pad::process_sample ( const float* input,
   {
     const int in               = head_sensor_cnt == 0 ? 0 : head_sensor_cnt + 1; // exclude rim input
     SSensor&  s                = sSensor[head_sensor_cnt];
+    float*    s_x_sq_hist      = s.x_sq_hist; // shortcut for speed optimization
     bool      first_peak_found = false;
     int       peak_delay       = 0;
     s.first_peak_delay++; // increment first peak delay for each new sample
@@ -590,7 +591,7 @@ float Edrumulus::Pad::process_sample ( const float* input,
 
     // square input signal and store in FIFO buffer
     const float x_sq = input[in] * input[in];
-    update_fifo ( x_sq,                                x_sq_hist_len,     s.x_sq_hist );
+    update_fifo ( x_sq,                                x_sq_hist_len,     s_x_sq_hist );
     update_fifo ( overload_detected[in] ? 1.0f : 0.0f, overload_hist_len, s.overload_hist );
 
 
@@ -690,13 +691,13 @@ float Edrumulus::Pad::process_sample ( const float* input,
       {
         // climb to the maximum of the first peak (using the unfiltered signal)
         first_peak_found   = false;
-        s.first_peak_val   = s.x_sq_hist[x_sq_hist_len - total_scan_time];
+        s.first_peak_val   = s_x_sq_hist[x_sq_hist_len - total_scan_time];
         int first_peak_idx = 0;
 
         for ( int idx = 1; idx < total_scan_time; idx++ )
         {
-          const float cur_x_sq_hist_val  = s.x_sq_hist[x_sq_hist_len - total_scan_time + idx];
-          const float prev_x_sq_hist_val = s.x_sq_hist[x_sq_hist_len - total_scan_time + idx - 1];
+          const float cur_x_sq_hist_val  = s_x_sq_hist[x_sq_hist_len - total_scan_time + idx];
+          const float prev_x_sq_hist_val = s_x_sq_hist[x_sq_hist_len - total_scan_time + idx - 1];
 
           if ( ( s.first_peak_val < cur_x_sq_hist_val ) && !first_peak_found )
           {
@@ -721,9 +722,9 @@ float Edrumulus::Pad::process_sample ( const float* input,
         int peak_velocity_idx = 0;
         for ( int i = 0; i < scan_time; i++ )
         {
-          if ( s.x_sq_hist[x_sq_hist_len - scan_time + i] > s.peak_val )
+          if ( s_x_sq_hist[x_sq_hist_len - scan_time + i] > s.peak_val )
           {
-            s.peak_val        = s.x_sq_hist[x_sq_hist_len - scan_time + i];
+            s.peak_val        = s_x_sq_hist[x_sq_hist_len - scan_time + i];
             peak_velocity_idx = i;
           }
         }
