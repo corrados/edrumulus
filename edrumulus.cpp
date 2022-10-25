@@ -1020,6 +1020,21 @@ if ( s.stored_is_rimshot )
   // Multiple head sensor management ----------------------------------------------
   if ( number_head_sensors > 1 )
   {
+
+// TEST only use sum of sensors to check if the detection works ok
+if ( any_sensor_has_results )
+{
+  if ( sSensor[0].sResults.peak_found )
+  {
+    midi_velocity = sSensor[0].sResults.midi_velocity;
+    midi_pos      = sSensor[0].sResults.midi_pos;
+    peak_found    = true;
+    is_rim_shot   = sSensor[0].sResults.is_rim_shot;
+    sSensorResults[0].Clear();
+  }
+}
+
+/*
     // start condition of delay process to query all head sensor results
     if ( any_sensor_has_results && ( multiple_sensor_cnt == 0 ) )
     {
@@ -1103,6 +1118,7 @@ midi_pos = 0;
         }
       }
     }
+*/
   }
 
   DEBUG_ADD_VALUES ( input[0] * input[0], x_filt, sSensor[0].scan_time_cnt > 0 ? 0.5 : sSensor[0].mask_back_cnt > 0 ? 0.2 : cur_decay, threshold );
