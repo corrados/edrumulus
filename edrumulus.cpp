@@ -493,7 +493,6 @@ void Edrumulus::Pad::initialize()
     s.was_pos_sense_ready            = false;
     s.was_rim_shot_ready             = false;
     s.stored_is_rimshot              = false;
-    sSensorResults[in].Clear();
   }
 
   // calculate positional sensing low-pass filter coefficients
@@ -566,28 +565,28 @@ float Edrumulus::Pad::process_sample ( const float* input,
                                        bool&        is_choke_off )
 {
   // initialize return parameters and configuration parameters
-  peak_found                        = false;
-  midi_velocity                     = 0;
-  midi_pos                          = 0;
-  is_rim_shot                       = false;
-  is_choke_on                       = false;
-  is_choke_off                      = false;
-  const bool pos_sense_is_used      = pad_settings.pos_sense_is_used;                     // can be applied directly without calling initialize()
-  const bool rim_shot_is_used       = pad_settings.rim_shot_is_used && ( input_len > 1 ); // can be applied directly without calling initialize()
-  const bool pos_sense_inverted     = pad_settings.pos_invert;                            // can be applied directly without calling initialize()
-  float      x_filt                 = 0.0f; // needed for debugging
-  float      cur_decay              = 1;    // needed for debugging, initialization value (0 dB) only used for debugging
-  bool       any_sensor_has_results = false;
+  peak_found                     = false;
+  midi_velocity                  = 0;
+  midi_pos                       = 0;
+  is_rim_shot                    = false;
+  is_choke_on                    = false;
+  is_choke_off                   = false;
+  const bool pos_sense_is_used   = pad_settings.pos_sense_is_used;                     // can be applied directly without calling initialize()
+  const bool rim_shot_is_used    = pad_settings.rim_shot_is_used && ( input_len > 1 ); // can be applied directly without calling initialize()
+  const bool pos_sense_inverted  = pad_settings.pos_invert;                            // can be applied directly without calling initialize()
+  float      x_filt              = 0.0f; // needed for debugging
+  float      cur_decay           = 1;    // needed for debugging, initialization value (0 dB) only used for debugging
+  bool       sensor0_has_results = false;
 
   for ( int head_sensor_cnt = 0; head_sensor_cnt < number_head_sensors; head_sensor_cnt++ )
   {
     const int in               = head_sensor_cnt == 0 ? 0 : head_sensor_cnt + 1; // exclude rim input
     SSensor&  s                = sSensor[head_sensor_cnt];
     float*    s_x_sq_hist      = s.x_sq_hist; // shortcut for speed optimization
+    int&      first_peak_delay = s.sResults.first_peak_delay; // use value in result struct
     bool      first_peak_found = false;
     int       peak_delay       = 0;
-    s.first_peak_delay++; // increment first peak delay for each new sample
-    s.sResults.Clear();
+    first_peak_delay++; // increment first peak delay for each new sample (wraps only after some hours which is uncritical)
 
     // square input signal and store in FIFO buffer
     const float x_sq = input[in] * input[in];
@@ -730,10 +729,10 @@ float Edrumulus::Pad::process_sample ( const float* input,
         }
 
         // peak detection results
-        peak_delay         = scan_time - ( peak_velocity_idx + 1 );
-        s.first_peak_delay = total_scan_time - ( first_peak_idx + 1 );
-        first_peak_found   = true; // for special case signal only increments, the peak found would be false -> correct this
-        s.was_peak_found   = true;
+        peak_delay       = scan_time - ( peak_velocity_idx + 1 );
+        first_peak_delay = total_scan_time - ( first_peak_idx + 1 );
+        first_peak_found = true; // for special case signal only increments, the peak found would be false -> correct this
+        s.was_peak_found = true;
 
         // check overload status
         int number_overloaded_samples = 0;
@@ -828,8 +827,8 @@ float Edrumulus::Pad::process_sample ( const float* input,
       {
         // a peak was found, we now have to start the delay process to fill up the
         // required buffer length for our metric
-        s.pos_sense_cnt  = max ( 1, lp_filt_len - s.first_peak_delay );
-        s.x_low_hist_idx = x_low_hist_len - lp_filt_len - max ( 0, s.first_peak_delay - lp_filt_len + 1 );
+        s.pos_sense_cnt  = max ( 1, lp_filt_len - first_peak_delay );
+        s.x_low_hist_idx = x_low_hist_len - lp_filt_len - max ( 0, first_peak_delay - lp_filt_len + 1 );
       }
 
       if ( s.pos_sense_cnt > 0 )
@@ -1001,12 +1000,10 @@ if ( s.stored_is_rimshot )
       }
       else
       {
-        any_sensor_has_results      = true;
-        s.sResults.first_peak_delay = s.first_peak_delay;
-        s.sResults.midi_velocity    = s.stored_midi_velocity;
-        s.sResults.midi_pos         = s.stored_midi_pos;
-        s.sResults.peak_found       = true;
-        s.sResults.is_rim_shot      = s.stored_is_rimshot;
+        sensor0_has_results      = ( head_sensor_cnt == 0 );
+        s.sResults.midi_velocity = s.stored_midi_velocity;
+        s.sResults.midi_pos      = s.stored_midi_pos;
+        s.sResults.is_rim_shot   = s.stored_is_rimshot;
       }
 
       s.was_peak_found      = false;
@@ -1021,26 +1018,13 @@ if ( s.stored_is_rimshot )
   if ( number_head_sensors > 1 )
   {
 
-// TEST only use sum of sensors to check if the detection works ok
-if ( any_sensor_has_results )
-{
-  if ( sSensor[0].sResults.peak_found )
-  {
-    midi_velocity = sSensor[0].sResults.midi_velocity;
-    midi_pos      = sSensor[0].sResults.midi_pos;
-    peak_found    = true;
-    is_rim_shot   = sSensor[0].sResults.is_rim_shot;
-    sSensorResults[0].Clear();
-  }
-}
-
-/*
-    // start condition of delay process to query all head sensor results
-    if ( any_sensor_has_results && ( multiple_sensor_cnt == 0 ) )
-    {
 // TODO put number somewhere else
 const int max_sensor_sample_diff = 20; // 2.5 ms at 8 kHz sampling rate
+//const int two_times_max_sensor_sample_diff = 2 * max_sensor_sample_diff;
 
+    // start condition of delay process to query all head sensor results
+    if ( sensor0_has_results && ( multiple_sensor_cnt == 0 ) )
+    {
       multiple_sensor_cnt = max_sensor_sample_diff;
     }
 
@@ -1049,76 +1033,108 @@ const int max_sensor_sample_diff = 20; // 2.5 ms at 8 kHz sampling rate
     {
       multiple_sensor_cnt--;
 
-      // store current head sensor results
-      for ( int head_sensor_cnt = 0; head_sensor_cnt < number_head_sensors; head_sensor_cnt++ )
-      {
-        // for sensors which already had results we need to increment the first peak delay for each new sample
-        sSensorResults[head_sensor_cnt].first_peak_delay++;
-
-        if ( sSensor[head_sensor_cnt].sResults.peak_found )
-        {
-          sSensorResults[head_sensor_cnt] = sSensor[head_sensor_cnt].sResults;
-        }
-      }
-
       // end condition
       if ( multiple_sensor_cnt == 0 )
       {
 
+// TEST
+midi_velocity = sSensor[0].sResults.midi_velocity;
+midi_pos      = 0;
+peak_found    = true;
+is_rim_shot   = sSensor[0].sResults.is_rim_shot;
+
+
+/*
 // TODO quick hack tests
-int  number_sensors_with_results      = 0;
-int  head_sensor_idx_highest_velocity = 0;
-int  max_velocity                     = 0;
-int  velocity_sum                     = 0;
-for ( int head_sensor_cnt = 0; head_sensor_cnt < number_head_sensors; head_sensor_cnt++ )
+int number_sensors_with_results      = 0;
+int head_sensor_idx_highest_velocity = 0;
+int max_velocity                     = 0;
+int velocity_sum                     = 0;
+int sensor0_first_peak_delay         = sSensor[0].sResults.first_peak_delay;
+
+
+//Serial.println (
+//  String ( abs ( sSensor[1].sResults.first_peak_delay - sensor0_first_peak_delay ) ) + "\t" +
+//  String ( abs ( sSensor[2].sResults.first_peak_delay - sensor0_first_peak_delay ) ) + "\t" +
+//  String ( abs ( sSensor[3].sResults.first_peak_delay - sensor0_first_peak_delay ) ) );
+
+
+for ( int head_sensor_cnt = 1; head_sensor_cnt < number_head_sensors; head_sensor_cnt++ ) // do not use sensor 0
 {
-  if ( sSensorResults[head_sensor_cnt].peak_found )
+  if ( abs ( sSensor[head_sensor_cnt].sResults.first_peak_delay - sensor0_first_peak_delay ) < max_sensor_sample_diff )
   {
     number_sensors_with_results++;
-    velocity_sum += sSensorResults[head_sensor_cnt].midi_velocity;
+    velocity_sum += sSensor[head_sensor_cnt].sResults.midi_velocity;
 
-    if ( sSensorResults[head_sensor_cnt].midi_velocity > max_velocity )
+    if ( sSensor[head_sensor_cnt].sResults.midi_velocity > max_velocity )
     {
-      max_velocity                     = sSensorResults[head_sensor_cnt].midi_velocity;
+      max_velocity                     = sSensor[head_sensor_cnt].sResults.midi_velocity;
       head_sensor_idx_highest_velocity = head_sensor_cnt;
     }
   }
 }
 
-// TEST only return peak found if at least two sensors have results
-if ( number_sensors_with_results > 1 )
+//Serial.println ( number_sensors_with_results );
+
+if ( number_sensors_with_results == 3 )
 {
-  if ( number_sensors_with_results == 3 )
-  {
-    // TEST use maximum offset for middle from each sensor pair
-    const int diff_1_0 = sSensorResults[1].first_peak_delay - sSensorResults[0].first_peak_delay;
-    const int diff_2_0 = sSensorResults[2].first_peak_delay - sSensorResults[0].first_peak_delay;
-    const int diff_2_1 = sSensorResults[2].first_peak_delay - sSensorResults[1].first_peak_delay;
-    const int max_abs_diff = ( max ( max ( abs ( diff_1_0 ), abs ( diff_2_0 ) ), abs ( diff_2_1 ) ) );
-    midi_pos = min ( 127, max ( 0, pad_settings.pos_sensitivity * ( max_abs_diff - pad_settings.pos_threshold ) ) );
-  }
-  else
-  {
+  // TEST use maximum offset for middle from each sensor pair
+
+  const int diff_1_0 = sSensor[2].sResults.first_peak_delay - sSensor[1].sResults.first_peak_delay;
+  const int diff_2_0 = sSensor[3].sResults.first_peak_delay - sSensor[1].sResults.first_peak_delay;
+  const int diff_2_1 = sSensor[3].sResults.first_peak_delay - sSensor[2].sResults.first_peak_delay;
+  const int max_abs_diff = ( max ( max ( abs ( diff_1_0 ), abs ( diff_2_0 ) ), abs ( diff_2_1 ) ) );
+  midi_pos = min ( 127, max ( 0, pad_settings.pos_sensitivity * ( max_abs_diff - pad_settings.pos_threshold ) ) );
+
+// TEST use average MIDI velocity
+midi_velocity = velocity_sum / number_sensors_with_results;
+is_rim_shot   = sSensor[head_sensor_idx_highest_velocity].sResults.is_rim_shot;
+
+}
+else if ( number_sensors_with_results == 2 )
+{
 
 // TODO
 midi_pos = 0;
 
-  }
+// TEST use average MIDI velocity
+midi_velocity = velocity_sum / number_sensors_with_results;
+is_rim_shot   = sSensor[head_sensor_idx_highest_velocity].sResults.is_rim_shot;
 
-  // TEST use average MIDI velocity
-  midi_velocity = velocity_sum / number_sensors_with_results;
-  is_rim_shot   = sSensorResults[head_sensor_idx_highest_velocity].is_rim_shot;
-  peak_found    = true;
 }
+else if ( number_sensors_with_results == 1 )
+{
 
-        // clear all sensor results
-        for ( int head_sensor_cnt = 0; head_sensor_cnt < number_head_sensors; head_sensor_cnt++ )
+// TODO
+midi_pos = 0;
+
+// TEST use average MIDI velocity
+midi_velocity = velocity_sum / number_sensors_with_results;
+is_rim_shot   = sSensor[head_sensor_idx_highest_velocity].sResults.is_rim_shot;
+
+}
+else
+{
+
+// TODO
+midi_pos = 0;
+
+// TEST
+midi_velocity = sSensor[0].sResults.midi_velocity;
+is_rim_shot   = sSensor[0].sResults.is_rim_shot;
+
+}
+peak_found = true;
+*/
+
+
+        // reset the first_peak_delay since this is our marker if a peak was in the interval
+        for ( int head_sensor_cnt = 1; head_sensor_cnt < number_head_sensors; head_sensor_cnt++ ) // do not use sensor 0
         {
-          sSensorResults[head_sensor_cnt].Clear();
+          sSensor[head_sensor_cnt].sResults.first_peak_delay = max_sensor_sample_diff;
         }
       }
     }
-*/
   }
 
   DEBUG_ADD_VALUES ( input[0] * input[0], x_filt, sSensor[0].scan_time_cnt > 0 ? 0.5 : sSensor[0].mask_back_cnt > 0 ? 0.2 : cur_decay, threshold );
