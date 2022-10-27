@@ -1000,10 +1000,14 @@ if ( s.stored_is_rimshot )
       }
       else
       {
-        sensor0_has_results      = ( head_sensor_cnt == 0 );
         s.sResults.midi_velocity = s.stored_midi_velocity;
         s.sResults.midi_pos      = s.stored_midi_pos;
         s.sResults.is_rim_shot   = s.stored_is_rimshot;
+
+        if ( head_sensor_cnt == 0 )
+        {
+          sensor0_has_results = true;
+        }
       }
 
       s.was_peak_found      = false;
@@ -1037,27 +1041,12 @@ const int max_sensor_sample_diff = 20; // 2.5 ms at 8 kHz sampling rate
       if ( multiple_sensor_cnt == 0 )
       {
 
-// TEST
-midi_velocity = sSensor[0].sResults.midi_velocity;
-midi_pos      = 0;
-peak_found    = true;
-is_rim_shot   = sSensor[0].sResults.is_rim_shot;
-
-
-/*
 // TODO quick hack tests
 int number_sensors_with_results      = 0;
 int head_sensor_idx_highest_velocity = 0;
 int max_velocity                     = 0;
 int velocity_sum                     = 0;
 int sensor0_first_peak_delay         = sSensor[0].sResults.first_peak_delay;
-
-
-//Serial.println (
-//  String ( abs ( sSensor[1].sResults.first_peak_delay - sensor0_first_peak_delay ) ) + "\t" +
-//  String ( abs ( sSensor[2].sResults.first_peak_delay - sensor0_first_peak_delay ) ) + "\t" +
-//  String ( abs ( sSensor[3].sResults.first_peak_delay - sensor0_first_peak_delay ) ) );
-
 
 for ( int head_sensor_cnt = 1; head_sensor_cnt < number_head_sensors; head_sensor_cnt++ ) // do not use sensor 0
 {
@@ -1074,12 +1063,9 @@ for ( int head_sensor_cnt = 1; head_sensor_cnt < number_head_sensors; head_senso
   }
 }
 
-//Serial.println ( number_sensors_with_results );
-
 if ( number_sensors_with_results == 3 )
 {
   // TEST use maximum offset for middle from each sensor pair
-
   const int diff_1_0 = sSensor[2].sResults.first_peak_delay - sSensor[1].sResults.first_peak_delay;
   const int diff_2_0 = sSensor[3].sResults.first_peak_delay - sSensor[1].sResults.first_peak_delay;
   const int diff_2_1 = sSensor[3].sResults.first_peak_delay - sSensor[2].sResults.first_peak_delay;
@@ -1088,21 +1074,45 @@ if ( number_sensors_with_results == 3 )
 
 // TEST use average MIDI velocity
 midi_velocity = velocity_sum / number_sensors_with_results;
-is_rim_shot   = sSensor[head_sensor_idx_highest_velocity].sResults.is_rim_shot;
 
-}
-else if ( number_sensors_with_results == 2 )
+//is_rim_shot   = sSensor[head_sensor_idx_highest_velocity].sResults.is_rim_shot;
+// TEST use second highest velocity sensor for rim shot detection
+if ( head_sensor_idx_highest_velocity == 0 )
 {
-
-// TODO
-midi_pos = 0;
-
-// TEST use average MIDI velocity
-midi_velocity = velocity_sum / number_sensors_with_results;
-is_rim_shot   = sSensor[head_sensor_idx_highest_velocity].sResults.is_rim_shot;
+  if ( sSensor[1].sResults.midi_velocity > sSensor[2].sResults.midi_velocity )
+  {
+    is_rim_shot = sSensor[1].sResults.is_rim_shot;
+  }
+  else
+  {
+    is_rim_shot = sSensor[2].sResults.is_rim_shot;
+  }
+}
+else if ( head_sensor_idx_highest_velocity == 1 )
+{
+  if ( sSensor[0].sResults.midi_velocity > sSensor[2].sResults.midi_velocity )
+  {
+    is_rim_shot = sSensor[0].sResults.is_rim_shot;
+  }
+  else
+  {
+    is_rim_shot = sSensor[2].sResults.is_rim_shot;
+  }
+}
+else
+{
+  if ( sSensor[0].sResults.midi_velocity > sSensor[1].sResults.midi_velocity )
+  {
+    is_rim_shot = sSensor[0].sResults.is_rim_shot;
+  }
+  else
+  {
+    is_rim_shot = sSensor[1].sResults.is_rim_shot;
+  }
+}
 
 }
-else if ( number_sensors_with_results == 1 )
+else if ( ( number_sensors_with_results == 2 ) || ( number_sensors_with_results == 1 ) )
 {
 
 // TODO
@@ -1125,7 +1135,6 @@ is_rim_shot   = sSensor[0].sResults.is_rim_shot;
 
 }
 peak_found = true;
-*/
 
 
         // reset the first_peak_delay since this is our marker if a peak was in the interval
