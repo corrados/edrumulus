@@ -49,11 +49,11 @@ while True:
   ax0.add_patch(mpatches.Circle((0.5, 0.5), 0.5, fill=False, linewidth=4))
 
   # sensors
-  plt.scatter(sensor1.real, sensor1.imag, marker="x", c="r", s=100)
-  plt.scatter(sensor2.real, sensor2.imag, marker="x", c="r", s=100)
-  plt.scatter(sensor3.real, sensor3.imag, marker="x", c="r", s=100)
+  plt.scatter(sensor1.real, sensor1.imag, marker="x", c="g", s=150)
+  plt.scatter(sensor2.real, sensor2.imag, marker="x", c="g", s=150)
+  plt.scatter(sensor3.real, sensor3.imag, marker="x", c="g", s=150)
 
-  # create current mouse click vector where the center of the circle is the origin
+  # create current mouse click vector
   click_vector      = np.array(click_point[0], dtype=complex)
   click_vector.imag = click_point[1];
 
@@ -68,11 +68,15 @@ while True:
   # approximation of distance: r = max(|L21|, |L31|, |L32|) (using some magic factor of 0.7)
   r_est = np.max(np.array([np.abs(l21), np.abs(l31), np.abs(l32)])) * 0.7
 
-  ax0.add_patch(mpatches.Circle((0.5, 0.5), np.abs(click_vector - (0.5 + 0.5j)), fill=False, color="b", linestyle='--'))
-  ax0.add_patch(mpatches.Circle((0.5, 0.5), r_est, fill=False, color="b"))
+  # show ideal circle (dashed) and circle based on approximation
+  ax0.add_patch(mpatches.Circle((0.5, 0.5), np.abs(click_vector - (0.5 + 0.5j)), fill=False, color="b", ls='--'))
+  ax0.add_patch(mpatches.Circle((0.5, 0.5), r_est, fill=False, color="b", lw=2))
+
+  # show click point
+  plt.scatter(click_point[0], click_point[1], marker="*", c="r", s=100)
 
   plt.show()
-  plt.pause(0.3)
+  plt.pause(0.03)
   if not plt.fignum_exists(fignum): # if plot window is closed then quit
     break
 
