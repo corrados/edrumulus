@@ -21,8 +21,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.patches as mpatches
+import serial
 
 # initializations
+try:
+  ser = serial.Serial('/dev/ttyUSB0', 115200, timeout=0.01)
+except:
+  ser = [] # in error case ser is a list (is checked below)
 print('close plot window to quit')
 click_point  = (0.5, 0.5)
 sensor1      = np.array(0.5, dtype=complex)
@@ -74,6 +79,17 @@ while True:
 
   # show click point
   plt.scatter(click_point[0], click_point[1], marker="*", c="r", s=100)
+
+
+  # for a test return measured differences via a serial string from Edrumulus
+  if type(ser) is not list: # check for valid ser object
+    a = ser.readline().decode("utf-8")
+    if len(a) > 0:
+      a = a.split(",")[0:3]
+      a = [int(x) for x in a]
+      print(a)
+
+
 
   plt.show()
   plt.pause(0.03)
