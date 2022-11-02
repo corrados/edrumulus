@@ -42,9 +42,48 @@ ax0          = fig.add_subplot(gs[0])
 fignum       = fig.number
 plt.ion()
 
+
 def onclick(event):
   global click_point
   click_point = (event.xdata, event.ydata)
+
+def get_position(dt0, dt1, dt2):
+  # code taken from https://github.com/corrados/edrumulus/discussions/70#discussioncomment-4014893
+  # created by jstma:
+  r1 = dt0
+  r2 = dt1
+  x0 = sensor1.real
+  y0 = sensor1.imag
+  x1 = sensor2.real
+  y1 = sensor2.imag
+  x2 = sensor3.real
+  y2 = sensor3.imag
+
+  a1 = 2 * (x0 - x1)
+  b1 = 2 * (y0 - y1)
+  c1 = np.power(r1, 2) + np.power(x0, 2) + np.power(y0, 2) - np.power(x1, 2) - np.power(y1, 2)
+
+  a2 = 2 * (x0 - x2)
+  b2 = 2 * (y0 - y2)
+  c2 = np.power(r2, 2) + np.power(x0, 2) + np.power(y0, 2) - np.power(x2, 2) - np.power(y2, 2)
+
+  d1 = (2 * r1 * b2 - 2 * r2 * b1) / (a1 * b2 - a2 * b1)
+  e1 = (c1 * b2 - c2 * b1)         / (a1 * b2 - a2 * b1)
+  d2 = (2 * r1 * a2 - 2 * r2 * a1) / (a2 * b1 - a1 * b2)
+  e2 = (c1 * a2 - c2 * a1)         / (a2 * b1 - a1 * b2)
+
+  a = np.power(d1, 2) + np.power(d2, 2) - 1
+  b = 2 * (e1 - x0) * d1 + 2 * (e2 - y0) * d2
+  c = np.power((e1 - x0), 2) + np.power((e2 - y0), 2)
+
+  # two solutions to the quadratic equation
+  r_2 = (-b - np.sqrt(np.power(b, 2) - 4 * a * c)) / (2 * a)
+
+  # this solution seems to always be correct
+  x = d1 * r_2 + e1
+  y = d2 * r_2 + e2
+  return x, y
+
 
 cid = fig.canvas.mpl_connect('button_press_event', onclick)
 while True:
@@ -80,16 +119,14 @@ while True:
   # show click point
   plt.scatter(click_point[0], click_point[1], marker="*", c="r", s=100)
 
-
   # for a test return measured differences via a serial string from Edrumulus
   if type(ser) is not list: # check for valid ser object
     a = ser.readline().decode("utf-8")
     if len(a) > 0:
       a = a.split(",")[0:3]
-      a = [int(x) for x in a]
-      print(a)
-
-
+      a = [int(x) / 10 for x in a]
+      x, y = get_position(a[0], a[1], a[2])
+      plt.scatter(x, y, marker="*", c="b", s=100)
 
   plt.show()
   plt.pause(0.03)
