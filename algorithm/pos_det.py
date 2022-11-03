@@ -27,15 +27,15 @@ import serial
 try:
   ser = serial.Serial('/dev/ttyUSB0', 115200, timeout=0.01)
 except:
-  ser = [] # in error case ser is a list (is checked below)
+  ser = [] # in error case "ser" is a list (is checked below)
 print('close plot window to quit')
-click_point  = (0.5, 0.5)
+click_point  = (None, None)
 sensor1      = np.array(0.5, dtype=complex)
-sensor1.imag = 1;
+sensor1.imag = 0;
 sensor2      = np.array(0.066987, dtype=complex)
-sensor2.imag = 0.25;
+sensor2.imag = 0.75;
 sensor3      = np.array(0.933, dtype=complex)
-sensor3.imag = 0.25;
+sensor3.imag = 0.75;
 fig          = plt.figure(tight_layout=True)
 gs           = gridspec.GridSpec(1, 1)
 ax0          = fig.add_subplot(gs[0])
@@ -48,11 +48,10 @@ def onclick(event):
   global click_point
   click_point = (event.xdata, event.ydata)
 
-def get_position(dt0, dt1):
+
+def get_position(r1, r2):
   # code taken from https://github.com/corrados/edrumulus/discussions/70#discussioncomment-4014893
   # created by jstma:
-  r1 = dt0
-  r2 = dt1
   x0 = sensor1.real
   y0 = sensor1.imag
   x1 = sensor2.real
@@ -91,7 +90,8 @@ while True:
   ax0.cla()
 
   # pad edge boundary circle
-  ax0.add_patch(mpatches.Circle((0.5, 0.5), 0.5, fill=False, linewidth=4))
+  ax0.add_patch(mpatches.Circle((0.5, 0.5), 0.65, fill=False, linewidth=4))
+  plt.text(0.44, -0.1, "Drums", weight="bold")
 
   # sensors
   plt.scatter(sensor1.real, sensor1.imag, marker="x", c="g", s=150)
@@ -121,7 +121,7 @@ while True:
   plt.scatter(click_point[0], click_point[1], marker="*", c="r", s=100)
 
   # for a test return measured differences via a serial string from Edrumulus
-  if type(ser) is not list: # check for valid ser object
+  if type(ser) is not list: # check for valid "ser" object
     a = ser.readline().decode("utf-8")
     if len(a) > 0:
       a = a.split(",")[0:3]
