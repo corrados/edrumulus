@@ -30,11 +30,11 @@ except:
   ser = [] # in error case "ser" is a list (is checked below)
 print('close plot window to quit')
 click_point  = (None, None)
-sensor1      = np.array(0.5, dtype=complex)
-sensor1.imag = 0;
-sensor2      = np.array(0.066987, dtype=complex)
-sensor2.imag = 0.75;
-sensor3      = np.array(0.933, dtype=complex)
+sensor1      = np.array(0.933, dtype=complex)
+sensor1.imag = 0.75;
+sensor2      = np.array(0.5, dtype=complex)
+sensor2.imag = 0;
+sensor3      = np.array(0.066987, dtype=complex)
 sensor3.imag = 0.75;
 fig          = plt.figure(tight_layout=True)
 gs           = gridspec.GridSpec(1, 1)
@@ -125,8 +125,8 @@ while True:
     a = ser.readline().decode("utf-8")
     if len(a) > 0:
       a = a.split(",")[0:3]
-      a = [int(x) / 25 for x in a]
-      print(a)
+      a = [int(x) / 17 for x in a]
+      #print(a)
       x, y = get_position(a[0], a[1])
       plt.scatter(x, y, marker="*", c="b", s=100)
       plt.pause(0.1)
