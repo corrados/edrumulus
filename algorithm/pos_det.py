@@ -41,13 +41,14 @@ gs           = gridspec.GridSpec(1, 1)
 ax0          = fig.add_subplot(gs[0])
 fignum       = fig.number
 plt.ion()
+plt.axis('square')
 
 
 def onclick(event):
   global click_point
   click_point = (event.xdata, event.ydata)
 
-def get_position(dt0, dt1, dt2):
+def get_position(dt0, dt1):
   # code taken from https://github.com/corrados/edrumulus/discussions/70#discussioncomment-4014893
   # created by jstma:
   r1 = dt0
@@ -124,9 +125,11 @@ while True:
     a = ser.readline().decode("utf-8")
     if len(a) > 0:
       a = a.split(",")[0:3]
-      a = [int(x) / 10 for x in a]
-      x, y = get_position(a[0], a[1], a[2])
+      a = [int(x) / 25 for x in a]
+      print(a)
+      x, y = get_position(a[0], a[1])
       plt.scatter(x, y, marker="*", c="b", s=100)
+      plt.pause(0.1)
 
   plt.show()
   plt.pause(0.03)
