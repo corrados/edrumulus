@@ -1066,9 +1066,15 @@ for ( int head_sensor_cnt = 1; head_sensor_cnt < number_head_sensors; head_senso
 if ( number_sensors_with_results == 3 )
 {
   // TEST use maximum offset for middle from each sensor pair
-  const int diff_1_0 = sSensor[2].sResults.first_peak_delay - sSensor[1].sResults.first_peak_delay;
-  const int diff_2_0 = sSensor[3].sResults.first_peak_delay - sSensor[1].sResults.first_peak_delay;
-  const int diff_2_1 = sSensor[3].sResults.first_peak_delay - sSensor[2].sResults.first_peak_delay;
+  const int diff_1_0 = -( sSensor[2].sResults.first_peak_delay - sSensor[1].sResults.first_peak_delay );
+  const int diff_2_0 = -( sSensor[3].sResults.first_peak_delay - sSensor[1].sResults.first_peak_delay );
+  const int diff_2_1 = -( sSensor[3].sResults.first_peak_delay - sSensor[2].sResults.first_peak_delay );
+
+
+// TEST
+//Serial.println ( String ( diff_1_0 ) + "," + String ( diff_2_0 ) + "," + String ( diff_2_1 ) + "," );
+
+
   const int max_abs_diff = ( max ( max ( abs ( diff_1_0 ), abs ( diff_2_0 ) ), abs ( diff_2_1 ) ) );
   midi_pos = min ( 127, max ( 0, pad_settings.pos_sensitivity * ( max_abs_diff - pad_settings.pos_threshold ) ) );
 
@@ -1077,7 +1083,29 @@ midi_velocity = velocity_sum / number_sensors_with_results;
 
 //is_rim_shot   = sSensor[head_sensor_idx_highest_velocity].sResults.is_rim_shot;
 // TEST use second highest velocity sensor for rim shot detection
-if ( head_sensor_idx_highest_velocity == 0 )
+if ( head_sensor_idx_highest_velocity == 1 )
+{
+  if ( sSensor[2].sResults.midi_velocity > sSensor[3].sResults.midi_velocity )
+  {
+    is_rim_shot = sSensor[2].sResults.is_rim_shot;
+  }
+  else
+  {
+    is_rim_shot = sSensor[3].sResults.is_rim_shot;
+  }
+}
+else if ( head_sensor_idx_highest_velocity == 2 )
+{
+  if ( sSensor[1].sResults.midi_velocity > sSensor[3].sResults.midi_velocity )
+  {
+    is_rim_shot = sSensor[1].sResults.is_rim_shot;
+  }
+  else
+  {
+    is_rim_shot = sSensor[3].sResults.is_rim_shot;
+  }
+}
+else
 {
   if ( sSensor[1].sResults.midi_velocity > sSensor[2].sResults.midi_velocity )
   {
@@ -1086,28 +1114,6 @@ if ( head_sensor_idx_highest_velocity == 0 )
   else
   {
     is_rim_shot = sSensor[2].sResults.is_rim_shot;
-  }
-}
-else if ( head_sensor_idx_highest_velocity == 1 )
-{
-  if ( sSensor[0].sResults.midi_velocity > sSensor[2].sResults.midi_velocity )
-  {
-    is_rim_shot = sSensor[0].sResults.is_rim_shot;
-  }
-  else
-  {
-    is_rim_shot = sSensor[2].sResults.is_rim_shot;
-  }
-}
-else
-{
-  if ( sSensor[0].sResults.midi_velocity > sSensor[1].sResults.midi_velocity )
-  {
-    is_rim_shot = sSensor[0].sResults.is_rim_shot;
-  }
-  else
-  {
-    is_rim_shot = sSensor[1].sResults.is_rim_shot;
   }
 }
 
