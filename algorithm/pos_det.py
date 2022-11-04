@@ -113,12 +113,16 @@ while True:
   # approximation of distance: r = max(|L21|, |L31|, |L32|) (using some magic factor of 0.7)
   r_est = np.max(np.array([np.abs(l21), np.abs(l31), np.abs(l32)])) * 0.7
 
+  # get position algorithm
+  x_get, y_get = get_position(l21, l31)
+
   # show ideal circle (dashed) and circle based on approximation
   ax0.add_patch(mpatches.Circle((0.5, 0.5), np.abs(click_vector - (0.5 + 0.5j)), fill=False, color="b", ls='--'))
   ax0.add_patch(mpatches.Circle((0.5, 0.5), r_est, fill=False, color="b", lw=2))
 
-  # show click point
+  # show click point and get position point
   plt.scatter(click_point[0], click_point[1], marker="*", c="r", s=100)
+  plt.scatter(x_get, y_get, marker="*", c="g", s=100)
 
   # for a test return measured differences via a serial string from Edrumulus
   if type(ser) is not list: # check for valid "ser" object
