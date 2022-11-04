@@ -90,7 +90,7 @@ while True:
   ax0.cla()
 
   # pad edge boundary circle
-  ax0.add_patch(mpatches.Circle((0.5, 0.5), 0.65, fill=False, linewidth=4))
+  ax0.add_patch(mpatches.Circle((0.5, 0.5), 0.75, fill=False, linewidth=4))
   plt.text(0.44, -0.1, "Drums", weight="bold")
 
   # sensors
@@ -128,7 +128,7 @@ while True:
       a = [int(x) / 17 for x in a]
       #print(a)
       x, y = get_position(a[0], a[1])
-      plt.scatter(x, y, marker="*", c="b", s=100)
+      plt.scatter(x, y, marker="*", c="b", s=700)
       plt.pause(0.1)
 
   plt.show()
