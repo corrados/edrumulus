@@ -52,42 +52,36 @@ def onclick(event):
 def get_position(r1, r2):
   # code taken from https://github.com/corrados/edrumulus/discussions/70#discussioncomment-4014893
   # created by jstma:
-  x0 = sensor1.real
-  y0 = sensor1.imag
-  x1 = sensor2.real
-  y1 = sensor2.imag
-  x2 = sensor3.real
-  y2 = sensor3.imag
-
+  x0               = sensor1.real
+  y0               = sensor1.imag
+  x1               = sensor2.real
+  y1               = sensor2.imag
+  x2               = sensor3.real
+  y2               = sensor3.imag
   x0_sq_plus_y0_sq = x0 * x0 + y0 * y0
+  a1               = 2 * (x0 - x1)
+  b1               = 2 * (y0 - y1)
+  a2               = 2 * (x0 - x2)
+  b2               = 2 * (y0 - y2)
+  div1             = a1 * b2 - a2 * b1
+  div2             = a2 * b1 - a1 * b2
 
-  a1 = 2 * (x0 - x1)
-  b1 = 2 * (y0 - y1)
-  c1 = r1 * r1 + x0_sq_plus_y0_sq - x1 * x1 - y1 * y1
-
-  a2 = 2 * (x0 - x2)
-  b2 = 2 * (y0 - y2)
-  c2 = r2 * r2 + x0_sq_plus_y0_sq - x2 * x2 - y2 * y2
-
-  div1 = a1 * b2 - a2 * b1
-  div2 = a2 * b1 - a1 * b2
-  d1   = (2 * r1 * b2 - 2 * r2 * b1) / div1
-  e1   = (    c1 * b2 -     c2 * b1) / div1
-  d2   = (2 * r1 * a2 - 2 * r2 * a1) / div2
-  e2   = (    c1 * a2 -     c2 * a1) / div2
-
+  c1      = r1 * r1 + x0_sq_plus_y0_sq - x1 * x1 - y1 * y1
+  c2      = r2 * r2 + x0_sq_plus_y0_sq - x2 * x2 - y2 * y2
+  d1      = (2 * r1 * b2 - 2 * r2 * b1) / div1
+  e1      = (    c1 * b2 -     c2 * b1) / div1
+  d2      = (2 * r1 * a2 - 2 * r2 * a1) / div2
+  e2      = (    c1 * a2 -     c2 * a1) / div2
   d_e1_x0 = e1 - x0
   d_e2_y0 = e2 - y0
   a       = d1 * d1 + d2 * d2 - 1
   b       = 2 * d_e1_x0 * d1 + 2 * d_e2_y0 * d2
   c       = d_e1_x0 * d_e1_x0 + d_e2_y0 * d_e2_y0
 
-  # two solutions to the quadratic equation
+  # two solutions to the quadratic equation, only one solution seems to always be correct
   r_2 = (-b - np.sqrt(b * b - 4 * a * c)) / (2 * a)
-
-  # this solution seems to always be correct
-  x = d1 * r_2 + e1
-  y = d2 * r_2 + e2
+  x   = d1 * r_2 + e1
+  y   = d2 * r_2 + e2
   return x, y
 
 
@@ -97,7 +91,7 @@ while True:
 
   # pad edge boundary circle
   ax0.add_patch(mpatches.Circle((0.5, 0.5), 0.75, fill=False, linewidth=4))
-  plt.text(0.44, -0.1, "Drums", weight="bold")
+  plt.text(0.44, -0.17, "Drums", weight="bold")
 
   # sensors
   plt.scatter(sensor1.real, sensor1.imag, marker="x", c="g", s=150)
