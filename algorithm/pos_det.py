@@ -133,7 +133,7 @@ while True:
       #print(a)
       x, y = get_position(a[0], a[1])
       plt.scatter(x, y, marker="*", c="b", s=700)
-      plt.pause(0.1)
+      plt.pause(0.05)
 
   plt.show()
   plt.pause(0.03)
