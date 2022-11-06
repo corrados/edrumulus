@@ -59,25 +59,31 @@ def get_position(r1, r2):
   x2 = sensor3.real
   y2 = sensor3.imag
 
+  x0_sq_plus_y0_sq = x0 * x0 + y0 * y0
+
   a1 = 2 * (x0 - x1)
   b1 = 2 * (y0 - y1)
-  c1 = np.power(r1, 2) + np.power(x0, 2) + np.power(y0, 2) - np.power(x1, 2) - np.power(y1, 2)
+  c1 = r1 * r1 + x0_sq_plus_y0_sq - x1 * x1 - y1 * y1
 
   a2 = 2 * (x0 - x2)
   b2 = 2 * (y0 - y2)
-  c2 = np.power(r2, 2) + np.power(x0, 2) + np.power(y0, 2) - np.power(x2, 2) - np.power(y2, 2)
+  c2 = r2 * r2 + x0_sq_plus_y0_sq - x2 * x2 - y2 * y2
 
-  d1 = (2 * r1 * b2 - 2 * r2 * b1) / (a1 * b2 - a2 * b1)
-  e1 = (c1 * b2 - c2 * b1)         / (a1 * b2 - a2 * b1)
-  d2 = (2 * r1 * a2 - 2 * r2 * a1) / (a2 * b1 - a1 * b2)
-  e2 = (c1 * a2 - c2 * a1)         / (a2 * b1 - a1 * b2)
+  div1 = a1 * b2 - a2 * b1
+  div2 = a2 * b1 - a1 * b2
+  d1   = (2 * r1 * b2 - 2 * r2 * b1) / div1
+  e1   = (    c1 * b2 -     c2 * b1) / div1
+  d2   = (2 * r1 * a2 - 2 * r2 * a1) / div2
+  e2   = (    c1 * a2 -     c2 * a1) / div2
 
-  a = np.power(d1, 2) + np.power(d2, 2) - 1
-  b = 2 * (e1 - x0) * d1 + 2 * (e2 - y0) * d2
-  c = np.power((e1 - x0), 2) + np.power((e2 - y0), 2)
+  d_e1_x0 = e1 - x0
+  d_e2_y0 = e2 - y0
+  a       = d1 * d1 + d2 * d2 - 1
+  b       = 2 * d_e1_x0 * d1 + 2 * d_e2_y0 * d2
+  c       = d_e1_x0 * d_e1_x0 + d_e2_y0 * d_e2_y0
 
   # two solutions to the quadratic equation
-  r_2 = (-b - np.sqrt(np.power(b, 2) - 4 * a * c)) / (2 * a)
+  r_2 = (-b - np.sqrt(b * b - 4 * a * c)) / (2 * a)
 
   # this solution seems to always be correct
   x = d1 * r_2 + e1
