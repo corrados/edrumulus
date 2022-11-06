@@ -30,12 +30,12 @@ except:
   ser = [] # in error case "ser" is a list (is checked below)
 print('close plot window to quit')
 click_point  = (None, None)
-sensor1      = np.array(0.933, dtype=complex)
-sensor1.imag = 0.75;
-sensor2      = np.array(0.5, dtype=complex)
-sensor2.imag = 0;
-sensor3      = np.array(0.066987, dtype=complex)
-sensor3.imag = 0.75;
+sensor1      = np.array(0.433, dtype=complex)
+sensor1.imag = 0.25;
+sensor2      = np.array(0, dtype=complex)
+sensor2.imag = -0.5;
+sensor3      = np.array(-0.433, dtype=complex)
+sensor3.imag = 0.25;
 fig          = plt.figure(tight_layout=True)
 gs           = gridspec.GridSpec(1, 1)
 ax0          = fig.add_subplot(gs[0])
@@ -94,13 +94,14 @@ while True:
   plt.text(0.44, -0.17, "Drums", weight="bold")
 
   # sensors
-  plt.scatter(sensor1.real, sensor1.imag, marker="x", c="g", s=150)
-  plt.scatter(sensor2.real, sensor2.imag, marker="x", c="g", s=150)
-  plt.scatter(sensor3.real, sensor3.imag, marker="x", c="g", s=150)
+  plt.scatter(sensor1.real + 0.5, sensor1.imag + 0.5, marker="x", c="g", s=150)
+  plt.scatter(sensor2.real + 0.5, sensor2.imag + 0.5, marker="x", c="g", s=150)
+  plt.scatter(sensor3.real + 0.5, sensor3.imag + 0.5, marker="x", c="g", s=150)
 
   # create current mouse click vector
   click_vector      = np.array(click_point[0], dtype=complex)
   click_vector.imag = click_point[1];
+  click_vector     -= 0.5 + 0.5j
 
   l1 = np.abs(click_vector - sensor1)
   l2 = np.abs(click_vector - sensor2)
@@ -117,12 +118,12 @@ while True:
   x_get, y_get = get_position(l21, l31)
 
   # show ideal circle (dashed) and circle based on approximation
-  ax0.add_patch(mpatches.Circle((0.5, 0.5), np.abs(click_vector - (0.5 + 0.5j)), fill=False, color="b", ls='--'))
+  ax0.add_patch(mpatches.Circle((0.5, 0.5), np.abs(click_vector), fill=False, color="b", ls='--'))
   ax0.add_patch(mpatches.Circle((0.5, 0.5), r_est, fill=False, color="b", lw=2))
 
   # show click point and get position point
   plt.scatter(click_point[0], click_point[1], marker="*", c="r", s=100)
-  plt.scatter(x_get, y_get, marker="*", c="g", s=100)
+  plt.scatter(x_get + 0.5, y_get + 0.5, marker="*", c="g", s=100)
 
   # for a test return measured differences via a serial string from Edrumulus
   if type(ser) is not list: # check for valid "ser" object
@@ -132,7 +133,7 @@ while True:
       a = [int(x) / 17 for x in a]
       #print(a)
       x, y = get_position(a[0], a[1])
-      plt.scatter(x, y, marker="*", c="b", s=700)
+      plt.scatter(x + 0.5, y + 0.5, marker="*", c="b", s=700)
       plt.pause(0.05)
 
   plt.show()
