@@ -36,6 +36,7 @@ sensor2      = np.array(0, dtype=complex)
 sensor2.imag = -0.5;
 sensor3      = np.array(-0.433, dtype=complex)
 sensor3.imag = 0.25;
+rim_radius   = 0.75
 fig          = plt.figure(tight_layout=True)
 gs           = gridspec.GridSpec(1, 1)
 ax0          = fig.add_subplot(gs[0])
@@ -85,6 +86,10 @@ def get_position(r1, r2):
   x   = d1 * r_2 + e1
   y   = d2 * r_2 + e2
   r   = np.sqrt(x * x + y * y)
+
+  # clip calculated radius to rim radius
+  if r > rim_radius:
+    r = rim_radius
   return x, y, r
 
 
@@ -93,7 +98,7 @@ while True:
   ax0.cla()
 
   # pad edge boundary circle
-  ax0.add_patch(mpatches.Circle((0.5, 0.5), 0.75, fill=False, linewidth=4))
+  ax0.add_patch(mpatches.Circle((0.5, 0.5), rim_radius, fill=False, linewidth=4))
   plt.text(0.44, -0.17, "Drums", weight="bold")
 
   # sensors
@@ -134,7 +139,7 @@ while True:
     if len(a) > 0:
       a = a.split(",")[0:3]
       a = [int(x) / 17 for x in a]
-      #print(a)
+      print(a)
       x_get, y_get, r_get = get_position(a[0], a[1])
       plt.scatter(x_get + 0.5, y_get + 0.5, marker="*", c="b", s=700)
       ax0.add_patch(mpatches.Circle((0.5, 0.5), r_get, fill=False, color="g", ls='--'))
