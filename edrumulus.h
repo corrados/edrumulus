@@ -360,6 +360,20 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       float        cancellation_factor;
       float        rim_max_power_low_limit;
       int          multiple_sensor_cnt;
+      float        get_pos_x0;
+      float        get_pos_y0;
+      float        get_pos_x1;
+      float        get_pos_y1;
+      float        get_pos_x2;
+      float        get_pos_y2;
+      float        get_pos_x0_sq_plus_y0_sq;
+      float        get_pos_a1;
+      float        get_pos_b1;
+      float        get_pos_a2;
+      float        get_pos_b2;
+      float        get_pos_div1;
+      float        get_pos_div2;
+      float        get_pos_rim_radius;
 
       // real-time debugging support
 #ifdef USE_SERIAL_DEBUG_PLOTTING

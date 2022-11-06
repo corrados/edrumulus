@@ -31,11 +31,11 @@ except:
 print('close plot window to quit')
 click_point  = (None, None)
 sensor1      = np.array(0.433, dtype=complex)
-sensor1.imag = 0.25;
+sensor1.imag = 0.25
 sensor2      = np.array(0, dtype=complex)
-sensor2.imag = -0.5;
+sensor2.imag = -0.5
 sensor3      = np.array(-0.433, dtype=complex)
-sensor3.imag = 0.25;
+sensor3.imag = 0.25
 rim_radius   = 0.75
 fig          = plt.figure(tight_layout=True)
 gs           = gridspec.GridSpec(1, 1)
@@ -141,7 +141,8 @@ while True:
       a = [int(x) / 17 for x in a]
       print(a)
       x_get, y_get, r_get = get_position(a[0], a[1])
-      plt.scatter(x_get + 0.5, y_get + 0.5, marker="*", c="b", s=700)
+      if np.sqrt(x_get * x_get + y_get * y_get) <= rim_radius:
+        plt.scatter(x_get + 0.5, y_get + 0.5, marker="*", c="b", s=700)
       ax0.add_patch(mpatches.Circle((0.5, 0.5), r_get, fill=False, color="g", ls='--'))
       plt.pause(0.05)
 
