@@ -52,6 +52,7 @@ def onclick(event):
 def get_position(r1, r2):
   # code taken from https://github.com/corrados/edrumulus/discussions/70#discussioncomment-4014893
   # created by jstma:
+  # these equations can be calculated in the initialization
   x0               = sensor1.real
   y0               = sensor1.imag
   x1               = sensor2.real
@@ -66,6 +67,7 @@ def get_position(r1, r2):
   div1             = a1 * b2 - a2 * b1
   div2             = a2 * b1 - a1 * b2
 
+  # these equations have to calculated for each position detection
   c1      = r1 * r1 + x0_sq_plus_y0_sq - x1 * x1 - y1 * y1
   c2      = r2 * r2 + x0_sq_plus_y0_sq - x2 * x2 - y2 * y2
   d1      = (2 * r1 * b2 - 2 * r2 * b1) / div1
