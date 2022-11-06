@@ -82,7 +82,8 @@ def get_position(r1, r2):
   r_2 = (-b - np.sqrt(b * b - 4 * a * c)) / (2 * a)
   x   = d1 * r_2 + e1
   y   = d2 * r_2 + e2
-  return x, y
+  r   = np.sqrt(x * x + y * y)
+  return x, y, r
 
 
 cid = fig.canvas.mpl_connect('button_press_event', onclick)
@@ -115,7 +116,7 @@ while True:
   r_est = np.max(np.array([np.abs(l21), np.abs(l31), np.abs(l32)])) * 0.7
 
   # get position algorithm
-  x_get, y_get = get_position(l21, l31)
+  x_get, y_get, r_get = get_position(l21, l31)
 
   # show ideal circle (dashed) and circle based on approximation
   ax0.add_patch(mpatches.Circle((0.5, 0.5), np.abs(click_vector), fill=False, color="b", ls='--'))
@@ -132,8 +133,9 @@ while True:
       a = a.split(",")[0:3]
       a = [int(x) / 17 for x in a]
       #print(a)
-      x, y = get_position(a[0], a[1])
-      plt.scatter(x + 0.5, y + 0.5, marker="*", c="b", s=700)
+      x_get, y_get, r_get = get_position(a[0], a[1])
+      plt.scatter(x_get + 0.5, y_get + 0.5, marker="*", c="b", s=700)
+      ax0.add_patch(mpatches.Circle((0.5, 0.5), r_get, fill=False, color="g", ls='--'))
       plt.pause(0.05)
 
   plt.show()
