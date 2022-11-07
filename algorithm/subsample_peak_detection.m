@@ -17,24 +17,27 @@
 
 % testing sub-sample peak detection algorithm
 
-%range = 0.5; % single test where the interpolation curve is plotted
+%range = 0.1;%0.75; % single test where the interpolation curve is plotted
 range = 0:0.001:1; % range test for evaluating the approximation error
 
 for i = 1:length(range)
 
-  y = [1,2,1 + range(i)];
+  y = [1, 2, 1 + range(i)];
 
   x  = 1:3;
   x1 = linspace(1, 3, 100);
   y1 = polyval(polyfit(1:3, y, 2), x1);
 
   % approximation to be evaluated
-  x_est(i) = mean(x .* y) / mean(y);
+%  x_est(i) = mean(x .* y) / mean(y);
+% TEST
+r = y(3) / y(1);
+x_est(i) = 1 + sqrt(r);
 
   [dummy, x_max]      = max(y1);
   [dummy, x_test_idx] = min(abs(x1 - x_est(i)));
-  pol_curve(i)        = x_max - 2;
-  est_curve(i)        = x_test_idx - 2;
+  pol_curve(i)        = x1(x_max) - 2;
+  est_curve(i)        = x1(x_test_idx) - 2;
   error(i)            = x_max - x_test_idx;
 
 end
