@@ -584,9 +584,9 @@ float Edrumulus::Pad::process_sample ( const float* input,
   is_rim_shot                    = false;
   is_choke_on                    = false;
   is_choke_off                   = false;
-  const bool pos_sense_is_used   = pad_settings.pos_sense_is_used;                     // can be applied directly without calling initialize()
-  const bool rim_shot_is_used    = pad_settings.rim_shot_is_used && ( input_len > 1 ); // can be applied directly without calling initialize()
-  const bool pos_sense_inverted  = pad_settings.pos_invert;                            // can be applied directly without calling initialize()
+  const bool pos_sense_is_used   = pad_settings.pos_sense_is_used && ( number_head_sensors == 1 ); // can be applied directly without calling initialize()
+  const bool rim_shot_is_used    = pad_settings.rim_shot_is_used && ( input_len > 1 );             // can be applied directly without calling initialize()
+  const bool pos_sense_inverted  = pad_settings.pos_invert;                                        // can be applied directly without calling initialize()
   float      x_filt              = 0.0f; // needed for debugging
   float      cur_decay           = 1;    // needed for debugging, initialization value (0 dB) only used for debugging
   bool       sensor0_has_results = false;
@@ -1111,7 +1111,7 @@ if ( ( r > get_pos_rim_radius ) || ( isnan ( r ) ) )
 }
 
 // TEST
-Serial.println ( String ( diff_1_0 ) + "," + String ( diff_2_0 ) + "," + String ( diff_2_1 ) + "," );
+//Serial.println ( String ( diff_1_0 ) + "," + String ( diff_2_0 ) + "," + String ( diff_2_1 ) + "," );
 
   int max_abs_diff = ( max ( max ( abs ( diff_1_0 ), abs ( diff_2_0 ) ), abs ( diff_2_1 ) ) );
 
