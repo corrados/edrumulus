@@ -1084,6 +1084,18 @@ if ( number_sensors_with_results == 3 )
   const int diff_2_1 = -( sSensor[3].sResults.first_peak_delay - sSensor[2].sResults.first_peak_delay );
 
 // TEST get_position function from pos_det.py
+
+// TODO add references...
+
+// TODO instead of "/ get_pos_div1" -> * get_pos_1_div1 = 1.0 / get_pos_div1 for speed optimization
+
+// TODO do not use hard coded "17" at the three places here but define a pad specific value and use that instead
+//      -> use that value also for definition of max_sensor_sample_diff
+
+// TODO calculate phase and return it with a special MIDI command
+
+// TODO implement positional sensing if only two head sensor peaks are available
+
 const float r1      = static_cast<float> ( diff_1_0 ) / 17;
 const float r2      = static_cast<float> ( diff_2_0 ) / 17;
 const float c1      = r1 * r1 + get_pos_x0_sq_plus_y0_sq - get_pos_x1 * get_pos_x1 - get_pos_y1 * get_pos_y1;
