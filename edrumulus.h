@@ -371,8 +371,8 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       float        get_pos_b1;
       float        get_pos_a2;
       float        get_pos_b2;
-      float        get_pos_div1;
-      float        get_pos_div2;
+      float        get_pos_div1_fact;
+      float        get_pos_div2_fact;
       float        get_pos_rim_radius;
 
       // real-time debugging support

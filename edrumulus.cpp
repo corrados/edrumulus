@@ -459,8 +459,8 @@ void Edrumulus::Pad::initialize()
   get_pos_b1               = 2 * ( get_pos_y0 - get_pos_y1 );
   get_pos_a2               = 2 * ( get_pos_x0 - get_pos_x2 );
   get_pos_b2               = 2 * ( get_pos_y0 - get_pos_y2 );
-  get_pos_div1             = get_pos_a1 * get_pos_b2 - get_pos_a2 * get_pos_b1;
-  get_pos_div2             = get_pos_a2 * get_pos_b1 - get_pos_a1 * get_pos_b2;
+  get_pos_div1_fact        = 1.0f / ( get_pos_a1 * get_pos_b2 - get_pos_a2 * get_pos_b1 );
+  get_pos_div2_fact        = 1.0f / ( get_pos_a2 * get_pos_b1 - get_pos_a1 * get_pos_b2 );
 
   // allocate and initialize memory for vectors and initialize scalars
   allocate_initialize ( &rim_bp_filt_b, bp_filt_len );      // rim band-pass filter coefficients b
@@ -1032,6 +1032,15 @@ if ( s.stored_is_rimshot )
 
 
   // Multiple head sensor management ----------------------------------------------
+
+// TODO do not use hard coded "17" at the three places here but define a pad specific value and use that instead
+//      -> use that value also for definition of max_sensor_sample_diff
+const int sensor_distance_factor = 17;
+//
+// TODO calculate phase and return it with a special MIDI command
+//
+// TODO implement positional sensing if only two head sensor peaks are available
+
   if ( number_head_sensors > 1 )
   {
 
@@ -1076,64 +1085,54 @@ for ( int head_sensor_cnt = 1; head_sensor_cnt < number_head_sensors; head_senso
   }
 }
 
-if ( number_sensors_with_results == 3 )
-{
-  // TEST use maximum offset for middle from each sensor pair
-  const int diff_1_0 = -( sSensor[2].sResults.first_peak_delay - sSensor[1].sResults.first_peak_delay );
-  const int diff_2_0 = -( sSensor[3].sResults.first_peak_delay - sSensor[1].sResults.first_peak_delay );
-  const int diff_2_1 = -( sSensor[3].sResults.first_peak_delay - sSensor[2].sResults.first_peak_delay );
+        if ( number_sensors_with_results == 3 )
+        {
+          // calculate time delay differences
+          const int diff_1_0 = -( sSensor[2].sResults.first_peak_delay - sSensor[1].sResults.first_peak_delay );
+          const int diff_2_0 = -( sSensor[3].sResults.first_peak_delay - sSensor[1].sResults.first_peak_delay );
 
-// TEST get_position function from pos_det.py
+          // get_position function from pos_det.py
+          // see: https://math.stackexchange.com/questions/3373011/how-to-solve-this-system-of-hyperbola-equations
+          // and discussion post of jstma: https://github.com/corrados/edrumulus/discussions/70#discussioncomment-4014893
+          const float r1      = static_cast<float> ( diff_1_0 ) / sensor_distance_factor;
+          const float r2      = static_cast<float> ( diff_2_0 ) / sensor_distance_factor;
+          const float c1      = r1 * r1 + get_pos_x0_sq_plus_y0_sq - get_pos_x1 * get_pos_x1 - get_pos_y1 * get_pos_y1;
+          const float c2      = r2 * r2 + get_pos_x0_sq_plus_y0_sq - get_pos_x2 * get_pos_x2 - get_pos_y2 * get_pos_y2;
+          const float d1      = ( 2 * r1 * get_pos_b2 - 2 * r2 * get_pos_b1 ) * get_pos_div1_fact;
+          const float e1      = (     c1 * get_pos_b2 -     c2 * get_pos_b1 ) * get_pos_div1_fact;
+          const float d2      = ( 2 * r1 * get_pos_a2 - 2 * r2 * get_pos_a1 ) * get_pos_div2_fact;
+          const float e2      = (     c1 * get_pos_a2 -     c2 * get_pos_a1 ) * get_pos_div2_fact;
+          const float d_e1_x0 = e1 - get_pos_x0;
+          const float d_e2_y0 = e2 - get_pos_y0;
+          const float a       = d1 * d1 + d2 * d2 - 1;
+          const float b       = 2 * d_e1_x0 * d1 + 2 * d_e2_y0 * d2;
+          const float c       = d_e1_x0 * d_e1_x0 + d_e2_y0 * d_e2_y0;
 
-// TODO add references...
-
-// TODO instead of "/ get_pos_div1" -> * get_pos_1_div1 = 1.0 / get_pos_div1 for speed optimization
-
-// TODO do not use hard coded "17" at the three places here but define a pad specific value and use that instead
-//      -> use that value also for definition of max_sensor_sample_diff
-
-// TODO calculate phase and return it with a special MIDI command
-
-// TODO implement positional sensing if only two head sensor peaks are available
-
-const float r1      = static_cast<float> ( diff_1_0 ) / 17;
-const float r2      = static_cast<float> ( diff_2_0 ) / 17;
-const float c1      = r1 * r1 + get_pos_x0_sq_plus_y0_sq - get_pos_x1 * get_pos_x1 - get_pos_y1 * get_pos_y1;
-const float c2      = r2 * r2 + get_pos_x0_sq_plus_y0_sq - get_pos_x2 * get_pos_x2 - get_pos_y2 * get_pos_y2;
-const float d1      = ( 2 * r1 * get_pos_b2 - 2 * r2 * get_pos_b1 ) / get_pos_div1;
-const float e1      = (     c1 * get_pos_b2 -     c2 * get_pos_b1 ) / get_pos_div1;
-const float d2      = ( 2 * r1 * get_pos_a2 - 2 * r2 * get_pos_a1 ) / get_pos_div2;
-const float e2      = (     c1 * get_pos_a2 -     c2 * get_pos_a1 ) / get_pos_div2;
-const float d_e1_x0 = e1 - get_pos_x0;
-const float d_e2_y0 = e2 - get_pos_y0;
-const float a       = d1 * d1 + d2 * d2 - 1;
-const float b       = 2 * d_e1_x0 * d1 + 2 * d_e2_y0 * d2;
-const float c       = d_e1_x0 * d_e1_x0 + d_e2_y0 * d_e2_y0;
-
-// two solutions to the quadratic equation, only one solution seems to always be correct
-const float r_2 = ( -b - sqrt ( b * b - 4 * a * c ) ) / ( 2 * a );
-const float x   = d1 * r_2 + e1;
-const float y   = d2 * r_2 + e2;
-float       r   = sqrt ( x * x + y * y );
-
-// clip calculated radius to rim radius
-if ( ( r > get_pos_rim_radius ) || ( isnan ( r ) ) )
-{
-  r = get_pos_rim_radius;
-}
+          // two solutions to the quadratic equation, only one solution seems to always be correct
+          const float r_2 = ( -b - sqrt ( b * b - 4 * a * c ) ) / ( 2 * a );
+          const float x   = d1 * r_2 + e1;
+          const float y   = d2 * r_2 + e2;
+          float       r   = sqrt ( x * x + y * y );
 
 // TEST
+//Serial.println ( String ( x ) + "," + String ( y ) + "," );
+
+          // clip calculated radius to rim radius
+          if ( ( r > get_pos_rim_radius ) || ( isnan ( r ) ) )
+          {
+            r = get_pos_rim_radius;
+          }
+          const int max_abs_diff = r * sensor_distance_factor;
+
+// TEST use maximum offset for middle from each sensor pair
+//const int diff_2_1     = -( sSensor[3].sResults.first_peak_delay - sSensor[2].sResults.first_peak_delay );
 //Serial.println ( String ( diff_1_0 ) + "," + String ( diff_2_0 ) + "," + String ( diff_2_1 ) + "," );
+//const int max_abs_diff = ( max ( max ( abs ( diff_1_0 ), abs ( diff_2_0 ) ), abs ( diff_2_1 ) ) );
 
-  int max_abs_diff = ( max ( max ( abs ( diff_1_0 ), abs ( diff_2_0 ) ), abs ( diff_2_1 ) ) );
+          midi_pos = min ( 127, max ( 0, pad_settings.pos_sensitivity * ( max_abs_diff - pad_settings.pos_threshold ) ) );
 
-// TEST overwrite result from approximation algorithm by the position detection algorithm
-max_abs_diff = r * 17;
-
-  midi_pos = min ( 127, max ( 0, pad_settings.pos_sensitivity * ( max_abs_diff - pad_settings.pos_threshold ) ) );
-
-// TEST use average MIDI velocity
-midi_velocity = velocity_sum / number_sensors_with_results;
+          // use average MIDI velocity
+          midi_velocity = velocity_sum / number_sensors_with_results;
 
 //is_rim_shot   = sSensor[head_sensor_idx_highest_velocity].sResults.is_rim_shot;
 // TEST use second highest velocity sensor for rim shot detection
