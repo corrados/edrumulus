@@ -28,8 +28,9 @@ for i = 1:length(range)
   % peak characterization metric 0 < m < 1
   m(i) = (y(3) - y(1)) / (y(2) - y(1));
 
-  x1 = linspace(1, 3, 100);
-  y1 = polyval(polyfit(1:3, y, 2), x1);
+  x1             = linspace(1, 3, 1000);
+  y1             = polyval(polyfit(1:3, y, 2), x1);
+  [dummy, x_max] = max(y1);
 
   % approximation to be evaluated
 %  x_est(i) = mean(x .* y) / mean(y);
@@ -37,11 +38,15 @@ for i = 1:length(range)
 r = y(3) / y(1);
 x_est(i) = 1 + sqrt(r);
 
-  [dummy, x_max]      = max(y1);
+% TEST
+x_est2(i) = m(i) * m(i) / 2;
+error(i)  = x_est2(i) - (x1(x_max) - 2);
+
+
   [dummy, x_test_idx] = min(abs(x1 - x_est(i)));
   pol_curve(i)        = x1(x_max) - 2;
   est_curve(i)        = x1(x_test_idx) - 2;
-  error(i)            = x_max - x_test_idx;
+  %error(i)            = x_max - x_test_idx;
 
 end
 
@@ -58,8 +63,8 @@ if length(range) == 1
 else
 
   subplot(3, 1, 1), plot(range, [pol_curve; est_curve]); title('detected maxima (blue:ref, red:approx.)')
-  subplot(3, 1, 2), plot(range, error); title('error curve')
-  subplot(3, 1, 3), plot(m, pol_curve); title('curve versus metric')
+  subplot(3, 1, 2), plot(m, error); title('error curve')
+  subplot(3, 1, 3), plot(m, [pol_curve; x_est2]); title('curve versus metric')
 
 end
 
