@@ -18,13 +18,16 @@
 % testing sub-sample peak detection algorithm
 
 %range = 0.1;%0.75; % single test where the interpolation curve is plotted
-range = 0:0.001:1; % range test for evaluating the approximation error
+range = 0:0.001:2; % range test for evaluating the approximation error
 
 for i = 1:length(range)
 
-  y = [1, 2, 1 + range(i)];
+  y = [2, 4, 2 + range(i)];
+  x = 1:3;
 
-  x  = 1:3;
+  % peak characterization metric 0 < m < 1
+  m(i) = (y(3) - y(1)) / (y(2) - y(1));
+
   x1 = linspace(1, 3, 100);
   y1 = polyval(polyfit(1:3, y, 2), x1);
 
@@ -54,8 +57,9 @@ if length(range) == 1
 
 else
 
-  subplot(2, 1, 1), plot(range, [pol_curve; est_curve]); title('detected maxima (blue:ref, red:approx.)')
-  subplot(2, 1, 2), plot(range, error); title('error curve')
+  subplot(3, 1, 1), plot(range, [pol_curve; est_curve]); title('detected maxima (blue:ref, red:approx.)')
+  subplot(3, 1, 2), plot(range, error); title('error curve')
+  subplot(3, 1, 3), plot(m, pol_curve); title('curve versus metric')
 
 end
 
