@@ -729,6 +729,32 @@ float Edrumulus::Pad::process_sample ( const float* input,
           }
         }
 
+        // calculate sub-sample first peak value using simplified metric:
+        // m = (x_sq(2) - x_sq(0)) / (x_sq(1) - x_sq(0)) -> sub_sample = m * m / 2
+        if ( number_head_sensors > 1 )
+        {
+          s.sResults.first_peak_sub_sample = 0.0; // in case no sub-sample value can be calculated
+          const int cur_index              = x_sq_hist_len - total_scan_time + first_peak_idx;
+
+          if ( ( cur_index > 0 ) && ( cur_index < x_sq_hist_len - 1 ) )
+          {
+            if ( s_x_sq_hist[cur_index - 1] > s_x_sq_hist[cur_index + 1] )
+            {
+              const float sub_sample_metric = ( s_x_sq_hist[cur_index - 1] - s_x_sq_hist[cur_index + 1] ) /
+                                              ( s_x_sq_hist[cur_index]     - s_x_sq_hist[cur_index + 1] );
+
+              s.sResults.first_peak_sub_sample = sub_sample_metric * sub_sample_metric / 2;
+            }
+            else
+            {
+              const float sub_sample_metric = ( s_x_sq_hist[cur_index + 1] - s_x_sq_hist[cur_index - 1] ) /
+                                              ( s_x_sq_hist[cur_index]     - s_x_sq_hist[cur_index - 1] );
+
+              s.sResults.first_peak_sub_sample = -sub_sample_metric * sub_sample_metric / 2;
+            }
+          }
+        }
+
         // get the maximum velocity in the scan time using the unfiltered signal
         s.peak_val            = 0.0f;
         int peak_velocity_idx = 0;
@@ -1088,14 +1114,16 @@ for ( int head_sensor_cnt = 1; head_sensor_cnt < number_head_sensors; head_senso
         if ( number_sensors_with_results == 3 )
         {
           // calculate time delay differences
-          const int diff_1_0 = -( sSensor[2].sResults.first_peak_delay - sSensor[1].sResults.first_peak_delay );
-          const int diff_2_0 = -( sSensor[3].sResults.first_peak_delay - sSensor[1].sResults.first_peak_delay );
+          const float diff_1_0 = -( ( sSensor[2].sResults.first_peak_delay + sSensor[2].sResults.first_peak_sub_sample ) -
+                                    ( sSensor[1].sResults.first_peak_delay + sSensor[1].sResults.first_peak_sub_sample ) );
+          const float diff_2_0 = -( ( sSensor[3].sResults.first_peak_delay + sSensor[3].sResults.first_peak_sub_sample ) -
+                                    ( sSensor[1].sResults.first_peak_delay + sSensor[1].sResults.first_peak_sub_sample ) );
 
           // get_position function from pos_det.py
           // see: https://math.stackexchange.com/questions/3373011/how-to-solve-this-system-of-hyperbola-equations
           // and discussion post of jstma: https://github.com/corrados/edrumulus/discussions/70#discussioncomment-4014893
-          const float r1      = static_cast<float> ( diff_1_0 ) / sensor_distance_factor;
-          const float r2      = static_cast<float> ( diff_2_0 ) / sensor_distance_factor;
+          const float r1      = diff_1_0 / sensor_distance_factor;
+          const float r2      = diff_2_0 / sensor_distance_factor;
           const float c1      = r1 * r1 + get_pos_x0_sq_plus_y0_sq - get_pos_x1 * get_pos_x1 - get_pos_y1 * get_pos_y1;
           const float c2      = r2 * r2 + get_pos_x0_sq_plus_y0_sq - get_pos_x2 * get_pos_x2 - get_pos_y2 * get_pos_y2;
           const float d1      = ( 2 * r1 * get_pos_b2 - 2 * r2 * get_pos_b1 ) * get_pos_div1_fact;

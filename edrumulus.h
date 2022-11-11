@@ -265,10 +265,11 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
 
       struct SResults
       {
-        int  midi_velocity;
-        int  midi_pos;
-        int  first_peak_delay;
-        bool is_rim_shot;
+        int   midi_velocity;
+        int   midi_pos;
+        int   first_peak_delay;
+        float first_peak_sub_sample;
+        bool  is_rim_shot;
       };
 
       struct SSensor

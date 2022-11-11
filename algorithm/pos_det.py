@@ -137,17 +137,17 @@ while True:
   if type(ser) is not list: # check for valid "ser" object
     a = ser.readline().decode("utf-8")
     if len(a) > 0:
-      #a = a.split(",")[0:2] # use this if x and y are sent with Serial.println
-      #a = [float(x) for x in a]
-      #plt.scatter(a[0] + 0.5, a[1] + 0.5, marker="*", c="b", s=700)
+      a = a.split(",")[0:2] # use this if x and y are sent with Serial.println
+      a = [float(x) for x in a]
+      plt.scatter(a[0] + 0.5, a[1] + 0.5, marker="*", c="b", s=700)
 
-      a = a.split(",")[0:3]
-      a = [int(x) / 17 for x in a]
-      print(a)
-      x_get, y_get, r_get = get_position(a[0], a[1])
-      if np.sqrt(x_get * x_get + y_get * y_get) <= rim_radius:
-        plt.scatter(x_get + 0.5, y_get + 0.5, marker="*", c="b", s=700)
-      ax0.add_patch(mpatches.Circle((0.5, 0.5), r_get, fill=False, color="g", ls='--'))
+      #a = a.split(",")[0:3]
+      #a = [int(x) / 17 for x in a]
+      #print(a)
+      #x_get, y_get, r_get = get_position(a[0], a[1])
+      #if np.sqrt(x_get * x_get + y_get * y_get) <= rim_radius:
+      #  plt.scatter(x_get + 0.5, y_get + 0.5, marker="*", c="b", s=700)
+      #ax0.add_patch(mpatches.Circle((0.5, 0.5), r_get, fill=False, color="g", ls='--'))
       plt.pause(0.05)
 
   plt.show()
