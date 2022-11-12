@@ -1065,17 +1065,15 @@ if ( s.stored_is_rimshot )
 //      -> use that value also for definition of max_sensor_sample_diff
 const int sensor_distance_factor = 17;
 //
+// TODO put number somewhere else
+const int max_sensor_sample_diff = 20; // 2.5 ms at 8 kHz sampling rate
+//
 // TODO calculate phase and return it with a special MIDI command
 //
 // TODO implement positional sensing if only two head sensor peaks are available
 
   if ( number_head_sensors > 1 )
   {
-
-// TODO put number somewhere else
-const int max_sensor_sample_diff = 20; // 2.5 ms at 8 kHz sampling rate
-//const int two_times_max_sensor_sample_diff = 2 * max_sensor_sample_diff;
-
     // start condition of delay process to query all head sensor results
     if ( sensor0_has_results && ( multiple_sensor_cnt == 0 ) )
     {
