@@ -730,7 +730,7 @@ float Edrumulus::Pad::process_sample ( const float* input,
         }
 
         // calculate sub-sample first peak value using simplified metric:
-        // m = (x_sq(2) - x_sq(0)) / (x_sq(1) - x_sq(0)) -> sub_sample = m * m / 2
+        // m = (x_sq[2] - x_sq[0]) / (x_sq[1] - x_sq[0]) -> sub_sample = m * m / 2
         if ( number_head_sensors > 1 )
         {
           s.sResults.first_peak_sub_sample = 0.0; // in case no sub-sample value can be calculated
@@ -740,6 +740,7 @@ float Edrumulus::Pad::process_sample ( const float* input,
           {
             if ( s_x_sq_hist[cur_index - 1] > s_x_sq_hist[cur_index + 1] )
             {
+              // sample left of main peak is bigger than right sample
               const float sub_sample_metric = ( s_x_sq_hist[cur_index - 1] - s_x_sq_hist[cur_index + 1] ) /
                                               ( s_x_sq_hist[cur_index]     - s_x_sq_hist[cur_index + 1] );
 
@@ -747,6 +748,7 @@ float Edrumulus::Pad::process_sample ( const float* input,
             }
             else
             {
+              // sample right of main peak is bigger than left sample
               const float sub_sample_metric = ( s_x_sq_hist[cur_index + 1] - s_x_sq_hist[cur_index - 1] ) /
                                               ( s_x_sq_hist[cur_index]     - s_x_sq_hist[cur_index - 1] );
 
