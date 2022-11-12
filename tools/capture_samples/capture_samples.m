@@ -30,7 +30,7 @@ if do_input_capture
 
   % prepare serial port
   try
-    a = serialport("COM7", 500000); % note that we increased the transfer rate, now it is different from the default
+    a = serialport("/dev/ttyUSB0", 500000); % note that we increased the transfer rate, now it is different from the default
   catch
   end
   flush(a);
@@ -61,7 +61,7 @@ else
 
   % prepare serial port
   try
-    a = serialport("COM7", 115200);
+    a = serialport("/dev/ttyUSB0", 115200);
     set(a, 'bytesize', 8);
     set(a, 'parity', 'n');
     set(a, 'stopbits', 1);
