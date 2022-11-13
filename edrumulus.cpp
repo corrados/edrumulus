@@ -1063,7 +1063,7 @@ if ( s.stored_is_rimshot )
 
 // TODO do not use hard coded "17" at the three places here but define a pad specific value and use that instead
 //      -> use that value also for definition of max_sensor_sample_diff
-const int sensor_distance_factor = 17;
+const int sensor_distance_factor = 15;//17;
 //
 // TODO put number somewhere else
 const int max_sensor_sample_diff = 20; // 2.5 ms at 8 kHz sampling rate
@@ -1114,10 +1114,13 @@ for ( int head_sensor_cnt = 1; head_sensor_cnt < number_head_sensors; head_senso
         if ( number_sensors_with_results == 3 )
         {
           // calculate time delay differences
-          const float diff_1_0 = -( ( sSensor[2].sResults.first_peak_delay + sSensor[2].sResults.first_peak_sub_sample ) -
-                                    ( sSensor[1].sResults.first_peak_delay + sSensor[1].sResults.first_peak_sub_sample ) );
-          const float diff_2_0 = -( ( sSensor[3].sResults.first_peak_delay + sSensor[3].sResults.first_peak_sub_sample ) -
-                                    ( sSensor[1].sResults.first_peak_delay + sSensor[1].sResults.first_peak_sub_sample ) );
+          float diff_1_0 = -( ( sSensor[2].sResults.first_peak_delay + sSensor[2].sResults.first_peak_sub_sample ) -
+                              ( sSensor[1].sResults.first_peak_delay + sSensor[1].sResults.first_peak_sub_sample ) );
+          float diff_2_0 = -( ( sSensor[3].sResults.first_peak_delay + sSensor[3].sResults.first_peak_sub_sample ) -
+                              ( sSensor[1].sResults.first_peak_delay + sSensor[1].sResults.first_peak_sub_sample ) );
+
+// TEST calibration
+diff_2_0 += 5;
 
           // get_position function from pos_det.py
           // see: https://math.stackexchange.com/questions/3373011/how-to-solve-this-system-of-hyperbola-equations
@@ -1143,7 +1146,7 @@ for ( int head_sensor_cnt = 1; head_sensor_cnt < number_head_sensors; head_senso
           float       r   = sqrt ( x * x + y * y );
 
 // TEST
-//Serial.println ( String ( x ) + "," + String ( y ) + ",1000.0," );
+Serial.println ( String ( x ) + "," + String ( y ) + ",1000.0," );
 
           // clip calculated radius to rim radius
           if ( ( r > get_pos_rim_radius ) || ( isnan ( r ) ) )
@@ -1153,8 +1156,9 @@ for ( int head_sensor_cnt = 1; head_sensor_cnt < number_head_sensors; head_senso
           const int max_abs_diff = r * sensor_distance_factor;
 
 // TEST use maximum offset for middle from each sensor pair
-//const int diff_2_1 = -( ( sSensor[3].sResults.first_peak_delay + sSensor[3].sResults.first_peak_sub_sample ) -
-//                        ( sSensor[2].sResults.first_peak_delay + sSensor[2].sResults.first_peak_sub_sample ) );
+//float diff_2_1 = -( ( sSensor[3].sResults.first_peak_delay + sSensor[3].sResults.first_peak_sub_sample ) -
+//                    ( sSensor[2].sResults.first_peak_delay + sSensor[2].sResults.first_peak_sub_sample ) );
+//diff_2_1 += 4; // TEST: calibration
 //Serial.println ( String ( diff_1_0 ) + "," + String ( diff_2_0 ) + "," + String ( diff_2_1 ) + "," );
 //const int max_abs_diff = ( max ( max ( abs ( diff_1_0 ), abs ( diff_2_0 ) ), abs ( diff_2_1 ) ) );
 
