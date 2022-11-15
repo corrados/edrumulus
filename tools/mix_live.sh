@@ -5,8 +5,13 @@ ecasound --server -i test.wav -o alsa \
 -elv2:urn:ardour:a-reverb,0.2,1,1 \
 -elv2:urn:ardour:a-comp,10,80,0,4,-30,0
 
+
+# remote control examples: ----------------
 # echo -e "c-select default\r\nc-mute on\r\n" | nc -w1 localhost 2868
 # echo -e "c-select default\r\nc-mute off\r\n" | nc -w1 localhost 2868
+# echo -e "cop-status\r\n" | nc -w1 localhost 2868
+# echo -e "cop-set 1,17,0\r\n" | nc -w1 localhost 2868
+# echo -e "cop-get 1,17\r\n" | nc -w1 localhost 2868
 
 # a-eq parameters: ------------------------
 # freql:   Frequency L  { 20, 20000} Hz
