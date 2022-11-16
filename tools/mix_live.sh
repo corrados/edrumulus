@@ -5,66 +5,66 @@ ecasound --server \
 DrumGizmo:4-OHCenter,DrumGizmo:5-Hihat,DrumGizmo:6-Ride,DrumGizmo:7-SnareTop,DrumGizmo:8-SnareBottom,\
 DrumGizmo:9-Tom1,DrumGizmo:10-Tom2,DrumGizmo:11-FTom1,DrumGizmo:12-FTom2,\
 DrumGizmo:13-KDrumInside,DrumGizmo:14-KDrumOutside \
--a:1 -ea:0 -epp:50 \
+-a:1 -ea:100 -epp:0 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,20,1,200,10,10,200,1,10,200,1,10,200,1,10,8000,1,-15,1,1,1,1,1,1,1 \
-     -elv2:urn:ardour:a-reverb,0.2,1,1 \
--a:2 -ea:0 -epp:50 \
+     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-reverb,0.2,1,0 \
+-a:2 -ea:100 -epp:100 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,20,1,200,10,10,200,1,10,200,1,10,200,1,10,8000,1,-15,1,1,1,1,1,1,1 \
-     -elv2:urn:ardour:a-reverb,0.2,1,1 \
--a:3 -ea:100 -epp:50 \
+     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-reverb,0.2,1,0 \
+-a:3 -ea:100 -epp:0 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,20,1,200,10,10,200,1,10,200,1,10,200,1,10,8000,1,-15,1,1,1,1,1,1,1 \
-     -elv2:urn:ardour:a-reverb,0.2,1,1 \
--a:4 -ea:0 -epp:50 \
+     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-reverb,0.2,1,0 \
+-a:4 -ea:100 -epp:100 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,20,1,200,10,10,200,1,10,200,1,10,200,1,10,8000,1,-15,1,1,1,1,1,1,1 \
-     -elv2:urn:ardour:a-reverb,0.2,1,1 \
+     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-reverb,0.2,1,0 \
 -a:5 -ea:0 -epp:50 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,20,1,200,10,10,200,1,10,200,1,10,200,1,10,8000,1,-15,1,1,1,1,1,1,1 \
-     -elv2:urn:ardour:a-reverb,0.2,1,1 \
+     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-reverb,0.2,1,0 \
 -a:6 -ea:0 -epp:50 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,20,1,200,10,10,200,1,10,200,1,10,200,1,10,8000,1,-15,1,1,1,1,1,1,1 \
-     -elv2:urn:ardour:a-reverb,0.2,1,1 \
+     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-reverb,0.2,1,0 \
 -a:7 -ea:0 -epp:50 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,20,1,200,10,10,200,1,10,200,1,10,200,1,10,8000,1,-15,1,1,1,1,1,1,1 \
-     -elv2:urn:ardour:a-reverb,0.2,1,1 \
--a:8 -ea:0 -epp:50 \
+     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-reverb,0.2,1,0 \
+-a:8 -ea:50 -epp:50 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,20,1,200,10,10,200,1,10,200,1,10,200,1,10,8000,1,-15,1,1,1,1,1,1,1 \
-     -elv2:urn:ardour:a-reverb,0.2,1,1 \
--a:9 -ea:0 -epp:50 \
+     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-reverb,0.4,1,1 \
+-a:9 -ea:50 -epp:50 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,20,1,200,10,10,200,1,10,200,1,10,200,1,10,8000,1,-15,1,1,1,1,1,1,1 \
-     -elv2:urn:ardour:a-reverb,0.2,1,1 \
--a:10 -ea:0 -epp:0 \
+     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-reverb,0.2,1,0 \
+-a:10 -ea:80 -epp:0 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,20,1,200,10,10,200,1,10,200,1,10,200,1,10,8000,1,-15,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
      -elv2:urn:ardour:a-reverb,0.2,1,1 \
--a:11 -ea:0 -epp:100 \
+-a:11 -ea:80 -epp:100 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,20,1,200,10,10,200,1,10,200,1,10,200,1,10,8000,1,-15,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
      -elv2:urn:ardour:a-reverb,0.2,1,1 \
--a:12 -ea:0 -epp:0 \
+-a:12 -ea:80 -epp:0 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,20,1,200,10,10,200,1,10,200,1,10,200,1,10,8000,1,-15,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
      -elv2:urn:ardour:a-reverb,0.2,1,1 \
--a:13 -ea:0 -epp:100 \
+-a:13 -ea:80 -epp:100 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,20,1,200,10,10,200,1,10,200,1,10,200,1,10,8000,1,-15,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
      -elv2:urn:ardour:a-reverb,0.2,1,1 \
--a:14 -ea:0 -epp:50 \
+-a:14 -ea:100 -epp:50 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,20,1,200,10,10,200,1,10,200,1,10,200,1,10,8000,1,-15,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
      -elv2:urn:ardour:a-reverb,0.2,1,1 \
--a:15 -ea:0 -epp:50 \
+-a:15 -ea:100 -epp:50 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,20,1,200,10,10,200,1,10,200,1,10,200,1,10,8000,1,-15,1,1,1,1,1,1,1 \
-     -elv2:urn:ardour:a-reverb,0.2,1,1 \
+     -elv2:urn:ardour:a-eq,100,10,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-reverb,0.2,1,0 \
 -a:all -o jack,system
 
 #ecasound --server -i jack,DrumGizmo:0-AmbLeft,DrumGizmo:0-AmbRight -o jack,system \
