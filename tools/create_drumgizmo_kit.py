@@ -21,11 +21,13 @@ import wave
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import wavfile
+from scipy.signal import butter, sosfilt
 
 num_channels   = 8
 sample_rate    = 48000
 instrument     = "snare"
 sub_instrument = "snare_0"
+master_channel = 1 # zero-based index
 
 # create file names of all audio channels
 file_names = []
@@ -39,6 +41,12 @@ for i, f in enumerate(file_names):
   sample[i] = file.readframes(-1)
   sample[i] = np.frombuffer(sample[i], np.int16) # assuming 16 bit
   file.close()
+
+# analyze master channel
+sos = butter(2, 0.1, btype="low", output="sos")
+x   = sample[master_channel]#np.square(sample[master_channel])#sosfilt(sos, np.square(sample[master_channel]))
+plt.plot(x)
+plt.show()
 
 # write multi-channel wave file
 wavfile.write("snare_test.wav", sample_rate, np.array(sample).T)
