@@ -40,12 +40,17 @@ for i, f in enumerate(file_names):
   file   = wave.open(f, "r")
   sample[i] = file.readframes(-1)
   sample[i] = np.frombuffer(sample[i], np.int16) # assuming 16 bit
+  sample[i] = sample[i].astype(float)
   file.close()
 
-# analyze master channel
-sos = butter(2, 0.1, btype="low", output="sos")
-x   = sample[master_channel]#np.square(sample[master_channel])#sosfilt(sos, np.square(sample[master_channel]))
-plt.plot(x)
+# analyze master channel and find strikes
+sos = butter(2, 0.001, btype="low", output="sos")
+x   = sosfilt(sos, np.square(sample[master_channel]))
+threshold = np.power(10, (10 * np.log10(np.max(x)) - 60) / 10)
+plt.plot(10 * np.log10(x))
+plt.plot([0, len(x)], 10 * np.log10([threshold, threshold]))
+above_thresh = x > threshold
+plt.plot(10 * np.log10(np.max(x)) * above_thresh)
 plt.show()
 
 # write multi-channel wave file
