@@ -22,9 +22,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import wavfile
 from scipy.signal import butter, sosfilt
+import xml.etree.ElementTree as ET
 
 num_channels    = 8
 sample_rate     = 48000
+kit_name        = "Pearl MMX"
 instrument      = "snare"
 sub_instrument  = "snare_0"
 master_channel  = 1 # master channel index (zero-based index)
@@ -46,8 +48,7 @@ for i, f in enumerate(file_names):
   file.close()
 
 # analyze master channel and find strikes
-sos = butter(2, 0.001, btype="low", output="sos")
-x   = sosfilt(sos, np.square(sample[master_channel]))
+x = sosfilt(butter(2, 0.001, btype="low", output="sos"), np.square(sample[master_channel]))
 threshold = np.power(10, (10 * np.log10(np.max(x)) - thresh_from_max) / 10)
 plt.plot(10 * np.log10(np.abs(x)))
 plt.plot([0, len(x)], 10 * np.log10([threshold, threshold]))
@@ -63,13 +64,18 @@ plt.show()
 # write multi-channel wave file
 wavfile.write("snare_test.wav", sample_rate, np.array(sample).T)
 
-
-
-#fig, ax = plt.subplots(3, 1)
-#ax[0].plot(sample[0])
-#ax[1].plot(sample[1])
-#ax[2].plot(sample[2])
-#plt.show()
+# write drumkit XML file
+drumkit_xml = ET.Element("drumkit")
+drumkit_xml.set("name", kit_name)
+drumkit_xml.set("description", "") # TODO
+channels_xml = ET.SubElement(drumkit_xml, "channels")
+for i in range(0, num_channels):
+  channel_xml = ET.SubElement(channels_xml, "channel")
+  channel_xml.set("name", file_names[i]) # TODO
+channels_xml = ET.SubElement(drumkit_xml, "instruments")
+tree_xml = ET.ElementTree(drumkit_xml)
+ET.indent(drumkit_xml, space="\t", level=0)
+tree_xml.write("drumkit.xml", encoding="utf-8", xml_declaration="True")
 
 
 
