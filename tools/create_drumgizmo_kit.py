@@ -39,25 +39,44 @@ for i in range(0, num_channels):
   file_names.append(("source_samples/%s/%s_channel%d.wav") % (instrument, sub_instrument, i + 1))
 
 # read samples from all audio channels
-sample = [[]] * num_channels
+sample       = [[]] * num_channels
+sample_float = [[]] * num_channels
 for i, f in enumerate(file_names):
-  file   = wave.open(f, "r")
-  sample[i] = file.readframes(-1)
-  sample[i] = np.frombuffer(sample[i], np.int16) # assuming 16 bit
-  sample[i] = sample[i].astype(float)
+  file            = wave.open(f, "r")
+  sample[i]       = np.frombuffer(file.readframes(-1), np.int16) # assuming 16 bit
+  sample_float[i] = sample[i].astype(float)
   file.close()
 
 # analyze master channel and find strikes
-x = sosfilt(butter(2, 0.001, btype="low", output="sos"), np.square(sample[master_channel]))
-threshold = np.power(10, (10 * np.log10(np.max(x)) - thresh_from_max) / 10)
-plt.plot(10 * np.log10(np.abs(x)))
-plt.plot([0, len(x)], 10 * np.log10([threshold, threshold]))
+x            = sosfilt(butter(2, 0.001, btype="low", output="sos"), np.square(sample_float[master_channel]))
+threshold    = np.power(10, (10 * np.log10(np.max(x)) - thresh_from_max) / 10)
 above_thresh = x > threshold
 
-above_thresh_diff = np.diff(above_thresh)
 
-np.floor(len(x) / max_num_peaks)
+# tests...
+#above_thresh_diff = np.diff(above_thresh)
+#np.floor(len(x) / max_num_peaks)
 
+# quick hack to remove oscillating at the end of a detected block
+last_above_idx = -1000000
+for i in range(1, len(above_thresh)):
+  if above_thresh[i] and not above_thresh[i - 1]:
+    if i - last_above_idx < 40000:
+      above_thresh[i] = False
+  if above_thresh[i]:
+    last_above_idx = i
+
+strike_start = np.argwhere(np.diff(above_thresh.astype(float)) > 0)
+strike_end   = np.argwhere(np.diff(above_thresh.astype(float)) < 0)
+
+# TODO
+#sample_strikes = ???
+#for i, (start, end) in enumerate(zip(strike_start, strike_end)):
+#  pass
+
+#plt.plot(20 * np.log10(np.abs(sample_float[master_channel])))
+plt.plot(10 * np.log10(np.abs(x)))
+plt.plot([0, len(x)], 10 * np.log10([threshold, threshold]))
 plt.plot(10 * np.log10(np.max(x)) * above_thresh)
 plt.show()
 
