@@ -23,11 +23,13 @@ import matplotlib.pyplot as plt
 from scipy.io import wavfile
 from scipy.signal import butter, sosfilt
 
-num_channels   = 8
-sample_rate    = 48000
-instrument     = "snare"
-sub_instrument = "snare_0"
-master_channel = 1 # zero-based index
+num_channels    = 8
+sample_rate     = 48000
+instrument      = "snare"
+sub_instrument  = "snare_0"
+master_channel  = 1 # master channel index (zero-based index)
+thresh_from_max = 60 # 60 dB from maximum peak
+max_num_peaks   = 200 # maximum 200 strikes per recording assumed
 
 # create file names of all audio channels
 file_names = []
@@ -46,10 +48,15 @@ for i, f in enumerate(file_names):
 # analyze master channel and find strikes
 sos = butter(2, 0.001, btype="low", output="sos")
 x   = sosfilt(sos, np.square(sample[master_channel]))
-threshold = np.power(10, (10 * np.log10(np.max(x)) - 60) / 10)
-plt.plot(10 * np.log10(x))
+threshold = np.power(10, (10 * np.log10(np.max(x)) - thresh_from_max) / 10)
+plt.plot(10 * np.log10(np.abs(x)))
 plt.plot([0, len(x)], 10 * np.log10([threshold, threshold]))
 above_thresh = x > threshold
+
+above_thresh_diff = np.diff(above_thresh)
+
+np.floor(len(x) / max_num_peaks)
+
 plt.plot(10 * np.log10(np.max(x)) * above_thresh)
 plt.show()
 
