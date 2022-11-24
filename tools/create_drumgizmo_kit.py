@@ -17,6 +17,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #*******************************************************************************
 
+import os
 import wave
 import numpy as np
 import matplotlib.pyplot as plt
@@ -24,18 +25,20 @@ import xml.etree.ElementTree as ET
 from scipy.io import wavfile
 from scipy.signal import butter, sosfilt
 
-num_channels    = 8
-sample_rate     = 48000
-kit_name        = "Pearl MMX"
-instrument      = "snare"
-sub_instrument  = "snare_0"
-master_channel  = 1 # master channel index (zero-based index)
-thresh_from_max = 60 # 60 dB from maximum peak
+kit_name         = "PearlMMX" # avoid spaces
+kit_description  = "Pearl MMX drum set with positional sensing support"
+channel_names    = ["KDrum", "Snare", "Hihat", "Tom1", "Tom2", "Tom3", "OHLeft", "OHRight"]
+num_channels     = len(channel_names)
+sample_rate      = 48000
+instrument_names = ["snare"]
+sub_instrument   = "snare_0" # TODO
+master_channel   = 1 # master channel index (zero-based index)
+thresh_from_max  = 60 # 60 dB from maximum peak
 
 # create file names of all audio channels
 file_names = []
 for i in range(0, num_channels):
-  file_names.append(("source_samples/%s/%s_channel%d.wav") % (instrument, sub_instrument, i + 1))
+  file_names.append(("source_samples/%s/%s_channel%d.wav") % (instrument_names[0], sub_instrument, i + 1))
 
 # read samples from all audio channels
 sample       = [[]] * num_channels
@@ -86,15 +89,25 @@ wavfile.write("snare_test.wav", sample_rate, sample_strikes[7])
 # write drumkit XML file
 drumkit_xml = ET.Element("drumkit")
 drumkit_xml.set("name", kit_name)
-drumkit_xml.set("description", "") # TODO
+drumkit_xml.set("description", kit_description)
+drumkit_xml.set("samplerate", str(sample_rate))
 channels_xml = ET.SubElement(drumkit_xml, "channels")
-for i in range(0, num_channels):
+for channel_name in channel_names:
   channel_xml = ET.SubElement(channels_xml, "channel")
-  channel_xml.set("name", file_names[i]) # TODO
-channels_xml = ET.SubElement(drumkit_xml, "instruments")
+  channel_xml.set("name", channel_name)
+instruments_xml = ET.SubElement(drumkit_xml, "instruments")
+for instrument_name in instrument_names:
+  instrument_xml = ET.SubElement(instruments_xml, "instrument")
+  instrument_xml.set("name", instrument_name)
+  instrument_xml.set("file", "%s/%s.xml" % (instrument_name, instrument_name))
+  for channel_name in channel_names:
+    channelmap_xml = ET.SubElement(instrument_xml, "channelmap")
+    channelmap_xml.set("in", channel_name)
+    channelmap_xml.set("out", channel_name)
 tree_xml = ET.ElementTree(drumkit_xml)
 ET.indent(drumkit_xml, space="\t", level=0)
-tree_xml.write("drumkit.xml", encoding="utf-8", xml_declaration="True")
+os.makedirs(kit_name, exist_ok=True)
+tree_xml.write("%s/drumkit.xml" % kit_name, encoding="utf-8", xml_declaration="True")
 
 
 
