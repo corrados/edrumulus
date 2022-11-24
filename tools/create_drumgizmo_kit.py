@@ -20,9 +20,9 @@
 import wave
 import numpy as np
 import matplotlib.pyplot as plt
+import xml.etree.ElementTree as ET
 from scipy.io import wavfile
 from scipy.signal import butter, sosfilt
-import xml.etree.ElementTree as ET
 
 num_channels    = 8
 sample_rate     = 48000
@@ -31,7 +31,6 @@ instrument      = "snare"
 sub_instrument  = "snare_0"
 master_channel  = 1 # master channel index (zero-based index)
 thresh_from_max = 60 # 60 dB from maximum peak
-max_num_peaks   = 200 # maximum 200 strikes per recording assumed
 
 # create file names of all audio channels
 file_names = []
@@ -52,12 +51,7 @@ x            = sosfilt(butter(2, 0.001, btype="low", output="sos"), np.square(sa
 threshold    = np.power(10, (10 * np.log10(np.max(x)) - thresh_from_max) / 10)
 above_thresh = x > threshold
 
-
-# tests...
-#above_thresh_diff = np.diff(above_thresh)
-#np.floor(len(x) / max_num_peaks)
-
-# quick hack to remove oscillating at the end of a detected block
+# TODO: quick hack to remove oscillating at the end of a detected block
 last_above_idx = -1000000
 for i in range(1, len(above_thresh)):
   if above_thresh[i] and not above_thresh[i - 1]:
@@ -66,26 +60,28 @@ for i in range(1, len(above_thresh)):
   if above_thresh[i]:
     last_above_idx = i
 
-strike_start = np.argwhere(np.diff(above_thresh.astype(float)) > 0)[0]
-strike_end   = np.argwhere(np.diff(above_thresh.astype(float)) < 0)[0]
-strike_len   = strike_end - strike_start + 1
-sample_np    = np.array(sample)
+strike_start = np.argwhere(np.diff(above_thresh.astype(float)) > 0)
+strike_end   = np.argwhere(np.diff(above_thresh.astype(float)) < 0)
 
-# test: extract individual samples from long sample vector
-sample_strikes = [np.zeros((strike_len[0], num_channels))]
+# extract individual samples from long sample vector
+sample_strikes = [[]] * len(strike_start)
 for i, (start, end) in enumerate(zip(strike_start, strike_end)):
+  sample_strikes[i] = np.zeros((strike_end[i][0] - strike_start[i][0] + 1, num_channels), np.int16)
   for c in range(0, num_channels):
-    sample_strikes[0][:, c] = sample_np[c, start:end + 1]
+    sample_strikes[i][:, c] = sample[c][start[0]:end[0] + 1]
 
+#plt.plot(sample_strikes[7][:, 0])
+#plt.show()
 
-#plt.plot(20 * np.log10(np.abs(sample_float[master_channel])))
-plt.plot(10 * np.log10(np.abs(x)))
-plt.plot([0, len(x)], 10 * np.log10([threshold, threshold]))
-plt.plot(10 * np.log10(np.max(x)) * above_thresh)
-plt.show()
+##plt.plot(20 * np.log10(np.abs(sample_float[master_channel])))
+#plt.plot(10 * np.log10(np.abs(x)))
+#plt.plot([0, len(x)], 10 * np.log10([threshold, threshold]))
+#plt.plot(10 * np.log10(np.max(x)) * above_thresh)
+#plt.show()
 
 # write multi-channel wave file
-wavfile.write("snare_test.wav", sample_rate, np.array(sample).T)
+#wavfile.write("snare_test.wav", sample_rate, np.array(sample).T)
+wavfile.write("snare_test.wav", sample_rate, sample_strikes[7])
 
 # write drumkit XML file
 drumkit_xml = ET.Element("drumkit")
