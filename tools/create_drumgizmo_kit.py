@@ -66,13 +66,17 @@ for i in range(1, len(above_thresh)):
   if above_thresh[i]:
     last_above_idx = i
 
-strike_start = np.argwhere(np.diff(above_thresh.astype(float)) > 0)
-strike_end   = np.argwhere(np.diff(above_thresh.astype(float)) < 0)
+strike_start = np.argwhere(np.diff(above_thresh.astype(float)) > 0)[0]
+strike_end   = np.argwhere(np.diff(above_thresh.astype(float)) < 0)[0]
+strike_len   = strike_end - strike_start + 1
+sample_np    = np.array(sample)
 
-# TODO
-#sample_strikes = ???
-#for i, (start, end) in enumerate(zip(strike_start, strike_end)):
-#  pass
+# test: extract individual samples from long sample vector
+sample_strikes = [np.zeros((strike_len[0], num_channels))]
+for i, (start, end) in enumerate(zip(strike_start, strike_end)):
+  for c in range(0, num_channels):
+    sample_strikes[0][:, c] = sample_np[c, start:end + 1]
+
 
 #plt.plot(20 * np.log10(np.abs(sample_float[master_channel])))
 plt.plot(10 * np.log10(np.abs(x)))
