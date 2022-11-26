@@ -25,6 +25,10 @@ import xml.etree.ElementTree as ET
 from scipy.io import wavfile
 from scipy.signal import butter, sosfilt
 
+
+################################################################################
+# INITIALIZATIONS ##############################################################
+################################################################################
 kit_name         = "PearlMMX" # avoid spaces
 kit_description  = "Pearl MMX drum set with positional sensing support"
 channel_names    = ["KDrum", "Snare", "Hihat", "Tom1", "Tom2", "Tom3", "OHLeft", "OHRight"]
@@ -35,11 +39,19 @@ sub_instrument   = "snare_0" # TODO
 master_channel   = 1 # master channel index (zero-based index)
 thresh_from_max  = 60 # 60 dB from maximum peak
 
+
+################################################################################
+# FILE NAME HANDLING ###########################################################
+################################################################################
 # create file names of all audio channels
 file_names = []
 for i in range(0, num_channels):
   file_names.append(("source_samples/%s/%s_channel%d.wav") % (instrument_names[0], sub_instrument, i + 1))
 
+
+################################################################################
+# READ WAVE FORMS ##############################################################
+################################################################################
 # read samples from all audio channels
 sample       = [[]] * num_channels
 sample_float = [[]] * num_channels
@@ -49,6 +61,10 @@ for i, f in enumerate(file_names):
   sample_float[i] = sample[i].astype(float)
   file.close()
 
+
+################################################################################
+# WAVE FORM ANALYSIS ###########################################################
+################################################################################
 # analyze master channel and find strikes
 x            = sosfilt(butter(2, 0.001, btype="low", output="sos"), np.square(sample_float[master_channel]))
 threshold    = np.power(10, (10 * np.log10(np.max(x)) - thresh_from_max) / 10)
@@ -82,11 +98,18 @@ for i, (start, end) in enumerate(zip(strike_start, strike_end)):
 #plt.plot(10 * np.log10(np.max(x)) * above_thresh)
 #plt.show()
 
+
+################################################################################
+# STORE WAVE FORMS #############################################################
+################################################################################
 # write multi-channel wave file
 #wavfile.write("snare_test.wav", sample_rate, np.array(sample).T)
 wavfile.write("snare_test.wav", sample_rate, sample_strikes[7])
 
-# write drumkit XML file
+
+################################################################################
+# CREATE DRUM KIT XML FILE #####################################################
+################################################################################
 drumkit_xml = ET.Element("drumkit")
 drumkit_xml.set("name", kit_name)
 drumkit_xml.set("description", kit_description)
