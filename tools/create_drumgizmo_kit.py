@@ -29,70 +29,66 @@ from scipy.signal import butter, sosfilt
 ################################################################################
 # INITIALIZATIONS ##############################################################
 ################################################################################
+# instruments: [instrument_name, master_channel, MIDI_note]
+#instruments = [["kick",  "KDrum",   36], \
+#               ["snare", "Snare",   38], \
+#               ["hihat", "Hihat",   22], \
+#               ["tom1",  "Tom1",    48], \
+#               ["tom2",  "Tom2",    45], \
+#               ["tom3",  "Tom3",    43], \
+#               ["crash", "OHLeft",  55], \
+#               ["ride",  "OHRight", 51]]
+
+# TODO hi-hat does not yet work -> remove it for now
+instruments = [["kick",  "KDrum",   36], \
+               ["snare", "Snare",   38], \
+               ["tom1",  "Tom1",    48], \
+               ["tom2",  "Tom2",    45], \
+               ["tom3",  "Tom3",    43], \
+               ["crash", "OHLeft",  55], \
+               ["ride",  "OHRight", 51]]
+
 kit_name                = "PearlMMX" # avoid spaces
 samples_dir_name        = "samples" # compatible to other Drumgizmo kits
 source_samples_dir_name = "source_samples" # root directory of recorded source samples
 kit_description         = "Pearl MMX drum set with positional sensing support"
 channel_names           = ["KDrum", "Snare", "Hihat", "Tom1", "Tom2", "Tom3", "OHLeft", "OHRight"]
-num_channels            = len(channel_names)
-instrument_midis        = [38]
-master_channel          = 1 # master channel index (zero-based index)
 thresh_from_max         = 60 # 60 dB from maximum peak
+num_channels            = len(channel_names)
 
 
-################################################################################
-# GET INSTRUMENT NAMES AND PROPERTIES ##########################################
-################################################################################
-source_sample_dirs = os.listdir(source_samples_dir_name)
-
-# TODO
-instrument_index  = 7 # TODO, TEST: snare index is 7
-instrument_names  = ["snare"]
-source_sample_dir = source_sample_dirs[instrument_index]
-
-file_names         = os.listdir(source_samples_dir_name + "/" + source_sample_dir)
-file_name_parts    = [[]] * len(file_names)
-file_name_instr    = [""] * len(file_names)
-instrument_samples = []
-for i, file_name in enumerate(file_names):
-  file_name_parts[i] = file_name.split(".")[0].split("_")
-  file_name_instr[i] = file_name_parts[i][0]
-  if len(file_name_parts[i][-2]) == 1: # position information always second last item and one character long
-    position = int(file_name_parts[i][-2])
-  else:
-    position = -1 # invalid position value
-
-  # TODO we sort out only the default instruments in a directory for now
-  if len(file_name_parts[i]) == 2 or len(file_name_parts[i]) == 3 and position >= 0:
-    # TODO we sort out only position 0 for a quick hack
-    if position == 0: # TODO remove this if condition
-      # instrument samples: [name, channel, is_master, position_index]
-      instrument_samples.append([file_name_instr[i], \
-                                int(file_name_parts[i][-1][-1]), \
-                                False, \
-                                position])
-
-#print(instrument_samples)
-#print(file_name_instr)
-#print(file_name_instr.count("kick"))
-#print(os.listdir(source_samples_dir_name))
-#print(np.array(instrument_samples)[:, 2])
-
-
-for instrument_name in instrument_names:
+for instrument in instruments:
 
   ##############################################################################
   # FILE NAME HANDLING #########################################################
   ##############################################################################
+  instrument_name = instrument[0]
+  position        = -1 # default: invalid position, i.e., no positional support
 
-  # TODO right now no position support
-  position = 0
+  # TEST
+  file_names      = os.listdir(source_samples_dir_name + "/" + instrument_name)
+  file_name_parts = [[]] * len(file_names)
+  for i, file_name in enumerate(file_names):
+    file_name_parts[i] = file_name.split(".")[0].split("_")
+    if len(file_name_parts[i]) > 2 and len(file_name_parts[i][-2]) == 1: # position information always second last item and one character long
+
+      # TODO right now no position support
+      position = 0
+
+      #position = int(file_name_parts[i][-2])
+    else:
+      pass
+      #position = -1 # invalid position value
 
   # create file names of all audio channels
   file_names = []
   for i in range(0, num_channels):
-    file_names.append(source_samples_dir_name + "/" + instrument_name + "/" + \
-                      instrument_name + "_" + str(position) + "_channel" + str(i + 1) + ".wav")
+    if position >= 0:
+      file_names.append(source_samples_dir_name + "/" + instrument_name + "/" + \
+                        instrument_name + "_" + str(position) + "_channel" + str(i + 1) + ".wav")
+    else:
+      file_names.append(source_samples_dir_name + "/" + instrument_name + "/" + \
+                        instrument_name + "_channel" + str(i + 1) + ".wav")
 
 
   ##############################################################################
@@ -113,9 +109,10 @@ for instrument_name in instrument_names:
   # WAVE FORM ANALYSIS #########################################################
   ##############################################################################
   # analyze master channel and find strikes
-  x            = sosfilt(butter(2, 0.001, btype="low", output="sos"), np.square(sample_float[master_channel]))
-  threshold    = np.power(10, (10 * np.log10(np.max(x)) - thresh_from_max) / 10)
-  above_thresh = x > threshold
+  master_channel = channel_names.index(instrument[1])
+  x              = sosfilt(butter(2, 0.001, btype="low", output="sos"), np.square(sample_float[master_channel]))
+  threshold      = np.power(10, (10 * np.log10(np.max(x)) - thresh_from_max) / 10)
+  above_thresh   = x > threshold
 
   # TODO: quick hack to remove oscillating at the end of a detected block
   last_above_idx = -1000000
@@ -139,10 +136,11 @@ for instrument_name in instrument_names:
   #plt.plot(sample_strikes[7][:, 0])
   #plt.show()
 
-  ##plt.plot(20 * np.log10(np.abs(sample_float[master_channel])))
+  #plt.plot(20 * np.log10(np.abs(sample_float[master_channel])))
   #plt.plot(10 * np.log10(np.abs(x)))
   #plt.plot([0, len(x)], 10 * np.log10([threshold, threshold]))
   #plt.plot(10 * np.log10(np.max(x)) * above_thresh)
+  #plt.title(instrument_name)
   #plt.show()
 
   # TODO
@@ -202,10 +200,10 @@ for channel_name in channel_names:
   channel_xml = ET.SubElement(channels_xml, "channel")
   channel_xml.set("name", channel_name)
 instruments_xml = ET.SubElement(drumkit_xml, "instruments")
-for instrument_name in instrument_names:
+for instrument in instruments:
   instrument_xml = ET.SubElement(instruments_xml, "instrument")
-  instrument_xml.set("name", instrument_name)
-  instrument_xml.set("file", "%s/%s.xml" % (instrument_name, instrument_name))
+  instrument_xml.set("name", instrument[0])
+  instrument_xml.set("file", instrument[0] + "/" + instrument[0] + ".xml")
   for channel_name in channel_names:
     channelmap_xml = ET.SubElement(instrument_xml, "channelmap")
     channelmap_xml.set("in", channel_name)
@@ -220,10 +218,10 @@ tree_xml.write(kit_name + "/" + kit_name + ".xml", encoding="utf-8", xml_declara
 # CREATE MIDI MAP XML FILE #####################################################
 ################################################################################
 midimap_xml = ET.Element("midimap")
-for i, instrument_midi in enumerate(instrument_midis):
+for instrument in instruments:
   map_xml = ET.SubElement(midimap_xml, "map")
-  map_xml.set("note", str(instrument_midi))
-  map_xml.set("instr", instrument_names[i])
+  map_xml.set("note", str(instrument[2]))
+  map_xml.set("instr", instrument[0])
 tree_xml = ET.ElementTree(midimap_xml)
 ET.indent(midimap_xml, space="\t", level=0)
 tree_xml.write(kit_name + "/Midimap.xml", encoding="utf-8", xml_declaration="True")
