@@ -36,6 +36,7 @@ channel_names    = ["KDrum", "Snare", "Hihat", "Tom1", "Tom2", "Tom3", "OHLeft",
 num_channels     = len(channel_names)
 sample_rate      = 48000
 instrument_names = ["snare"]
+instrument_midis = [38]
 sub_instrument   = "snare_0" # TODO
 master_channel   = 1 # master channel index (zero-based index)
 thresh_from_max  = 60 # 60 dB from maximum peak
@@ -114,6 +115,7 @@ for instrument_name in instrument_names:
   test_sample_powers = ["1.0"] # TODO must be estimated in the signal analysis part
 
   # write multi-channel wave file
+  # TODO
   #wavfile.write("snare_test.wav", sample_rate, np.array(sample).T)
   wavfile.write(instrument_sample_path + test_sample_names[0] + ".wav", sample_rate, sample_strikes[7])
 
@@ -162,7 +164,20 @@ for instrument_name in instrument_names:
 tree_xml = ET.ElementTree(drumkit_xml)
 ET.indent(drumkit_xml, space="\t", level=0)
 os.makedirs(kit_name, exist_ok=True)
-tree_xml.write("%s/drumkit.xml" % kit_name, encoding="utf-8", xml_declaration="True")
+tree_xml.write(kit_name + "/" + kit_name + ".xml", encoding="utf-8", xml_declaration="True")
+
+
+################################################################################
+# CREATE MIDI MAP XML FILE #####################################################
+################################################################################
+midimap_xml = ET.Element("midimap")
+for i, instrument_midi in enumerate(instrument_midis):
+  map_xml = ET.SubElement(midimap_xml, "map")
+  map_xml.set("note", str(instrument_midi))
+  map_xml.set("instr", instrument_names[i])
+tree_xml = ET.ElementTree(midimap_xml)
+ET.indent(midimap_xml, space="\t", level=0)
+tree_xml.write(kit_name + "/Midimap.xml", encoding="utf-8", xml_declaration="True")
 
 
 
