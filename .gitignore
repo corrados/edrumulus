@@ -9,6 +9,8 @@ tools/mod-ttymidi/
 tools/SendMIDI/
 tools/jack2/
 tools/mapex_mars/
+tools/PearlMMX/
+tools/source_samples/
 tools/gui
 tools/EdrumulusGUI
 tools/arduino-esp32
