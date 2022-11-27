@@ -29,16 +29,54 @@ from scipy.signal import butter, sosfilt
 ################################################################################
 # INITIALIZATIONS ##############################################################
 ################################################################################
-kit_name         = "PearlMMX" # avoid spaces
-samples_dir_name = "samples" # compatible to other Drumgizmo kits
-kit_description  = "Pearl MMX drum set with positional sensing support"
-channel_names    = ["KDrum", "Snare", "Hihat", "Tom1", "Tom2", "Tom3", "OHLeft", "OHRight"]
-num_channels     = len(channel_names)
-instrument_names = ["snare"]
-instrument_midis = [38]
-sub_instrument   = "snare_0" # TODO
-master_channel   = 1 # master channel index (zero-based index)
-thresh_from_max  = 60 # 60 dB from maximum peak
+kit_name                = "PearlMMX" # avoid spaces
+samples_dir_name        = "samples" # compatible to other Drumgizmo kits
+source_samples_dir_name = "source_samples" # root directory of recorded source samples
+kit_description         = "Pearl MMX drum set with positional sensing support"
+channel_names           = ["KDrum", "Snare", "Hihat", "Tom1", "Tom2", "Tom3", "OHLeft", "OHRight"]
+num_channels            = len(channel_names)
+instrument_midis        = [38]
+master_channel          = 1 # master channel index (zero-based index)
+thresh_from_max         = 60 # 60 dB from maximum peak
+
+
+################################################################################
+# GET INSTRUMENT NAMES AND PROPERTIES ##########################################
+################################################################################
+source_sample_dirs = os.listdir(source_samples_dir_name)
+
+# TODO
+instrument_index  = 7 # TODO, TEST: snare index is 7
+instrument_names  = ["snare"]
+source_sample_dir = source_sample_dirs[instrument_index]
+
+file_names         = os.listdir(source_samples_dir_name + "/" + source_sample_dir)
+file_name_parts    = [[]] * len(file_names)
+file_name_instr    = [""] * len(file_names)
+instrument_samples = []
+for i, file_name in enumerate(file_names):
+  file_name_parts[i] = file_name.split(".")[0].split("_")
+  file_name_instr[i] = file_name_parts[i][0]
+  if len(file_name_parts[i][-2]) == 1: # position information always second last item and one character long
+    position = int(file_name_parts[i][-2])
+  else:
+    position = -1 # invalid position value
+
+  # TODO we sort out only the default instruments in a directory for now
+  if len(file_name_parts[i]) == 2 or len(file_name_parts[i]) == 3 and position >= 0:
+    # TODO we sort out only position 0 for a quick hack
+    if position == 0: # TODO remove this if condition
+      # instrument samples: [name, channel, is_master, position_index]
+      instrument_samples.append([file_name_instr[i], \
+                                int(file_name_parts[i][-1][-1]), \
+                                False, \
+                                position])
+
+#print(instrument_samples)
+#print(file_name_instr)
+#print(file_name_instr.count("kick"))
+#print(os.listdir(source_samples_dir_name))
+#print(np.array(instrument_samples)[:, 2])
 
 
 for instrument_name in instrument_names:
@@ -46,10 +84,15 @@ for instrument_name in instrument_names:
   ##############################################################################
   # FILE NAME HANDLING #########################################################
   ##############################################################################
+
+  # TODO right now no position support
+  position = 0
+
   # create file names of all audio channels
   file_names = []
   for i in range(0, num_channels):
-    file_names.append(("source_samples/%s/%s_channel%d.wav") % (instrument_name, sub_instrument, i + 1))
+    file_names.append(source_samples_dir_name + "/" + instrument_name + "/" + \
+                      instrument_name + "_" + str(position) + "_channel" + str(i + 1) + ".wav")
 
 
   ##############################################################################
