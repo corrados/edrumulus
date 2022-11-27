@@ -34,7 +34,6 @@ samples_dir_name = "samples" # compatible to other Drumgizmo kits
 kit_description  = "Pearl MMX drum set with positional sensing support"
 channel_names    = ["KDrum", "Snare", "Hihat", "Tom1", "Tom2", "Tom3", "OHLeft", "OHRight"]
 num_channels     = len(channel_names)
-sample_rate      = 48000
 instrument_names = ["snare"]
 instrument_midis = [38]
 sub_instrument   = "snare_0" # TODO
@@ -61,6 +60,7 @@ for instrument_name in instrument_names:
   sample_float = [[]] * num_channels
   for i, f in enumerate(file_names):
     file            = wave.open(f, "r")
+    sample_rate     = file.getframerate() # assuming all wave have the same rate
     sample[i]       = np.frombuffer(file.readframes(-1), np.int16) # assuming 16 bit
     sample_float[i] = sample[i].astype(float)
     file.close()
