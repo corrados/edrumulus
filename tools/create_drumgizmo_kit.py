@@ -102,40 +102,46 @@ for instrument_name in instrument_names:
   #plt.plot(10 * np.log10(np.max(x)) * above_thresh)
   #plt.show()
 
-
-  ##############################################################################
-  # STORE WAVE FORMS ###########################################################
-  ##############################################################################
-  instrument_path        = kit_name + "/" + instrument_name + "/"
-  instrument_sample_path = instrument_path + samples_dir_name + "/"
-  os.makedirs(instrument_sample_path, exist_ok=True)
-
   # TODO
   test_sample_names  = ["snare_test"]
   test_sample_powers = ["1.0"] # TODO must be estimated in the signal analysis part
 
-  # write multi-channel wave file
-  # TODO
-  #wavfile.write("snare_test.wav", sample_rate, np.array(sample).T)
-  wavfile.write(instrument_sample_path + test_sample_names[0] + ".wav", sample_rate, sample_strikes[7])
-
 
   ##############################################################################
-  # CREATE INSTRUMENT XML FILE #################################################
+  # PREPARE INSTRUMENT XML FILE ################################################
   ##############################################################################
   instrument_xml = ET.Element("instrument")
   instrument_xml.set("version", "2.0")
   instrument_xml.set("name", instrument_name)
   samples_xml = ET.SubElement(instrument_xml, "samples")
+
   for i, sample_name in enumerate(test_sample_names):
+
+    ############################################################################
+    # CREATE WAVE FORMS ########################################################
+    ############################################################################
+    instrument_path        = kit_name + "/" + instrument_name + "/"
+    instrument_sample_path = instrument_path + samples_dir_name + "/"
+    sample_file_name       = str(i + 1) + "-" + sample_name
+    os.makedirs(instrument_sample_path, exist_ok=True)
+
+    # write multi-channel wave file
+    wavfile.write(instrument_sample_path + sample_file_name + ".wav", sample_rate, sample_strikes[7])
+
+    # write XML content for current sample
     sample_xml = ET.SubElement(samples_xml, "sample")
-    sample_xml.set("name", sample_name)
+    sample_xml.set("name", sample_name + "-" + str(i + 1))
     sample_xml.set("power", test_sample_powers[i])
     for j, channel_name in enumerate(channel_names):
       audiofile_xml = ET.SubElement(sample_xml, "audiofile")
       audiofile_xml.set("channel", channel_name)
-      audiofile_xml.set("file", samples_dir_name + "/" + sample_name + ".wav")
+      audiofile_xml.set("file", samples_dir_name + "/" + sample_file_name + ".wav")
       audiofile_xml.set("filechannel", str(j + 1))
+
+
+  ##############################################################################
+  # WRITE INSTRUMENT XML FILE ##################################################
+  ##############################################################################
   tree_xml = ET.ElementTree(instrument_xml)
   ET.indent(instrument_xml, space="\t", level=0)
   tree_xml.write(instrument_path + instrument_name + ".xml", encoding="utf-8", xml_declaration="True")
