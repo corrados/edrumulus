@@ -30,23 +30,17 @@ from scipy.signal import butter, sosfilt
 # INITIALIZATIONS ##############################################################
 ################################################################################
 # instruments: [instrument_name, master_channel, MIDI_note]
-#instruments = [["kick",  "KDrum",   36], \
-#               ["snare", "Snare",   38], \
-#               ["hihat", "Hihat",   22], \
-#               ["tom1",  "Tom1",    48], \
-#               ["tom2",  "Tom2",    45], \
-#               ["tom3",  "Tom3",    43], \
-#               ["crash", "OHLeft",  55], \
-#               ["ride",  "OHRight", 51]]
-
-# TODO hi-hat does not yet work -> remove it for now
-instruments = [["kick",  "KDrum",   36], \
-               ["snare", "Snare",   38], \
-               ["tom1",  "Tom1",    48], \
-               ["tom2",  "Tom2",    45], \
-               ["tom3",  "Tom3",    43], \
-               ["crash", "OHLeft",  55], \
-               ["ride",  "OHRight", 51]]
+instruments = [["kick",          "KDrum",   36], \
+               ["snare",         "Snare",   38], \
+               ["snare_rimshot", "Snare",   40], \
+               ["hihat_closed",  "Hihat",   22], \
+               ["hihat_open",    "Hihat",   26], \
+               ["tom1",          "Tom1",    48], \
+               ["tom2",          "Tom2",    45], \
+               ["tom3",          "Tom3",    43], \
+               ["crash",         "OHLeft",  55], \
+               ["ride",          "OHRight", 51], \
+               ["ride_bell",     "OHRight", 53]]
 
 kit_name                = "PearlMMX" # avoid spaces
 samples_dir_name        = "samples" # compatible to other Drumgizmo kits
@@ -62,11 +56,12 @@ for instrument in instruments:
   ##############################################################################
   # FILE NAME HANDLING #########################################################
   ##############################################################################
-  instrument_name = instrument[0]
-  position        = -1 # default: invalid position, i.e., no positional support
+  instrument_name      = instrument[0]
+  base_instrument_name = instrument_name.split("_")[0]
+  position             = -1 # default: invalid position, i.e., no positional support
 
   # TEST
-  file_names      = os.listdir(source_samples_dir_name + "/" + instrument_name)
+  file_names      = os.listdir(source_samples_dir_name + "/" + base_instrument_name)
   file_name_parts = [[]] * len(file_names)
   for i, file_name in enumerate(file_names):
     file_name_parts[i] = file_name.split(".")[0].split("_")
@@ -84,10 +79,10 @@ for instrument in instruments:
   file_names = []
   for i in range(0, num_channels):
     if position >= 0:
-      file_names.append(source_samples_dir_name + "/" + instrument_name + "/" + \
+      file_names.append(source_samples_dir_name + "/" + base_instrument_name + "/" + \
                         instrument_name + "_" + str(position) + "_channel" + str(i + 1) + ".wav")
     else:
-      file_names.append(source_samples_dir_name + "/" + instrument_name + "/" + \
+      file_names.append(source_samples_dir_name + "/" + base_instrument_name + "/" + \
                         instrument_name + "_channel" + str(i + 1) + ".wav")
 
 
