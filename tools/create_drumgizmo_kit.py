@@ -103,8 +103,7 @@ for instrument_name in instrument_names:
   #plt.show()
 
   # TODO
-  test_sample_names  = ["snare_test"]
-  test_sample_powers = ["1.0"] # TODO must be estimated in the signal analysis part
+  test_sample_powers = ["1.0"] * len(sample_strikes) # TODO must be estimated in the signal analysis part
 
 
   ##############################################################################
@@ -115,22 +114,23 @@ for instrument_name in instrument_names:
   instrument_xml.set("name", instrument_name)
   samples_xml = ET.SubElement(instrument_xml, "samples")
 
-  for i, sample_name in enumerate(test_sample_names):
+
+  for i in range(0, len(sample_strikes)):
 
     ############################################################################
     # CREATE WAVE FORMS ########################################################
     ############################################################################
     instrument_path        = kit_name + "/" + instrument_name + "/"
     instrument_sample_path = instrument_path + samples_dir_name + "/"
-    sample_file_name       = str(i + 1) + "-" + sample_name
+    sample_file_name       = str(i + 1) + "-" + instrument_name
     os.makedirs(instrument_sample_path, exist_ok=True)
 
     # write multi-channel wave file
-    wavfile.write(instrument_sample_path + sample_file_name + ".wav", sample_rate, sample_strikes[7])
+    wavfile.write(instrument_sample_path + sample_file_name + ".wav", sample_rate, sample_strikes[i])
 
     # write XML content for current sample
     sample_xml = ET.SubElement(samples_xml, "sample")
-    sample_xml.set("name", sample_name + "-" + str(i + 1))
+    sample_xml.set("name", instrument_name + "-" + str(i + 1))
     sample_xml.set("power", test_sample_powers[i])
     for j, channel_name in enumerate(channel_names):
       audiofile_xml = ET.SubElement(sample_xml, "audiofile")
