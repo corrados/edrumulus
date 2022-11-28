@@ -23,7 +23,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import xml.etree.ElementTree as ET
 from scipy.io import wavfile
-from scipy.signal import butter, sosfilt
+from scipy.signal import butter, sosfilt, lfilter
+from scipy.ndimage import uniform_filter1d
 
 
 ################################################################################
@@ -42,13 +43,18 @@ instruments = [["kick",          "KDrum",   36], \
                ["ride",          "OHRight", 51], \
                ["ride_bell",     "OHRight", 53]]
 
-kit_name                = "PearlMMX" # avoid spaces
-samples_dir_name        = "samples" # compatible to other Drumgizmo kits
-source_samples_dir_name = "source_samples" # root directory of recorded source samples
-kit_description         = "Pearl MMX drum set with positional sensing support"
-channel_names           = ["KDrum", "Snare", "Hihat", "Tom1", "Tom2", "Tom3", "OHLeft", "OHRight"]
-thresh_from_max         = 60 # 60 dB from maximum peak
-num_channels            = len(channel_names)
+# TEST for optimizing the analization algorithms, only use the snare drum
+#instruments = [["snare", "Snare", 38]]
+#instruments = [["kick", "KDrum", 36]]
+
+kit_name                  = "PearlMMX" # avoid spaces
+samples_dir_name          = "samples" # compatible to other Drumgizmo kits
+source_samples_dir_name   = "source_samples" # root directory of recorded source samples
+kit_description           = "Pearl MMX drum set with positional sensing support"
+channel_names             = ["KDrum", "Snare", "Hihat", "Tom1", "Tom2", "Tom3", "OHLeft", "OHRight"]
+thresh_from_max           = 43#60 # 60 dB from maximum peak
+min_pause_between_strikes = 1.5 # seconds
+num_channels              = len(channel_names)
 
 
 for instrument in instruments:
@@ -56,7 +62,8 @@ for instrument in instruments:
   ##############################################################################
   # FILE NAME HANDLING #########################################################
   ##############################################################################
-  instrument_name      = instrument[0]
+  instrument_name = instrument[0]
+  print(instrument_name)
   base_instrument_name = instrument_name.split("_")[0]
   position             = -1 # default: invalid position, i.e., no positional support
 
@@ -105,18 +112,60 @@ for instrument in instruments:
   ##############################################################################
   # analyze master channel and find strikes
   master_channel = channel_names.index(instrument[1])
-  x              = sosfilt(butter(2, 0.001, btype="low", output="sos"), np.square(sample_float[master_channel]))
+
+  x = np.square(sample_float[master_channel])
+
+  #x              = sosfilt(butter(2, 0.001, btype="low", output="sos"), np.square(sample_float[master_channel]))
+
+  ## TEST find peaks
+  #max_index = np.argmax(x)
+  #peak = x[max_index - 10000:max_index + 10000]
+  #x = np.correlate(x, peak)
+  #plt.plot(10 * np.log10(np.abs(x)))
+  #plt.show()
+
+
+  #x              = sosfilt(butter(2, 0.0001, btype="low", output="sos"), np.square(sample_float[master_channel]))
+  #alpha = 0.9999
+  #x = lfilter((1 - alpha, 0), (1, -alpha), np.square(sample_float[master_channel]))
+
   threshold      = np.power(10, (10 * np.log10(np.max(x)) - thresh_from_max) / 10)
+
+  ## detect strikes using a mask time (minimum pause between strikes in recording)
+  #above_thresh   = np.full(len(x), False)
+  #last_above_idx = -10 * sample_rate # initialize with 10 seconds in the past
+  #for i in range(0, len(x)):
+  #  if x[i] > threshold and i - last_above_idx > min_pause_between_strikes * sample_rate:
+  #    above_thresh[i] = True
+  #    last_above_idx  = i
+
   above_thresh   = x > threshold
+
+  #N = 2000
+  ##above_thresh = np.convolve(above_thresh, np.ones(N)/N, mode='valid')
+  #above_thresh = uniform_filter1d(above_thresh.astype(float), size=N)
+  #above_thresh = above_thresh > 0
+
 
   # TODO: quick hack to remove oscillating at the end of a detected block
   last_above_idx = -1000000
   for i in range(1, len(above_thresh)):
     if above_thresh[i] and not above_thresh[i - 1]:
-      if i - last_above_idx < 40000:
-        above_thresh[i] = False
-    if above_thresh[i]:
       last_above_idx = i
+    if not above_thresh[i] and above_thresh[i - 1]:
+      if i - last_above_idx < min_pause_between_strikes * sample_rate:
+        above_thresh[i] = True
+
+
+  ## TODO: quick hack to remove oscillating at the end of a detected block
+  #last_above_idx = -1000000
+  #for i in range(1, len(above_thresh)):
+  #  if above_thresh[i] and not above_thresh[i - 1]:
+  #    if i - last_above_idx < min_pause_between_strikes * sample_rate:
+  #      above_thresh[i] = False
+  #  if above_thresh[i]:
+  #    last_above_idx = i
+
 
   strike_start = np.argwhere(np.diff(above_thresh.astype(float)) > 0)
   strike_end   = np.argwhere(np.diff(above_thresh.astype(float)) < 0)
@@ -131,7 +180,7 @@ for instrument in instruments:
   #plt.plot(sample_strikes[7][:, 0])
   #plt.show()
 
-  #plt.plot(20 * np.log10(np.abs(sample_float[master_channel])))
+  ##plt.plot(20 * np.log10(np.abs(sample_float[master_channel])))
   #plt.plot(10 * np.log10(np.abs(x)))
   #plt.plot([0, len(x)], 10 * np.log10([threshold, threshold]))
   #plt.plot(10 * np.log10(np.max(x)) * above_thresh)
