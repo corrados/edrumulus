@@ -23,38 +23,46 @@ import numpy as np
 import matplotlib.pyplot as plt
 import xml.etree.ElementTree as ET
 from scipy.io import wavfile
-from scipy.signal import butter, sosfilt, lfilter
+from scipy.signal import butter, sosfilt, lfilter, firwin
 from scipy.ndimage import uniform_filter1d
 
 
 ################################################################################
 # INITIALIZATIONS ##############################################################
 ################################################################################
-# instruments: [instrument_name, master_channel, MIDI_note]
-instruments = [["kick",          "KDrum",   36], \
-               ["snare",         "Snare",   38], \
-               ["snare_rimshot", "Snare",   40], \
-               ["hihat_closed",  "Hihat",   22], \
-               ["hihat_open",    "Hihat",   26], \
-               ["tom1",          "Tom1",    48], \
-               ["tom2",          "Tom2",    45], \
-               ["tom3",          "Tom3",    43], \
-               ["crash",         "OHLeft",  55], \
-               ["ride",          "OHRight", 51], \
-               ["ride_bell",     "OHRight", 53]]
+# instruments: [instrument_name, master_channel, MIDI_note, threshold]
+instruments = [["kick",          "KDrum",   36, 46], \
+               ["snare",         "Snare",   38, 70], \
+               ["snare_rimshot", "Snare",   40, 60], \
+               ["hihat_closed",  "Hihat",   22, 68], \
+               ["hihat_open",    "Hihat",   26, 53], \
+               ["tom1",          "Tom1",    48, 60], \
+               ["tom2",          "Tom2",    45, 60], \
+               ["tom3",          "Tom3",    43, 57], \
+               ["crash",         "OHLeft",  55, 60], \
+               ["ride",          "OHRight", 51, 68], \
+               ["ride_bell",     "OHRight", 53, 60]]
 
 # TEST for optimizing the analization algorithms, only use the snare drum
-#instruments = [["snare", "Snare", 38]]
-#instruments = [["kick", "KDrum", 36]]
-#instruments = [["hihat_open", "Hihat", 26]]
+#instruments = [["kick",          "KDrum",   36, 46]]
+#instruments = [["snare",         "Snare",   38, 70]]
+#instruments = [["snare_rimshot", "Snare",   40, 60]]
+#instruments = [["hihat_closed",  "Hihat",   22, 68]] # some strikes not detected
+#instruments = [["hihat_open",    "Hihat",   26, 53]]
+#instruments = [["tom1",          "Tom1",    48, 60]]
+#instruments = [["tom2",          "Tom2",    45, 60]]
+#instruments = [["tom3",          "Tom3",    43, 57]]
+#instruments = [["crash",         "OHLeft",  55, 60]]
+#instruments = [["ride",          "OHRight", 51, 68]]
+#instruments = [["ride_bell",     "OHRight", 53, 60]]
 
 kit_name                  = "PearlMMX" # avoid spaces
 samples_dir_name          = "samples" # compatible to other Drumgizmo kits
 source_samples_dir_name   = "source_samples" # root directory of recorded source samples
 kit_description           = "Pearl MMX drum set with positional sensing support"
 channel_names             = ["KDrum", "Snare", "Hihat", "Tom1", "Tom2", "Tom3", "OHLeft", "OHRight"]
-thresh_from_max           = 43#60 # 60 dB from maximum peak
 min_pause_between_strikes = 1.5 # seconds
+min_on_detection_gap      = 0.25 # seconds
 num_channels              = len(channel_names)
 
 
@@ -112,7 +120,8 @@ for instrument in instruments:
   # WAVE FORM ANALYSIS #########################################################
   ##############################################################################
   # analyze master channel and find strikes
-  master_channel = channel_names.index(instrument[1])
+  thresh_from_max = instrument[3] # dB from maximum peak
+  master_channel  = channel_names.index(instrument[1])
 
   x = np.square(sample_float[master_channel])
 
@@ -128,7 +137,7 @@ for instrument in instruments:
   #plt.plot(lr_x_values, m * lr_x_values + c, 'r')
   #plt.show()
 
-  #x = sosfilt(butter(2, 0.001, btype="low", output="sos"), np.square(sample_float[master_channel]))
+  #x = sosfilt(butter(2, 0.001, btype="low", output="sos"), x)
 
   ## TEST find peaks
   #max_index = np.argmax(x)
@@ -138,11 +147,16 @@ for instrument in instruments:
   #plt.show()
 
 
-  #x              = sosfilt(butter(2, 0.0001, btype="low", output="sos"), np.square(sample_float[master_channel]))
-  #alpha = 0.9999
-  #x = lfilter((1 - alpha, 0), (1, -alpha), np.square(sample_float[master_channel]))
+  #x = sosfilt(butter(2, 0.0001, btype="low", output="sos"), x)
 
-  threshold      = np.power(10, (10 * np.log10(np.max(x)) - thresh_from_max) / 10)
+  #alpha = 0.999 # 0.99985
+  #x = lfilter((1 - alpha, 0), (1, -alpha), x)
+  #x = np.roll(x, -100)
+
+  #fir = firwin(3000, 0.00000001)
+  #x   = lfilter(fir, 1.0, x)
+
+  threshold = np.power(10, (10 * np.log10(np.max(x)) - thresh_from_max) / 10)
 
   ## detect strikes using a mask time (minimum pause between strikes in recording)
   #above_thresh   = np.full(len(x), False)
@@ -152,7 +166,7 @@ for instrument in instruments:
   #    above_thresh[i] = True
   #    last_above_idx  = i
 
-  above_thresh   = x > threshold
+  above_thresh = x > threshold
 
   #N = 2000
   ##above_thresh = np.convolve(above_thresh, np.ones(N)/N, mode='valid')
@@ -160,24 +174,47 @@ for instrument in instruments:
   #above_thresh = above_thresh > 0
 
 
-  # TODO: quick hack to remove oscillating at the end of a detected block
-  last_above_idx = -1000000
+  # TODO: quick hack to remove oscillating
+  # strategy: fill short gaps
+  first_below_idx = -1000000
+  for i in range(1, len(above_thresh)):
+    if not above_thresh[i] and above_thresh[i - 1]:
+      first_below_idx = i
+    if above_thresh[i] and not above_thresh[i - 1]:
+      if i - first_below_idx < min_on_detection_gap * sample_rate:
+        above_thresh[range(first_below_idx, i)] = True
+  # remove very short on periods
+  first_above_idx = -1000000
   for i in range(1, len(above_thresh)):
     if above_thresh[i] and not above_thresh[i - 1]:
-      last_above_idx = i
+      first_above_idx = i
     if not above_thresh[i] and above_thresh[i - 1]:
-      if i - last_above_idx < min_pause_between_strikes * sample_rate:
-        above_thresh[i] = True
+      if i - first_above_idx < min_on_detection_gap * sample_rate:
+        above_thresh[range(first_above_idx, i)] = False
+
 
 
   ## TODO: quick hack to remove oscillating at the end of a detected block
+  ## strategy: on period at least min_pause_between_strikes long
   #last_above_idx = -1000000
   #for i in range(1, len(above_thresh)):
   #  if above_thresh[i] and not above_thresh[i - 1]:
-  #    if i - last_above_idx < min_pause_between_strikes * sample_rate:
-  #      above_thresh[i] = False
-  #  if above_thresh[i]:
   #    last_above_idx = i
+  #  if not above_thresh[i] and above_thresh[i - 1]:
+  #    if i - last_above_idx < min_pause_between_strikes * sample_rate:
+  #      above_thresh[i] = True
+
+
+
+  ### TODO: quick hack to remove oscillating at the end of a detected block
+  ### strategy: remove bursts after short gaps
+  ##last_above_idx = -1000000
+  ##for i in range(1, len(above_thresh)):
+  ##  if above_thresh[i] and not above_thresh[i - 1]:
+  ##    if i - last_above_idx < min_pause_between_strikes * sample_rate:
+  ##      above_thresh[i] = False
+  ##  if above_thresh[i]:
+  ##    last_above_idx = i
 
 
   strike_start = np.argwhere(np.diff(above_thresh.astype(float)) > 0)
