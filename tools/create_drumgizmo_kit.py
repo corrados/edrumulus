@@ -46,6 +46,7 @@ instruments = [["kick",          "KDrum",   36], \
 # TEST for optimizing the analization algorithms, only use the snare drum
 #instruments = [["snare", "Snare", 38]]
 #instruments = [["kick", "KDrum", 36]]
+#instruments = [["hihat_open", "Hihat", 26]]
 
 kit_name                  = "PearlMMX" # avoid spaces
 samples_dir_name          = "samples" # compatible to other Drumgizmo kits
@@ -115,7 +116,19 @@ for instrument in instruments:
 
   x = np.square(sample_float[master_channel])
 
-  #x              = sosfilt(butter(2, 0.001, btype="low", output="sos"), np.square(sample_float[master_channel]))
+  ## TEST linear regression -> instruments = [["hihat_open", "Hihat", 26]]
+  #s = 2200000
+  #e = 2800000
+  #y = x[range(s, e)]
+  #y = sosfilt(butter(2, 0.001, btype="low", output="sos"), y)
+  #lr_x_values = range(s, e)
+  #A = np.vstack([lr_x_values, np.ones(len(lr_x_values))]).T
+  #m, c = np.linalg.lstsq(A, 10 * np.log10(np.abs(y)), rcond=None)[0]
+  #plt.plot(10 * np.log10(np.abs(x)))
+  #plt.plot(lr_x_values, m * lr_x_values + c, 'r')
+  #plt.show()
+
+  #x = sosfilt(butter(2, 0.001, btype="low", output="sos"), np.square(sample_float[master_channel]))
 
   ## TEST find peaks
   #max_index = np.argmax(x)
