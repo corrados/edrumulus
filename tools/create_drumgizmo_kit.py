@@ -220,13 +220,21 @@ for instrument in instruments:
   strike_start = np.argwhere(np.diff(above_thresh.astype(float)) > 0)
   strike_end   = np.argwhere(np.diff(above_thresh.astype(float)) < 0)
 
+
+
   # extract individual samples from long sample vector
+  sample_powers  = [[]] * len(strike_start)
   sample_strikes = [[]] * len(strike_start)
   for i, (start, end) in enumerate(zip(strike_start, strike_end)):
     sample_strikes[i] = np.zeros((strike_end[i][0] - strike_start[i][0] + 1, num_channels), np.int16)
     for c in range(0, num_channels):
       sample_strikes[i][:, c] = sample[c][start[0]:end[0] + 1]
 
+    # estimate power
+    x = np.square(sample_float[master_channel][range(start[0], end[0])])
+    sample_powers[i] = str(np.max(x) / 32768 / 32768)
+
+  #print(sample_powers)
   #plt.plot(sample_strikes[7][:, 0])
   #plt.show()
 
@@ -236,9 +244,6 @@ for instrument in instruments:
   #plt.plot(10 * np.log10(np.max(x)) * above_thresh)
   #plt.title(instrument_name)
   #plt.show()
-
-  # TODO
-  test_sample_powers = ["1.0"] * len(sample_strikes) # TODO must be estimated in the signal analysis part
 
 
   ##############################################################################
@@ -266,7 +271,7 @@ for instrument in instruments:
     # write XML content for current sample
     sample_xml = ET.SubElement(samples_xml, "sample")
     sample_xml.set("name", instrument_name + "-" + str(i + 1))
-    sample_xml.set("power", test_sample_powers[i])
+    sample_xml.set("power", sample_powers[i])
     for j, channel_name in enumerate(channel_names):
       audiofile_xml = ET.SubElement(sample_xml, "audiofile")
       audiofile_xml.set("channel", channel_name)
