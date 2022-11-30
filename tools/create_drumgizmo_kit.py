@@ -29,7 +29,7 @@ from scipy.io import wavfile
 # INITIALIZATIONS ##############################################################
 ################################################################################
 # instruments: [instrument_name, master_channel, MIDI_note, threshold]
-instruments = [["kick",          "KDrum",   36, 46], \
+instruments = [["kick",          "KDrum",   36, 45], \
                ["snare",         "Snare",   38, 70], \
                ["snare_rimshot", "Snare",   40, 60], \
                ["hihat_closed",  "Hihat",   22, 68], \
@@ -42,7 +42,7 @@ instruments = [["kick",          "KDrum",   36, 46], \
                ["ride_bell",     "OHRight", 53, 60]]
 
 # TEST for optimizing the analization algorithms, only use one instrument
-instruments = [instruments[0]]
+#instruments = [instruments[0]]
 
 kit_name                = "PearlMMX" # avoid spaces
 samples_dir_name        = "samples" # compatible to other Drumgizmo kits
@@ -81,12 +81,9 @@ for instrument in instruments:
   # create file names of all audio channels
   file_names = []
   for i in range(0, num_channels):
-    if position >= 0:
-      file_names.append(source_samples_dir_name + "/" + base_instrument_name + "/" + \
-                        instrument_name + "_" + str(position) + "_channel" + str(i + 1) + ".wav")
-    else:
-      file_names.append(source_samples_dir_name + "/" + base_instrument_name + "/" + \
-                        instrument_name + "_channel" + str(i + 1) + ".wav")
+    pos_str = "_" + str(position) if position >= 0 else ""
+    file_names.append(source_samples_dir_name + "/" + base_instrument_name + "/" + \
+                      instrument_name + pos_str+ "_channel" + str(i + 1) + ".wav")
 
 
   ##############################################################################
@@ -96,11 +93,10 @@ for instrument in instruments:
   sample       = [[]] * num_channels
   sample_float = [[]] * num_channels
   for i, f in enumerate(file_names):
-    file            = wave.open(f, "r")
-    sample_rate     = file.getframerate() # assuming all wave have the same rate
-    sample[i]       = np.frombuffer(file.readframes(-1), np.int16) # assuming 16 bit
-    sample_float[i] = sample[i].astype(float)
-    file.close()
+    with wave.open(f, "r") as file:
+      sample_rate     = file.getframerate() # assuming all wave have the same rate
+      sample[i]       = np.frombuffer(file.readframes(-1), np.int16) # assuming 16 bit
+      sample_float[i] = sample[i].astype(float)
 
 
   ##############################################################################
@@ -139,24 +135,23 @@ for instrument in instruments:
   sample_powers  = [[]] * len(strike_start)
   sample_strikes = [[]] * len(strike_start)
   for i, (start, end) in enumerate(zip(strike_start, strike_end)):
+    # estimate power from master channel
+    x_cur_strike_master = x[range(start[0], end[0])]
+    sample_powers[i]    = str(np.max(x_cur_strike_master) / 32768 / 32768) # assuming 16 bit
+    # extract sample data of current strike
     sample_strikes[i] = np.zeros((strike_end[i][0] - strike_start[i][0] + 1, num_channels), np.int16)
     for c in range(0, num_channels):
       sample_strikes[i][:, c] = sample[c][start[0]:end[0] + 1]
-
-    # estimate power
-    x = np.square(sample_float[master_channel][range(start[0], end[0])])
-    sample_powers[i] = str(np.max(x) / 32768 / 32768)
 
   #print(sample_powers)
   #plt.plot(sample_strikes[7][:, 0])
   #plt.show()
 
-  #plt.plot(20 * np.log10(np.abs(sample_float[master_channel])))
-  plt.plot(10 * np.log10(np.abs(x)))
-  plt.plot([0, len(x)], 10 * np.log10([threshold, threshold]))
-  plt.plot(10 * np.log10(np.max(x)) * above_thresh)
-  plt.title(instrument_name)
-  plt.show()
+  #plt.plot(10 * np.log10(np.abs(x)))
+  #plt.plot([0, len(x)], 10 * np.log10([threshold, threshold]))
+  #plt.plot(10 * np.log10(np.max(x)) * above_thresh)
+  #plt.title(instrument_name)
+  #plt.show()
 
 
   ##############################################################################
