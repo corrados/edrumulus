@@ -67,10 +67,12 @@ for instrument in instruments:
   ##############################################################################
   # FILE NAME HANDLING #########################################################
   ##############################################################################
-  instrument_name = instrument[0]
+  instrument_name        = instrument[0]
+  instrument_path        = kit_name + "/" + instrument_name + "/"
+  instrument_sample_path = instrument_path + samples_dir_name + "/"
+  base_instrument_name   = instrument_name.split("_")[0]
+  position               = -1 # default: invalid position, i.e., no positional support
   print(instrument_name)
-  base_instrument_name = instrument_name.split("_")[0]
-  position             = -1 # default: invalid position, i.e., no positional support
 
   # TEST
   file_names      = os.listdir(source_samples_dir_name + "/" + base_instrument_name)
@@ -145,6 +147,7 @@ for instrument in instruments:
     # estimate power from master channel using the maximum value
     x_cur_strike_master = x[range(start[0], end[0])]
     sample_powers[i]    = str(np.max(x_cur_strike_master) / 32768 / 32768) # assuming 16 bit
+
     # extract sample data of current strike
     sample_strikes[i] = np.zeros((end[0] - start[0] + 1, num_channels), np.int16)
     for c in range(0, num_channels):
@@ -170,13 +173,9 @@ for instrument in instruments:
   samples_xml = ET.SubElement(instrument_xml, "samples")
 
   for i in range(0, len(sample_strikes)):
-    # file/path handling
-    instrument_path        = kit_name + "/" + instrument_name + "/"
-    instrument_sample_path = instrument_path + samples_dir_name + "/"
-    sample_file_name       = str(i + 1) + "-" + instrument_name
-    os.makedirs(instrument_sample_path, exist_ok=True)
-
     # write multi-channel wave file
+    sample_file_name = str(i + 1) + "-" + instrument_name
+    os.makedirs(instrument_sample_path, exist_ok=True)
     wavfile.write(instrument_sample_path + sample_file_name + ".wav", sample_rate, sample_strikes[i])
 
     # write XML content for current sample
