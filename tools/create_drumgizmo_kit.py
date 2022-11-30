@@ -25,6 +25,15 @@ import xml.etree.ElementTree as ET
 from scipy.io import wavfile
 
 
+
+
+# TODO sample fade-in/fade-out support
+# TODO positional sensing support
+
+
+
+
+
 ################################################################################
 # INITIALIZATIONS ##############################################################
 ################################################################################
@@ -111,7 +120,7 @@ for instrument in instruments:
   above_thresh = x > threshold
 
   # remove oscillating by filling short gaps
-  first_below_idx = -1000000
+  first_below_idx = -100 * sample_rate
   for i in range(1, len(above_thresh)):
     if not above_thresh[i] and above_thresh[i - 1]:
       first_below_idx = i
@@ -120,7 +129,7 @@ for instrument in instruments:
         above_thresh[range(first_below_idx, i)] = True
 
   # remove very short on periods
-  first_above_idx = -1000000
+  first_above_idx = -100 * sample_rate
   for i in range(1, len(above_thresh)):
     if above_thresh[i] and not above_thresh[i - 1]:
       first_above_idx = i
@@ -131,11 +140,11 @@ for instrument in instruments:
   strike_start = np.argwhere(np.diff(above_thresh.astype(float)) > 0)
   strike_end   = np.argwhere(np.diff(above_thresh.astype(float)) < 0)
 
-  # extract individual samples from long sample vector
+  # extract individual samples from long sample vector and estimate strike power
   sample_powers  = [[]] * len(strike_start)
   sample_strikes = [[]] * len(strike_start)
   for i, (start, end) in enumerate(zip(strike_start, strike_end)):
-    # estimate power from master channel
+    # estimate power from master channel using the maximum value
     x_cur_strike_master = x[range(start[0], end[0])]
     sample_powers[i]    = str(np.max(x_cur_strike_master) / 32768 / 32768) # assuming 16 bit
     # extract sample data of current strike
@@ -143,9 +152,9 @@ for instrument in instruments:
     for c in range(0, num_channels):
       sample_strikes[i][:, c] = sample[c][start[0]:end[0] + 1]
 
-  #print(sample_powers)
-  #plt.plot(sample_strikes[7][:, 0])
-  #plt.show()
+    #print(sample_powers[i])
+    #plt.plot(sample_strikes[i][:, master_channel])
+    #plt.show()
 
   #plt.plot(10 * np.log10(np.abs(x)))
   #plt.plot([0, len(x)], 10 * np.log10([threshold, threshold]))
