@@ -148,7 +148,7 @@ for instrument in instruments:
     x_cur_strike_master = x[range(start[0], end[0])]
     sample_powers[i]    = str(np.max(x_cur_strike_master) / 32768 / 32768) # assuming 16 bit
     # extract sample data of current strike
-    sample_strikes[i] = np.zeros((strike_end[i][0] - strike_start[i][0] + 1, num_channels), np.int16)
+    sample_strikes[i] = np.zeros((end[0] - start[0] + 1, num_channels), np.int16)
     for c in range(0, num_channels):
       sample_strikes[i][:, c] = sample[c][start[0]:end[0] + 1]
 
@@ -172,7 +172,6 @@ for instrument in instruments:
   samples_xml = ET.SubElement(instrument_xml, "samples")
 
   for i in range(0, len(sample_strikes)):
-
     # file/path handling
     instrument_path        = kit_name + "/" + instrument_name + "/"
     instrument_sample_path = instrument_path + samples_dir_name + "/"
