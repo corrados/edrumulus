@@ -99,13 +99,11 @@ for instrument in instruments:
   # READ WAVE FORMS ############################################################
   ##############################################################################
   # read samples from all audio channels
-  sample       = [[]] * num_channels
-  sample_float = [[]] * num_channels
+  sample = [[]] * num_channels
   for i, f in enumerate(file_names):
     with wave.open(f, "r") as file:
-      sample_rate     = file.getframerate() # assuming all wave have the same rate
-      sample[i]       = np.frombuffer(file.readframes(-1), np.int16) # assuming 16 bit
-      sample_float[i] = sample[i].astype(float)
+      sample_rate = file.getframerate() # assuming all wave have the same rate
+      sample[i]   = np.frombuffer(file.readframes(-1), np.int16) # assuming 16 bit
 
 
   ##############################################################################
@@ -115,7 +113,7 @@ for instrument in instruments:
   master_channel  = channel_names.index(instrument[1])
 
   # find samples which are above the threshold
-  x            = np.square(sample_float[master_channel])
+  x            = np.square(sample[master_channel].astype(float))
   threshold    = np.power(10, (10 * np.log10(np.max(x)) - thresh_from_max) / 10)
   above_thresh = x > threshold
 
