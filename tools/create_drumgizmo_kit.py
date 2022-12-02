@@ -42,7 +42,7 @@ instruments = [["kick",          "KDrum",   36, 45], \
                ["ride_bell",     "OHRight", 53, 60]]
 
 # TEST for optimizing the analization algorithms, only use one instrument
-instruments = [instruments[0]]
+#instruments = [instruments[1]]
 
 kit_name                = "PearlMMX" # avoid spaces
 samples_dir_name        = "samples" # compatible to other Drumgizmo kits
@@ -69,12 +69,13 @@ for instrument in instruments:
   file_names = os.listdir(source_samples_dir_name + "/" + base_instrument_name)
   positions  = []
   for i, file_name in enumerate(file_names):
-    file_name_parts = file_name.split(".")[0].split("_")
-    # position information always second last item and one character long
-    if len(file_name_parts) > 2 and len(file_name_parts[-2]) == 1:
-      positions.append(int(file_name_parts[-2]))
+    if instrument_name in file_name:
+      file_name_parts = file_name.split(".")[0].split("_")
+      # position information always second last item and one character long
+      if len(file_name_parts) > 2 and len(file_name_parts[-2]) == 1:
+        positions.append(int(file_name_parts[-2]))
 
-  positions = list(dict.fromkeys(positions)) # remove duplicates
+  positions = sorted(list(dict.fromkeys(positions))) # remove duplicates and sort
   positions = [-1] if not positions else positions # if no positions, use -1 (i.e. no positionsl support)
 
   sample_powers  = [[]] * len(positions)
@@ -168,11 +169,15 @@ for instrument in instruments:
     for i in range(0, len(sample_strikes[p])):
       # write multi-channel wave file
       sample_file_name = str(i + 1) + "-" + instrument_name
+      if len(positions) > 1:
+        sample_file_name += "-" + str(p)
       os.makedirs(instrument_sample_path, exist_ok=True)
       wavfile.write(instrument_sample_path + sample_file_name + ".wav", sample_rate, sample_strikes[p][i])
 
       # write XML content for current sample
       sample_xml = ET.SubElement(samples_xml, "sample")
+      if len(positions) > 1:
+        sample_xml.set("position", str(p))
       sample_xml.set("name", instrument_name + "-" + str(i + 1))
       sample_xml.set("power", sample_powers[p][i])
       for j, channel_name in enumerate(channel_names):
