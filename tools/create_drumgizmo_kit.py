@@ -27,7 +27,6 @@ from scipy.io import wavfile
 
 
 
-# TODO sample fade-in/fade-out support
 # TODO positional sensing support
 
 
@@ -59,6 +58,7 @@ source_samples_dir_name = "source_samples" # root directory of recorded source s
 kit_description         = "Pearl MMX drum set with positional sensing support"
 channel_names           = ["KDrum", "Snare", "Hihat", "Tom1", "Tom2", "Tom3", "OHLeft", "OHRight"]
 min_strike_len          = 0.25 # seconds
+fade_out_percent        = 10 # % of sample at the end is faded out
 num_channels            = len(channel_names)
 
 
@@ -152,6 +152,12 @@ for instrument in instruments:
     sample_strikes[i] = np.zeros((end[0] - start[0] + 1, num_channels), np.int16)
     for c in range(0, num_channels):
       sample_strikes[i][:, c] = sample[c][start[0]:end[0] + 1]
+
+      # audio fade-out at the end
+      sample_len = len(sample_strikes[i][:, c])
+      fade_start = int(sample_len * (1 - fade_out_percent / 100))
+      fade_len   = sample_len - fade_start
+      sample_strikes[i][fade_start:, c] = np.int16(sample_strikes[i][fade_start:, c].astype(float) * np.arange(fade_len + 1, 1, -1) / fade_len)
 
     #print(sample_powers[i])
     #plt.plot(sample_strikes[i][:, master_channel])
