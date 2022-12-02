@@ -43,6 +43,7 @@ instruments = [["kick",          "KDrum",   36, 45], \
 
 # TEST for optimizing the analization algorithms, only use one instrument
 #instruments = [instruments[1]]
+disable_positional_sensing_support = False
 
 kit_name                = "PearlMMX" # avoid spaces
 samples_dir_name        = "samples" # compatible to other Drumgizmo kits
@@ -76,7 +77,11 @@ for instrument in instruments:
         positions.append(int(file_name_parts[-2]))
 
   positions = sorted(list(dict.fromkeys(positions))) # remove duplicates and sort
-  positions = [-1] if not positions else positions # if no positions, use -1 (i.e. no positionsl support)
+  positions = [-1] if not positions else positions # if no positions, use -1 (i.e. no positional support)
+
+  # TEST for development purpose, remove later
+  if disable_positional_sensing_support and len(positions) > 1:
+    positions = [0]
 
   sample_powers  = [[]] * len(positions)
   sample_strikes = [[]] * len(positions)
