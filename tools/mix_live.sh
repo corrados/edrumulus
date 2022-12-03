@@ -10,35 +10,35 @@ DrumGizmo:4-Tom2,DrumGizmo:5-Tom3,DrumGizmo:6-OHLeft,DrumGizmo:7-OHRight \
 \
 -a:KDrum -chcopy:1,2 -ea:100 -epp:50 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-eq,160,0,75,16.3,0.875,2436,0,1.2,256,-20,0.766,909,-15.3,0.62,8088,-6.2,-0.62,1,1,1,1,1,1,1 \
      -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:Snare -chcopy:1,2 -ea:50 -epp:50 \
+-a:Snare -chcopy:1,2 -ea:100 -epp:50 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-eq,24,-20,86,5.6,1,194,-4.9,0.38,2500,0,1,734,5.4,0.61,2245,16.1,-8.45,1,1,1,1,1,1,1 \
      -elv2:urn:ardour:a-reverb,0.3,0.5,1 \
--a:Hihat -chcopy:1,2 -ea:50 -epp:35 \
+-a:Hihat -chcopy:1,2 -ea:100 -epp:35 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-eq,315,-20,300,0,1,1000,0,1,2500,0,1,6000,0,1,4112,10.7,-10.1,1,1,1,1,1,1,1 \
      -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:Tom1 -chcopy:1,2 -ea:50 -epp:40 \
+-a:Tom1 -chcopy:1,2 -ea:100 -epp:40 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-eq,160,0,300,0,1,118,12,1,829,-20,2.26,5204,20,1,9000,0,-4,1,1,1,1,1,1,1 \
      -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:Tom2 -chcopy:1,2 -ea:50 -epp:60 \
+-a:Tom2 -chcopy:1,2 -ea:100 -epp:60 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-eq,160,0,300,0,1,106,12,1,829,-20,2.26,2741,20,1,9000,0,-4,1,1,1,1,1,1,1 \
      -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:Tom3 -chcopy:1,2 -ea:50 -epp:70 \
+-a:Tom3 -chcopy:1,2 -ea:100 -epp:70 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-eq,160,0,300,0,1,99,12,1,829,-9.5,2.26,2741,19.6,1.87,9000,0,-4,1,1,1,1,1,1,1 \
      -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:OHLeft -chcopy:1,2 -ea:50 -epp:0 \
+-a:OHLeft -chcopy:1,2 -ea:100 -epp:0 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-eq,160,0,86,8.2,1,146,-8.9,0.36,2500,0,1,6000,0,1,5091,12.2,-6.28,1,1,1,1,1,1,1 \
      -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:OHRight -chcopy:1,2 -ea:50 -epp:100 \
+-a:OHRight -chcopy:1,2 -ea:100 -epp:100 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-eq,160,0,86,8.2,1,146,-8.9,0.36,2500,0,1,6000,0,1,5091,12.2,-6.28,1,1,1,1,1,1,1 \
      -elv2:urn:ardour:a-reverb,0.2,1,0 \
 -a:all -o jack,system
 
