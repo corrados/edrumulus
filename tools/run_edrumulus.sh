@@ -112,8 +112,8 @@ if [ ! -f EdrumulusGUI ]; then
 fi
 
 
-# TODO automate the creation of the kit: download source kits and call mixdown_kits.m
-echo We assume that you have created the edrumuluskit with edrumulus/tools/mixdown_kits.m
+# TODO automate the creation of the kit: download source kits and call mixdown_kits.m or PearlMMX is present
+echo We assume that you have created the edrumuluskit with edrumulus/tools/mixdown_kits.m or PearlMMX is present
 
 if [ -d "edrumuluskit" ]; then
   KITXML="edrumuluskit/edrumuluskit.xml"
@@ -122,6 +122,13 @@ if [ -d "edrumuluskit" ]; then
   KITJACKPORTRIGHT=DrumGizmo:1-right_channel
 fi
 
+# if Pearl MMX drum kit is present, use this instead (overwrite above settings)
+if [ -d "PearlMMX" ]; then
+  KITXML="PearlMMX/PearlMMX.xml"
+  KITMIDIMAPXML="PearlMMX/Midimap.xml"
+  KITJACKPORTLEFT=DrumGizmo:6-OHLeft
+  KITJACKPORTRIGHT=DrumGizmo:7-OHRight
+fi
 
 # taken from "Raspberry Pi and realtime, low-latency audio" homepage at wiki.linuxaudio.org
 #sudo service triggerhappy stop
