@@ -48,13 +48,11 @@ instruments = [["kick",            "KDrum",   36, 45], \
 disable_positional_sensing_support = False#True
 
 kit_name                = "PearlMMX" # avoid spaces
-samples_dir_name        = "samples" # compatible to other Drumgizmo kits
-source_samples_dir_name = "source_samples" # root directory of recorded source samples
 kit_description         = "Pearl MMX drum set with positional sensing support"
+source_samples_dir_name = "source_samples" # root directory of recorded source samples
 channel_names           = ["KDrum", "Snare", "Hihat", "Tom1", "Tom2", "Tom3", "OHLeft", "OHRight"]
 min_strike_len          = 0.25 # seconds
 fade_out_percent        = 10 # % of sample at the end is faded out
-num_channels            = len(channel_names)
 
 
 for instrument in instruments:
@@ -62,6 +60,7 @@ for instrument in instruments:
   ##############################################################################
   # FILE NAME HANDLING #########################################################
   ##############################################################################
+  samples_dir_name       = "samples" # compatible to other Drumgizmo kits
   instrument_name        = instrument[0]
   instrument_path        = kit_name + "/" + instrument_name + "/"
   instrument_sample_path = instrument_path + samples_dir_name + "/"
@@ -93,8 +92,9 @@ for instrument in instruments:
     ##############################################################################
     # READ WAVE FORMS ############################################################
     ##############################################################################
-    sample  = [[]] * num_channels
-    pos_str = "_" + str(p) if p >= 0 else ""
+    num_channels = len(channel_names)
+    sample       = [[]] * num_channels
+    pos_str      = "_" + str(p) if p >= 0 else ""
     for i in range(0, num_channels):
       with wave.open(source_samples_dir_name + "/" + base_instrument_name + "/" + \
                      instrument_name + pos_str + "_channel" + str(i + 1) + ".wav", "r") as file:
