@@ -29,21 +29,23 @@ from scipy.io import wavfile
 # CONFIGURATION AND INITIALIZATIONS ############################################
 ################################################################################
 # instruments: [instrument_name, master_channel, MIDI_note, threshold]
-instruments = [["kick",          "KDrum",   36, 45], \
-               ["snare",         "Snare",   38, 70], \
-               ["snare_rimshot", "Snare",   40, 60], \
-               ["hihat_closed",  "Hihat",   22, 68], \
-               ["hihat_open",    "Hihat",   26, 53], \
-               ["tom1",          "Tom1",    48, 60], \
-               ["tom2",          "Tom2",    45, 60], \
-               ["tom3",          "Tom3",    43, 57], \
-               ["crash",         "OHLeft",  55, 60], \
-               ["ride",          "OHRight", 51, 68], \
-               ["ride_bell",     "OHRight", 53, 60]]
+instruments = [["kick",            "KDrum",   36, 45], \
+               ["snare",           "Snare",   38, 70], \
+               ["snare_rimshot",   "Snare",   40, 60], \
+               ["hihat_closed",    "Hihat",   22, 68], \
+               ["hihat_closedtop", "Hihat",   42, 68], \
+               ["hihat_open",      "Hihat",   26, 53], \
+               ["hihat_opentop",   "Hihat",   46, 53], \
+               ["tom1",            "Tom1",    48, 60], \
+               ["tom2",            "Tom2",    45, 60], \
+               ["tom3",            "Tom3",    43, 57], \
+               ["crash",           "OHLeft",  55, 60], \
+               ["ride",            "OHRight", 51, 68], \
+               ["ride_bell",       "OHRight", 53, 60]]
 
 # TEST for optimizing the analization algorithms, only use one instrument
-#instruments = [instruments[1]]
-disable_positional_sensing_support = False
+#instruments = [instruments[0]]
+disable_positional_sensing_support = False#True
 
 kit_name                = "PearlMMX" # avoid spaces
 samples_dir_name        = "samples" # compatible to other Drumgizmo kits
@@ -136,9 +138,30 @@ for instrument in instruments:
     sample_powers[p]  = [[]] * len(strike_start)
     sample_strikes[p] = [[]] * len(strike_start)
     for i, (start, end) in enumerate(zip(strike_start, strike_end)):
-      # estimate power from master channel using the maximum value
+
+
+
+      # TODO clean up the algorithm/code:
+      # TODO define constants like the 20 dB and 30 samples offset above
+      # TODO check all the strike samples if they look ok...
+      # TEST fix start of strike: find first sample going left of the maximum peak which
+      #      is below a threshold which is defined 20 dB below the maximum
       x_cur_strike_master = x[range(start[0], end[0])]
-      sample_powers[p][i]    = str(np.max(x_cur_strike_master) / 32768 / 32768) # assuming 16 bit
+      strike_mean         = np.mean(x_cur_strike_master)
+      strike_max          = np.max(x_cur_strike_master)
+      below_max_thresh    = np.power(10, -20 / 10) # -20 dB from maximum peak
+      #print(strike_mean)
+      index = 0
+      while x[start[0] + index] < strike_max * below_max_thresh:
+        index += 1
+      #print(index)
+      start += index - 30 # TEST some offset, in this case 30 samples...
+
+
+
+
+      # estimate power from master channel using the maximum value
+      sample_powers[p][i] = str(strike_max / 32768 / 32768) # assuming 16 bit
 
       # extract sample data of current strike
       sample_strikes[p][i] = np.zeros((end[0] - start[0] + 1, num_channels), np.int16)
