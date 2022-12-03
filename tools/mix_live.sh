@@ -1,76 +1,44 @@
 
-# CrocellKit live mixing setup
+# Pearl MMX kit live mixing setup
 ecasound --server \
 \
--a:AmbLeft,AmbRight,OHLeft,OHRight,\
-OHCenter,Hihat,Ride,SnareTop,SnareBottom,\
-Tom1,Tom2,FTom1,FTom2,\
-KDrumInside,KDrumOutside \
+-a:KDrum,Snare,Hihat,Tom1,\
+Tom2,Tom3,OHLeft,OHRight \
 \
--i jack_multi,DrumGizmo:0-AmbLeft,DrumGizmo:1-AmbRight,DrumGizmo:2-OHLeft,DrumGizmo:3-OHRight,\
-DrumGizmo:4-OHCenter,DrumGizmo:5-Hihat,DrumGizmo:6-Ride,DrumGizmo:7-SnareTop,DrumGizmo:8-SnareBottom,\
-DrumGizmo:9-Tom1,DrumGizmo:10-Tom2,DrumGizmo:11-FTom1,DrumGizmo:12-FTom2,\
-DrumGizmo:13-KDrumInside,DrumGizmo:14-KDrumOutside \
+-i jack_multi,DrumGizmo:0-KDrum,DrumGizmo:1-Snare,DrumGizmo:2-Hihat,DrumGizmo:3-Tom1,\
+DrumGizmo:4-Tom2,DrumGizmo:5-Tom3,DrumGizmo:6-OHLeft,DrumGizmo:7-OHRight \
 \
--a:AmbLeft -ea:100 -epp:0 \
+-a:KDrum -chcopy:1,2 -ea:100 -epp:50 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
      -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
      -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:AmbRight -ea:100 -epp:100 \
-     -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
-     -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:OHLeft -ea:100 -epp:0 \
-     -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
-     -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:OHRight -ea:100 -epp:100 \
-     -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
-     -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:OHCenter -ea:50 -epp:50 \
-     -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
-     -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:Hihat -ea:50 -epp:50 \
-     -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
-     -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:Ride -ea:50 -epp:50 \
-     -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
-     -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:SnareTop -ea:50 -epp:50 \
+-a:Snare -chcopy:1,2 -ea:50 -epp:50 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
      -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
      -elv2:urn:ardour:a-reverb,0.3,0.5,1 \
--a:SnareBottom -ea:50 -epp:50 \
+-a:Hihat -chcopy:1,2 -ea:50 -epp:35 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
      -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
      -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:Tom1 -ea:80 -epp:50 \
+-a:Tom1 -chcopy:1,2 -ea:50 -epp:40 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
      -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
-     -elv2:urn:ardour:a-reverb,0.2,1,1 \
--a:Tom2 -ea:80 -epp:50 \
+     -elv2:urn:ardour:a-reverb,0.2,1,0 \
+-a:Tom2 -chcopy:1,2 -ea:50 -epp:60 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
      -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
-     -elv2:urn:ardour:a-reverb,0.2,1,1 \
--a:FTom1 -ea:80 -epp:50 \
+     -elv2:urn:ardour:a-reverb,0.2,1,0 \
+-a:Tom3 -chcopy:1,2 -ea:50 -epp:70 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
      -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
-     -elv2:urn:ardour:a-reverb,0.2,1,1 \
--a:FTom2 -ea:80 -epp:50 \
+     -elv2:urn:ardour:a-reverb,0.2,1,0 \
+-a:OHLeft -chcopy:1,2 -ea:50 -epp:0 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
      -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
-     -elv2:urn:ardour:a-reverb,0.2,1,1 \
--a:KDrumInside -ea:50 -epp:50 \
+     -elv2:urn:ardour:a-reverb,0.2,1,0 \
+-a:OHRight -chcopy:1,2 -ea:50 -epp:100 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
      -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
-     -elv2:urn:ardour:a-reverb,0.2,1,1 \
--a:KDrumOutside -ea:50 -epp:50 \
-     -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,100,10,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
      -elv2:urn:ardour:a-reverb,0.2,1,0 \
 -a:all -o jack,system
 
@@ -125,4 +93,82 @@ DrumGizmo:13-KDrumInside,DrumGizmo:14-KDrumOutside \
 # blend:  Blend     {0.0, 1}
 # roomsz: Room Size {0.5, 1}
 # enable: Enable    {  0, 1} on/off
+
+
+
+
+## CrocellKit live mixing setup
+#ecasound --server \
+#\
+#-a:AmbLeft,AmbRight,OHLeft,OHRight,\
+#OHCenter,Hihat,Ride,SnareTop,SnareBottom,\
+#Tom1,Tom2,FTom1,FTom2,\
+#KDrumInside,KDrumOutside \
+#\
+#-i jack_multi,DrumGizmo:0-AmbLeft,DrumGizmo:1-AmbRight,DrumGizmo:2-OHLeft,DrumGizmo:3-OHRight,\
+#DrumGizmo:4-OHCenter,DrumGizmo:5-Hihat,DrumGizmo:6-Ride,DrumGizmo:7-SnareTop,DrumGizmo:8-SnareBottom,\
+#DrumGizmo:9-Tom1,DrumGizmo:10-Tom2,DrumGizmo:11-FTom1,DrumGizmo:12-FTom2,\
+#DrumGizmo:13-KDrumInside,DrumGizmo:14-KDrumOutside \
+#\
+#-a:AmbLeft -chcopy:1,2 -ea:100 -epp:0 \
+#     -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
+#     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+#     -elv2:urn:ardour:a-reverb,0.2,1,0 \
+#-a:AmbRight -chcopy:1,2 -ea:100 -epp:100 \
+#     -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
+#     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+#     -elv2:urn:ardour:a-reverb,0.2,1,0 \
+#-a:OHLeft -chcopy:1,2 -ea:100 -epp:0 \
+#     -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
+#     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+#     -elv2:urn:ardour:a-reverb,0.2,1,0 \
+#-a:OHRight -chcopy:1,2 -ea:100 -epp:100 \
+#     -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
+#     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+#     -elv2:urn:ardour:a-reverb,0.2,1,0 \
+#-a:OHCenter -chcopy:1,2 -ea:50 -epp:50 \
+#     -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
+#     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+#     -elv2:urn:ardour:a-reverb,0.2,1,0 \
+#-a:Hihat -chcopy:1,2 -ea:50 -epp:50 \
+#     -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
+#     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+#     -elv2:urn:ardour:a-reverb,0.2,1,0 \
+#-a:Ride -chcopy:1,2 -ea:50 -epp:50 \
+#     -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
+#     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+#     -elv2:urn:ardour:a-reverb,0.2,1,0 \
+#-a:SnareTop -chcopy:1,2 -ea:50 -epp:50 \
+#     -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
+#     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+#     -elv2:urn:ardour:a-reverb,0.3,0.5,1 \
+#-a:SnareBottom -chcopy:1,2 -ea:50 -epp:50 \
+#     -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
+#     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+#     -elv2:urn:ardour:a-reverb,0.2,1,0 \
+#-a:Tom1 -chcopy:1,2 -ea:80 -epp:50 \
+#     -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
+#     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+#     -elv2:urn:ardour:a-reverb,0.2,1,1 \
+#-a:Tom2 -chcopy:1,2 -ea:80 -epp:50 \
+#     -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
+#     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+#     -elv2:urn:ardour:a-reverb,0.2,1,1 \
+#-a:FTom1 -chcopy:1,2 -ea:80 -epp:50 \
+#     -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
+#     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+#     -elv2:urn:ardour:a-reverb,0.2,1,1 \
+#-a:FTom2 -chcopy:1,2 -ea:80 -epp:50 \
+#     -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
+#     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+#     -elv2:urn:ardour:a-reverb,0.2,1,1 \
+#-a:KDrumInside -chcopy:1,2 -ea:50 -epp:50 \
+#     -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
+#     -elv2:urn:ardour:a-eq,160,0,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+#     -elv2:urn:ardour:a-reverb,0.2,1,1 \
+#-a:KDrumOutside -chcopy:1,2 -ea:50 -epp:50 \
+#     -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
+#     -elv2:urn:ardour:a-eq,100,10,300,0,1,1000,0,1,2500,0,1,6000,0,1,9000,0,0,1,1,1,1,1,1,1 \
+#     -elv2:urn:ardour:a-reverb,0.2,1,0 \
+#-a:all -o jack,system
 
