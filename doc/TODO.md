@@ -2,18 +2,6 @@
 
 The road map items are sorted by priority.
 
-- [ ] **For 3 head sensor usage, introduce a fourth signal which is the sum of all sensors**
-
-  Use this signal for peak detection to avoid having false additional peaks caused by separate
-  peak detection on each of the sensor signals. The individual sensor signals are only used for
-  improving the positional sensing and hot spot elimination.
-
-- [ ] **Introduce a first peak detection reliability**
-
-  This can be used to improve the positional sensing. E.g., if the reliability is low, we could
-  use the position of the last detected peak if it is close to the current peak in time (e.g., if
-  we have a fast roll situation).
-
 - [ ] **Increase data rate on UART serial bus for MIDI signals for prototype 5**
 
   The UART MIDI communication on prototype 5 is a direct connection to the Raspberry Pi and does
@@ -27,6 +15,12 @@ The road map items are sorted by priority.
 - [ ] **Use rim switch theshold in dB**
 
   Do not use a linear parameter as it is implemented right now.
+
+- [ ] **Introduce a first peak detection reliability**
+
+  This can be used to improve the positional sensing. E.g., if the reliability is low, we could
+  use the position of the last detected peak if it is close to the current peak in time (e.g., if
+  we have a fast roll situation).
 
 - [ ] **Improve Edrumulus/Drumgizmo usage on Raspberry Pi (Pi4, Pi 3+ and Pi Zero)**
 
@@ -63,15 +57,7 @@ The road map items are sorted by priority.
 
 - [ ] **Should we consider pre-scan time high peaks for velocity estimation?**
 
-- [ ] **Simulate 16 bit with current hardware and check if thresholds are correct**
-
 - [ ] **For the ESP32 prototype, adjust the ADC_noise_peak_velocity_scaling in edrumulus.h correctly**
-
-- [ ] **Possible memory issue on the ESP32**
-
-  See Git commit [406c31fd66aeb1609f75e22672d5fa9280749f37](https://github.com/corrados/edrumulus/commit/406c31fd66aeb1609f75e22672d5fa9280749f37).
-
-- [ ] **Introduce defines for debugging functionality instead of `/* */`**
 
 - [ ] **Algorihm documentation**
 
