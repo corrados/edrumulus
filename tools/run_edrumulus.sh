@@ -113,7 +113,7 @@ else
   cd ecasound
   ./autogen-vc.sh
   export CXXFLAGS="-g -std=c++11"
-  configure
+  ./configure
   make -j${NCORES}
   cd ..
 fi
