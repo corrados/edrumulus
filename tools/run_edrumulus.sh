@@ -56,7 +56,7 @@ fi
 
 
 # install required packages ----------------------------------------------------
-pkgs='git htop vim alsamixergui build-essential libasound2-dev jackd2 cmake libglib2.0-dev autoconf automake libtool lv2-dev xorg-dev libsndfile1-dev libjack-jackd2-dev libsmf-dev gettext a2jmidid libncurses5-dev ardour-lv2-plugins ecasound'
+pkgs='git htop vim alsamixergui build-essential libasound2-dev jackd2 cmake libglib2.0-dev autoconf automake libtool lv2-dev xorg-dev libsndfile1-dev libjack-jackd2-dev libsmf-dev gettext a2jmidid libncurses5-dev ardour-lv2-plugins ecasound liblilv-dev'
 if ! dpkg -s $pkgs >/dev/null 2>&1; then
   read -p "Do you want to install missing packages? " -n 1 -r
   echo
@@ -100,6 +100,20 @@ else
   git submodule update --init
   ./autogen.sh
   ./configure --prefix=$PWD/install --with-lv2dir=$HOME/.lv2 --enable-lv2
+  make -j${NCORES}
+  cd ..
+fi
+
+
+# download and compile ecasound ------------------------------------------------
+if [ -d "ecasound" ]; then
+  echo "The ecasound directory is present, we assume it is compiled and ready to use. If not, delete the ecasound directory and call this script again."
+else
+  git clone https://github.com/kaivehmanen/ecasound.git
+  cd ecasound
+  ./autogen-vc.sh
+  export CXXFLAGS="-g -std=c++11"
+  configure
   make -j${NCORES}
   cd ..
 fi
