@@ -5,6 +5,7 @@ tools/DRSKit/
 tools/CrocellKit/
 tools/edrumuluskit/
 tools/drumgizmo/
+tools/ecasound/
 tools/mod-ttymidi/
 tools/SendMIDI/
 tools/jack2/

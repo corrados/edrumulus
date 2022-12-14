@@ -1,6 +1,6 @@
 
 # Pearl MMX kit live mixing setup
-ecasound --server \
+./ecasound/ecasound/ecasound --server -q \
 \
 -a:KDrum,Snare,Hihat,Tom1,\
 Tom2,Tom3,OHLeft,OHRight \

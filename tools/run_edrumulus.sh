@@ -8,7 +8,7 @@
 #           sudo sh -c 'echo "@audio   -  rtprio   95" >> /etc/security/limits.conf'
 #           sudo sh -c 'echo "@audio   -  memlock  unlimited" >> /etc/security/limits.conf'
 
-echo "This script prepares a Linux/Raspberry Pi system for Edrumulus usage"
+echo "Edrumulus Linux start script for using Drumgizmo (including setup/installation)"
 
 
 # get environment --------------------------------------------------------------
@@ -56,7 +56,7 @@ fi
 
 
 # install required packages ----------------------------------------------------
-pkgs='git htop vim alsamixergui build-essential libasound2-dev jackd2 cmake libglib2.0-dev autoconf automake libtool lv2-dev xorg-dev libsndfile1-dev libjack-jackd2-dev libsmf-dev gettext a2jmidid libncurses5-dev ardour-lv2-plugins ecasound liblilv-dev'
+pkgs='git htop vim alsamixergui build-essential libasound2-dev jackd2 cmake libglib2.0-dev autoconf automake libtool lv2-dev xorg-dev libsndfile1-dev libjack-jackd2-dev libsmf-dev gettext a2jmidid libncurses5-dev ardour-lv2-plugins liblilv-dev'
 if ! dpkg -s $pkgs >/dev/null 2>&1; then
   read -p "Do you want to install missing packages? " -n 1 -r
   echo
@@ -126,23 +126,24 @@ if [ ! -f EdrumulusGUI ]; then
 fi
 
 
-# TODO automate the creation of the kit: download source kits and call mixdown_kits.m or PearlMMX is present
+# drum kit setup ---------------------------------------------------------------
 echo We assume that you have created the edrumuluskit with edrumulus/tools/mixdown_kits.m or PearlMMX is present
 
-if [ -d "edrumuluskit" ]; then
-  KITXML="edrumuluskit/edrumuluskit.xml"
-  KITMIDIMAPXML="edrumuluskit/edrumuluskit_midimap.xml"
-  KITJACKPORTLEFT=DrumGizmo:0-left_channel
-  KITJACKPORTRIGHT=DrumGizmo:1-right_channel
-fi
-
-# if Pearl MMX drum kit is present, use this instead (overwrite above settings)
+# if Pearl MMX drum kit is present, use this
 if [ -d "PearlMMX" ]; then
   KITXML="PearlMMX/PearlMMX.xml"
   KITMIDIMAPXML="PearlMMX/Midimap.xml"
-  KITJACKPORTLEFT=DrumGizmo:6-OHLeft
-  KITJACKPORTRIGHT=DrumGizmo:7-OHRight
+  use_ecasound=true
+else
+  # otherwise the default is to use the custom edrumuluskit
+  if [ -d "edrumuluskit" ]; then
+    KITXML="edrumuluskit/edrumuluskit.xml"
+    KITMIDIMAPXML="edrumuluskit/edrumuluskit_midimap.xml"
+    KITJACKPORTLEFT=DrumGizmo:0-left_channel
+    KITJACKPORTRIGHT=DrumGizmo:1-right_channel
+  fi
 fi
+
 
 # taken from "Raspberry Pi and realtime, low-latency audio" homepage at wiki.linuxaudio.org
 #sudo service triggerhappy stop
@@ -150,7 +151,7 @@ fi
 #sudo mount -o remount,size=128M /dev/shm
 
 
-# jack deamon ------------------------------------------------------------------
+# start jack deamon ------------------------------------------------------------
 # get first USB audio sound card device
 ADEVICE=$(aplay -l|grep "USB Audio"|tail -1|cut -d' ' -f3)
 echo "Using USB audio device: ${ADEVICE}"
@@ -195,8 +196,12 @@ else
   sleep 5
 fi
 
-jack_connect $KITJACKPORTLEFT system:playback_1
-jack_connect $KITJACKPORTRIGHT system:playback_2
+if [[ -v use_ecasound ]]; then
+  ./mix_live.sh &
+else
+  jack_connect $KITJACKPORTLEFT system:playback_1
+  jack_connect $KITJACKPORTRIGHT system:playback_2
+fi
 jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
 
 # either use direct MIDI connection or through EdrumulusGUI
@@ -224,6 +229,8 @@ else
   fi
 fi
 
+
+# clean up ---------------------------------------------------------------------
 killall drumgizmo
 
 if [[ -v is_jamulus ]]; then
@@ -238,5 +245,9 @@ fi
 
 if [[ -v is_uart ]]; then
   sudo systemctl stop pigpiod
+fi
+
+if [[ -v use_ecasound ]]; then
+  killall ecasound
 fi
 
