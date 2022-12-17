@@ -18,6 +18,7 @@
 #*******************************************************************************
 
 import os
+import gc
 import wave
 import numpy as np
 import matplotlib.pyplot as plt
@@ -30,14 +31,14 @@ from scipy.io import wavfile
 ################################################################################
 # instruments: [instrument_name, master_channel, MIDI_note, threshold]
 instruments = [["kick",            "KDrum",   36, 45], \
-               ["snare",           "Snare",   38, 70], \
-               ["snare_rimshot",   "Snare",   40, 60], \
+               ["snare",           "Snare",   38, 62], \
+               ["snare_rimshot",   "Snare",   40, 57], \
                ["hihat_closed",    "Hihat",   22, 68], \
-               ["hihat_closedtop", "Hihat",   42, 68], \
+               ["hihat_closedtop", "Hihat",   42, 60], \
                ["hihat_open",      "Hihat",   26, 53], \
                ["hihat_opentop",   "Hihat",   46, 53], \
                ["tom1",            "Tom1",    48, 60], \
-               ["tom2",            "Tom2",    45, 60], \
+               ["tom2",            "Tom2",    45, 50], \
                ["tom3",            "Tom3",    43, 57], \
                ["crash",           "OHLeft",  55, 60], \
                ["ride",            "OHRight", 51, 68], \
@@ -181,8 +182,12 @@ for instrument in instruments:
     #plt.plot(10 * np.log10(np.abs(x)))
     #plt.plot([0, len(x)], 10 * np.log10([threshold, threshold]))
     #plt.plot(10 * np.log10(np.max(x)) * above_thresh)
-    #plt.title(instrument_name)
+    #plt.plot(strike_start, [10 * np.log10(np.max(x))] * len(strike_start), 'o', color='tab:brown')
+    #plt.title(instrument_name + pos_str)
     #plt.show()
+    #plt.close("all")
+    #plt.close()
+    #gc.collect()
 
 
   ##############################################################################
