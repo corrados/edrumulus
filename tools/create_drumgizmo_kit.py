@@ -29,7 +29,7 @@ from scipy.io import wavfile
 ################################################################################
 # CONFIGURATION AND INITIALIZATIONS ############################################
 ################################################################################
-# instruments: [instrument_name, master_channel, MIDI_note, threshold]
+# instruments: [instrument_name, master_channel, MIDI_note, threshold, alternative_MIDI_note]
 instruments = [["kick",            "KDrum",   36, 45], \
                ["snare",           "Snare",   38, 62], \
                ["snare_rimshot",   "Snare",   40, 57], \
@@ -37,15 +37,17 @@ instruments = [["kick",            "KDrum",   36, 45], \
                ["hihat_closedtop", "Hihat",   42, 60], \
                ["hihat_open",      "Hihat",   26, 53], \
                ["hihat_opentop",   "Hihat",   46, 53], \
-               ["tom1",            "Tom1",    48, 60], \
-               ["tom2",            "Tom2",    45, 50], \
-               ["tom3",            "Tom3",    43, 57], \
+               ["tom1",            "Tom1",    48, 60, 50], \
+               ["tom2",            "Tom2",    45, 50, 47], \
+               ["tom3",            "Tom3",    43, 57, 58], \
                ["crash",           "OHLeft",  55, 60], \
+               ["crash_top",       "OHLeft",  49, 60], \
                ["ride",            "OHRight", 51, 68], \
-               ["ride_bell",       "OHRight", 53, 60]]
+               ["ride_bell",       "OHRight", 53, 60], \
+               ["ride_side",       "OHRight", 59, 68]]
 
 # TEST for optimizing the analization algorithms, only use one instrument
-#instruments = [instruments[0]]
+#instruments = [instruments[11]]
 disable_positional_sensing_support = False#True
 
 kit_name                = "PearlMMX" # avoid spaces
@@ -179,15 +181,16 @@ for instrument in instruments:
       #plt.plot(sample_strikes[p][i][:, master_channel])
       #plt.show()
 
-    #plt.plot(10 * np.log10(np.abs(x)))
-    #plt.plot([0, len(x)], 10 * np.log10([threshold, threshold]))
-    #plt.plot(10 * np.log10(np.max(x)) * above_thresh)
-    #plt.plot(strike_start, [10 * np.log10(np.max(x))] * len(strike_start), 'o', color='tab:brown')
-    #plt.title(instrument_name + pos_str)
-    #plt.show()
-    #plt.close("all")
-    #plt.close()
-    #gc.collect()
+    if len(instruments) == 1: # if only one instrument is selected, we assume we want to debug plot
+      plt.plot(10 * np.log10(np.abs(x)))
+      plt.plot([0, len(x)], 10 * np.log10([threshold, threshold]))
+      plt.plot(10 * np.log10(np.max(x)) * above_thresh)
+      plt.plot(strike_start, [10 * np.log10(np.max(x))] * len(strike_start), 'o', color='tab:brown')
+      plt.title(instrument_name + pos_str)
+      plt.show()
+      plt.close("all")
+      plt.close()
+      gc.collect()
 
 
   ##############################################################################
@@ -259,6 +262,10 @@ for instrument in instruments:
   map_xml = ET.SubElement(midimap_xml, "map")
   map_xml.set("note", str(instrument[2]))
   map_xml.set("instr", instrument[0])
+  if len(instrument) > 4: # check for alternative MIDI note (e.g., for rim also)
+    map_xml = ET.SubElement(midimap_xml, "map")
+    map_xml.set("note", str(instrument[4]))
+    map_xml.set("instr", instrument[0])
 tree_xml = ET.ElementTree(midimap_xml)
 ET.indent(midimap_xml, space="\t", level=0)
 tree_xml.write(kit_name + "/Midimap.xml", encoding="utf-8", xml_declaration="True")
