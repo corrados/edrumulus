@@ -2,41 +2,35 @@
 # Pearl MMX kit live mixing setup
 ./ecasound/ecasound/ecasound --server -q \
 \
--a:KDrum,Snare,Hihat,Tom1,\
-Tom2,Tom3,OHLeft,OHRight \
-\
--i jack_multi,DrumGizmo:0-KDrum,DrumGizmo:1-Snare,DrumGizmo:2-Hihat,DrumGizmo:3-Tom1,\
-DrumGizmo:4-Tom2,DrumGizmo:5-Tom3,DrumGizmo:6-OHLeft,DrumGizmo:7-OHRight \
-\
--a:KDrum -chcopy:1,2 -ea:100 -epp:50 \
+-a:KDrum -i jack_multi,DrumGizmo:0-KDrum -chcopy:1,2 -ea:100 -epp:50 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
      -elv2:urn:ardour:a-eq,160,0,75,16.3,0.875,2436,0,1.2,256,-20,0.766,909,-15.3,0.62,8088,-6.2,-0.62,1,1,1,1,1,1,1 \
      -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:Snare -chcopy:1,2 -ea:100 -epp:50 \
+-a:Snare -i jack_multi,DrumGizmo:1-Snare -chcopy:1,2 -ea:100 -epp:50 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,24,-20,86,5.6,1,194,-4.9,0.38,2500,0,1,734,5.4,0.61,2245,16.1,-8.45,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-eq,24,-20,86,4.1,1,194,-2.7,0.38,2500,0,1,734,4.3,0.61,2245,6.5,4.237,1,1,1,1,1,1,1 \
      -elv2:urn:ardour:a-reverb,0.3,0.5,1 \
--a:Hihat -chcopy:1,2 -ea:100 -epp:35 \
+-a:Hihat -i jack_multi,DrumGizmo:2-Hihat -chcopy:1,2 -ea:100 -epp:35 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
      -elv2:urn:ardour:a-eq,315,-20,300,0,1,1000,0,1,2500,0,1,6000,0,1,4112,10.7,-10.1,1,1,1,1,1,1,1 \
      -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:Tom1 -chcopy:1,2 -ea:100 -epp:40 \
+-a:Tom1 -i jack_multi,DrumGizmo:3-Tom1 -chcopy:1,2 -ea:100 -epp:40 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
      -elv2:urn:ardour:a-eq,160,0,300,0,1,118,12,1,829,-20,2.26,5204,20,1,9000,0,-4,1,1,1,1,1,1,1 \
      -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:Tom2 -chcopy:1,2 -ea:100 -epp:60 \
+-a:Tom2 -i jack_multi,DrumGizmo:4-Tom2 -chcopy:1,2 -ea:100 -epp:60 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
      -elv2:urn:ardour:a-eq,160,0,300,0,1,106,12,1,829,-20,2.26,2741,20,1,9000,0,-4,1,1,1,1,1,1,1 \
      -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:Tom3 -chcopy:1,2 -ea:100 -epp:70 \
+-a:Tom3 -i jack_multi,DrumGizmo:5-Tom3 -chcopy:1,2 -ea:100 -epp:70 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
      -elv2:urn:ardour:a-eq,160,0,300,0,1,99,12,1,829,-9.5,2.26,2741,19.6,1.87,9000,0,-4,1,1,1,1,1,1,1 \
      -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:OHLeft -chcopy:1,2 -ea:100 -epp:0 \
+-a:OHLeft -i jack_multi,DrumGizmo:6-OHLeft -chcopy:1,2 -ea:100 -epp:0 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
      -elv2:urn:ardour:a-eq,160,0,86,8.2,1,146,-8.9,0.36,2500,0,1,6000,0,1,5091,12.2,-6.28,1,1,1,1,1,1,1 \
      -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:OHRight -chcopy:1,2 -ea:100 -epp:100 \
+-a:OHRight -i jack_multi,DrumGizmo:7-OHRight -chcopy:1,2 -ea:100 -epp:100 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
      -elv2:urn:ardour:a-eq,160,0,86,8.2,1,146,-8.9,0.36,2500,0,1,6000,0,1,5091,12.2,-6.28,1,1,1,1,1,1,1 \
      -elv2:urn:ardour:a-reverb,0.2,1,0 \
@@ -49,6 +43,8 @@ DrumGizmo:4-Tom2,DrumGizmo:5-Tom3,DrumGizmo:6-OHLeft,DrumGizmo:7-OHRight \
 # echo -e "cop-status\r\n" | nc -w1 localhost 2868
 # echo -e "cop-set 1,17,0\r\n" | nc -w1 localhost 2868
 # echo -e "cop-get 1,17\r\n" | nc -w1 localhost 2868
+# echo -e "c-select Snare\r\ncop-set 2,1,100\r\n" | nc -w1 localhost 2868
+# echo -e "cs-status\r\n" | nc -w1 localhost 2868
 
 
 # a-eq parameters: ------------------------
