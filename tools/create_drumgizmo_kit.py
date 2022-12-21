@@ -29,33 +29,34 @@ from scipy.io import wavfile
 ################################################################################
 # CONFIGURATION AND INITIALIZATIONS ############################################
 ################################################################################
+kit_name        = "PearlMMX" # avoid spaces
+kit_description = "Pearl MMX drum set with positional sensing support"
+channel_names   = ["KDrum", "Snare", "Hihat", "Tom1", "Tom2", "Tom3", "OHLeft", "OHRight"]
+
 # instruments: [instrument_name, master_channel, MIDI_note(s), threshold]
-instruments = [["kick",            "KDrum",   [36],     45], \
-               ["snare",           "Snare",   [38],     62], \
-               ["snare_rimshot",   "Snare",   [40],     57], \
-               ["hihat_closed",    "Hihat",   [22],     68], \
-               ["hihat_closedtop", "Hihat",   [42],     60], \
-               ["hihat_open",      "Hihat",   [26],     53], \
-               ["hihat_opentop",   "Hihat",   [46],     53], \
-               ["tom1",            "Tom1",    [48, 50], 60], \
-               ["tom2",            "Tom2",    [45, 47], 50], \
-               ["tom3",            "Tom3",    [43, 58], 57], \
-               ["crash",           "OHLeft",  [55],     60], \
-               ["crash_top",       "OHLeft",  [49],     60], \
-               ["ride",            "OHRight", [51],     68], \
-               ["ride_bell",       "OHRight", [53],     60], \
-               ["ride_side",       "OHRight", [59],     68]]
+instruments = [["kick",            ["KDrum"],                      [36],     45], \
+               ["snare",           ["Snare", "OHLeft", "OHRight"], [38],     62], \
+               ["snare_rimshot",   ["Snare", "OHLeft", "OHRight"], [40],     57], \
+               ["hihat_closed",    ["Hihat", "OHLeft", "OHRight"], [22],     68], \
+               ["hihat_closedtop", ["Hihat", "OHLeft", "OHRight"], [42],     60], \
+               ["hihat_open",      ["Hihat", "OHLeft", "OHRight"], [26],     53], \
+               ["hihat_opentop",   ["Hihat", "OHLeft", "OHRight"], [46],     53], \
+               ["tom1",            ["Tom1", "OHLeft", "OHRight"],  [48, 50], 60], \
+               ["tom2",            ["Tom2", "OHLeft", "OHRight"],  [45, 47], 50], \
+               ["tom3",            ["Tom3", "OHLeft", "OHRight"],  [43, 58], 57], \
+               ["crash",           ["OHLeft", "OHRight"],          [55],     60], \
+               ["crash_top",       ["OHLeft", "OHRight"],          [49],     60], \
+               ["ride",            ["OHRight", "OHLeft"],          [51],     68], \
+               ["ride_bell",       ["OHRight", "OHLeft"],          [53],     60], \
+               ["ride_side",       ["OHRight", "OHLeft"],          [59],     68]]
+
+source_samples_dir_name = "source_samples" # root directory of recorded source samples
+min_strike_len          = 0.25 # seconds
+fade_out_percent        = 10 # % of sample at the end is faded out
 
 # TEST for optimizing the analization algorithms, only use one instrument
 #instruments = [instruments[10]]
 disable_positional_sensing_support = False#True#
-
-kit_name                = "PearlMMX" # avoid spaces
-kit_description         = "Pearl MMX drum set with positional sensing support"
-source_samples_dir_name = "source_samples" # root directory of recorded source samples
-channel_names           = ["KDrum", "Snare", "Hihat", "Tom1", "Tom2", "Tom3", "OHLeft", "OHRight"]
-min_strike_len          = 0.25 # seconds
-fade_out_percent        = 10 # % of sample at the end is faded out
 
 
 for instrument in instruments:
@@ -109,7 +110,7 @@ for instrument in instruments:
     # WAVE FORM ANALYSIS #########################################################
     ##############################################################################
     thresh_from_max = instrument[3] # dB from maximum peak
-    master_channel  = channel_names.index(instrument[1])
+    master_channel  = channel_names.index(instrument[1][0]) # first main channel is master
 
     # find samples which are above the threshold
     x            = np.square(sample[master_channel].astype(float))
@@ -248,7 +249,7 @@ for instrument in instruments:
     channelmap_xml = ET.SubElement(instrument_xml, "channelmap")
     channelmap_xml.set("in", channel_name)
     channelmap_xml.set("out", channel_name)
-    if instrument[1] == channel_name:
+    if channel_name in instrument[1]:
       channelmap_xml.set("main", "true")
 tree_xml = ET.ElementTree(drumkit_xml)
 ET.indent(drumkit_xml, space="\t", level=0)
