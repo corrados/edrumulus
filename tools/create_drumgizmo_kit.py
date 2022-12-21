@@ -55,7 +55,7 @@ min_strike_len          = 0.25 # seconds
 fade_out_percent        = 10 # % of sample at the end is faded out
 
 # TEST for optimizing the algorithms, only use one instrument
-#instruments = [instruments[10]]
+#instruments = [instruments[7]]
 
 
 for instrument in instruments:
@@ -72,7 +72,7 @@ for instrument in instruments:
 
   # check if instrument has positional sensing support and extract position indexes
   positions  = []
-  for i, file_name in enumerate(os.listdir(source_samples_dir_name + "/" + base_instrument_name)):
+  for file_name in os.listdir(source_samples_dir_name + "/" + base_instrument_name):
     if instrument_name in file_name:
       file_name_parts = file_name.split(".")[0].split("_")
       # position information always second last item and one character long
