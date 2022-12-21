@@ -29,6 +29,9 @@ from scipy.io import wavfile
 ################################################################################
 # CONFIGURATION AND INITIALIZATIONS ############################################
 ################################################################################
+# example file names of source files: source_samples/snare/snare_rimshot_0_channel1.wav  <- position 0, channel 1
+#                                     source_samples/snare/snare_rimshot_1_channel1.wav  <- position 1, channel 1
+#                                     source_samples/ride/ride_bell_channel7.wav <- no positional sensing, channel 7
 kit_name        = "PearlMMX" # avoid spaces
 kit_description = "Pearl MMX drum set with positional sensing support"
 channel_names   = ["KDrum", "Snare", "Hihat", "Tom1", "Tom2", "Tom3", "OHLeft", "OHRight"]
@@ -182,9 +185,9 @@ for instrument in instruments:
       plt.plot(strike_start, [10 * np.log10(np.max(x))] * len(strike_start), 'o', color='tab:brown')
       plt.title(instrument_name + pos_str)
       plt.show()
-      plt.close("all")
-      plt.close()
-      gc.collect()
+      plt.close("all") # to prevent a memory leak
+      plt.close()      # to prevent a memory leak
+      gc.collect()     # to prevent a memory leak
 
 
   ##############################################################################
