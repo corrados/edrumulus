@@ -33,22 +33,22 @@ kit_name        = "PearlMMX" # avoid spaces
 kit_description = "Pearl MMX drum set with positional sensing support"
 channel_names   = ["KDrum", "Snare", "Hihat", "Tom1", "Tom2", "Tom3", "OHLeft", "OHRight"]
 
-# instruments: [instrument_name, master_channel(s), MIDI_note(s), threshold]
-instruments = [["kick",            ["KDrum"],                      [36],     45], \
-               ["snare",           ["Snare", "OHLeft", "OHRight"], [38],     62], \
-               ["snare_rimshot",   ["Snare", "OHLeft", "OHRight"], [40],     57], \
-               ["hihat_closed",    ["Hihat", "OHLeft", "OHRight"], [22],     68], \
-               ["hihat_closedtop", ["Hihat", "OHLeft", "OHRight"], [42],     60], \
-               ["hihat_open",      ["Hihat", "OHLeft", "OHRight"], [26],     53], \
-               ["hihat_opentop",   ["Hihat", "OHLeft", "OHRight"], [46],     53], \
-               ["tom1",            ["Tom1", "OHLeft", "OHRight"],  [48, 50], 60], \
-               ["tom2",            ["Tom2", "OHLeft", "OHRight"],  [45, 47], 50], \
-               ["tom3",            ["Tom3", "OHLeft", "OHRight"],  [43, 58], 57], \
-               ["crash",           ["OHLeft", "OHRight"],          [55],     60], \
-               ["crash_top",       ["OHLeft", "OHRight"],          [49],     60], \
-               ["ride",            ["OHRight", "OHLeft"],          [51],     68], \
-               ["ride_bell",       ["OHRight", "OHLeft"],          [53],     60], \
-               ["ride_side",       ["OHRight", "OHLeft"],          [59],     68]]
+# instruments: [instrument_name, master_channel(s), MIDI_note(s), group, threshold]
+instruments = [["kick",            ["KDrum"],                      [36],     "",      45], \
+               ["snare",           ["Snare", "OHLeft", "OHRight"], [38],     "",      62], \
+               ["snare_rimshot",   ["Snare", "OHLeft", "OHRight"], [40],     "",      57], \
+               ["hihat_closed",    ["Hihat", "OHLeft", "OHRight"], [22],     "hihat", 68], \
+               ["hihat_closedtop", ["Hihat", "OHLeft", "OHRight"], [42],     "hihat", 60], \
+               ["hihat_open",      ["Hihat", "OHLeft", "OHRight"], [26],     "hihat", 53], \
+               ["hihat_opentop",   ["Hihat", "OHLeft", "OHRight"], [46],     "hihat", 53], \
+               ["tom1",            ["Tom1", "OHLeft", "OHRight"],  [48, 50], "",      60], \
+               ["tom2",            ["Tom2", "OHLeft", "OHRight"],  [45, 47], "",      50], \
+               ["tom3",            ["Tom3", "OHLeft", "OHRight"],  [43, 58], "",      57], \
+               ["crash",           ["OHLeft", "OHRight"],          [55],     "",      60], \
+               ["crash_top",       ["OHLeft", "OHRight"],          [49],     "",      60], \
+               ["ride",            ["OHRight", "OHLeft"],          [51],     "",      68], \
+               ["ride_bell",       ["OHRight", "OHLeft"],          [53],     "",      60], \
+               ["ride_side",       ["OHRight", "OHLeft"],          [59],     "",      68]]
 
 source_samples_dir_name = "source_samples" # root directory of recorded source samples
 min_strike_len          = 0.25 # seconds
@@ -102,7 +102,7 @@ for instrument in instruments:
     ##############################################################################
     # WAVE FORM ANALYSIS #########################################################
     ##############################################################################
-    thresh_from_max = instrument[3] # dB from maximum peak
+    thresh_from_max = instrument[4] # dB from maximum peak
     master_channel  = channel_names.index(instrument[1][0]) # first main channel is master
 
     # find samples which are above the threshold
@@ -237,6 +237,8 @@ instruments_xml = ET.SubElement(drumkit_xml, "instruments")
 for instrument in instruments:
   instrument_xml = ET.SubElement(instruments_xml, "instrument")
   instrument_xml.set("name", instrument[0])
+  if instrument[3]:
+    instrument_xml.set("group", instrument[3])
   instrument_xml.set("file", instrument[0] + "/" + instrument[0] + ".xml")
   for channel_name in channel_names:
     channelmap_xml = ET.SubElement(instrument_xml, "channelmap")
