@@ -29,26 +29,26 @@ from scipy.io import wavfile
 ################################################################################
 # CONFIGURATION AND INITIALIZATIONS ############################################
 ################################################################################
-# instruments: [instrument_name, master_channel, MIDI_note, threshold, alternative_MIDI_note]
-instruments = [["kick",            "KDrum",   36, 45], \
-               ["snare",           "Snare",   38, 62], \
-               ["snare_rimshot",   "Snare",   40, 57], \
-               ["hihat_closed",    "Hihat",   22, 68], \
-               ["hihat_closedtop", "Hihat",   42, 60], \
-               ["hihat_open",      "Hihat",   26, 53], \
-               ["hihat_opentop",   "Hihat",   46, 53], \
-               ["tom1",            "Tom1",    48, 60, 50], \
-               ["tom2",            "Tom2",    45, 50, 47], \
-               ["tom3",            "Tom3",    43, 57, 58], \
-               ["crash",           "OHLeft",  55, 60], \
-               ["crash_top",       "OHLeft",  49, 60], \
-               ["ride",            "OHRight", 51, 68], \
-               ["ride_bell",       "OHRight", 53, 60], \
-               ["ride_side",       "OHRight", 59, 68]]
+# instruments: [instrument_name, master_channel, MIDI_note(s), threshold]
+instruments = [["kick",            "KDrum",   [36],     45], \
+               ["snare",           "Snare",   [38],     62], \
+               ["snare_rimshot",   "Snare",   [40],     57], \
+               ["hihat_closed",    "Hihat",   [22],     68], \
+               ["hihat_closedtop", "Hihat",   [42],     60], \
+               ["hihat_open",      "Hihat",   [26],     53], \
+               ["hihat_opentop",   "Hihat",   [46],     53], \
+               ["tom1",            "Tom1",    [48, 50], 60], \
+               ["tom2",            "Tom2",    [45, 47], 50], \
+               ["tom3",            "Tom3",    [43, 58], 57], \
+               ["crash",           "OHLeft",  [55],     60], \
+               ["crash_top",       "OHLeft",  [49],     60], \
+               ["ride",            "OHRight", [51],     68], \
+               ["ride_bell",       "OHRight", [53],     60], \
+               ["ride_side",       "OHRight", [59],     68]]
 
 # TEST for optimizing the analization algorithms, only use one instrument
-#instruments = [instruments[11]]
-disable_positional_sensing_support = False#True
+#instruments = [instruments[7]]
+disable_positional_sensing_support = False#True#
 
 kit_name                = "PearlMMX" # avoid spaces
 kit_description         = "Pearl MMX drum set with positional sensing support"
@@ -259,12 +259,9 @@ tree_xml.write(kit_name + "/" + kit_name + ".xml", encoding="utf-8", xml_declara
 ################################################################################
 midimap_xml = ET.Element("midimap")
 for instrument in instruments:
-  map_xml = ET.SubElement(midimap_xml, "map")
-  map_xml.set("note", str(instrument[2]))
-  map_xml.set("instr", instrument[0])
-  if len(instrument) > 4: # check for alternative MIDI note (e.g., for rim also)
+  for midi_note in instrument[2]:
     map_xml = ET.SubElement(midimap_xml, "map")
-    map_xml.set("note", str(instrument[4]))
+    map_xml.set("note", str(midi_note))
     map_xml.set("instr", instrument[0])
 tree_xml = ET.ElementTree(midimap_xml)
 ET.indent(midimap_xml, space="\t", level=0)
