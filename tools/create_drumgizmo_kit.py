@@ -33,7 +33,7 @@ kit_name        = "PearlMMX" # avoid spaces
 kit_description = "Pearl MMX drum set with positional sensing support"
 channel_names   = ["KDrum", "Snare", "Hihat", "Tom1", "Tom2", "Tom3", "OHLeft", "OHRight"]
 
-# instruments: [instrument_name, master_channel, MIDI_note(s), threshold]
+# instruments: [instrument_name, master_channel(s), MIDI_note(s), threshold]
 instruments = [["kick",            ["KDrum"],                      [36],     45], \
                ["snare",           ["Snare", "OHLeft", "OHRight"], [38],     62], \
                ["snare_rimshot",   ["Snare", "OHLeft", "OHRight"], [40],     57], \
@@ -54,9 +54,8 @@ source_samples_dir_name = "source_samples" # root directory of recorded source s
 min_strike_len          = 0.25 # seconds
 fade_out_percent        = 10 # % of sample at the end is faded out
 
-# TEST for optimizing the analization algorithms, only use one instrument
+# TEST for optimizing the algorithms, only use one instrument
 #instruments = [instruments[10]]
-disable_positional_sensing_support = False#True#
 
 
 for instrument in instruments:
@@ -72,21 +71,15 @@ for instrument in instruments:
   print(instrument_name)
 
   # check if instrument has positional sensing support and extract position indexes
-  file_names = os.listdir(source_samples_dir_name + "/" + base_instrument_name)
   positions  = []
-  for i, file_name in enumerate(file_names):
+  for i, file_name in enumerate(os.listdir(source_samples_dir_name + "/" + base_instrument_name)):
     if instrument_name in file_name:
       file_name_parts = file_name.split(".")[0].split("_")
       # position information always second last item and one character long
       if len(file_name_parts) > 2 and len(file_name_parts[-2]) == 1:
         positions.append(int(file_name_parts[-2]))
-
   positions = sorted(list(dict.fromkeys(positions))) # remove duplicates and sort
   positions = [-1] if not positions else positions # if no positions, use -1 (i.e. no positional support)
-
-  # TEST for development purpose, remove later
-  if disable_positional_sensing_support and len(positions) > 1:
-    positions = [0]
 
   sample_powers  = [[]] * len(positions)
   sample_strikes = [[]] * len(positions)
