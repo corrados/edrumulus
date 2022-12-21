@@ -47,7 +47,7 @@ instruments = [["kick",            "KDrum",   [36],     45], \
                ["ride_side",       "OHRight", [59],     68]]
 
 # TEST for optimizing the analization algorithms, only use one instrument
-#instruments = [instruments[7]]
+#instruments = [instruments[10]]
 disable_positional_sensing_support = False#True#
 
 kit_name                = "PearlMMX" # avoid spaces
@@ -248,6 +248,8 @@ for instrument in instruments:
     channelmap_xml = ET.SubElement(instrument_xml, "channelmap")
     channelmap_xml.set("in", channel_name)
     channelmap_xml.set("out", channel_name)
+    if instrument[1] == channel_name:
+      channelmap_xml.set("main", "true")
 tree_xml = ET.ElementTree(drumkit_xml)
 ET.indent(drumkit_xml, space="\t", level=0)
 os.makedirs(kit_name, exist_ok=True)
