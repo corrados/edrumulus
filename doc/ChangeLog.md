@@ -278,7 +278,18 @@
 ## 2021-03-24 Measurements of hi-hat controllers
   Measurements of hi-hat controllers:
   **VH-12 controller:** open **14 kOhm**, closed **10 kOhm**, pressed **8 kOhm**,
-  **FD-8 controller:**  open **50 kOhm**, closed **0 Ohm**.
+  **FD-8 controller:**  open **50 kOhm**, closed **0 Ohm**.<br/>
+  **VH-12 MIDI on Roland TD-27**:
+  - hit on the top:
+    - MIDI note 42 only at foot pedal MIDI note 127.
+    - MIDI note 46 if foot pedal MIDI note is < 127.
+  - hit on the edge:
+    - MIDI note 22 only at foot pedal MIDI note 127.
+    - MIDI note 26 if foot pedal MIDI note is < 127.
+  **FD-8 on Roland TD-6**:
+  - hit on the top:
+    - MIDI note 42 if foot pedal MIDI note is >= 85.
+    - MIDI note 46 if foot pedal MIDI note is < 85.
 
 ## 2021-03-23 Issue with Arduino board manager for ESP32
   I just updated the Ardunio board manager "ESP32 by Espressif Systems" to Version
