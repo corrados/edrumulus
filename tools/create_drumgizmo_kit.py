@@ -36,29 +36,32 @@ kit_name        = "PearlMMX" # avoid spaces
 kit_description = "Pearl MMX drum set with positional sensing support"
 channel_names   = ["KDrum", "Snare", "Hihat", "Tom1", "Tom2", "Tom3", "OHLeft", "OHRight"]
 
-# instruments: [instrument_name, master_channel(s), MIDI_note(s), group, threshold]
-instruments = [["kick",            ["KDrum"],                      [36],     "",      45], \
-               ["snare",           ["Snare", "OHLeft", "OHRight"], [38],     "",      62], \
-               ["snare_rimshot",   ["Snare", "OHLeft", "OHRight"], [40],     "",      57], \
-               ["hihat_closed",    ["Hihat", "OHLeft", "OHRight"], [22],     "hihat", 68], \
-               ["hihat_closedtop", ["Hihat", "OHLeft", "OHRight"], [42],     "hihat", 60], \
-               ["hihat_open",      ["Hihat", "OHLeft", "OHRight"], [26],     "hihat", 53], \
-               ["hihat_opentop",   ["Hihat", "OHLeft", "OHRight"], [46],     "hihat", 53], \
-               ["tom1",            ["Tom1", "OHLeft", "OHRight"],  [48, 50], "",      60], \
-               ["tom2",            ["Tom2", "OHLeft", "OHRight"],  [45, 47], "",      50], \
-               ["tom3",            ["Tom3", "OHLeft", "OHRight"],  [43, 58], "",      57], \
-               ["crash",           ["OHLeft", "OHRight"],          [55],     "",      60], \
-               ["crash_top",       ["OHLeft", "OHRight"],          [49],     "",      60], \
-               ["ride",            ["OHRight", "OHLeft"],          [51],     "",      68], \
-               ["ride_bell",       ["OHRight", "OHLeft"],          [53],     "",      60], \
-               ["ride_side",       ["OHRight", "OHLeft"],          [59],     "",      68]]
+# instruments: [instrument_name, master_channel(s), MIDI_note(s), group, min_strike_len, threshold]
+instruments = [["kick",            ["KDrum"],                      [36],     "",      0.1, 45], \
+               ["snare",           ["Snare", "OHLeft", "OHRight"], [38],     "",      0.2, 62], \
+               ["snare_new",       ["Snare", "OHLeft", "OHRight"], [38],     "",      0.2, 72], \
+               ["snare_rimshot",   ["Snare", "OHLeft", "OHRight"], [40],     "",      0.2, 57], \
+               ["hihat_closed",    ["Hihat", "OHLeft", "OHRight"], [22],     "hihat", 0.1, 68], \
+               ["hihat_closedtop", ["Hihat", "OHLeft", "OHRight"], [42],     "hihat", 0.2, 60], \
+               ["hihat_open",      ["Hihat", "OHLeft", "OHRight"], [26],     "hihat", 0.2, 53], \
+               ["hihat_opentop",   ["Hihat", "OHLeft", "OHRight"], [46],     "hihat", 0.2, 53], \
+               ["tom1",            ["Tom1", "OHLeft", "OHRight"],  [48, 50], "",      0.2, 60], \
+               ["tom2",            ["Tom2", "OHLeft", "OHRight"],  [45, 47], "",      0.2, 50], \
+               ["tom3",            ["Tom3", "OHLeft", "OHRight"],  [43, 58], "",      0.2, 56], \
+               ["crash",           ["OHLeft", "OHRight"],          [55],     "",      0.4, 65], \
+               ["crash_top",       ["OHLeft", "OHRight"],          [49],     "",      0.4, 60], \
+               ["ride",            ["OHRight", "OHLeft"],          [51],     "",      0.4, 68], \
+               ["ride_bell",       ["OHRight", "OHLeft"],          [53],     "",      0.4, 60], \
+               ["ride_side",       ["OHRight", "OHLeft"],          [59],     "",      0.4, 68]]
 
 source_samples_dir_name = "source_samples" # root directory of recorded source samples
-min_strike_len          = 0.25 # seconds
-fade_out_percent        = 10 # % of sample at the end is faded out
+fade_out_percent          = 10 # % of sample at the end is faded out
+thresh_from_max_for_start = 20 # dB
+add_samples_at_start      = 20 # additional samples considered at strike start
 
 # TEST for optimizing the algorithms, only use one instrument
-#instruments = [instruments[7]]
+#instruments = [instruments[15]]
+disable_positional_sensing_support = False#True#
 
 
 for instrument in instruments:
@@ -84,6 +87,10 @@ for instrument in instruments:
   positions = sorted(list(dict.fromkeys(positions))) # remove duplicates and sort
   positions = [-1] if not positions else positions # if no positions, use -1 (i.e. no positional support)
 
+  # TEST for development purpose, remove later
+  if disable_positional_sensing_support and len(positions) > 1:
+    positions = [0]
+
   sample_powers  = [[]] * len(positions)
   sample_strikes = [[]] * len(positions)
 
@@ -105,8 +112,9 @@ for instrument in instruments:
     ##############################################################################
     # WAVE FORM ANALYSIS #########################################################
     ##############################################################################
-    thresh_from_max = instrument[4] # dB from maximum peak
+    thresh_from_max = instrument[5] # dB from maximum peak
     master_channel  = channel_names.index(instrument[1][0]) # first main channel is master
+    min_strike_len  = int(instrument[4] * sample_rate) # calculate minimum strike length in samples
 
     # find samples which are above the threshold
     x            = np.square(sample[master_channel].astype(float))
@@ -119,7 +127,7 @@ for instrument in instruments:
       if not above_thresh[i] and above_thresh[i - 1]:
         first_below_idx = i
       if above_thresh[i] and not above_thresh[i - 1]:
-        if i - first_below_idx < min_strike_len * sample_rate:
+        if i - first_below_idx < min_strike_len:
           above_thresh[range(first_below_idx, i)] = True
 
     # remove very short on periods
@@ -128,7 +136,7 @@ for instrument in instruments:
       if above_thresh[i] and not above_thresh[i - 1]:
         first_above_idx = i
       if not above_thresh[i] and above_thresh[i - 1]:
-        if i - first_above_idx < min_strike_len * sample_rate:
+        if i - first_above_idx < min_strike_len:
           above_thresh[range(first_above_idx, i)] = False
 
     strike_start = np.argwhere(np.diff(above_thresh.astype(float)) > 0)
@@ -137,36 +145,38 @@ for instrument in instruments:
     # extract individual samples from long sample vector and analyze/process
     sample_powers[p]  = [[]] * len(strike_start)
     sample_strikes[p] = [[]] * len(strike_start)
-    for i, (start, end) in enumerate(zip(strike_start, strike_end)):
+    strike_cut_pos    = np.full(len(x), False)
+    for i in range(0, len(strike_start)):
 
-
-
-      # TODO clean up the algorithm/code:
-      # TODO define constants like the 20 dB and 30 samples offset above
-      # TODO check all the strike samples if they look ok...
-      # TEST fix start of strike: find first sample going left of the maximum peak which
-      #      is below a threshold which is defined 20 dB below the maximum
-      x_cur_strike_master = x[range(start[0], end[0])]
+      # fix start of strike: find first sample going left of the maximum peak which
+      # is below a threshold which is defined 20 dB below the maximum
+      x_cur_strike_master = x[range(strike_start[i][0], strike_end[i][0])]
       strike_mean         = np.mean(x_cur_strike_master)
       strike_max          = np.max(x_cur_strike_master)
-      below_max_thresh    = np.power(10, -20 / 10) # -20 dB from maximum peak
-      #print(strike_mean)
+      below_max_thresh    = np.power(10, -thresh_from_max_for_start / 10) # -[20] dB from maximum peak
       index = 0
-      while x[start[0] + index] < strike_max * below_max_thresh:
+      while x[strike_start[i] + index] < strike_max * below_max_thresh:
         index += 1
-      #print(index)
-      start += index - 30 # TEST some offset, in this case 30 samples...
+      strike_start[i] += index - add_samples_at_start # add some offset
 
-
-
+      # fix end position: compare regions of min strike length if next region power
+      # is below previous region
+      index = 0
+      while strike_end[i] + index + 2 * min_strike_len < len(x) and \
+            10 * np.log10(np.sum(x[strike_end[i][0] + index:strike_end[i][0] + index + min_strike_len])) - \
+            10 * np.log10(np.sum(x[strike_end[i][0] + index + min_strike_len:strike_end[i][0] + index + 2 * min_strike_len])) > \
+            0.0: # dB difference in power of the current two regions
+        index += min_strike_len
+      strike_end[i] += index
 
       # estimate power from master channel using the maximum value
       sample_powers[p][i] = str(strike_max / 32768 / 32768) # assuming 16 bit
 
       # extract sample data of current strike
-      sample_strikes[p][i] = np.zeros((end[0] - start[0] + 1, num_channels), np.int16)
+      sample_strikes[p][i] = np.zeros((strike_end[i][0] - strike_start[i][0] + 1, num_channels), np.int16)
       for c in range(0, num_channels):
-        sample_strikes[p][i][:, c] = sample[c][start[0]:end[0] + 1]
+        strike_cut_pos[strike_start[i][0]:strike_end[i][0] + 1].fill(True) # for debugging
+        sample_strikes[p][i][:, c] = sample[c][strike_start[i][0]:strike_end[i][0] + 1]
 
         # audio fade-out at the end
         sample_len = len(sample_strikes[p][i][:, c])
@@ -181,7 +191,7 @@ for instrument in instruments:
     if len(instruments) == 1: # if only one instrument is selected, we assume we want to debug plot
       plt.plot(10 * np.log10(np.abs(x)))
       plt.plot([0, len(x)], 10 * np.log10([threshold, threshold]))
-      plt.plot(10 * np.log10(np.max(x)) * above_thresh)
+      plt.plot(10 * np.log10(np.max(x)) * strike_cut_pos)
       plt.plot(strike_start, [10 * np.log10(np.max(x))] * len(strike_start), 'o', color='tab:brown')
       plt.title(instrument_name + pos_str)
       plt.show()
