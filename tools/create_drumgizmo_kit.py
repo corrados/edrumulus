@@ -37,7 +37,7 @@ kit_description = "Pearl MMX drum set with positional sensing support"
 channel_names   = ["KDrum", "Snare", "Hihat", "Tom1", "Tom2", "Tom3", "OHLeft", "OHRight"]
 
 # instruments: [instrument_name, master_channel(s), MIDI_note(s), group, min_strike_len, threshold]
-instruments = [["kick",            ["KDrum"],                      [36],     "",      0.1, 45], \
+instruments = [["kick",            ["KDrum", "OHLeft", "OHRight"], [36],     "",      0.1, 45], \
                ["snare",           ["Snare", "OHLeft", "OHRight"], [38],     "",      0.2, 62], \
                ["snare_new",       ["Snare", "OHLeft", "OHRight"], [38],     "",      0.2, 72], \
                ["snare_rimshot",   ["Snare", "OHLeft", "OHRight"], [40],     "",      0.2, 57], \
