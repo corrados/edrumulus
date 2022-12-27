@@ -54,7 +54,7 @@ instruments = [["kick",            ["KDrum", "OHLeft", "OHRight"], [36],     "",
                ["ride_bell",       ["OHRight", "OHLeft"],          [53],     "",      0.4, 60], \
                ["ride_side",       ["OHRight", "OHLeft"],          [59],     "",      0.4, 68]]
 
-source_samples_dir_name = "source_samples" # root directory of recorded source samples
+source_samples_dir_name   = "source_samples" # root directory of recorded source samples
 fade_out_percent          = 10 # % of sample at the end is faded out
 thresh_from_max_for_start = 20 # dB
 add_samples_at_start      = 20 # additional samples considered at strike start
