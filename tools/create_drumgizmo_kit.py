@@ -37,21 +37,21 @@ kit_description = "Pearl MMX drum set with positional sensing support"
 channel_names   = ["KDrum", "Snare", "Hihat", "Tom1", "Tom2", "Tom3", "OHLeft", "OHRight"]
 
 # instruments: [instrument_name, master_channel(s), MIDI_note(s), group, min_strike_len, threshold]
-instruments = [["kick",            ["KDrum", "OHLeft", "OHRight"], [36],     "",      0.1,  62], \
-               ["snare",           ["Snare", "OHLeft", "OHRight"], [38],     "",      0.13, 60], \
-               ["snare_rimshot",   ["Snare", "OHLeft", "OHRight"], [40],     "",      0.2,  57], \
-               ["hihat_closed",    ["Hihat", "OHLeft", "OHRight"], [22],     "hihat", 0.18, 59], \
-               ["hihat_closedtop", ["Hihat", "OHLeft", "OHRight"], [42],     "hihat", 0.2,  59], \
-               ["hihat_open",      ["Hihat", "OHLeft", "OHRight"], [26],     "hihat", 0.7,  60], \
-               ["hihat_opentop",   ["Hihat", "OHLeft", "OHRight"], [46],     "hihat", 0.4,  60], \
-               ["tom1",            ["Tom1", "OHLeft", "OHRight"],  [48, 50], "",      0.2,  60], \
-               ["tom2",            ["Tom2", "OHLeft", "OHRight"],  [45, 47], "",      0.2,  60], \
-               ["tom3",            ["Tom3", "OHLeft", "OHRight"],  [43, 58], "",      0.2,  60], \
-               ["crash",           ["OHLeft", "OHRight"],          [55],     "",      0.4,  65], \
-               ["crash_top",       ["OHLeft", "OHRight"],          [49],     "",      0.4,  60], \
-               ["ride",            ["OHRight", "OHLeft"],          [51],     "",      0.4,  60], \
-               ["ride_bell",       ["OHRight", "OHLeft"],          [53],     "",      0.4,  60], \
-               ["ride_side",       ["OHRight", "OHLeft"],          [59],     "",      0.4,  60]]
+instruments = [["kick",            ["KDrum", "OHLeft", "OHRight"], [36],     "",      0.1,  15], \
+               ["snare",           ["Snare", "OHLeft", "OHRight"], [38],     "",      0.2,  15], \
+               ["snare_rimshot",   ["Snare", "OHLeft", "OHRight"], [40],     "",      0.3,  15], \
+               ["hihat_closed",    ["Hihat", "OHLeft", "OHRight"], [22],     "hihat", 0.18, 20], \
+               ["hihat_closedtop", ["Hihat", "OHLeft", "OHRight"], [42],     "hihat", 0.2,  20], \
+               ["hihat_open",      ["Hihat", "OHLeft", "OHRight"], [26],     "hihat", 0.7,  23], \
+               ["hihat_opentop",   ["Hihat", "OHLeft", "OHRight"], [46],     "hihat", 0.4,  23], \
+               ["tom1",            ["Tom1", "OHLeft", "OHRight"],  [48, 50], "",      0.2,  15], \
+               ["tom2",            ["Tom2", "OHLeft", "OHRight"],  [45, 47], "",      0.2,  15], \
+               ["tom3",            ["Tom3", "OHLeft", "OHRight"],  [43, 58], "",      0.4,  15], \
+               ["crash",           ["OHLeft", "OHRight"],          [55],     "",      0.5,  15], \
+               ["crash_top",       ["OHLeft", "OHRight"],          [49],     "",      0.4,  15], \
+               ["ride",            ["OHRight", "OHLeft"],          [51],     "",      0.4,  15], \
+               ["ride_bell",       ["OHRight", "OHLeft"],          [53],     "",      0.4,  15], \
+               ["ride_side",       ["OHRight", "OHLeft"],          [59],     "",      0.6,  15]]
 
 source_samples_dir_name   = "source_samples" # root directory of recorded source samples
 fade_out_percent          = 10 # % of sample at the end is faded out
@@ -59,7 +59,7 @@ thresh_from_max_for_start = 20 # dB
 add_samples_at_start      = 20 # additional samples considered at strike start
 
 # TEST for optimizing the algorithms, only use one instrument
-#instruments = [instruments[6]]
+#instruments = [instruments[14]]
 disable_positional_sensing_support = False#True#
 
 
@@ -111,13 +111,12 @@ for instrument in instruments:
     ##############################################################################
     # WAVE FORM ANALYSIS #########################################################
     ##############################################################################
-    thresh_from_max = instrument[5] # dB from maximum peak
     master_channel  = channel_names.index(instrument[1][0]) # first main channel is master
     min_strike_len  = int(instrument[4] * sample_rate) # calculate minimum strike length in samples
 
     # find samples which are above the threshold
     x            = np.square(sample[master_channel].astype(float))
-    threshold    = np.power(10, (10 * np.log10(np.max(x)) - thresh_from_max) / 10)
+    threshold    = np.power(10, instrument[5] / 10)
     above_thresh = x > threshold
 
     # remove oscillating by filling short gaps
