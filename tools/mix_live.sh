@@ -2,37 +2,45 @@
 # Pearl MMX kit live mixing setup
 ./ecasound/ecasound/ecasound --server -q \
 \
--a:KDrum -i jack_multi,DrumGizmo:0-KDrum -chcopy:1,2 -ea:100 -epp:50 \
+-a:KDrum -i jack_multi,DrumGizmo:0-KDrum \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
      -elv2:urn:ardour:a-eq,160,0,75,4.3,0.875,2436,0,1.2,256,-2,0.766,909,-1.3,10.62,8088,-2.2,-0.62,1,1,1,1,1,1,1 \
+     -chcopy:1,2 -ea:100 -epp:50 \
      -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:Snare -i jack_multi,DrumGizmo:1-Snare -chcopy:1,2 -ea:100 -epp:80 \
+-a:Snare -i jack_multi,DrumGizmo:1-Snare \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,24,-20,86,5.6,1,194,-4.9,0.38,2500,0,1,734,5.4,0.61,2245,16.1,5.5,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-eq,24,-20,86,5.6,1,194,-4.9,0.38,2500,0,1,734,5.4,0.61,2245,16.1,0.5,1,1,1,1,1,1,1 \
+     -chcopy:1,2 -ea:100 -epp:50 \
      -elv2:urn:ardour:a-reverb,0.3,0.5,0 \
--a:Hihat -i jack_multi,DrumGizmo:2-Hihat -chcopy:1,2 -ea:100 -epp:30 \
+-a:Hihat -i jack_multi,DrumGizmo:2-Hihat \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
-     -elv2:urn:ardour:a-eq,315,-20,300,0,1,1000,0,1,2500,0,1,6000,0,1,4112,10.7,-13.1,1,1,1,1,1,1,1 \
+     -elv2:urn:ardour:a-eq,315,-20,300,0,1,1000,0,1,2500,0,1,6000,0,1,4112,10.7,-11.1,1,1,1,1,1,1,1 \
+     -chcopy:1,2 -ea:100 -epp:30 \
      -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:Tom1 -i jack_multi,DrumGizmo:3-Tom1 -chcopy:1,2 -ea:100 -epp:40 \
+-a:Tom1 -i jack_multi,DrumGizmo:3-Tom1 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
      -elv2:urn:ardour:a-eq,160,0,300,0,1,118,12,1,829,-20,2.26,5204,20,1,9000,0,-4,1,1,1,1,1,1,1 \
+     -chcopy:1,2 -ea:100 -epp:40 \
      -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:Tom2 -i jack_multi,DrumGizmo:4-Tom2 -chcopy:1,2 -ea:100 -epp:60 \
+-a:Tom2 -i jack_multi,DrumGizmo:4-Tom2 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
      -elv2:urn:ardour:a-eq,160,0,300,0,1,106,12,1,829,-20,2.26,2741,20,1,9000,0,-4,1,1,1,1,1,1,1 \
+     -chcopy:1,2 -ea:100 -epp:60 \
      -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:Tom3 -i jack_multi,DrumGizmo:5-Tom3 -chcopy:1,2 -ea:100 -epp:70 \
+-a:Tom3 -i jack_multi,DrumGizmo:5-Tom3 \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
      -elv2:urn:ardour:a-eq,160,0,300,0,1,99,12,1,829,-9.5,2.26,2741,19.6,1.87,9000,0,-4,1,1,1,1,1,1,1 \
+     -chcopy:1,2 -ea:100 -epp:70 \
      -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:OHLeft -i jack_multi,DrumGizmo:6-OHLeft -chcopy:1,2 -ea:40 -epp:0 \
+-a:OHLeft -i jack_multi,DrumGizmo:6-OHLeft \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
      -elv2:urn:ardour:a-eq,160,0,86,8.2,1,146,-8.9,0.36,2500,0,1,6000,0,1,5091,12.2,-6.28,1,1,1,1,1,1,1 \
+     -chcopy:1,2 -ea:40 -epp:0 \
      -elv2:urn:ardour:a-reverb,0.2,1,0 \
--a:OHRight -i jack_multi,DrumGizmo:7-OHRight -chcopy:1,2 -ea:40 -epp:100 \
+-a:OHRight -i jack_multi,DrumGizmo:7-OHRight \
      -elv2:urn:ardour:a-comp,10,80,0,4,-30,0 \
      -elv2:urn:ardour:a-eq,160,0,86,8.2,1,146,-8.9,0.36,2500,0,1,6000,0,1,5091,12.2,-6.28,1,1,1,1,1,1,1 \
+     -chcopy:1,2 -ea:40 -epp:100 \
      -elv2:urn:ardour:a-reverb,0.2,1,0 \
 -a:all -o jack,system
 
