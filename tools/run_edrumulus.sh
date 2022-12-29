@@ -197,7 +197,7 @@ else
 fi
 
 if [[ -v use_ecasound ]]; then
-  ./mix_live.sh &
+  ./ecasound/ecasound/ecasound --server -q -s settings/pearlmmx_rock.ecs &
 else
   jack_connect $KITJACKPORTLEFT system:playback_1
   jack_connect $KITJACKPORTRIGHT system:playback_2
