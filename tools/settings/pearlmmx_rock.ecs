@@ -47,6 +47,8 @@
 # echo -e "cop-get 1,17\r\n" | nc -w1 localhost 2868
 # echo -e "c-select Snare\r\ncop-set 2,1,100\r\n" | nc -w1 localhost 2868
 # echo -e "cs-status\r\n" | nc -w1 localhost 2868
+# echo -e "engine-halt\r\ncs-load settings/pearlmmx_rock.ecs\r\ncs-select settings/pearlmmx_rock.ecs\r\ncs-connect settings/pearlmmx_rock.ecs\r\nengine-launch\r\nstart" | nc -w1 localhost 2868
+# echo -e "engine-halt\r\ncs-load settings/pearlmmx_natural.ecs\r\ncs-select settings/pearlmmx_natural.ecs\r\ncs-connect settings/pearlmmx_natural.ecs\r\nengine-launch\r\nstart" | nc -w1 localhost 2868
 
 
 # a-eq parameters: ------------------------
