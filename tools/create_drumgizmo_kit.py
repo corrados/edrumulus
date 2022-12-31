@@ -59,7 +59,7 @@ thresh_from_max_for_start = 20 # dB
 add_samples_at_start      = 20 # additional samples considered at strike start
 
 # TEST for optimizing the algorithms, only use one instrument
-#instruments = [instruments[14]]
+#instruments = [instruments[3]]
 disable_positional_sensing_support = False#True#
 
 
@@ -168,7 +168,7 @@ for instrument in instruments:
       strike_end[i] += index
 
       # estimate power from master channel using the maximum value
-      sample_powers[p][i] = "{:.19f}".format(strike_max / 32768 / 32768) # assuming 16 bit
+      sample_powers[p][i] = strike_max / 32768 / 32768 # assuming 16 bit
 
       # extract sample data of current strike
       sample_strikes[p][i] = np.zeros((strike_end[i][0] - strike_start[i][0] + 1, num_channels), np.int16)
@@ -207,20 +207,22 @@ for instrument in instruments:
   samples_xml = ET.SubElement(instrument_xml, "samples")
 
   for p in positions:
+    power_sort_indexes = np.argsort(sample_powers[p])
     for i in range(0, len(sample_strikes[p])):
+      strike_index = power_sort_indexes[i] # sort waves by power
       # write multi-channel wave file
       sample_file_name = str(i + 1) + "-" + instrument_name
       if len(positions) > 1:
         sample_file_name += "-" + str(p)
       os.makedirs(instrument_sample_path, exist_ok=True)
-      wavfile.write(instrument_sample_path + sample_file_name + ".wav", sample_rate, sample_strikes[p][i])
+      wavfile.write(instrument_sample_path + sample_file_name + ".wav", sample_rate, sample_strikes[p][strike_index])
 
       # write XML content for current sample
       sample_xml = ET.SubElement(samples_xml, "sample")
       if len(positions) > 1:
         sample_xml.set("position", str(p))
       sample_xml.set("name", instrument_name + "-" + str(i + 1))
-      sample_xml.set("power", sample_powers[p][i])
+      sample_xml.set("power", "{:.19f}".format(sample_powers[p][strike_index]))
       for j, channel_name in enumerate(channel_names):
         audiofile_xml = ET.SubElement(sample_xml, "audiofile")
         audiofile_xml.set("channel", channel_name)
