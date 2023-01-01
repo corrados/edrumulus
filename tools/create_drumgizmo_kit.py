@@ -210,6 +210,7 @@ for instrument in instruments:
     power_sort_indexes = np.argsort(sample_powers[p])
     for i in range(0, len(sample_strikes[p])):
       strike_index = power_sort_indexes[i] # sort waves by power
+      print(10 * np.log10(sample_powers[p][strike_index]))
       # write multi-channel wave file
       sample_file_name = str(i + 1) + "-" + instrument_name
       if len(positions) > 1:
