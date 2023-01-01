@@ -33,11 +33,21 @@ for file_name in os.listdir(kit_path):
     instruments.append(file_name);
 
 
-print(instruments)
+# TEST use only one instrument for now...
+instrument = instruments[1] # Tom2
+
+
+# parse instrument XML file
+tree = ET.parse(kit_path + "/" + instrument + "/" + instrument + ".xml")
+root = tree.getroot()
+for samples in root:
+  for sample in samples:
+    print(sample.attrib)
 
 
 # TEST
 #filename = "/home/corrados/edrumulus/tools/CrocellKit/Snare/samples/75-Snare.wav"
+
 #samplerate, x = wavfile.read(filename)
 
 #for i in range(0, 32):
