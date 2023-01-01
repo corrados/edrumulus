@@ -45,7 +45,7 @@ settings_tab = [ # [settings name], [MIDI note], [settings range]
   ["cross",     114,  31] ]
 button_pin  = {25: 0, 11: 1, 8: 2, 7: 3, 12: 4, 13: 5}
 # button 0: back;  button 1: OK;  button 2: left;  button 3: down;  button 4: up;  button 5: right
-button_name = {25: 'back', 11: 'OK', 8: 'left', 7: 'down', 12: 'up', 13: 'right'}
+button_name = {25: 'back', 11: 'OK', 8: 'down', 7: 'up', 12: 'left', 13: 'right'}
 
 # general initializations
 database           = [0] * 128
