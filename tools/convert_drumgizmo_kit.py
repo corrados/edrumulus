@@ -32,17 +32,34 @@ for file_name in os.listdir(kit_path):
   if os.path.isfile(kit_path + "/" + file_name + "/" + file_name + ".xml"):
     instruments.append(file_name);
 
+# get all powers which are in the instrument XML files
+powers = dict.fromkeys(instruments, [])
+for instrument in instruments:
+  # parse instrument XML file
+  tree = ET.parse(kit_path + "/" + instrument + "/" + instrument + ".xml")
+  root = tree.getroot()
+  for samples in root:
+    cur_powers = []
+    for sample in samples:
+      cur_powers.append(float(sample.attrib["power"]))
 
-# TEST use only one instrument for now...
-instrument = instruments[1] # Tom2
+      # read wave form and calculate our own power
+      #samplerate, x = wavfile.read(filename = kit_path + "/" + instrument + "/" + sample[0].attrib["file"])
+      #calc_powers = []
+      #print(len(x))
+      #master_channel = 2 # TEST
+      #x2             = np.square(x[:, master_channel].astype(float))
+      #print(np.max(x2))
+      #print(10 * np.log10(np.max(x2)))
+
+    powers[instrument] = cur_powers
 
 
-# parse instrument XML file
-tree = ET.parse(kit_path + "/" + instrument + "/" + instrument + ".xml")
-root = tree.getroot()
-for samples in root:
-  for sample in samples:
-    print(sample.attrib)
+# TEST
+instrument = instruments[9] # Snare
+plt.plot(10 * np.log10(powers[instrument]), "-*")
+plt.title(instrument + " (dynamic: " + "{:.2f}".format(10 * np.log10(np.max(powers[instrument]) / np.min(powers[instrument]))) + " dB)")
+plt.show()
 
 
 # TEST
