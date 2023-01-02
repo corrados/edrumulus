@@ -32,46 +32,49 @@ for file_name in os.listdir(kit_path):
   if os.path.isfile(kit_path + "/" + file_name + "/" + file_name + ".xml"):
     instruments.append(file_name);
 
+
+# TEST select just one instrument for testing
+instruments = [instruments[9]] # Snare
+
+
 # get all powers which are in the instrument XML files
-powers = dict.fromkeys(instruments, [])
+xml_powers  = dict.fromkeys(instruments, [])
+calc_powers = dict.fromkeys(instruments, [])
 for instrument in instruments:
+  print(instrument)
   # parse instrument XML file
   tree = ET.parse(kit_path + "/" + instrument + "/" + instrument + ".xml")
   root = tree.getroot()
   for samples in root:
-    cur_powers = []
+    cur_xml_powers  = []
+    cur_calc_powers = []
     for sample in samples:
-      cur_powers.append(float(sample.attrib["power"]))
+      cur_xml_powers.append(float(sample.attrib["power"]))
 
       # read wave form and calculate our own power
-      #samplerate, x = wavfile.read(filename = kit_path + "/" + instrument + "/" + sample[0].attrib["file"])
-      #calc_powers = []
-      #print(len(x))
-      #master_channel = 2 # TEST
-      #x2             = np.square(x[:, master_channel].astype(float))
-      #print(np.max(x2))
-      #print(10 * np.log10(np.max(x2)))
+      samplerate, x = wavfile.read(filename = kit_path + "/" + instrument + "/" + sample[0].attrib["file"])
 
-    powers[instrument] = cur_powers
+      max_power      = 0
+      master_channel = 0
+      for ch in range(0, np.size(x, 1)):
+        x2        = np.square(x[:, ch].astype(float))
+        x2_max    = np.max(x2)
+        if max_power < x2_max:
+          max_power      = x2_max
+          master_channel = ch
+      cur_calc_powers.append(max_power)
+
+    xml_powers[instrument]  = cur_xml_powers
+    calc_powers[instrument] = cur_calc_powers
 
 
-# TEST
-instrument = instruments[9] # Snare
-plt.plot(10 * np.log10(powers[instrument]), "-*")
-plt.title(instrument + " (dynamic: " + "{:.2f}".format(10 * np.log10(np.max(powers[instrument]) / np.min(powers[instrument]))) + " dB)")
+# debug plot
+plt.plot(10 * np.log10(xml_powers[instrument]), "-*")
+plt.plot(10 * np.log10(calc_powers[instrument]), "-*")
+xml_dynamic_db  = 10 * np.log10(np.max(xml_powers[instrument]) / np.min(xml_powers[instrument]))
+calc_dynamic_db = 10 * np.log10(np.max(calc_powers[instrument]) / np.min(calc_powers[instrument]))
+plt.title(instrument + " (XML dynamic: " + "{:.2f}".format(xml_dynamic_db) + " dB, CALC dynamic: " + "{:.2f}".format(calc_dynamic_db) + " dB)")
 plt.show()
-
-
-# TEST
-#filename = "/home/corrados/edrumulus/tools/CrocellKit/Snare/samples/75-Snare.wav"
-
-#samplerate, x = wavfile.read(filename)
-
-#for i in range(0, 32):
-#  ch = x[:, i]
-
-#  plt.plot(10 * np.log10(np.abs(ch)))
-#  plt.show()
 
 
 
