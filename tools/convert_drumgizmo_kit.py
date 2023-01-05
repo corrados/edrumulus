@@ -18,6 +18,7 @@
 #*******************************************************************************
 
 import os
+import shutil
 import numpy as np
 import matplotlib.pyplot as plt
 import xml.etree.ElementTree as ET
@@ -42,8 +43,12 @@ xml_powers  = dict.fromkeys(instruments, [])
 calc_powers = dict.fromkeys(instruments, [])
 for instrument in instruments:
   print(instrument)
+  if not os.path.isfile(kit_path + "/" + instrument + "/" + instrument + "_org.xml"):
+    shutil.copyfile(kit_path + "/" + instrument + "/" + instrument + ".xml", \
+                    kit_path + "/" + instrument + "/" + instrument + "_org.xml") # backup original file
+
   # parse instrument XML file
-  tree = ET.parse(kit_path + "/" + instrument + "/" + instrument + ".xml")
+  tree = ET.parse(kit_path + "/" + instrument + "/" + instrument + "_org.xml")
   root = tree.getroot()
   for samples in root:
     cur_xml_powers  = []
@@ -63,18 +68,23 @@ for instrument in instruments:
           max_power      = x2_max
           master_channel = ch
       cur_calc_powers.append(max_power)
+      sample.attrib["power"] = "{:.19f}".format(max_power)
 
     xml_powers[instrument]  = cur_xml_powers
     calc_powers[instrument] = cur_calc_powers
 
+  # write instrument XML file
+  ET.indent(tree, space="\t", level=0)
+  tree.write(kit_path + "/" + instrument + "/" + instrument + "_new.xml", encoding="utf-8", xml_declaration="True")
 
-# debug plot
-plt.plot(10 * np.log10(xml_powers[instrument]), "-*")
-plt.plot(10 * np.log10(calc_powers[instrument]), "-*")
-xml_dynamic_db  = 10 * np.log10(np.max(xml_powers[instrument]) / np.min(xml_powers[instrument]))
-calc_dynamic_db = 10 * np.log10(np.max(calc_powers[instrument]) / np.min(calc_powers[instrument]))
-plt.title(instrument + " (XML dynamic: " + "{:.2f}".format(xml_dynamic_db) + " dB, CALC dynamic: " + "{:.2f}".format(calc_dynamic_db) + " dB)")
-plt.show()
+
+  # debug plot
+  plt.plot(10 * np.log10(xml_powers[instrument]), "-*")
+  plt.plot(10 * np.log10(calc_powers[instrument]), "-*")
+  xml_dynamic_db  = 10 * np.log10(np.max(xml_powers[instrument]) / np.min(xml_powers[instrument]))
+  calc_dynamic_db = 10 * np.log10(np.max(calc_powers[instrument]) / np.min(calc_powers[instrument]))
+  plt.title(instrument + " (XML dynamic: " + "{:.2f}".format(xml_dynamic_db) + " dB, CALC dynamic: " + "{:.2f}".format(calc_dynamic_db) + " dB)")
+  plt.show()
 
 
 
