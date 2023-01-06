@@ -144,7 +144,7 @@ def update_lcd():
 
 
 def store_settings():
-  with open("settings.txt", "w") as f:
+  with open("settings/trigger_settings.txt", "w") as f:
     for (pad_index, pad) in enumerate(enum_pad_names):
       send_value_to_edrumulus(108, pad_index)
       time.sleep(0.2) # should be enough time to transfer all pad parameters
@@ -155,7 +155,7 @@ def store_settings():
 def load_settings():
   global database, is_load_settings
   is_load_settings = True # to update database of current command
-  with open("settings.txt", "r") as f:
+  with open("settings/trigger_settings.txt", "r") as f:
     cur_pad = -1 # initialize with illegal index
     while True:
       line = f.readline()
