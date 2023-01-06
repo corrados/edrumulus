@@ -333,7 +333,7 @@ void Edrumulus::Pad::setup ( const int conf_Fs )
   Fs = conf_Fs;
 
   // initialize with default pad type and other defaults
-  set_pad_type ( PD120 );
+  set_pad_type ( PD6 );
   midi_note          = 38;
   midi_note_rim      = 40;
   midi_note_open     = 46;
