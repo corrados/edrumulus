@@ -21,6 +21,7 @@ import os
 import gc
 import wave
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import xml.etree.ElementTree as ET
 from scipy.io import wavfile
@@ -54,7 +55,7 @@ instruments = [["kick",            ["KDrum", "OHLeft", "OHRight"], [36],     "",
                ["ride_side",       ["OHRight", "OHLeft"],          [59],     "",      0.6,  15]]
 
 #channel_names = ["SnareL"] # for calibrating dynamic in Drumgizmo
-#instruments   = [["rolandsnare", ["SnareL"], [38], "", 0.2, 25]]
+#instruments   = [["rolandsnare", ["SnareL"], [38], "", 0.1, 24]]
 
 source_samples_dir_name   = "source_samples" # root directory of recorded source samples
 fade_out_percent          = 10 # % of sample at the end is faded out
@@ -190,6 +191,7 @@ for instrument in instruments:
       #plt.show()
 
     if len(instruments) == 1: # if only one instrument is selected, we assume we want to debug plot
+      mpl.rcParams['agg.path.chunksize'] = 10000 # needed for long wave forms to avoid Exceeded cell block limit in Agg
       plt.plot(10 * np.log10(np.abs(x)))
       plt.plot([0, len(x)], 10 * np.log10([threshold, threshold]))
       plt.plot(10 * np.log10(np.max(x)) * strike_cut_pos)
