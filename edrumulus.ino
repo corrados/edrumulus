@@ -104,15 +104,15 @@ void preset_settings()
     edrumulus.set_midi_notes      ( 8, 43, 58 ); // tom 3
 
     // default drum kit setup
-    edrumulus.set_pad_type ( 0, Edrumulus::PDX100 );   // snare
-    edrumulus.set_pad_type ( 1, Edrumulus::KD8 );      // kick
-    edrumulus.set_pad_type ( 2, Edrumulus::VH12 );     // Hi-Hat
-    edrumulus.set_pad_type ( 3, Edrumulus::VH12CTRL ); // Hi-Hat-ctrl
-    edrumulus.set_pad_type ( 4, Edrumulus::CY6 );      // crash
-    edrumulus.set_pad_type ( 5, Edrumulus::PD80R );    // tom 1
-    edrumulus.set_pad_type ( 6, Edrumulus::CY8 );      // ride
-    edrumulus.set_pad_type ( 7, Edrumulus::PD80R );    // tom 2
-    edrumulus.set_pad_type ( 8, Edrumulus::PD80R );    // tom 3
+    edrumulus.set_pad_type ( 0, Edrumulus::PD8 );  // snare
+    edrumulus.set_pad_type ( 1, Edrumulus::KD7 );  // kick
+    edrumulus.set_pad_type ( 2, Edrumulus::PD6 );  // Hi-Hat
+    edrumulus.set_pad_type ( 3, Edrumulus::FD8 );  // Hi-Hat-ctrl
+    edrumulus.set_pad_type ( 4, Edrumulus::CY6 );  // crash
+    edrumulus.set_pad_type ( 5, Edrumulus::TP80 ); // tom 1
+    edrumulus.set_pad_type ( 6, Edrumulus::CY8 );  // ride
+    edrumulus.set_pad_type ( 7, Edrumulus::TP80 ); // tom 2
+    edrumulus.set_pad_type ( 8, Edrumulus::TP80 ); // tom 3
   }
 }
 
