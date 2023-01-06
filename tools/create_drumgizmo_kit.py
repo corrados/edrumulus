@@ -53,6 +53,9 @@ instruments = [["kick",            ["KDrum", "OHLeft", "OHRight"], [36],     "",
                ["ride_bell",       ["OHRight", "OHLeft"],          [53],     "",      0.4,  15], \
                ["ride_side",       ["OHRight", "OHLeft"],          [59],     "",      0.6,  15]]
 
+#channel_names = ["SnareL"] # for calibrating dynamic in Drumgizmo
+#instruments   = [["rolandsnare", ["SnareL"], [38], "", 0.2, 25]]
+
 source_samples_dir_name   = "source_samples" # root directory of recorded source samples
 fade_out_percent          = 10 # % of sample at the end is faded out
 thresh_from_max_for_start = 20 # dB
@@ -210,7 +213,7 @@ for instrument in instruments:
     power_sort_indexes = np.argsort(sample_powers[p])
     for i in range(0, len(sample_strikes[p])):
       strike_index = power_sort_indexes[i] # sort waves by power
-      print(10 * np.log10(sample_powers[p][strike_index]))
+      print(str(i) + ": " + str(10 * np.log10(sample_powers[p][strike_index])))
       # write multi-channel wave file
       sample_file_name = str(i + 1) + "-" + instrument_name
       if len(positions) > 1:
