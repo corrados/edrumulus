@@ -333,7 +333,7 @@ void Edrumulus::Pad::setup ( const int conf_Fs )
   Fs = conf_Fs;
 
   // initialize with default pad type and other defaults
-  set_pad_type ( PD120 );
+  set_pad_type ( PD6, false ); // we assume preset/load settings are done which do initialization later
   midi_note          = 38;
   midi_note_rim      = 40;
   midi_note_open     = 46;
@@ -343,13 +343,17 @@ void Edrumulus::Pad::setup ( const int conf_Fs )
 }
 
 
-void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
+void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type,
+                                    const bool     do_init )
 {
   // apply new pad type and set all parameters to the default values for that pad type
   pad_settings.pad_type = new_pad_type;
 
   apply_preset_pad_settings();
-  initialize();
+  if ( do_init )
+  {
+    initialize();
+  }
 }
 
 

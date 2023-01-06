@@ -91,55 +91,56 @@ public:
   bool get_midi_ctrl_is_open   ( const int pad_idx ) { return midi_ctrl_value[pad_idx] < Pad::hi_hat_is_open_MIDI_threshold; }
 
   // configure the pads
-  void set_pad_type             ( const int pad_idx, const Epadtype   new_pad_type )  { pad[pad_idx].set_pad_type ( new_pad_type ); }
-  Epadtype get_pad_type         ( const int pad_idx )                                 { return pad[pad_idx].get_pad_type(); }
-  void set_velocity_threshold   ( const int pad_idx, const int        new_threshold ) { pad[pad_idx].set_velocity_threshold ( new_threshold ); }
-  int  get_velocity_threshold   ( const int pad_idx )                                 { return pad[pad_idx].get_velocity_threshold(); }
-  void set_velocity_sensitivity ( const int pad_idx, const int        new_velocity )  { pad[pad_idx].set_velocity_sensitivity ( new_velocity ); }
-  int  get_velocity_sensitivity ( const int pad_idx )                                 { return pad[pad_idx].get_velocity_sensitivity(); }
-  void set_pos_threshold        ( const int pad_idx, const int        new_threshold ) { pad[pad_idx].set_pos_threshold ( new_threshold ); }
-  int  get_pos_threshold        ( const int pad_idx )                                 { return pad[pad_idx].get_pos_threshold(); }
-  void set_pos_sensitivity      ( const int pad_idx, const int        new_velocity )  { pad[pad_idx].set_pos_sensitivity ( new_velocity ); }
-  int  get_pos_sensitivity      ( const int pad_idx )                                 { return pad[pad_idx].get_pos_sensitivity(); }
-  void set_mask_time            ( const int pad_idx, const int        new_time )      { pad[pad_idx].set_mask_time ( new_time ); }
-  int  get_mask_time            ( const int pad_idx )                                 { return pad[pad_idx].get_mask_time(); }
-  void set_rim_shot_treshold    ( const int pad_idx, const int        new_threshold ) { pad[pad_idx].set_rim_shot_treshold ( new_threshold ); }
-  int  get_rim_shot_treshold    ( const int pad_idx )                                 { return pad[pad_idx].get_rim_shot_treshold(); }
-  void set_curve                ( const int pad_idx, const Ecurvetype new_curve )     { pad[pad_idx].set_curve ( new_curve ); }
-  Ecurvetype get_curve          ( const int pad_idx )                                 { return pad[pad_idx].get_curve(); }
-  void set_cancellation         ( const int pad_idx, const int        new_cancel )    { pad[pad_idx].set_cancellation ( new_cancel ); }
-  int  get_cancellation         ( const int pad_idx )                                 { return pad[pad_idx].get_cancellation(); }
+  void set_pad_type             ( const int pad_idx, const Epadtype new_pad_type, const bool do_init = true ) { pad[pad_idx].set_pad_type ( new_pad_type, do_init ); }
+  Epadtype get_pad_type         ( const int pad_idx ) { return pad[pad_idx].get_pad_type(); }
+  void set_velocity_threshold   ( const int pad_idx, const int new_threshold, const bool do_init = true ) { pad[pad_idx].set_velocity_threshold ( new_threshold, do_init ); }
+  int  get_velocity_threshold   ( const int pad_idx ) { return pad[pad_idx].get_velocity_threshold(); }
+  void set_velocity_sensitivity ( const int pad_idx, const int new_velocity, const bool do_init = true ) { pad[pad_idx].set_velocity_sensitivity ( new_velocity, do_init ); }
+  int  get_velocity_sensitivity ( const int pad_idx ) { return pad[pad_idx].get_velocity_sensitivity(); }
+  void set_pos_threshold        ( const int pad_idx, const int new_threshold, const bool do_init = true ) { pad[pad_idx].set_pos_threshold ( new_threshold, do_init ); }
+  int  get_pos_threshold        ( const int pad_idx ) { return pad[pad_idx].get_pos_threshold(); }
+  void set_pos_sensitivity      ( const int pad_idx, const int new_velocity, const bool do_init = true ) { pad[pad_idx].set_pos_sensitivity ( new_velocity, do_init ); }
+  int  get_pos_sensitivity      ( const int pad_idx ) { return pad[pad_idx].get_pos_sensitivity(); }
+  void set_mask_time            ( const int pad_idx, const int new_time, const bool do_init = true ) { pad[pad_idx].set_mask_time ( new_time, do_init ); }
+  int  get_mask_time            ( const int pad_idx ) { return pad[pad_idx].get_mask_time(); }
+  void set_rim_shot_treshold    ( const int pad_idx, const int new_threshold, const bool do_init = true ) { pad[pad_idx].set_rim_shot_treshold ( new_threshold, do_init ); }
+  int  get_rim_shot_treshold    ( const int pad_idx ) { return pad[pad_idx].get_rim_shot_treshold(); }
+  void set_curve                ( const int pad_idx, const Ecurvetype new_curve, const bool do_init = true ) { pad[pad_idx].set_curve ( new_curve, do_init ); }
+  Ecurvetype get_curve          ( const int pad_idx ) { return pad[pad_idx].get_curve(); }
+  void set_cancellation         ( const int pad_idx, const int new_cancel, const bool do_init = true ) { pad[pad_idx].set_cancellation ( new_cancel, do_init ); }
+  int  get_cancellation         ( const int pad_idx ) { return pad[pad_idx].get_cancellation(); }
 
   void set_midi_notes          ( const int pad_idx, const int new_midi_note, const int new_midi_note_rim ) { pad[pad_idx].set_midi_notes ( new_midi_note, new_midi_note_rim ); }
-  void set_midi_note_norm      ( const int pad_idx, const int new_midi_note )                              { pad[pad_idx].set_midi_note ( new_midi_note ); }
-  void set_midi_note_rim       ( const int pad_idx, const int new_midi_note_rim )                          { pad[pad_idx].set_midi_note_rim ( new_midi_note_rim ); }
+  void set_midi_note_norm      ( const int pad_idx, const int new_midi_note ) { pad[pad_idx].set_midi_note ( new_midi_note ); }
+  void set_midi_note_rim       ( const int pad_idx, const int new_midi_note_rim ) { pad[pad_idx].set_midi_note_rim ( new_midi_note_rim ); }
   void set_midi_notes_open     ( const int pad_idx, const int new_midi_note, const int new_midi_note_rim ) { pad[pad_idx].set_midi_notes_open ( new_midi_note, new_midi_note_rim ); }
-  void set_midi_note_open_norm ( const int pad_idx, const int new_midi_note)                               { pad[pad_idx].set_midi_note_open ( new_midi_note ); }
-  void set_midi_note_open_rim  ( const int pad_idx, const int new_midi_note_rim )                          { pad[pad_idx].set_midi_note_open_rim ( new_midi_note_rim ); }
-  void set_midi_ctrl_ch        ( const int pad_idx, const int new_midi_ctrl_ch )                           { pad[pad_idx].set_midi_ctrl_ch ( new_midi_ctrl_ch ); }
+  void set_midi_note_open_norm ( const int pad_idx, const int new_midi_note) { pad[pad_idx].set_midi_note_open ( new_midi_note ); }
+  void set_midi_note_open_rim  ( const int pad_idx, const int new_midi_note_rim ) { pad[pad_idx].set_midi_note_open_rim ( new_midi_note_rim ); }
+  void set_midi_ctrl_ch        ( const int pad_idx, const int new_midi_ctrl_ch ) { pad[pad_idx].set_midi_ctrl_ch ( new_midi_ctrl_ch ); }
   void set_rim_shot_is_used    ( const int pad_idx, const bool new_is_used ) { pad[pad_idx].set_rim_shot_is_used ( new_is_used ); }
-  bool get_rim_shot_is_used    ( const int pad_idx )                         { return pad[pad_idx].get_rim_shot_is_used(); }
+  bool get_rim_shot_is_used    ( const int pad_idx ) { return pad[pad_idx].get_rim_shot_is_used(); }
   void set_pos_sense_is_used   ( const int pad_idx, const bool new_is_used ) { pad[pad_idx].set_pos_sense_is_used ( new_is_used ); }
-  bool get_pos_sense_is_used   ( const int pad_idx )                         { return pad[pad_idx].get_pos_sense_is_used(); }
+  bool get_pos_sense_is_used   ( const int pad_idx ) { return pad[pad_idx].get_pos_sense_is_used(); }
 
   void set_spike_cancel_level ( const int new_level ) { spike_cancel_level = new_level; }
-  int  get_spike_cancel_level ()                      { return spike_cancel_level; }
-  void set_coupled_pad_idx    ( const int new_idx )   { coupled_pad_idx = new_idx; pad[0].set_use_coupling ( new_idx > 0 ); }
-  int  get_coupled_pad_idx    ()                      { return coupled_pad_idx; }
+  int  get_spike_cancel_level () { return spike_cancel_level; }
+  void set_coupled_pad_idx    ( const int new_idx, const bool do_init = true ) { coupled_pad_idx = new_idx; pad[0].set_use_coupling ( new_idx > 0, do_init ); }
+  int  get_coupled_pad_idx    () { return coupled_pad_idx; }
 
   // overload and error handling
   bool get_status_is_overload() { return status_is_overload; }
-  bool get_status_is_error()    { return status_is_error; }
+  bool get_status_is_error() { return status_is_error; }
 
   // persistent settings storage
   void write_setting ( const int pad_index, const int address, const byte value ) { edrumulus_hardware.write_setting ( pad_index, address, value ); }
-  byte read_setting  ( const int pad_index, const int address )                   { return edrumulus_hardware.read_setting ( pad_index, address ); }
+  byte read_setting  ( const int pad_index, const int address ) { return edrumulus_hardware.read_setting ( pad_index, address ); }
 
 protected:
   class Pad
   {
     public:
       void setup ( const int conf_Fs );
+      void initialize();
 
       float process_sample ( const float* input,
                              const int    input_len,
@@ -157,7 +158,7 @@ protected:
                                     bool&      peak_found,
                                     int&       midi_velocity );
 
-      void set_pad_type ( const Epadtype new_pad_type );
+      void set_pad_type ( const Epadtype new_pad_type, const bool do_init );
       Epadtype get_pad_type() { return pad_settings.pad_type; }
       void set_midi_notes         ( const int new_midi_note, const int new_midi_note_rim ) { midi_note = new_midi_note; midi_note_rim = new_midi_note_rim; }
       void set_midi_notes_open    ( const int new_midi_note, const int new_midi_note_rim ) { midi_note_open = new_midi_note; midi_note_open_rim = new_midi_note_rim; }
@@ -176,24 +177,24 @@ protected:
       void set_pos_sense_is_used  ( const bool new_is_used ) { pad_settings.pos_sense_is_used = new_is_used; }
       bool get_pos_sense_is_used  ()                         { return pad_settings.pos_sense_is_used; }
 
-      void set_velocity_threshold   ( const int        new_threshold ) { pad_settings.velocity_threshold = new_threshold; initialize(); }
-      int  get_velocity_threshold   ()                                 { return pad_settings.velocity_threshold; }
-      void set_velocity_sensitivity ( const int        new_velocity )  { pad_settings.velocity_sensitivity = new_velocity; initialize(); }
-      int  get_velocity_sensitivity ()                                 { return pad_settings.velocity_sensitivity; }
-      void set_pos_threshold        ( const int        new_threshold ) { pad_settings.pos_threshold = new_threshold; initialize(); }
-      int  get_pos_threshold        ()                                 { return pad_settings.pos_threshold; }
-      void set_pos_sensitivity      ( const int        new_velocity )  { pad_settings.pos_sensitivity = new_velocity; initialize(); }
-      int  get_pos_sensitivity      ()                                 { return pad_settings.pos_sensitivity; }
-      void set_mask_time            ( const int        new_time_ms )   { pad_settings.mask_time_ms = new_time_ms; initialize(); }
-      int  get_mask_time            ()                                 { return pad_settings.mask_time_ms; }
-      void set_rim_shot_treshold    ( const int        new_threshold ) { pad_settings.rim_shot_treshold = new_threshold; initialize(); }
-      int  get_rim_shot_treshold    ()                                 { return pad_settings.rim_shot_treshold; }
-      void set_curve                ( const Ecurvetype new_curve )     { pad_settings.curve_type = new_curve; initialize(); }
-      Ecurvetype get_curve          ()                                 { return pad_settings.curve_type; }
-      void set_cancellation         ( const int        new_cancel )    { pad_settings.cancellation = new_cancel; initialize(); }
-      int  get_cancellation         ()                                 { return pad_settings.cancellation; }
-      void set_use_coupling         ( const bool       new_coupling )  { use_coupling = new_coupling; initialize(); }
-      int  get_use_coupling         ()                                 { return use_coupling; }
+      void set_velocity_threshold   ( const int new_threshold, const bool do_init ) { pad_settings.velocity_threshold = new_threshold; if ( do_init ) initialize(); }
+      int  get_velocity_threshold   () { return pad_settings.velocity_threshold; }
+      void set_velocity_sensitivity ( const int new_velocity, const bool do_init ) { pad_settings.velocity_sensitivity = new_velocity; if ( do_init ) initialize(); }
+      int  get_velocity_sensitivity () { return pad_settings.velocity_sensitivity; }
+      void set_pos_threshold        ( const int new_threshold, const bool do_init ) { pad_settings.pos_threshold = new_threshold; if ( do_init ) initialize(); }
+      int  get_pos_threshold        () { return pad_settings.pos_threshold; }
+      void set_pos_sensitivity      ( const int new_velocity, const bool do_init ) { pad_settings.pos_sensitivity = new_velocity; if ( do_init ) initialize(); }
+      int  get_pos_sensitivity      () { return pad_settings.pos_sensitivity; }
+      void set_mask_time            ( const int new_time_ms, const bool do_init ) { pad_settings.mask_time_ms = new_time_ms; if ( do_init ) initialize(); }
+      int  get_mask_time            () { return pad_settings.mask_time_ms; }
+      void set_rim_shot_treshold    ( const int new_threshold, const bool do_init ) { pad_settings.rim_shot_treshold = new_threshold; if ( do_init ) initialize(); }
+      int  get_rim_shot_treshold    () { return pad_settings.rim_shot_treshold; }
+      void set_curve                ( const Ecurvetype new_curve, const bool do_init ) { pad_settings.curve_type = new_curve; if ( do_init ) initialize(); }
+      Ecurvetype get_curve          () { return pad_settings.curve_type; }
+      void set_cancellation         ( const int new_cancel, const bool do_init ) { pad_settings.cancellation = new_cancel; if ( do_init ) initialize(); }
+      int  get_cancellation         () { return pad_settings.cancellation; }
+      void set_use_coupling         ( const bool new_coupling, const bool do_init ) { use_coupling = new_coupling; if ( do_init ) initialize(); }
+      int  get_use_coupling         () { return use_coupling; }
 
       float get_cancellation_factor() { return cancellation_factor; }
       bool  get_is_control()          { return pad_settings.is_control; }
@@ -236,7 +237,6 @@ protected:
       };
 
       void apply_preset_pad_settings();
-      void initialize();
 
       // band-pass filter coefficients (they are constant and must not be changed)
       const int   bp_filt_len           = 5;
