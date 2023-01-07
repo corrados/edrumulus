@@ -21,6 +21,7 @@
 
 import jack
 import curses
+import time
 
 
 # tables
@@ -50,24 +51,50 @@ midi_send_val           = -1
 auto_pad_sel            = False; # no auto pad selection per default
 
 
+# initialize GUI
+mainwin  = curses.initscr()
+midiwin  = curses.newwin(box_len, 24, row_start + 5, col_start)
+midigwin = curses.newwin(box_len, 26, row_start + 5, col_start + 25)
+poswin   = curses.newwin(box_len, 7,  row_start + 5, col_start + 52)
+posgwin  = curses.newwin(box_len, 24, row_start + 5, col_start + 60)
+ctrlwin  = curses.newwin(box_len, 7,  row_start + 5, col_start + 85)
+curses.noecho()       # turn off key echoing
+mainwin.keypad(True)  # enable the keypad for non-char keys
+mainwin.nodelay(True) # we want a non-blocking getch()
+curses.curs_set(0)    # suppress cursor
+
+## initialize jack audio for MIDI
+#jack_client_t* client = jack_client_open   ( "EdrumulusGUI", JackNullOption, nullptr );
+#input_port            = jack_port_register ( client, "MIDI_in",      JACK_DEFAULT_MIDI_TYPE, JackPortIsInput,  0 );
+#output_port           = jack_port_register ( client, "MIDI_out",     JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0 );
+#jack_set_process_callback ( client, process, nullptr );
+#jack_activate             ( client );
+#jack_connect              ( client, "ttymidi:MIDI_in",       "EdrumulusGUI:MIDI_in" ); # ESP32
+#jack_connect              ( client, "EdrumulusGUI:MIDI_out", "ttymidi:MIDI_out" );     # ESP32
+#const char** teensy_out = jack_get_ports ( client, "Edrumulus ", NULL, JackPortIsInput );
+#const char** teensy_in  = jack_get_ports ( client, "Edrumulus ", NULL, JackPortIsOutput );
+#if ( teensy_in != nullptr && teensy_out != nullptr )
+#  jack_connect ( client, "EdrumulusGUI:MIDI_out", teensy_out[0] );          # Teensy
+#  jack_connect ( client, teensy_in[0],            "EdrumulusGUI:MIDI_in" ); # Teensy
+
+
+
 # parse command parameter
 def parse_cmd_param(cmd):
   # check for "pad type" and "curve type" special cases, otherwise convert integer in string
-  return pad_types(param_set(cmd)) if cmd == 0 else curve_types(param_set(cmd)) if cmd == 6 else str(param_set(cmd))
+  return pad_types[param_set[cmd]] if cmd == 0 else curve_types[param_set[cmd]] if cmd == 6 else str(param_set[cmd])
 
 
 # update window parameter outputs
 def update_param_outputs():
-  if version_major >= 0 and version_minor >= 0:
-    curses.mvprintw(row_start - 1, col_start, "Edrumulus v{0}.{1}".fomat(version_major, version_minor))
+  #if version_major >= 0 and version_minor >= 0:
+  #  mainwin.mvprintw(row_start - 1, col_start, "Edrumulus v{0}.{1}".fomat(version_major, version_minor))
+  mainwin.addstr(row_start, col_start, "Press a key (q:quit; s,S:sel pad; c,C:sel command; a,A: auto pad sel; up,down: change param; r: reset)")
+  #if auto_pad_sel:
+  #  mainwin.mvprintw(row_start + 2, col_start, "Selected pad (auto):  %2d (%s)      ", sel_pad, pad_names[sel_pad])
+  #else:
+  #  mainwin.mvprintw(row_start + 2, col_start, "Selected pad:         %2d (%s)      ", sel_pad, pad_names[sel_pad])
 
-  curses.mvaddstr(row_start, col_start, "Press a key (q:quit; s,S:sel pad; c,C:sel command; a,A: auto pad sel; up,down: change param; r: reset)")
-
-#  if auto_pad_sel:
-#    mvprintw ( row_start + 2, col_start, "Selected pad (auto):  %2d (%s)      ", sel_pad, pad_names[sel_pad].c_str() );
-#  else:
-#    mvprintw ( row_start + 2, col_start, "Selected pad:         %2d (%s)      ", sel_pad, pad_names[sel_pad].c_str() );
-#
 #  mvprintw ( row_start + 3, col_start, "Parameter: %10s: %s             ", cmd_names[sel_cmd].c_str(), parse_cmd_param ( sel_cmd ).c_str() );
 #  refresh();
 #  box       ( midiwin, 0, 0 ); # in this box the received note-on MIDI notes are shown
@@ -180,81 +207,53 @@ def update_param_outputs():
 #  return 0
 
 
-## main function
-## initialize GUI
-#mainwin  = initscr();
-#midiwin  = newwin ( box_len, 24, row_start + 5, col_start );
-#midigwin = newwin ( box_len, 26, row_start + 5, col_start + 25 );
-#poswin   = newwin ( box_len, 7,  row_start + 5, col_start + 52 );
-#posgwin  = newwin ( box_len, 24, row_start + 5, col_start + 60 );
-#ctrlwin  = newwin ( box_len, 7,  row_start + 5, col_start + 85 );
-#noecho();                   # turn off key echoing
-#keypad   ( mainwin, true ); # enable the keypad for non-char keys
-#nodelay  ( mainwin, true ); # we want a non-blocking getch()
-#curs_set ( 0 );             # suppress cursor
-#update_param_outputs();
-#
-## initialize jack audio for MIDI
-#jack_client_t* client = jack_client_open   ( "EdrumulusGUI", JackNullOption, nullptr );
-#input_port            = jack_port_register ( client, "MIDI_in",      JACK_DEFAULT_MIDI_TYPE, JackPortIsInput,  0 );
-#output_port           = jack_port_register ( client, "MIDI_out",     JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0 );
-#jack_set_process_callback ( client, process, nullptr );
-#jack_activate             ( client );
-#jack_connect              ( client, "ttymidi:MIDI_in",       "EdrumulusGUI:MIDI_in" ); # ESP32
-#jack_connect              ( client, "EdrumulusGUI:MIDI_out", "ttymidi:MIDI_out" );     # ESP32
-#const char** teensy_out = jack_get_ports ( client, "Edrumulus ", NULL, JackPortIsInput );
-#const char** teensy_in  = jack_get_ports ( client, "Edrumulus ", NULL, JackPortIsOutput );
-#if ( teensy_in != nullptr && teensy_out != nullptr )
-#  jack_connect ( client, "EdrumulusGUI:MIDI_out", teensy_out[0] );          # Teensy
-#  jack_connect ( client, teensy_in[0],            "EdrumulusGUI:MIDI_in" ); # Teensy
-#
-## initial pad selection for retrieving Edrumulus parameters for current selected pad
-#midi_send_val = sel_pad;
-#midi_send_cmd = 108;
-#
-## loop until user presses q
-#while ( ( ch = getch() ) != 'q' )
-#  if ( ch != -1 )
-#    if ( ch == 's' || ch == 'S' ) # change selected pad
-#      int cur_sel_pad = sel_pad;
-#      ch == 's' ? cur_sel_pad++ : cur_sel_pad--;
-#      sel_pad = std::max ( 0, std::min ( max_num_pads - 1, cur_sel_pad ) );
-#      midi_send_val = sel_pad;
-#      midi_send_cmd = 108;
-#    else if ( ch == 'c' || ch == 'C' ) # change selected command
-#      int cur_sel_cmd = sel_cmd;
-#      ch == 'c' ? cur_sel_cmd++ : cur_sel_cmd--;
-#      sel_cmd = std::max ( 0, std::min ( number_cmd - 1, cur_sel_cmd ) );
-#    else if ( ch == 258 || ch == 259 ) # change parameter value with up/down keys
-#      int cur_sel_val = param_set[sel_cmd];
-#      ch == 259 ? cur_sel_val++ : cur_sel_val--;
-#      param_set[sel_cmd] = std::max ( 0, std::min ( cmd_val_rng[sel_cmd], cur_sel_val ) );
-#      midi_send_val = param_set[sel_cmd];
-#      midi_send_cmd = cmd_val[sel_cmd];
-#    else if ( ch == 'a' || ch == 'A' ) # enable/disable auto pad selection
-#      auto_pad_sel = ( ch == 'a' ); # capital 'A' disables auto pad selection
-#    else if ( ch == 'r' )
-#      mvaddstr ( row_start + 1, col_start, "DO YOU REALLY WANT TO RESET ALL EDRUMULUS PARAMETERS [y/n]?" );
-#      nodelay  ( mainwin, false ); # temporarily, use blocking getch()
-#      if ( getch() == 'y' )
-#        midi_send_cmd = 115; # midi_send_val will be ignored by Edrumulus for this command
-#      nodelay  ( mainwin, true ); # go back to unblocking getch()
-#      mvaddstr ( row_start + 1, col_start, "                                                           " );
-#    do_update_param_outputs = true;
-#
-#  if ( do_update_param_outputs )
-#    update_param_outputs();
-#    do_update_param_outputs = false;
-#  usleep ( 100000 );
-#
-## clean up and exit
-#delwin ( mainwin );
-#delwin ( midiwin );
-#endwin();
-#refresh();
+# main function
+# initial pad selection for retrieving Edrumulus parameters for current selected pad
+midi_send_val = sel_pad
+midi_send_cmd = 108
+update_param_outputs()
+
+# loop until user presses q
+while (ch := mainwin.getch()) != ord('q'):
+  if ch != -1:
+    if ch == ord('s') or ch == ord('S'): # change selected pad
+      cur_sel_pad   = sel_pad
+      cur_sel_pad   = cur_sel_pad + 1 if ch == ord('s') else cur_sel_pad - 1
+      sel_pad       = max(0, min(max_num_pads - 1, cur_sel_pad))
+      midi_send_val = sel_pad
+      midi_send_cmd = 108
+    elif ch == ord('c') or ch == ord('C'): # change selected command
+      cur_sel_cmd = sel_cmd
+      cur_sel_cmd = cur_sel_cmd + 1 if ch == ord('c') else cur_sel_cmd - 1
+      sel_cmd     = max(0, min(number_cmd - 1, cur_sel_cmd))
+    elif ch == 258 or ch == 259: # change parameter value with up/down keys
+      cur_sel_val        = param_set[sel_cmd]
+      cur_sel_val        = cur_sel_val + 1 if ch == 259 else cur_sel_val - 1
+      param_set[sel_cmd] = max(0, min(cmd_val_rng[sel_cmd], cur_sel_val))
+      midi_send_val      = param_set[sel_cmd]
+      midi_send_cmd      = cmd_val[sel_cmd]
+    elif ch == ord('a') or ch == ord('A'): # enable/disable auto pad selection
+      auto_pad_sel = (ch == ord('a')) # capital 'A' disables auto pad selection
+    elif ch == ord('r'):
+      mainwin.addstr(row_start + 1, col_start, "DO YOU REALLY WANT TO RESET ALL EDRUMULUS PARAMETERS [y/n]?")
+      mainwin.nodelay(False) # temporarily, use blocking getch()
+      if mainwin.getch() == ord('y'):
+        midi_send_cmd = 115 # midi_send_val will be ignored by Edrumulus for this command
+      mainwin.nodelay(True) # go back to unblocking getch()
+      mainwin.addstr(row_start + 1, col_start, "                                                           ")
+    do_update_param_outputs = True
+
+  if do_update_param_outputs:
+    update_param_outputs()
+    do_update_param_outputs = False
+  time.sleep(0.1)
+
+# clean up and exit
+mainwin.keypad(False)
+curses.echo()
+curses.endwin()
 #jack_deactivate      ( client );
 #jack_port_unregister ( client, input_port );
 #jack_port_unregister ( client, output_port );
 #jack_client_close    ( client );
-#return EXIT_SUCCESS;
 
