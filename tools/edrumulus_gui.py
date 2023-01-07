@@ -87,44 +87,44 @@ def parse_cmd_param(cmd):
 
 # update window parameter outputs
 def update_param_outputs():
-  #if version_major >= 0 and version_minor >= 0:
-  #  mainwin.mvprintw(row_start - 1, col_start, "Edrumulus v{0}.{1}".fomat(version_major, version_minor))
+  if version_major >= 0 and version_minor >= 0:
+    mainwin.addstr(row_start - 1, col_start, "Edrumulus v{0}.{1}".fomat(version_major, version_minor))
   mainwin.addstr(row_start, col_start, "Press a key (q:quit; s,S:sel pad; c,C:sel command; a,A: auto pad sel; up,down: change param; r: reset)")
-  #if auto_pad_sel:
-  #  mainwin.mvprintw(row_start + 2, col_start, "Selected pad (auto):  %2d (%s)      ", sel_pad, pad_names[sel_pad])
-  #else:
-  #  mainwin.mvprintw(row_start + 2, col_start, "Selected pad:         %2d (%s)      ", sel_pad, pad_names[sel_pad])
+  if auto_pad_sel:
+    mainwin.addstr(row_start + 2, col_start, "Selected pad (auto):  {:2d} ({:s})      ".format(sel_pad, pad_names[sel_pad]))
+  else:
+    mainwin.addstr(row_start + 2, col_start, "Selected pad:         {:2d} ({:s})      ".format(sel_pad, pad_names[sel_pad]))
 
-#  mvprintw ( row_start + 3, col_start, "Parameter: %10s: %s             ", cmd_names[sel_cmd].c_str(), parse_cmd_param ( sel_cmd ).c_str() );
-#  refresh();
-#  box       ( midiwin, 0, 0 ); # in this box the received note-on MIDI notes are shown
-#  mvwprintw ( midiwin, 0, 8, "MIDI-IN" );
-#  mvwprintw ( midiwin, 1, 2, "note (name) | value" );
-#  wrefresh  ( midiwin );
-#  box       ( midigwin, 0, 0 ); # in this box the received MIDI velocity graph is shown
-#  mvwprintw ( midigwin, 0, 6, "VELOCITY-GRAPH" );
-#  wrefresh  ( midigwin );
-#  box       ( poswin, 0, 0 ); # in this box the received positional sensing values are shown
-#  mvwprintw ( poswin, 0, 2, "POS" );
-#  wrefresh  ( poswin );
-#  box       ( posgwin, 0, 0 ); # in this box the received positional sensing graph is shown
-#  mvwprintw ( posgwin, 0, 5, "POSITION-GRAPH" );
-#  wrefresh  ( posgwin );
-#  box       ( ctrlwin, 0, 0 ); # in this box the hi-hat controller value/bar is shown
-#  mvwprintw ( ctrlwin, 0, 1, "CTRL" );
-#  mvwprintw ( ctrlwin, 1, 1, "%4d", hi_hat_ctrl );
-#  mvwvline  ( ctrlwin, 2, 3, ACS_BLOCK, box_len - 3 ); # for reversed hline
-#  mvwvline  ( ctrlwin, 2, 3, ' ', (int) ( ( 127.0 - hi_hat_ctrl ) / 127 * ( box_len - 3 ) ) );
-#  wrefresh  ( ctrlwin );
-#
+  mainwin.addstr(row_start + 3, col_start, "Parameter: {:>10s}: {:s}             ".format(cmd_names[sel_cmd], parse_cmd_param(sel_cmd)))
+  mainwin.refresh()
+  midiwin.box() # in this box the received note-on MIDI notes are shown
+  midiwin.addstr(0, 8, "MIDI-IN")
+  midiwin.addstr(1, 2, "note (name) | value")
+  midiwin.refresh()
+  midigwin.box() # in this box the received MIDI velocity graph is shown
+  midigwin.addstr(0, 6, "VELOCITY-GRAPH")
+  midigwin.refresh()
+  poswin.box() # in this box the received positional sensing values are shown
+  poswin.addstr(0, 2, "POS")
+  poswin.refresh()
+  posgwin.box() # in this box the received positional sensing graph is shown
+  posgwin.addstr(0, 5, "POSITION-GRAPH")
+  posgwin.refresh()
+  ctrlwin.box() # in this box the hi-hat controller value/bar is shown
+  ctrlwin.addstr(0, 1, "CTRL")
+  ctrlwin.addstr(1, 1, "{:4d}".format(hi_hat_ctrl))
+  ctrlwin.vline(2, 3, curses.ACS_BLOCK, box_len - 3) # for reversed hline
+  ctrlwin.vline(2, 3, ' ', int((127.0 - hi_hat_ctrl) / 127 * (box_len - 3)))
+  ctrlwin.refresh()
 
-## update pad selection (for auto pad selection)
-#def update_pad_selection(midi_note_in, midi_note1, midi_note2, pad_index):
-#  if (midi_note_in == midi_note1 or midi_note_in == midi_note2) and sel_pad is not pad_index:
-#    sel_pad       = pad_index
-#    midi_send_val = sel_pad
-#    midi_send_cmd = 108
-#
+
+# update pad selection (for auto pad selection)
+def update_pad_selection(midi_note_in, midi_note1, midi_note2, pad_index):
+  if (midi_note_in == midi_note1 or midi_note_in == midi_note2) and sel_pad is not pad_index:
+    sel_pad       = pad_index
+    midi_send_val = sel_pad
+    midi_send_cmd = 108
+
 
 ## jack audio callback function
 #@client.set_process_callback
