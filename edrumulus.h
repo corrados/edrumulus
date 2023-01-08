@@ -176,23 +176,23 @@ protected:
       void set_pos_sense_is_used  ( const bool new_is_used ) { pad_settings.pos_sense_is_used = new_is_used; }
       bool get_pos_sense_is_used  ()                         { return pad_settings.pos_sense_is_used; }
 
-      void set_velocity_threshold   ( const int        new_threshold ) { pad_settings.velocity_threshold = new_threshold; initialize(); }
+      void set_velocity_threshold   ( const int        new_threshold ) { pad_settings.velocity_threshold = new_threshold; sched_init(); }
       int  get_velocity_threshold   ()                                 { return pad_settings.velocity_threshold; }
-      void set_velocity_sensitivity ( const int        new_velocity )  { pad_settings.velocity_sensitivity = new_velocity; initialize(); }
+      void set_velocity_sensitivity ( const int        new_velocity )  { pad_settings.velocity_sensitivity = new_velocity; sched_init(); }
       int  get_velocity_sensitivity ()                                 { return pad_settings.velocity_sensitivity; }
-      void set_pos_threshold        ( const int        new_threshold ) { pad_settings.pos_threshold = new_threshold; initialize(); }
+      void set_pos_threshold        ( const int        new_threshold ) { pad_settings.pos_threshold = new_threshold; sched_init(); }
       int  get_pos_threshold        ()                                 { return pad_settings.pos_threshold; }
-      void set_pos_sensitivity      ( const int        new_velocity )  { pad_settings.pos_sensitivity = new_velocity; initialize(); }
+      void set_pos_sensitivity      ( const int        new_velocity )  { pad_settings.pos_sensitivity = new_velocity; sched_init(); }
       int  get_pos_sensitivity      ()                                 { return pad_settings.pos_sensitivity; }
-      void set_mask_time            ( const int        new_time_ms )   { pad_settings.mask_time_ms = new_time_ms; initialize(); }
+      void set_mask_time            ( const int        new_time_ms )   { pad_settings.mask_time_ms = new_time_ms; sched_init(); }
       int  get_mask_time            ()                                 { return pad_settings.mask_time_ms; }
-      void set_rim_shot_treshold    ( const int        new_threshold ) { pad_settings.rim_shot_treshold = new_threshold; initialize(); }
+      void set_rim_shot_treshold    ( const int        new_threshold ) { pad_settings.rim_shot_treshold = new_threshold; sched_init(); }
       int  get_rim_shot_treshold    ()                                 { return pad_settings.rim_shot_treshold; }
-      void set_curve                ( const Ecurvetype new_curve )     { pad_settings.curve_type = new_curve; initialize(); }
+      void set_curve                ( const Ecurvetype new_curve )     { pad_settings.curve_type = new_curve; sched_init(); }
       Ecurvetype get_curve          ()                                 { return pad_settings.curve_type; }
-      void set_cancellation         ( const int        new_cancel )    { pad_settings.cancellation = new_cancel; initialize(); }
+      void set_cancellation         ( const int        new_cancel )    { pad_settings.cancellation = new_cancel; sched_init(); }
       int  get_cancellation         ()                                 { return pad_settings.cancellation; }
-      void set_use_coupling         ( const bool       new_coupling )  { use_coupling = new_coupling; initialize(); }
+      void set_use_coupling         ( const bool       new_coupling )  { use_coupling = new_coupling; sched_init(); }
       int  get_use_coupling         ()                                 { return use_coupling; }
 
       float get_cancellation_factor() { return cancellation_factor; }
@@ -236,7 +236,9 @@ protected:
       };
 
       void apply_preset_pad_settings();
-      void initialize();
+      void initialize(); // this function should not be called directly but use sched_init() instead
+      void sched_init() { init_delay_cnt = init_delay_value; }; // schedule initialization function (for delayed initialization)
+      const float init_delay_value_s = 0.2; // init delay value in seconds
 
       // band-pass filter coefficients (they are constant and must not be changed)
       const int   bp_filt_len           = 5;
@@ -317,6 +319,8 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       int          Fs;
       int          number_inputs;
       int          number_head_sensors;
+      int          init_delay_cnt;
+      int          init_delay_value;
       int          overload_hist_len;
       int          max_num_overloads;
       int          overload_num_thresh_2db;

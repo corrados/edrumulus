@@ -330,7 +330,8 @@ Serial.println ( serial_print2 );
 void Edrumulus::Pad::setup ( const int conf_Fs )
 {
   // set essential parameters
-  Fs = conf_Fs;
+  Fs               = conf_Fs;
+  init_delay_value = static_cast<int> ( init_delay_value_s * conf_Fs );
 
   // initialize with default pad type and other defaults
   set_pad_type ( PD6 );
@@ -340,6 +341,8 @@ void Edrumulus::Pad::setup ( const int conf_Fs )
   midi_note_open_rim = 26;
   midi_ctrl_ch       = 4; // CC4, usually used for hi-hat
   use_coupling       = false;
+  init_delay_cnt     = 0; // note that it resets value of set_pad_type above
+  initialize(); // do very first initialization without delay
 }
 
 
@@ -349,7 +352,7 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
   pad_settings.pad_type = new_pad_type;
 
   apply_preset_pad_settings();
-  initialize();
+  sched_init();
 }
 
 
@@ -590,6 +593,16 @@ float Edrumulus::Pad::process_sample ( const float* input,
   float      x_filt              = 0.0f; // needed for debugging
   float      cur_decay           = 1;    // needed for debugging, initialization value (0 dB) only used for debugging
   bool       sensor0_has_results = false;
+
+  // manage delayed initialization (make sure only one initialization for multiple quick settings changes)
+  if ( init_delay_cnt > 0 )
+  {
+    init_delay_cnt--;
+    if ( init_delay_cnt == 0 )
+    {
+      initialize();
+    }
+  }
 
   for ( int head_sensor_cnt = 0; head_sensor_cnt < number_head_sensors; head_sensor_cnt++ )
   {

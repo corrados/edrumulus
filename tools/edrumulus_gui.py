@@ -337,8 +337,7 @@ with client:
     pass # TODO
   else:
     ncurses_load_settings_message()
-  # TODO load settings takes way too long...
-  #load_settings()
+  load_settings()
 
   send_value_to_edrumulus(108, sel_pad) # to query all Edrumulus current parameters
   ncurses_update_param_outputs()
