@@ -202,7 +202,6 @@ def process(frames):
           update_pad_selection(key, 45, 47, 7) # tom2
           update_pad_selection(key, 43, 58, 8) # tom3
 
-
       if (status & 0xF0) == 0xB0: # display current positional sensing received value
         if key == 16: # positional sensing
           poswin.move(1, 0)
@@ -213,7 +212,6 @@ def process(frames):
           posgwin.addstr(1, 1, "M--------------------E")
           posgwin.addch(1, 2 + int(float(value) / 128 * 20), curses.ACS_BLOCK)
           do_update_param_outputs = True
-
         if key == 4: # hi-hat controller
           hi_hat_ctrl             = value
           do_update_param_outputs = True
@@ -240,6 +238,8 @@ with client:
       pass # if no Edrumulus hardware was found, no jack is started
 
   # TODO load settings takes way too long...
+  mainwin.addstr(row_start + 5, col_start, "Loading settings...")
+  mainwin.refresh()
   #load_settings()
 
   # initial pad selection for retrieving Edrumulus parameters for current selected pad
