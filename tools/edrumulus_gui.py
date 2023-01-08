@@ -35,7 +35,7 @@ pad_types    = ["PD120", "PD80R", "PD8", "FD8", "VH12", "VH12CTRL", "KD7", "TP80
 cmd_names    = [ "type", "thresh", "sens", "pos thres", "pos sens", "rim thres", "curve", "spike", "rim/pos", "note", "note rim", "cross" ]
 cmd_val      = [    102,      103,    104,         105,        106,         107,     109,     110,       111,    112,        113,     114 ]
 cmd_val_rng  = [     20,       31,     31,          31,         31,          31,       4,       4,         3,    127,        127,      31 ]
-param_set    = [0] * len(cmd_val)
+database     = [0] * len(cmd_val)
 hi_hat_ctrl  = 0  # current hi-hat control value
 col_start    = 5  # start column of parameter display
 row_start    = 1  # start row of parameter display
@@ -72,7 +72,7 @@ output_port = client.midi_outports.register("MIDI_out")
 # parse command parameter
 def parse_cmd_param(cmd):
   # check for "pad type" and "curve type" special cases, otherwise convert integer in string
-  return pad_types[param_set[cmd]] if cmd == 0 else curve_types[param_set[cmd]] if cmd == 6 else str(param_set[cmd])
+  return pad_types[database[cmd]] if cmd == 0 else curve_types[database[cmd]] if cmd == 6 else str(database[cmd])
 
 
 # update window parameter outputs
@@ -123,7 +123,7 @@ def store_settings():
       send_value_to_edrumulus(108, pad_index)
       time.sleep(0.2) # should be enough time to transfer all pad parameters
       for (idx, midi_id) in enumerate(cmd_val):
-        f.write("%d,%d,%d\n" % (pad_index, midi_id, param_set[idx]))
+        f.write("%d,%d,%d\n" % (pad_index, midi_id, database[idx]))
 
 
 def load_settings():
@@ -136,13 +136,15 @@ def load_settings():
       if len(line) == 0:
         break
       (pad, command, value) = line.replace('\n', '').split(',')
-      if cur_pad != int(pad):
-        database = [0] * 128 # reset database
-        cur_pad  = int(pad)
-        send_value_to_edrumulus(108, cur_pad)
-      send_value_to_edrumulus(int(command), int(value))
-      while database[int(command)] != int(value): # wait for parameter to be applied in Edrumulus
-        time.sleep(0.001)
+      if int(command) in cmd_val:
+        if cur_pad != int(pad):
+          database = [0] * 128 # reset database
+          cur_pad  = int(pad)
+          send_value_to_edrumulus(108, cur_pad)
+        send_value_to_edrumulus(int(command), int(value))
+        cur_cmd = cmd_val.index(int(command))
+        while database[cur_cmd] != int(value): # wait for parameter to be applied in Edrumulus
+          time.sleep(0.001)
   is_load_settings = False # we are done now
 
 
@@ -170,7 +172,7 @@ def process(frames):
           cur_cmd = cmd_val.index(key)
           # do not update command which was just changed to avoid the value jumps back to old value
           if (midi_previous_send_cmd != key) or is_load_settings:
-            param_set[cur_cmd]      = max(0, min(cmd_val_rng[cur_cmd], value));
+            database[cur_cmd]       = max(0, min(cmd_val_rng[cur_cmd], value));
             do_update_param_outputs = True;
         if key == 127: # check for major version number
           version_major = value
@@ -259,11 +261,11 @@ with client:
         cur_sel_cmd = cur_sel_cmd + 1 if ch == ord('c') else cur_sel_cmd - 1
         sel_cmd     = max(0, min(len(cmd_val) - 1, cur_sel_cmd))
       elif ch == 258 or ch == 259: # change parameter value with up/down keys
-        cur_sel_val        = param_set[sel_cmd]
-        cur_sel_val        = cur_sel_val + 1 if ch == 259 else cur_sel_val - 1
-        param_set[sel_cmd] = max(0, min(cmd_val_rng[sel_cmd], cur_sel_val))
-        midi_send_val      = param_set[sel_cmd]
-        midi_send_cmd      = cmd_val[sel_cmd]
+        cur_sel_val       = database[sel_cmd]
+        cur_sel_val       = cur_sel_val + 1 if ch == 259 else cur_sel_val - 1
+        database[sel_cmd] = max(0, min(cmd_val_rng[sel_cmd], cur_sel_val))
+        midi_send_val     = database[sel_cmd]
+        midi_send_cmd     = cmd_val[sel_cmd]
       elif ch == ord('a') or ch == ord('A'): # enable/disable auto pad selection
         auto_pad_sel = (ch == ord('a')) # capital 'A' disables auto pad selection
       elif ch == ord('r'):
