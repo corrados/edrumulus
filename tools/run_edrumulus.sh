@@ -207,7 +207,7 @@ jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
 
 # either use direct MIDI connection or through EdrumulusGUI
 if [[ -v is_gui ]]; then
-  ./EdrumulusGUI
+  ./edrumulus_gui.py
 elif [[ -v is_jamulus ]]; then
   jack_disconnect $KITJACKPORTLEFT system:playback_1
   jack_disconnect $KITJACKPORTRIGHT system:playback_2
