@@ -51,7 +51,6 @@ midi_send_val           = -1
 auto_pad_sel            = False; # no auto pad selection per default
 is_load_settings        = False
 
-
 # initialize GUI
 mainwin  = curses.initscr()
 midiwin  = curses.newwin(box_len, 24, row_start + 5, col_start)
@@ -66,8 +65,9 @@ curses.curs_set(0)    # suppress cursor
 
 # initialize jack audio for MIDI
 client      = jack.Client('EdrumulusGUI')
-input_port  = client.midi_inports.register('MIDI_in')
-output_port = client.midi_outports.register('MIDI_out')
+input_port  = client.midi_inports.register("MIDI_in")
+output_port = client.midi_outports.register("MIDI_out")
+
 
 # parse command parameter
 def parse_cmd_param(cmd):
@@ -110,6 +110,7 @@ def update_param_outputs():
 
 # update pad selection (for auto pad selection)
 def update_pad_selection(midi_note_in, midi_note1, midi_note2, pad_index):
+  global sel_pad, midi_send_val, midi_send_cmd
   if (midi_note_in == midi_note1 or midi_note_in == midi_note2) and sel_pad is not pad_index:
     sel_pad       = pad_index
     midi_send_val = sel_pad
@@ -120,13 +121,15 @@ def update_pad_selection(midi_note_in, midi_note1, midi_note2, pad_index):
 @client.set_process_callback
 def process(frames):
   global database, midi_send_val, midi_send_cmd, midi_previous_send_cmd, do_update_param_outputs, \
-         version_major, version_minor
+         version_major, version_minor, hi_hat_ctrl
   output_port.clear_buffer()
   for offset, data in input_port.incoming_midi_events():
     if len(data) == 3:
-      key   = int.from_bytes(data[1], "big")
-      value = int.from_bytes(data[2], "big")
-      if int.from_bytes(data[0], "big") == 0x80:
+      status = int.from_bytes(data[0], "big")
+      key    = int.from_bytes(data[1], "big")
+      value  = int.from_bytes(data[2], "big")
+
+      if status == 0x80: # act on control messages
         if key in cmd_val:
           cur_cmd = cmd_val.index(key)
           # do not update command which was just changed to avoid the value jumps back to old value
@@ -138,48 +141,41 @@ def process(frames):
         if key == 126: # check for minor version number
           version_minor = value
 
+      if (status & 0xF0) == 0x90: # display current note-on received value
+        midiwin.move(2, 0)
+        midiwin.insdelln(1)
+        midiwin.addstr(2, 1, "{:3d} ({:<6s}) | {:3d}".format(key, midi_map[key], value))
+        midigwin.move(1, 0)
+        midigwin.insdelln(1)
+        midigwin.move(2, 1)
+        midigwin.hline(curses.ACS_BLOCK, max(1, int(float(value) / 128 * 25)))
+        do_update_param_outputs = True
+        if auto_pad_sel and value > 10: # auto pad selection
+          update_pad_selection(key, 38, 40, 0) # snare
+          update_pad_selection(key, 36, 36, 1) # kick
+          update_pad_selection(key, 22, 26, 2) # hi-hat
+          update_pad_selection(key, 49, 55, 4) # crash
+          update_pad_selection(key, 48, 50, 5) # tom1
+          update_pad_selection(key, 51, 53, 6) # ride
+          update_pad_selection(key, 45, 47, 7) # tom2
+          update_pad_selection(key, 43, 58, 8) # tom3
 
-#      # display current note-on received value
-#      if (in_event.buffer(0) & 0xF0) == 0x90:
-#        wmove     ( midiwin, 2, 0 )
-#        winsdelln ( midiwin, 1 )
-#        mvwprintw ( midiwin, 2, 1, "%3d (%-6s) | %3d", (int) in_event.buffer[1], midi_map[(int) in_event.buffer[1]].c_str(), (int) in_event.buffer[2] )
-#
-#        wmove     ( midigwin, 1, 0 )
-#        winsdelln ( midigwin, 1 )
-#        wmove     ( midigwin, 2, 1 )
-#        whline    ( midigwin, ACS_BLOCK, std::max ( 1, (int) ( (float) in_event.buffer[2] / 128 * 25 ) ) )
-#
-#        if auto_pad_sel and in_event.buffer(2) > 10
-#          update_pad_selection ( in_event.buffer[1], 38, 40, 0 ) # snare
-#          update_pad_selection ( in_event.buffer[1], 36, 36, 1 ) # kick
-#          update_pad_selection ( in_event.buffer[1], 22, 26, 2 ) # hi-hat
-#          update_pad_selection ( in_event.buffer[1], 49, 55, 4 ) # crash
-#          update_pad_selection ( in_event.buffer[1], 48, 50, 5 ) # tom1
-#          update_pad_selection ( in_event.buffer[1], 51, 53, 6 ) # ride
-#          update_pad_selection ( in_event.buffer[1], 45, 47, 7 ) # tom2
-#          update_pad_selection ( in_event.buffer[1], 43, 58, 8 ) # tom3
-#
-#        do_update_param_outputs = True
-#
-#      # display current positional sensing received value
-#      if (in_event.buffer(0) & 0xF0) == 0xB0:
-#        if in_event.buffer(1) == 16: # positional sensing
-#          wmove     ( poswin, 1, 0 )
-#          winsdelln ( poswin, 1 )
-#          mvwprintw ( poswin, 1, 1, " %3d", (int) in_event.buffer[2] )
-#
-#          wmove     ( posgwin, 1, 0 )
-#          winsdelln ( posgwin, 1 )
-#          std::string bar = "M--------------------E"
-#          bar[1 + (int) ( (float) in_event.buffer[2] / 128 * 20 )] = '*'
-#          mvwprintw ( posgwin, 1, 1, bar.c_str() )
-#          do_update_param_outputs = True
-#
-#        if in_event.buffer(1) == 4: # hi-hat controller
-#          hi_hat_ctrl             = in_event.buffer(2)
-#          do_update_param_outputs = True
-#
+
+      if (status & 0xF0) == 0xB0: # display current positional sensing received value
+        if key == 16: # positional sensing
+          poswin.move(1, 0)
+          poswin.insdelln(1)
+          poswin.addstr(1, 1, " {:3d}".format(value))
+          posgwin.move(1, 0)
+          posgwin.insdelln(1)
+          posgwin.addstr(1, 1, "M--------------------E")
+          posgwin.addstr(1, 2 + int(float(value) / 128 * 20), "*")
+          do_update_param_outputs = True
+
+        if key == 4: # hi-hat controller
+          hi_hat_ctrl             = value
+          do_update_param_outputs = True
+
   if midi_send_cmd >= 0:
     output_port.write_midi_event(0, (185, midi_send_cmd, midi_send_val))
     midi_previous_send_cmd = midi_send_cmd # store previous value
