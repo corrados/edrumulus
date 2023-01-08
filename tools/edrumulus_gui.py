@@ -19,10 +19,15 @@
 
 # Edrumulus simple terminal GUI
 
+import sys
 import jack
-import curses
 import time
-
+use_lcd = len(sys.argv) > 1 and sys.argv[1] == 'lcd'
+if use_lcd:
+  import RPi.GPIO as GPIO
+  from RPLCD.gpio import CharLCD
+else:
+  import curses
 
 # tables
 max_num_pads = 9
@@ -52,32 +57,43 @@ midi_send_val           = -1
 auto_pad_sel            = False; # no auto pad selection per default
 is_load_settings        = False
 
-# initialize GUI
-mainwin  = curses.initscr()
-midiwin  = curses.newwin(box_len, 24, row_start + 5, col_start)
-midigwin = curses.newwin(box_len, 26, row_start + 5, col_start + 25)
-poswin   = curses.newwin(box_len, 7,  row_start + 5, col_start + 52)
-posgwin  = curses.newwin(box_len, 24, row_start + 5, col_start + 60)
-ctrlwin  = curses.newwin(box_len, 7,  row_start + 5, col_start + 85)
-curses.noecho()       # turn off key echoing
-mainwin.keypad(True)  # enable the keypad for non-char keys
-mainwin.nodelay(True) # we want a non-blocking getch()
-curses.curs_set(0)    # suppress cursor
-
 # initialize jack audio for MIDI
 client      = jack.Client('EdrumulusGUI')
 input_port  = client.midi_inports.register("MIDI_in")
 output_port = client.midi_outports.register("MIDI_out")
 
 
-# parse command parameter
-def parse_cmd_param(cmd):
-  # check for "pad type" and "curve type" special cases, otherwise convert integer in string
-  return pad_types[database[cmd]] if cmd == 0 else curve_types[database[cmd]] if cmd == 6 else str(database[cmd])
+################################################################################
+# ncurses GUI implementation ###################################################
+################################################################################
+mainwin  = []
+midiwin  = []
+midigwin = []
+poswin   = []
+posgwin  = []
+ctrlwin  = []
+
+def ncurses_init():
+  global mainwin, midiwin, midigwin, poswin, posgwin, ctrlwin
+  mainwin  = curses.initscr()
+  midiwin  = curses.newwin(box_len, 24, row_start + 5, col_start)
+  midigwin = curses.newwin(box_len, 26, row_start + 5, col_start + 25)
+  poswin   = curses.newwin(box_len, 7,  row_start + 5, col_start + 52)
+  posgwin  = curses.newwin(box_len, 24, row_start + 5, col_start + 60)
+  ctrlwin  = curses.newwin(box_len, 7,  row_start + 5, col_start + 85)
+  curses.noecho()       # turn off key echoing
+  mainwin.keypad(True)  # enable the keypad for non-char keys
+  mainwin.nodelay(True) # we want a non-blocking getch()
+  curses.curs_set(0)    # suppress cursor
 
 
-# update window parameter outputs
-def update_param_outputs():
+def ncurses_cleanup():
+  mainwin.keypad(False)
+  curses.echo()
+  curses.endwin()
+
+
+def ncurses_update_param_outputs():
   if version_major >= 0 and version_minor >= 0:
     mainwin.addstr(row_start - 1, col_start, "Edrumulus v{0}.{1}".format(version_major, version_minor))
   mainwin.addstr(row_start, col_start, "Press a key (q:quit; s,S:sel pad; c,C:sel command; a,A: auto pad sel; up,down: change param; r: reset)")
@@ -86,7 +102,8 @@ def update_param_outputs():
   else:
     mainwin.addstr(row_start + 2, col_start, "Selected pad:         {:2d} ({:s})      ".format(sel_pad, pad_names[sel_pad]))
 
-  mainwin.addstr(row_start + 3, col_start, "Parameter: {:>10s}: {:s}             ".format(cmd_names[sel_cmd], parse_cmd_param(sel_cmd)))
+  mainwin.addstr(row_start + 3, col_start, "Parameter: {:>10s}: {:s}             ".format(cmd_names[sel_cmd], \
+    pad_types[database[sel_cmd]] if sel_cmd == 0 else curve_types[database[sel_cmd]] if sel_cmd == 6 else str(database[sel_cmd])))
   mainwin.refresh()
   midiwin.box() # in this box the received note-on MIDI notes are shown
   midiwin.addstr(0, 8, "MIDI-IN")
@@ -109,6 +126,87 @@ def update_param_outputs():
   ctrlwin.refresh()
 
 
+def ncurses_update_midi_win(key, value, instrument_name):
+  midiwin.move(2, 0)
+  midiwin.insdelln(1)
+  midiwin.addstr(2, 1, "{:3d} ({:<6s}) | {:3d}".format(key, instrument_name, value))
+  midigwin.move(1, 0)
+  midigwin.insdelln(1)
+  midigwin.move(2, 1)
+  midigwin.hline(curses.ACS_BLOCK, max(1, int(float(value) / 128 * 25)))
+
+
+def ncurses_update_possense_win(value):
+  poswin.move(1, 0)
+  poswin.insdelln(1)
+  poswin.addstr(1, 1, " {:3d}".format(value))
+  posgwin.move(1, 0)
+  posgwin.insdelln(1)
+  posgwin.addstr(1, 1, "M--------------------E")
+  posgwin.addch(1, 2 + int(float(value) / 128 * 20), curses.ACS_BLOCK)
+
+
+def ncurses_input_loop():
+  global sel_pad, sel_cmd, database, auto_pad_sel, do_update_param_outputs
+  # loop until user presses q
+  while (ch := mainwin.getch()) != ord('q'):
+    if ch != -1:
+      if ch == ord('s') or ch == ord('S'): # change selected pad #####################
+        cur_sel_pad = sel_pad
+        cur_sel_pad = cur_sel_pad + 1 if ch == ord('s') else cur_sel_pad - 1
+        sel_pad     = max(0, min(max_num_pads - 1, cur_sel_pad))
+        send_value_to_edrumulus(108, sel_pad)
+      elif ch == ord('c') or ch == ord('C'): # change selected command ###############
+        cur_sel_cmd = sel_cmd
+        cur_sel_cmd = cur_sel_cmd + 1 if ch == ord('c') else cur_sel_cmd - 1
+        sel_cmd     = max(0, min(len(cmd_val) - 1, cur_sel_cmd))
+      elif ch == 258 or ch == 259: # change parameter value with up/down keys ########
+        cur_sel_val       = database[sel_cmd]
+        cur_sel_val       = cur_sel_val + 1 if ch == 259 else cur_sel_val - 1
+        database[sel_cmd] = max(0, min(cmd_val_rng[sel_cmd], cur_sel_val))
+        send_value_to_edrumulus(cmd_val[sel_cmd], database[sel_cmd])
+      elif ch == ord('a') or ch == ord('A'): # enable/disable auto pad selection #####
+        auto_pad_sel = (ch == ord('a')) # capital 'A' disables auto pad selection
+      elif ch == ord('r'): # reset all settings ######################################
+        mainwin.addstr(row_start + 1, col_start, "DO YOU REALLY WANT TO RESET ALL EDRUMULUS PARAMETERS [y/n]?")
+        mainwin.nodelay(False) # temporarily, use blocking getch()
+        if mainwin.getch() == ord('y'):
+          send_value_to_edrumulus(115, 0) # midi_send_val will be ignored by Edrumulus for this command
+        mainwin.nodelay(True) # go back to unblocking getch()
+        mainwin.addstr(row_start + 1, col_start, "                                                           ")
+      do_update_param_outputs = True
+
+    if do_update_param_outputs:
+      ncurses_update_param_outputs()
+      do_update_param_outputs = False
+    time.sleep(0.01)
+
+
+def ncurses_load_settings_message():
+  mainwin.addstr(row_start + 5, col_start, "Loading settings...")
+  mainwin.refresh()
+
+
+def ncurses_store_settings_message():
+  mainwin.box()
+  mainwin.addstr(row_start + 5, col_start, "Storing settings...")
+  mainwin.refresh()
+
+
+################################################################################
+# LCD GUI implementation #######################################################
+################################################################################
+lcd = []
+
+def lcd_init():
+  global lcd
+  lcd = CharLCD(pin_rs = 27, pin_rw = None, pin_e = 17, pins_data = [22, 23, 24, 10],
+                numbering_mode = GPIO.BCM, cols = 16, rows = 2, auto_linebreaks = False)
+
+
+################################################################################
+# Settings handling ############################################################
+################################################################################
 def store_settings():
   with open("settings/trigger_settings.txt", "w") as f:
     for (pad_index, pad) in enumerate(pad_names):
@@ -140,6 +238,9 @@ def load_settings():
   is_load_settings = False # we are done now
 
 
+################################################################################
+# MIDI handling (via jack audio) ###############################################
+################################################################################
 def send_value_to_edrumulus(command, value):
   global midi_send_cmd, midi_send_val
   (midi_send_cmd, midi_send_val) = (command, value);
@@ -172,37 +273,31 @@ def process(frames):
           version_minor = value
 
       if (status & 0xF0) == 0x90: # display current note-on received value
-        midiwin.move(2, 0)
-        midiwin.insdelln(1)
         try:
           instrument_name = midi_map[key]
         except:
           instrument_name = "" # not all MIDI values have a defined instrument name
-        midiwin.addstr(2, 1, "{:3d} ({:<6s}) | {:3d}".format(key, instrument_name, value))
-        midigwin.move(1, 0)
-        midigwin.insdelln(1)
-        midigwin.move(2, 1)
-        midigwin.hline(curses.ACS_BLOCK, max(1, int(float(value) / 128 * 25)))
+        if use_lcd:
+          pass #TODO
+        else:
+          ncurses_update_midi_win(key, value, instrument_name)
         do_update_param_outputs = True
         if auto_pad_sel and instrument_name and value > 10: # auto pad selection (velocity threshold of 10)
           try:
             pad_index = pad_names.index(instrument_name) # throws exception if pad was not found
             if sel_pad is not pad_index: # only change pad if it is different from current
               sel_pad       = pad_index
-              midi_send_val = sel_pad
+              midi_send_val = sel_pad # we cannot use send_value_to_edrumulus here
               midi_send_cmd = 108
           except:
             pass # pad not found, do nothing
 
       if (status & 0xF0) == 0xB0: # display current positional sensing received value
         if key == 16: # positional sensing
-          poswin.move(1, 0)
-          poswin.insdelln(1)
-          poswin.addstr(1, 1, " {:3d}".format(value))
-          posgwin.move(1, 0)
-          posgwin.insdelln(1)
-          posgwin.addstr(1, 1, "M--------------------E")
-          posgwin.addch(1, 2 + int(float(value) / 128 * 20), curses.ACS_BLOCK)
+          if use_lcd:
+            pass #TODO
+          else:
+            ncurses_update_possense_win(value)
           do_update_param_outputs = True
         if key == 4: # hi-hat controller
           hi_hat_ctrl             = value
@@ -214,7 +309,15 @@ def process(frames):
     midi_send_cmd          = -1 # invalidate current command to prepare for next command
 
 
-# main function
+################################################################################
+# Main function ################################################################
+################################################################################
+# initialize GUI (16x2 LCD or ncurses GUI)
+if use_lcd:
+  lcd_init()
+else:
+  ncurses_init()
+
 with client:
   try:
     input_port.connect('ttymidi:MIDI_in')   # ESP32
@@ -229,57 +332,31 @@ with client:
     except:
       pass # if no Edrumulus hardware was found, no jack is started
 
+  # load settings from file
+  if use_lcd:
+    pass # TODO
+  else:
+    ncurses_load_settings_message()
   # TODO load settings takes way too long...
-  mainwin.addstr(row_start + 5, col_start, "Loading settings...")
-  mainwin.refresh()
   #load_settings()
 
-  # initial pad selection for retrieving Edrumulus parameters for current selected pad
-  midi_send_val = sel_pad
-  midi_send_cmd = 108
-  update_param_outputs()
+  send_value_to_edrumulus(108, sel_pad) # to query all Edrumulus current parameters
+  ncurses_update_param_outputs()
 
-  # loop until user presses q
-  while (ch := mainwin.getch()) != ord('q'):
-    if ch != -1:
-      if ch == ord('s') or ch == ord('S'): # change selected pad
-        cur_sel_pad   = sel_pad
-        cur_sel_pad   = cur_sel_pad + 1 if ch == ord('s') else cur_sel_pad - 1
-        sel_pad       = max(0, min(max_num_pads - 1, cur_sel_pad))
-        midi_send_val = sel_pad
-        midi_send_cmd = 108
-      elif ch == ord('c') or ch == ord('C'): # change selected command
-        cur_sel_cmd = sel_cmd
-        cur_sel_cmd = cur_sel_cmd + 1 if ch == ord('c') else cur_sel_cmd - 1
-        sel_cmd     = max(0, min(len(cmd_val) - 1, cur_sel_cmd))
-      elif ch == 258 or ch == 259: # change parameter value with up/down keys
-        cur_sel_val       = database[sel_cmd]
-        cur_sel_val       = cur_sel_val + 1 if ch == 259 else cur_sel_val - 1
-        database[sel_cmd] = max(0, min(cmd_val_rng[sel_cmd], cur_sel_val))
-        midi_send_val     = database[sel_cmd]
-        midi_send_cmd     = cmd_val[sel_cmd]
-      elif ch == ord('a') or ch == ord('A'): # enable/disable auto pad selection
-        auto_pad_sel = (ch == ord('a')) # capital 'A' disables auto pad selection
-      elif ch == ord('r'):
-        mainwin.addstr(row_start + 1, col_start, "DO YOU REALLY WANT TO RESET ALL EDRUMULUS PARAMETERS [y/n]?")
-        mainwin.nodelay(False) # temporarily, use blocking getch()
-        if mainwin.getch() == ord('y'):
-          midi_send_cmd = 115 # midi_send_val will be ignored by Edrumulus for this command
-        mainwin.nodelay(True) # go back to unblocking getch()
-        mainwin.addstr(row_start + 1, col_start, "                                                           ")
-      do_update_param_outputs = True
+  # main loop
+  if use_lcd:
+    pass # TODO
+  else:
+    ncurses_input_loop()
 
-    if do_update_param_outputs:
-      update_param_outputs()
-      do_update_param_outputs = False
-    time.sleep(0.01)
-
-  # clean up and exit
-  mainwin.box()
-  mainwin.addstr(row_start + 5, col_start, "Storing settings...")
-  mainwin.refresh()
+  # store settings in file, clean up and exit
+  if use_lcd:
+    pass # TODO
+  else:
+    ncurses_store_settings_message()
   store_settings()
-  mainwin.keypad(False)
-  curses.echo()
-  curses.endwin()
+  if use_lcd:
+    pass # TODO
+  else:
+    ncurses_cleanup()
 
