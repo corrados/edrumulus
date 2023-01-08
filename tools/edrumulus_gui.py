@@ -144,7 +144,11 @@ def process(frames):
       if (status & 0xF0) == 0x90: # display current note-on received value
         midiwin.move(2, 0)
         midiwin.insdelln(1)
-        midiwin.addstr(2, 1, "{:3d} ({:<6s}) | {:3d}".format(key, midi_map[key], value))
+        try:
+          instrument_name = midi_map[key]
+        except:
+          instrument_name = "" # not all MIDI values have a defined instrument name
+        midiwin.addstr(2, 1, "{:3d} ({:<6s}) | {:3d}".format(key, instrument_name, value))
         midigwin.move(1, 0)
         midigwin.insdelln(1)
         midigwin.move(2, 1)
@@ -169,7 +173,7 @@ def process(frames):
           posgwin.move(1, 0)
           posgwin.insdelln(1)
           posgwin.addstr(1, 1, "M--------------------E")
-          posgwin.addstr(1, 2 + int(float(value) / 128 * 20), "*")
+          posgwin.addch(1, 2 + int(float(value) / 128 * 20), curses.ACS_BLOCK)
           do_update_param_outputs = True
 
         if key == 4: # hi-hat controller
