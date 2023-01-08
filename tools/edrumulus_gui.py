@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 #*******************************************************************************
-# Copyright (c) 2023-2023
+# Copyright (c) 2022-2023
 # Author(s): Volker Fischer
 #*******************************************************************************
 # This program is free software; you can redistribute it and/or modify it under
@@ -26,16 +26,16 @@ import time
 
 # tables
 max_num_pads = 9
-number_cmd   = 12
-midi_map     = { 38: "snare", 40: "snare", 36: "kick", 22: "hi-hat", 26: "hi-hat", 44: "pedal", \
-                 49: "crash", 51: "ride",  48: "tom1", 45: "tom2",   43: "tom3" }
-pad_names    = [ "snare", "kick", "hi-hat", "ctrl", "crash", "tom1", "ride", "tom2", "tom3" ]
-pad_types    = [ "PD120", "PD80R", "PD8", "FD8", "VH12", "VH12CTRL", "KD7", "TP80", "CY6", "CY8", "DIABOLO12", "CY5", "HD1TOM", "PD6", "KD8", "PDX8", "KD120", "PD5", "PDA120LS", "PDX100", "KT10" ]
-curve_types  = [ "LINEAR", "EXP1", "EXP2", "LOG1", "LOG2" ]
+midi_map     = {38: "snare", 40: "snare", 36: "kick", 22: "hi-hat", 26: "hi-hat", 44: "pedal", \
+                49: "crash", 51: "ride",  48: "tom1", 45: "tom2",   43: "tom3"}
+curve_types  = ["LINEAR", "EXP1", "EXP2", "LOG1", "LOG2"]
+pad_names    = ["snare", "kick", "hi-hat", "ctrl", "crash", "tom1", "ride", "tom2", "tom3"]
+pad_types    = ["PD120", "PD80R", "PD8", "FD8", "VH12", "VH12CTRL", "KD7", "TP80", "CY6", "CY8", "DIABOLO12", \
+                "CY5", "HD1TOM", "PD6", "KD8", "PDX8", "KD120", "PD5", "PDA120LS", "PDX100", "KT10"]
 cmd_names    = [ "type", "thresh", "sens", "pos thres", "pos sens", "rim thres", "curve", "spike", "rim/pos", "note", "note rim", "cross" ]
 cmd_val      = [    102,      103,    104,         105,        106,         107,     109,     110,       111,    112,        113,     114 ]
 cmd_val_rng  = [     20,       31,     31,          31,         31,          31,       4,       4,         3,    127,        127,      31 ]
-param_set    = [0] * number_cmd
+param_set    = [0] * len(cmd_val)
 hi_hat_ctrl  = 0  # current hi-hat control value
 col_start    = 5  # start column of parameter display
 row_start    = 1  # start row of parameter display
@@ -115,6 +115,42 @@ def update_pad_selection(midi_note_in, midi_note1, midi_note2, pad_index):
     sel_pad       = pad_index
     midi_send_val = sel_pad
     midi_send_cmd = 108
+
+
+def store_settings():
+  with open("settings/trigger_settings.txt", "w") as f:
+    for (pad_index, pad) in enumerate(pad_names):
+      send_value_to_edrumulus(108, pad_index)
+      time.sleep(0.2) # should be enough time to transfer all pad parameters
+      for (idx, midi_id) in enumerate(cmd_val):
+        f.write("%d,%d,%d\n" % (pad_index, midi_id, param_set[idx]))
+
+
+def load_settings():
+  global database, is_load_settings
+  is_load_settings = True # to update database of current command
+  with open("settings/trigger_settings.txt", "r") as f:
+    cur_pad = -1 # initialize with illegal index
+    while True:
+      line = f.readline()
+      if len(line) == 0:
+        break
+      (pad, command, value) = line.replace('\n', '').split(',')
+      if cur_pad != int(pad):
+        database = [0] * 128 # reset database
+        cur_pad  = int(pad)
+        send_value_to_edrumulus(108, cur_pad)
+      send_value_to_edrumulus(int(command), int(value))
+      while database[int(command)] != int(value): # wait for parameter to be applied in Edrumulus
+        time.sleep(0.001)
+  is_load_settings = False # we are done now
+
+
+def send_value_to_edrumulus(command, value):
+  global midi_send_cmd, midi_send_val
+  (midi_send_cmd, midi_send_val) = (command, value);
+  while midi_send_cmd >= 0:
+    time.sleep(0.001)
 
 
 # jack audio callback function
@@ -201,6 +237,9 @@ with client:
     except:
       pass # if no Edrumulus hardware was found, no jack is started
 
+  # TODO load settings takes way too long...
+  #load_settings()
+
   # initial pad selection for retrieving Edrumulus parameters for current selected pad
   midi_send_val = sel_pad
   midi_send_cmd = 108
@@ -218,7 +257,7 @@ with client:
       elif ch == ord('c') or ch == ord('C'): # change selected command
         cur_sel_cmd = sel_cmd
         cur_sel_cmd = cur_sel_cmd + 1 if ch == ord('c') else cur_sel_cmd - 1
-        sel_cmd     = max(0, min(number_cmd - 1, cur_sel_cmd))
+        sel_cmd     = max(0, min(len(cmd_val) - 1, cur_sel_cmd))
       elif ch == 258 or ch == 259: # change parameter value with up/down keys
         cur_sel_val        = param_set[sel_cmd]
         cur_sel_val        = cur_sel_val + 1 if ch == 259 else cur_sel_val - 1
@@ -242,6 +281,10 @@ with client:
     time.sleep(0.01)
 
   # clean up and exit
+  mainwin.box()
+  mainwin.addstr(row_start + 5, col_start, "Storing settings...")
+  mainwin.refresh()
+  store_settings()
   mainwin.keypad(False)
   curses.echo()
   curses.endwin()
