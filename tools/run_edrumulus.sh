@@ -119,13 +119,6 @@ else
 fi
 
 
-# compile EdrumulusGUI ---------------------------------------------------------
-if [ ! -f EdrumulusGUI ]; then
-  echo "Compile EdrumulusGUI"
-  gcc edrumulus_gui.cpp -o EdrumulusGUI -lncurses -ljack -lstdc++
-fi
-
-
 # drum kit setup ---------------------------------------------------------------
 echo We assume that you have created the edrumuluskit with edrumulus/tools/mixdown_kits.m or PearlMMX is present
 

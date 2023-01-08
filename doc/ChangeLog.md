@@ -1,5 +1,12 @@
 # Edrumulus Project Log
 
+
+## 2023-01-08 edrumulus_gui.py replaces EdrumulusGUI
+
+  The C++ version of the command line Edrumulus GUI is now replaced by an equivalent Python
+  implementation. Now, the LCD-GUI can be merged in that file. Also, the settings file
+  management can now be implemented in that file giving us a single source implementation.
+
 ## 2022-10-16 Multiple head sensors
 
   The PDA120LS pad has three mesh head piezo sensors which are combined into one output signal.
