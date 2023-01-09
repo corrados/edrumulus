@@ -2,7 +2,7 @@
 
 #*******************************************************************************
 # Copyright (c) 2022-2023
-# Author(s): Volker Fischer
+# Author(s): Volker Fischer, Tobias Fischer
 #*******************************************************************************
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -43,9 +43,6 @@ cmd_val      = [   102,      103,    104,         105,        106,         107, 
 cmd_val_rng  = [    20,       31,     31,          31,         31,          31,       4,       4,         3,    127,        127,      31]
 database     = [0] * len(cmd_val)
 hi_hat_ctrl  = 0  # current hi-hat control value
-col_start    = 5  # start column of parameter display
-row_start    = 1  # start row of parameter display
-box_len      = 17 # length of the output boxes
 sel_pad                 = 0
 sel_cmd                 = 0
 version_major           = -1
@@ -58,7 +55,7 @@ auto_pad_sel            = False; # no auto pad selection per default
 is_load_settings        = False
 
 # initialize jack audio for MIDI
-client      = jack.Client('EdrumulusGUI')
+client      = jack.Client("EdrumulusGUI")
 input_port  = client.midi_inports.register("MIDI_in")
 output_port = client.midi_outports.register("MIDI_out")
 
@@ -66,12 +63,10 @@ output_port = client.midi_outports.register("MIDI_out")
 ################################################################################
 # ncurses GUI implementation ###################################################
 ################################################################################
-mainwin  = []
-midiwin  = []
-midigwin = []
-poswin   = []
-posgwin  = []
-ctrlwin  = []
+col_start = 5  # start column of parameter display
+row_start = 1  # start row of parameter display
+box_len   = 17 # length of the output boxes
+
 
 def ncurses_init():
   global mainwin, midiwin, midigwin, poswin, posgwin, ctrlwin
@@ -185,12 +180,111 @@ def ncurses_input_loop():
 ################################################################################
 # LCD GUI implementation #######################################################
 ################################################################################
-lcd = []
+selected_menu_item = 0
+selected_pad       = 0
+
+
+def lcd_button_handler(pin):
+  if GPIO.input(pin) == 0: # note that button is inverted
+    name       = button_name[pin] # current button name
+    start_time = time.time()
+    # auto press functionality for up/down/left/right buttons
+    if (name == 'left') or (name == 'down') or (name == 'up') or (name == 'right'):
+      lcd_on_button_pressed(name) # initial button press action
+      auto_press_index = 0
+      while GPIO.input(pin) == 0: # wait for the button up
+        time.sleep(0.01)
+        if time.time() - start_time - 0.7 - auto_press_index * 0.1 > 0: # after 0.7 s, auto press every 100 ms
+          lcd_on_button_pressed(name)
+          auto_press_index += 1
+    else:
+      while GPIO.input(pin) == 0: # wait for the button up
+        time.sleep(0.01)
+      if time.time() - start_time < 0.7:
+        lcd_on_button_pressed(name) # on button up
+      else:
+        # TODO: implementation of going a menu level up...
+        pass
+
+
+def lcd_on_button_pressed(button_name):
+  # TODO implement different menu levels here...
+  # if we are in trigger settings menu level
+  lcd_update_trigger_settings_menu(button_name)
+
+
+def lcd_update_trigger_settings_menu(button_name):
+  global selected_menu_item, selected_pad, database
+  database_index = selected_menu_item
+
+  if button_name == "down":
+    if selected_menu_item > 0:
+      selected_menu_item -= 1
+
+  if button_name == "up":
+    if selected_menu_item < len(cmd_val) - 1:
+      selected_menu_item += 1
+
+  if (button_name == "right") and (database[database_index] < cmd_val_rng[selected_menu_item]):
+    database[database_index] += 1
+    send_value_to_edrumulus(database_index, database [database_index])
+
+  if (button_name == "left") and (database[database_index] > 0):
+    database[database_index] -= 1
+    send_value_to_edrumulus(database_index, database[database_index])
+
+  if (button_name == "OK") and (selected_pad < 8):
+    selected_pad += 1
+    send_value_to_edrumulus(108, selected_pad)
+
+  if (button_name == "back") and (selected_pad > 0):
+    selected_pad -= 1
+    send_value_to_edrumulus(108, selected_pad)
+
+  lcd_update()
+
+
+def lcd_update():
+  lcd.clear()
+  lcd.cursor_pos = (0, 0)
+  lcd.write_string("%s:%s" % (pad_names[selected_pad], cmd_names[selected_menu_item]))
+
+  if selected_menu_item == 0:   # pad_types
+    lcd.cursor_pos = (1, 3)
+    lcd.write_string("<%s>" % pad_types[database[selected_menu_item]])
+  elif selected_menu_item == 6: # curve_types
+    lcd.cursor_pos = (1, 4)
+    lcd.write_string("<%s>" % curve_types[database[selected_menu_item]])
+  else:                         # use a number
+    lcd.cursor_pos = (1, 6)
+    lcd.write_string("<%d>" % database[selected_menu_item])
+
 
 def lcd_init():
   global lcd
   lcd = CharLCD(pin_rs = 27, pin_rw = None, pin_e = 17, pins_data = [22, 23, 24, 10],
                 numbering_mode = GPIO.BCM, cols = 16, rows = 2, auto_linebreaks = False)
+  # startup message on LCD
+  print('press Return to quit')
+  lcd.clear()
+  lcd.cursor_pos = (0, 3)
+  lcd.write_string("Edrumulus")
+  lcd.cursor_pos = (1, 2)
+  lcd.write_string("Prototype 5")
+  # init buttons (enables buttons AFTER startup only)
+  GPIO.setmode(GPIO.BCM)
+  GPIO.setup(25, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+  GPIO.add_event_detect(25, GPIO.BOTH, callback = lcd_button_handler, bouncetime = 20)
+  GPIO.setup(11, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+  GPIO.add_event_detect(11, GPIO.BOTH, callback = lcd_button_handler, bouncetime = 20)
+  GPIO.setup(8, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+  GPIO.add_event_detect(8, GPIO.BOTH, callback = lcd_button_handler, bouncetime = 20)
+  GPIO.setup(7, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+  GPIO.add_event_detect(7, GPIO.BOTH, callback = lcd_button_handler, bouncetime = 20)
+  GPIO.setup(12, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+  GPIO.add_event_detect(12, GPIO.BOTH, callback = lcd_button_handler, bouncetime = 20)
+  GPIO.setup(13, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+  GPIO.add_event_detect(13, GPIO.BOTH, callback = lcd_button_handler, bouncetime = 20)
 
 
 ################################################################################
@@ -270,7 +364,7 @@ def process(frames):
         except:
           instrument_name = "" # not all MIDI values have a defined instrument name
         if use_lcd:
-          pass #TODO
+          pass # TODO
         else:
           ncurses_update_midi_win(key, value, instrument_name)
         do_update_param_outputs = True
@@ -287,7 +381,7 @@ def process(frames):
       if (status & 0xF0) == 0xB0: # display current positional sensing received value
         if key == 16: # positional sensing
           if use_lcd:
-            pass #TODO
+            pass # TODO
           else:
             ncurses_update_possense_win(value)
           do_update_param_outputs = True
@@ -305,15 +399,12 @@ def process(frames):
 # Main function ################################################################
 ################################################################################
 # initialize GUI (16x2 LCD or ncurses GUI)
-if use_lcd:
-  lcd_init()
-else:
-  ncurses_init()
+lcd_init() if use_lcd else ncurses_init()
 
 with client:
   try:
-    input_port.connect('ttymidi:MIDI_in')   # ESP32
-    output_port.connect('ttymidi:MIDI_out') # ESP32
+    input_port.connect("ttymidi:MIDI_in")   # ESP32
+    output_port.connect("ttymidi:MIDI_out") # ESP32
   except:
     try:
       teensy_out = jack.get_ports("Edrumulus ", is_midi=True, is_input=True)
@@ -328,18 +419,22 @@ with client:
   load_settings()
 
   send_value_to_edrumulus(108, sel_pad) # to query all Edrumulus current parameters
-  ncurses_update_param_outputs()
-
-  # main loop
+  time.sleep(0.2)
   if use_lcd:
-    pass # TODO
+    lcd_update()
+  else:
+    ncurses_update_param_outputs()
+
+  # main loop (LCD is event driven and does not need a loop)
+  if use_lcd:
+    input() # simply wait until a key is pressed to quit the application
   else:
     ncurses_input_loop()
 
   # store settings in file, clean up and exit
   store_settings()
   if use_lcd:
-    pass # TODO
+    lcd.close() # just this single call is needed
   else:
     ncurses_cleanup()
 
