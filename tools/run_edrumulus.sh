@@ -33,6 +33,13 @@ if [[ "$1" == jamulus ]]; then
   is_jamulus=true
   gui_mode="non_block"
 fi
+if [[ "$1" == uartjamulus ]]; then
+  echo "-> Jamulus session mode enabled"
+  is_jamulus=true
+  is_raspi=true # UART connection to ESP32 is only supported on Raspberry Pi
+  is_uart=true
+  gui_mode="non_block"
+fi
 
 # check if the GUI mode shall be used
 if [[ "$1" == gui ]]; then
@@ -40,7 +47,7 @@ if [[ "$1" == gui ]]; then
   gui_mode="" # empty mode means GUI is used
 fi
 
-# special mode: UART connection with c++ GUI
+# special mode: UART connection with console GUI
 if [[ "$1" == uartgui ]]; then
   echo "-> UART GUI mode enabled"
   is_raspi=true # UART connection to ESP32 is only supported on Raspberry Pi
