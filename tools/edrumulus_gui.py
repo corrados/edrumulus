@@ -182,17 +182,6 @@ def ncurses_input_loop():
     time.sleep(0.01)
 
 
-def ncurses_load_settings_message():
-  mainwin.addstr(row_start + 5, col_start, "Loading settings...")
-  mainwin.refresh()
-
-
-def ncurses_store_settings_message():
-  mainwin.box()
-  mainwin.addstr(row_start + 5, col_start, "Storing settings...")
-  mainwin.refresh()
-
-
 ################################################################################
 # LCD GUI implementation #######################################################
 ################################################################################
@@ -208,10 +197,13 @@ def lcd_init():
 # Settings handling ############################################################
 ################################################################################
 def store_settings():
+  global database
   with open("settings/trigger_settings.txt", "w") as f:
     for (pad_index, pad) in enumerate(pad_names):
+      database = [-1] * len(cmd_val) # set database to invalid values
       send_value_to_edrumulus(108, pad_index)
-      time.sleep(0.2) # should be enough time to transfer all pad parameters
+      while any(i < 0 for i in database): # check if all values are received
+        time.sleep(0.001)
       for (idx, midi_id) in enumerate(cmd_val):
         f.write("%d,%d,%d\n" % (pad_index, midi_id, database[idx]))
 
@@ -228,7 +220,7 @@ def load_settings():
       (pad, command, value) = line.replace('\n', '').split(',')
       if int(command) in cmd_val:
         if cur_pad != int(pad):
-          database = [0] * len(cmd_val) # reset database
+          database = [-1] * len(cmd_val) # set database to invalid values
           cur_pad  = int(pad)
           send_value_to_edrumulus(108, cur_pad)
         send_value_to_edrumulus(int(command), int(value))
@@ -333,10 +325,6 @@ with client:
       pass # if no Edrumulus hardware was found, no jack is started
 
   # load settings from file
-  if use_lcd:
-    pass # TODO
-  else:
-    ncurses_load_settings_message()
   load_settings()
 
   send_value_to_edrumulus(108, sel_pad) # to query all Edrumulus current parameters
@@ -349,10 +337,6 @@ with client:
     ncurses_input_loop()
 
   # store settings in file, clean up and exit
-  if use_lcd:
-    pass # TODO
-  else:
-    ncurses_store_settings_message()
   store_settings()
   if use_lcd:
     pass # TODO
