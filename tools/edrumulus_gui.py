@@ -217,31 +217,24 @@ def lcd_on_button_pressed(button_name):
 def lcd_update_trigger_settings_menu(button_name):
   global selected_menu_item, selected_pad, database
   database_index = selected_menu_item
-
   if button_name == "down":
     if selected_menu_item > 0:
       selected_menu_item -= 1
-
-  if button_name == "up":
+  elif button_name == "up":
     if selected_menu_item < len(cmd_val) - 1:
       selected_menu_item += 1
-
-  if (button_name == "right") and (database[database_index] < cmd_val_rng[selected_menu_item]):
+  elif (button_name == "right") and (database[database_index] < cmd_val_rng[selected_menu_item]):
     database[database_index] += 1
     send_value_to_edrumulus(database_index, database [database_index])
-
-  if (button_name == "left") and (database[database_index] > 0):
+  elif (button_name == "left") and (database[database_index] > 0):
     database[database_index] -= 1
     send_value_to_edrumulus(database_index, database[database_index])
-
-  if (button_name == "OK") and (selected_pad < 8):
+  elif (button_name == "OK") and (selected_pad < 8):
     selected_pad += 1
     send_value_to_edrumulus(108, selected_pad)
-
-  if (button_name == "back") and (selected_pad > 0):
+  elif (button_name == "back") and (selected_pad > 0):
     selected_pad -= 1
     send_value_to_edrumulus(108, selected_pad)
-
   lcd_update()
 
 
@@ -249,7 +242,6 @@ def lcd_update():
   lcd.clear()
   lcd.cursor_pos = (0, 0)
   lcd.write_string("%s:%s" % (pad_names[selected_pad], cmd_names[selected_menu_item]))
-
   if selected_menu_item == 0:   # pad_types
     lcd.cursor_pos = (1, 3)
     lcd.write_string("<%s>" % pad_types[database[selected_menu_item]])
