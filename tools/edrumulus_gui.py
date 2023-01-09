@@ -180,9 +180,7 @@ def ncurses_input_loop():
 ################################################################################
 # LCD GUI implementation #######################################################
 ################################################################################
-# button 0: back;  button 1: OK;  button 2: left;  button 3: down;  button 4: up;  button 5: right
 button_name        = {25: 'back', 11: 'OK', 8: 'down', 7: 'up', 12: 'left', 13: 'right'}
-button_pin         = {25: 0, 11: 1, 8: 2, 7: 3, 12: 4, 13: 5}
 selected_menu_item = 0
 selected_pad       = 0
 
@@ -265,29 +263,20 @@ def lcd_update():
 
 def lcd_init():
   global lcd
+  print('press Return to quit')
   lcd = CharLCD(pin_rs = 27, pin_rw = None, pin_e = 17, pins_data = [22, 23, 24, 10],
                 numbering_mode = GPIO.BCM, cols = 16, rows = 2, auto_linebreaks = False)
   # startup message on LCD
-  print('press Return to quit')
   lcd.clear()
   lcd.cursor_pos = (0, 3)
   lcd.write_string("Edrumulus")
   lcd.cursor_pos = (1, 2)
   lcd.write_string("Prototype 5")
-  # init buttons (enables buttons AFTER startup only)
+  # buttons initialization
   GPIO.setmode(GPIO.BCM)
-  GPIO.setup(25, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-  GPIO.add_event_detect(25, GPIO.BOTH, callback = lcd_button_handler, bouncetime = 20)
-  GPIO.setup(11, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-  GPIO.add_event_detect(11, GPIO.BOTH, callback = lcd_button_handler, bouncetime = 20)
-  GPIO.setup(8, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-  GPIO.add_event_detect(8, GPIO.BOTH, callback = lcd_button_handler, bouncetime = 20)
-  GPIO.setup(7, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-  GPIO.add_event_detect(7, GPIO.BOTH, callback = lcd_button_handler, bouncetime = 20)
-  GPIO.setup(12, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-  GPIO.add_event_detect(12, GPIO.BOTH, callback = lcd_button_handler, bouncetime = 20)
-  GPIO.setup(13, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-  GPIO.add_event_detect(13, GPIO.BOTH, callback = lcd_button_handler, bouncetime = 20)
+  for pin in list(button_name.keys()):
+    GPIO.setup(pin, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+    GPIO.add_event_detect(pin, GPIO.BOTH, callback = lcd_button_handler, bouncetime = 20)
 
 
 ################################################################################
