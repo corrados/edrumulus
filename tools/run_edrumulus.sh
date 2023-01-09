@@ -216,7 +216,7 @@ elif [[ -v is_jamulus ]]; then
   read -n 1 -s -r -p ""
 else
   if [[ -v is_lcdgui ]]; then
-    ./lcd_gui.py
+    ./edrumulus_gui.py lcd
   else
     echo "###---------- PRESS ANY KEY TO TERMINATE THE EDRUMULUS SESSION ---------###"
     read -n 1 -s -r -p ""
