@@ -17,12 +17,12 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #*******************************************************************************
 
-# Edrumulus simple terminal GUI (either ncurses based or hardware LCD display)
-use_lcd = len(sys.argv) > 1 and sys.argv[1] == 'lcd'
+# Edrumulus simple terminal GUI
 
 import sys
 import jack
 import time
+use_lcd = len(sys.argv) > 1 and sys.argv[1] == 'lcd'
 if use_lcd:
   import RPi.GPIO as GPIO
   from RPLCD.gpio import CharLCD
