@@ -180,6 +180,9 @@ def ncurses_input_loop():
 ################################################################################
 # LCD GUI implementation #######################################################
 ################################################################################
+# button 0: back;  button 1: OK;  button 2: left;  button 3: down;  button 4: up;  button 5: right
+button_name        = {25: 'back', 11: 'OK', 8: 'down', 7: 'up', 12: 'left', 13: 'right'}
+button_pin         = {25: 0, 11: 1, 8: 2, 7: 3, 12: 4, 13: 5}
 selected_menu_item = 0
 selected_pad       = 0
 
