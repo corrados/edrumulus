@@ -13,6 +13,7 @@ echo "Edrumulus Linux start script for using Drumgizmo (including setup/installa
 
 # get environment --------------------------------------------------------------
 NCORES=$(nproc)
+gui_mode="no_gui" # no GUI is the default
 
 # check of Teensy USB MIDI
 if aconnect -l|grep -q Edrumulus; then
@@ -30,28 +31,29 @@ fi
 if [[ "$1" == jamulus ]]; then
   echo "-> Jamulus session mode enabled"
   is_jamulus=true
+  gui_mode="non_block"
 fi
 
 # check if the GUI mode shall be used
 if [[ "$1" == gui ]]; then
   echo "-> GUI mode enabled"
-  is_gui=true
+  gui_mode="" # empty mode means GUI is used
 fi
 
 # special mode: UART connection with c++ GUI
 if [[ "$1" == uartgui ]]; then
   echo "-> UART GUI mode enabled"
-  is_gui=true
   is_raspi=true # UART connection to ESP32 is only supported on Raspberry Pi
   is_uart=true
+  gui_mode="" # empty mode means GUI is used
 fi
 
 # check if the LCD GUI mode shall be used
 if [[ "$1" == lcdgui ]]; then
   echo "-> LCD GUI mode enabled"
-  is_lcdgui=true
   is_raspi=true # LCD GUI is only supported on Raspberry Pi
   is_uart=true
+  gui_mode="lcd"
 fi
 
 
@@ -198,10 +200,10 @@ else
 fi
 jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
 
-# either use direct MIDI connection or through EdrumulusGUI
-if [[ -v is_gui ]]; then
-  ./edrumulus_gui.py
-elif [[ -v is_jamulus ]]; then
+# Edrumulus GUI must always be called even if no GUI is selected to load/store settings
+./edrumulus_gui.py ${gui_mode}
+
+if [[ -v is_jamulus ]]; then
   jack_disconnect $KITJACKPORTLEFT system:playback_1
   jack_disconnect $KITJACKPORTRIGHT system:playback_2
   if [ -z "$2" ]; then
@@ -214,13 +216,6 @@ elif [[ -v is_jamulus ]]; then
   jack_connect $KITJACKPORTRIGHT "Jamulus:input right"
   echo "###---------- PRESS ANY KEY TO TERMINATE THE EDRUMULUS/JAMULUS SESSION ---------###"
   read -n 1 -s -r -p ""
-else
-  if [[ -v is_lcdgui ]]; then
-    ./edrumulus_gui.py lcd
-  else
-    echo "###---------- PRESS ANY KEY TO TERMINATE THE EDRUMULUS SESSION ---------###"
-    read -n 1 -s -r -p ""
-  fi
 fi
 
 

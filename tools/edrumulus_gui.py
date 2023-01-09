@@ -22,11 +22,14 @@
 import sys
 import jack
 import time
-use_lcd = len(sys.argv) > 1 and sys.argv[1] == 'lcd'
+no_gui      = len(sys.argv) > 1 and sys.argv[1] == "no_gui"    # no GUI but blocking (just settings management)
+non_block   = len(sys.argv) > 1 and sys.argv[1] == "non_block" # no GUI and non-blocking (just settings management)
+use_lcd     = len(sys.argv) > 1 and sys.argv[1] == "lcd"       # LCD GUI mode on Raspberry Pi
+use_ncurses = not no_gui and not non_block and not use_lcd     # normal console GUI mode (default)
 if use_lcd:
   import RPi.GPIO as GPIO
   from RPLCD.gpio import CharLCD
-else:
+elif use_ncurses:
   import curses
 
 # tables
@@ -255,7 +258,6 @@ def lcd_update():
 
 def lcd_init():
   global lcd
-  print('press Return to quit')
   lcd = CharLCD(pin_rs = 27, pin_rw = None, pin_e = 17, pins_data = [22, 23, 24, 10],
                 numbering_mode = GPIO.BCM, cols = 16, rows = 2, auto_linebreaks = False)
   # startup message on LCD
@@ -349,7 +351,7 @@ def process(frames):
           instrument_name = "" # not all MIDI values have a defined instrument name
         if use_lcd:
           pass # TODO
-        else:
+        elif use_ncurses:
           ncurses_update_midi_win(key, value, instrument_name)
         do_update_param_outputs = True
         if auto_pad_sel and instrument_name and value > 10: # auto pad selection (velocity threshold of 10)
@@ -366,7 +368,7 @@ def process(frames):
         if key == 16: # positional sensing
           if use_lcd:
             pass # TODO
-          else:
+          elif use_ncurses:
             ncurses_update_possense_win(value)
           do_update_param_outputs = True
         if key == 4: # hi-hat controller
@@ -383,7 +385,13 @@ def process(frames):
 # Main function ################################################################
 ################################################################################
 # initialize GUI (16x2 LCD or ncurses GUI)
-lcd_init() if use_lcd else ncurses_init()
+if use_lcd:
+  lcd_init()
+elif use_ncurses:
+  ncurses_init()
+
+if not use_ncurses and not non_block:
+  print('press Return to quit')
 
 with client:
   try:
@@ -406,19 +414,22 @@ with client:
   time.sleep(0.2)
   if use_lcd:
     lcd_update()
-  else:
+  elif use_ncurses:
     ncurses_update_param_outputs()
 
   # main loop (LCD is event driven and does not need a loop)
-  if use_lcd:
+  if use_lcd or no_gui:
     input() # simply wait until a key is pressed to quit the application
-  else:
+  elif use_ncurses:
     ncurses_input_loop()
 
-  # store settings in file, clean up and exit
-  store_settings()
+  # store settings in file
+  if not no_gui and not non_block:
+    store_settings()
+
+  # clean up and exit
   if use_lcd:
     lcd.close() # just this single call is needed
-  else:
+  elif use_ncurses:
     ncurses_cleanup()
 
