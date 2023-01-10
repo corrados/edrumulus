@@ -120,7 +120,7 @@ def ncurses_update_param_outputs():
   ctrlwin.addstr(0, 1, "CTRL")
   ctrlwin.addstr(1, 1, "{:4d}".format(hi_hat_ctrl))
   ctrlwin.vline(2, 3, curses.ACS_BLOCK, box_len - 3) # for reversed hline
-  ctrlwin.vline(2, 3, ' ', int((127.0 - hi_hat_ctrl) / 127 * (box_len - 3)))
+  ctrlwin.vline(2, 3, " ", int((127.0 - hi_hat_ctrl) / 127 * (box_len - 3)))
   ctrlwin.refresh()
 
 
@@ -147,28 +147,28 @@ def ncurses_update_possense_win(value):
 def ncurses_input_loop():
   global sel_pad, sel_cmd, database, auto_pad_sel, do_update_param_outputs
   # loop until user presses q
-  while (ch := mainwin.getch()) != ord('q'):
+  while (ch := mainwin.getch()) != ord("q"):
     if ch != -1:
-      if ch == ord('s') or ch == ord('S'): # change selected pad #####################
+      if ch == ord("s") or ch == ord("S"): # change selected pad #####################
         cur_sel_pad = sel_pad
-        cur_sel_pad = cur_sel_pad + 1 if ch == ord('s') else cur_sel_pad - 1
+        cur_sel_pad = cur_sel_pad + 1 if ch == ord("s") else cur_sel_pad - 1
         sel_pad     = max(0, min(max_num_pads - 1, cur_sel_pad))
         send_value_to_edrumulus(108, sel_pad)
-      elif ch == ord('c') or ch == ord('C'): # change selected command ###############
+      elif ch == ord("c") or ch == ord("C"): # change selected command ###############
         cur_sel_cmd = sel_cmd
-        cur_sel_cmd = cur_sel_cmd + 1 if ch == ord('c') else cur_sel_cmd - 1
+        cur_sel_cmd = cur_sel_cmd + 1 if ch == ord("c") else cur_sel_cmd - 1
         sel_cmd     = max(0, min(len(cmd_val) - 1, cur_sel_cmd))
       elif ch == 258 or ch == 259: # change parameter value with up/down keys ########
         cur_sel_val       = database[sel_cmd]
         cur_sel_val       = cur_sel_val + 1 if ch == 259 else cur_sel_val - 1
         database[sel_cmd] = max(0, min(cmd_val_rng[sel_cmd], cur_sel_val))
         send_value_to_edrumulus(cmd_val[sel_cmd], database[sel_cmd])
-      elif ch == ord('a') or ch == ord('A'): # enable/disable auto pad selection #####
-        auto_pad_sel = (ch == ord('a')) # capital 'A' disables auto pad selection
-      elif ch == ord('r'): # reset all settings ######################################
+      elif ch == ord("a") or ch == ord("A"): # enable/disable auto pad selection #####
+        auto_pad_sel = (ch == ord("a")) # capital "A" disables auto pad selection
+      elif ch == ord("r"): # reset all settings ######################################
         mainwin.addstr(row_start + 1, col_start, "DO YOU REALLY WANT TO RESET ALL EDRUMULUS PARAMETERS [y/n]?")
         mainwin.nodelay(False) # temporarily, use blocking getch()
-        if mainwin.getch() == ord('y'):
+        if mainwin.getch() == ord("y"):
           send_value_to_edrumulus(115, 0) # midi_send_val will be ignored by Edrumulus for this command
         mainwin.nodelay(True) # go back to unblocking getch()
         mainwin.addstr(row_start + 1, col_start, "                                                           ")
@@ -183,7 +183,7 @@ def ncurses_input_loop():
 ################################################################################
 # LCD GUI implementation #######################################################
 ################################################################################
-button_name        = {25: 'back', 11: 'OK', 8: 'down', 7: 'up', 12: 'left', 13: 'right'}
+button_name        = {25: "back", 11: "OK", 8: "down", 7: "up", 12: "left", 13: "right"}
 selected_menu_item = 0
 selected_pad       = 0
 
@@ -193,7 +193,7 @@ def lcd_button_handler(pin):
     name       = button_name[pin] # current button name
     start_time = time.time()
     # auto press functionality for up/down/left/right buttons
-    if (name == 'left') or (name == 'down') or (name == 'up') or (name == 'right'):
+    if (name == "left") or (name == "down") or (name == "up") or (name == "right"):
       lcd_on_button_pressed(name) # initial button press action
       auto_press_index = 0
       while GPIO.input(pin) == 0: # wait for the button up
@@ -220,22 +220,20 @@ def lcd_on_button_pressed(button_name):
 def lcd_update_trigger_settings_menu(button_name):
   global selected_menu_item, selected_pad, database
   database_index = selected_menu_item
-  if button_name == "down":
-    if selected_menu_item > 0:
-      selected_menu_item -= 1
-  elif button_name == "up":
-    if selected_menu_item < len(cmd_val) - 1:
+  if button_name == "down" and selected_menu_item > 0:
+    selected_menu_item -= 1
+  elif button_name == "up" and selected_menu_item < len(cmd_val) - 1:
       selected_menu_item += 1
-  elif (button_name == "right") and (database[database_index] < cmd_val_rng[selected_menu_item]):
+  elif button_name == "right" and database[database_index] < cmd_val_rng[selected_menu_item]:
     database[database_index] += 1
     send_value_to_edrumulus(database_index, database [database_index])
-  elif (button_name == "left") and (database[database_index] > 0):
+  elif button_name == "left" and database[database_index] > 0:
     database[database_index] -= 1
     send_value_to_edrumulus(database_index, database[database_index])
-  elif (button_name == "OK") and (selected_pad < 8):
+  elif button_name == "OK" and selected_pad < 8:
     selected_pad += 1
     send_value_to_edrumulus(108, selected_pad)
-  elif (button_name == "back") and (selected_pad > 0):
+  elif button_name == "back" and selected_pad > 0:
     selected_pad -= 1
     send_value_to_edrumulus(108, selected_pad)
   lcd_update()
@@ -297,7 +295,7 @@ def load_settings():
       line = f.readline()
       if len(line) == 0:
         break
-      (pad, command, value) = line.replace('\n', '').split(',')
+      (pad, command, value) = line.replace("\n", "").split(",")
       if int(command) in cmd_val:
         if cur_pad != int(pad):
           database = [-1] * len(cmd_val) # set database to invalid values
@@ -349,9 +347,7 @@ def process(frames):
           instrument_name = midi_map[key]
         except:
           instrument_name = "" # not all MIDI values have a defined instrument name
-        if use_lcd:
-          pass # TODO
-        elif use_ncurses:
+        if use_ncurses:
           ncurses_update_midi_win(key, value, instrument_name)
         do_update_param_outputs = True
         if auto_pad_sel and instrument_name and value > 10: # auto pad selection (velocity threshold of 10)
@@ -366,9 +362,7 @@ def process(frames):
 
       if (status & 0xF0) == 0xB0: # display current positional sensing received value
         if key == 16: # positional sensing
-          if use_lcd:
-            pass # TODO
-          elif use_ncurses:
+          if use_ncurses:
             ncurses_update_possense_win(value)
           do_update_param_outputs = True
         if key == 4: # hi-hat controller
@@ -391,7 +385,7 @@ elif use_ncurses:
   ncurses_init()
 
 if not use_ncurses and not non_block:
-  print('press Return to quit')
+  print("press Return to quit")
 
 with client:
   try:
