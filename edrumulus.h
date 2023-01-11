@@ -236,6 +236,7 @@ protected:
       };
 
       void apply_preset_pad_settings();
+      void manage_delayed_initialization();
       void initialize(); // this function should not be called directly but use sched_init() instead
       void sched_init() { init_delay_cnt = init_delay_value; }; // schedule initialization function (for delayed initialization)
       const float init_delay_value_s = 0.2; // init delay value in seconds

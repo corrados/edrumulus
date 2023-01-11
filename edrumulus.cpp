@@ -356,6 +356,20 @@ void Edrumulus::Pad::set_pad_type ( const Epadtype new_pad_type )
 }
 
 
+void Edrumulus::Pad::manage_delayed_initialization()
+{
+  // manage delayed initialization (make sure only one initialization for multiple quick settings changes)
+  if ( init_delay_cnt > 0 )
+  {
+    init_delay_cnt--;
+    if ( init_delay_cnt == 0 )
+    {
+      initialize();
+    }
+  }
+}
+
+
 void Edrumulus::Pad::initialize()
 {
   // in case we have a coupled sensor pad, the number of head sensors is 4, where 3 sensor signals and one sum
@@ -594,15 +608,7 @@ float Edrumulus::Pad::process_sample ( const float* input,
   float      cur_decay           = 1;    // needed for debugging, initialization value (0 dB) only used for debugging
   bool       sensor0_has_results = false;
 
-  // manage delayed initialization (make sure only one initialization for multiple quick settings changes)
-  if ( init_delay_cnt > 0 )
-  {
-    init_delay_cnt--;
-    if ( init_delay_cnt == 0 )
-    {
-      initialize();
-    }
-  }
+  manage_delayed_initialization();
 
   for ( int head_sensor_cnt = 0; head_sensor_cnt < number_head_sensors; head_sensor_cnt++ )
   {
@@ -1257,6 +1263,8 @@ void Edrumulus::Pad::process_control_sample ( const int* input,
                                               bool&      peak_found,
                                               int&       midi_velocity )
 {
+  manage_delayed_initialization();
+
   // map the input value to the MIDI range
   int cur_midi_ctrl_value = ( ( ADC_MAX_RANGE - input[0] - control_threshold ) / control_range * 127 );
   cur_midi_ctrl_value     = max ( 0, min ( 127, cur_midi_ctrl_value ) );
