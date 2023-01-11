@@ -31,10 +31,10 @@ Edrumulus_hardware::Edrumulus_hardware()
 // -----------------------------------------------------------------------------
 #ifdef TEENSYDUINO
 
-void Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
-                                              int** analog_pins_rimshot,
-                                              int*  number_pins,
-                                              int*  status_LED_pin )
+int Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
+                                             int** analog_pins_rimshot,
+                                             int*  number_pins,
+                                             int*  status_LED_pin )
 {
 
   // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
@@ -44,6 +44,7 @@ void Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
   *analog_pins_rimshot = analog_pins_rimshot1;
   *number_pins         = sizeof ( analog_pins1 ) / sizeof ( int );
   *status_LED_pin      = BOARD_LED_PIN;
+  return 0;
 }
 
 
@@ -194,10 +195,10 @@ void Edrumulus_hardware::capture_samples ( const int number_pads,
 // -----------------------------------------------------------------------------
 #ifdef ESP_PLATFORM
 
-void Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
-                                              int** analog_pins_rimshot,
-                                              int*  number_pins,
-                                              int*  status_LED_pin )
+int Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
+                                             int** analog_pins_rimshot,
+                                             int*  number_pins,
+                                             int*  status_LED_pin )
 {
   // Definition:
   // - Pin 5 is "input enabled, pull-up resistor" -> if read value is 1, we know that we have a
@@ -226,7 +227,7 @@ void Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
       *analog_pins_rimshot = analog_pins_rimshot5;
       *number_pins         = sizeof ( analog_pins5 ) / sizeof ( int );
       *status_LED_pin      = 21; // LED is connected to IO21 on prototype 5
-      return;
+      return 5;
     }
     else if ( ( bit1 > 0 ) && ( bit2 == 0 ) && ( bit3 == 0 ) && ( bit4 == 0 ) )
     {
@@ -238,7 +239,7 @@ void Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
       *analog_pins_rimshot = analog_pins_rimshot6;
       *number_pins         = sizeof ( analog_pins6 ) / sizeof ( int );
       *status_LED_pin      = BOARD_LED_PIN;
-      return;
+      return 6;
     }
   }
 
@@ -250,6 +251,7 @@ void Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
   *analog_pins_rimshot = analog_pins_rimshot4;
   *number_pins         = sizeof ( analog_pins4 ) / sizeof ( int );
   *status_LED_pin      = BOARD_LED_PIN;
+  return 4;
 }
 
 

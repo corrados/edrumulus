@@ -58,10 +58,10 @@ class Edrumulus_hardware
 public:
   Edrumulus_hardware();
 
-  static void get_prototype_pins ( int** analog_pins,
-                                   int** analog_pins_rimshot,
-                                   int*  number_pins,
-                                   int*  status_LED_pin );
+  static int get_prototype_pins ( int** analog_pins,
+                                  int** analog_pins_rimshot,
+                                  int*  number_pins,
+                                  int*  status_LED_pin );
 
   void setup ( const int conf_Fs,
                const int number_pads,
@@ -123,10 +123,10 @@ class Edrumulus_hardware
 public:
   Edrumulus_hardware();
 
-  static void get_prototype_pins ( int** analog_pins,
-                                   int** analog_pins_rimshot,
-                                   int*  number_pins,
-                                   int*  status_LED_pin );
+  static int get_prototype_pins ( int** analog_pins,
+                                  int** analog_pins_rimshot,
+                                  int*  number_pins,
+                                  int*  status_LED_pin );
 
   void setup ( const int conf_Fs,
                const int number_pads,

@@ -2,12 +2,6 @@
 
 The road map items are sorted by priority.
 
-- [ ] **Increase data rate on UART serial bus for MIDI signals for prototype 5**
-
-  The UART MIDI communication on prototype 5 is a direct connection to the Raspberry Pi and does
-  not need a standard MIDI data rate. The faster the rate, the less samples are lost during MIDI
-  signal transmission.
-
 - [ ] **Improve rim shot detection**
 
   Especially for pads like the PDA-120L where the piezos are located near the edge, the rim shot detection does perform poorly.

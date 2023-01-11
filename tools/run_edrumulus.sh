@@ -177,7 +177,7 @@ else
   MIDIJACKPORT=ttymidi:MIDI_in
 
   if [[ -v is_uart ]]; then
-    mod-ttymidi/ttymidi -s /dev/serial0 -b 38400 &
+    mod-ttymidi/ttymidi -s /dev/serial0 -b 115200 &
     # on prototype 5 the ESP32 has to be started by setting GPIO9 to high
     sudo systemctl start pigpiod
     sleep 1

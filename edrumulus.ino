@@ -47,22 +47,29 @@ int       selected_pad      = 0;     // initialization value
 
 void setup()
 {
+  // get the pin-to-pad assignments
+  int* analog_pins         = nullptr;
+  int* analog_pins_rimshot = nullptr;
+  const int prototype = Edrumulus_hardware::get_prototype_pins ( &analog_pins,
+                                                                 &analog_pins_rimshot,
+                                                                 &number_pads,
+                                                                 &status_LED_pin );
+
 #ifdef USE_MIDI
   MYMIDI.begin();
 #endif
 #ifdef MIDI_SERIAL
-  Serial.begin ( MIDI_SERIAL );
+  if ( prototype == 5 )
+  {
+    Serial.begin ( 115200 ); // faster communication on prototype 5
+  }
+  else
+  {
+    Serial.begin ( MIDI_SERIAL );
+  }
 #else
   Serial.begin ( 115200 );
 #endif
-
-  // get the pin-to-pad assignments
-  int* analog_pins         = nullptr;
-  int* analog_pins_rimshot = nullptr;
-  Edrumulus_hardware::get_prototype_pins ( &analog_pins,
-                                           &analog_pins_rimshot,
-                                           &number_pads,
-                                           &status_LED_pin );
 
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
 #ifdef ESP_PLATFORM
