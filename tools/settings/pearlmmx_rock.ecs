@@ -1,5 +1,6 @@
 
 # Pearl MMX kit rock live mixing setup
+-n:PearlMMX_Rock
 
 # note that the a-comp crashes if used with mono
 -a:KDrum -f:,1, -i jack,DrumGizmo:0-KDrum,0-KDrum
@@ -48,8 +49,8 @@
 # echo -e "cop-get 1,17\r\n" | nc -w1 localhost 2868
 # echo -e "c-select Snare\r\ncop-set 2,1,100\r\n" | nc -w1 localhost 2868
 # echo -e "cs-status\r\n" | nc -w1 localhost 2868
-# echo -e "engine-halt\r\ncs-load settings/pearlmmx_rock.ecs\r\ncs-select settings/pearlmmx_rock.ecs\r\ncs-connect settings/pearlmmx_rock.ecs\r\nengine-launch\r\nstart" | nc -w1 localhost 2868
-# echo -e "engine-halt\r\ncs-load settings/pearlmmx_natural.ecs\r\ncs-select settings/pearlmmx_natural.ecs\r\ncs-connect settings/pearlmmx_natural.ecs\r\nengine-launch\r\nstart" | nc -w1 localhost 2868
+# echo -e "engine-halt\r\ncs-load settings/pearlmmx_rock.ecs\r\ncs-select PearlMMX_Rock\r\ncs-connect PearlMMX_Rock\r\nengine-launch\r\nstart" | nc -w1 localhost 2868
+# echo -e "engine-halt\r\ncs-load settings/pearlmmx_natural.ecs\r\ncs-select PearlMMX_Natural\r\ncs-connect PearlMMX_Natural\r\nengine-launch\r\nstart" | nc -w1 localhost 2868
 
 
 # a-eq parameters: ------------------------

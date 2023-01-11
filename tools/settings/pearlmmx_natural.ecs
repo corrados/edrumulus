@@ -1,94 +1,30 @@
 
-# Pearl MMX kit rock live mixing setup
+# Pearl MMX kit natural mixing setup
+-n:PearlMMX_Natural
 
 -a:KDrum -i jack_multi,DrumGizmo:0-KDrum
--a:KDrum -elv2:urn:ardour:a-comp,22,70,0,7,-27,4.3,0,0
--a:KDrum -elv2:urn:ardour:a-eq,160,0,65,10.9,1.230,6147,12.6,1.2,256,-15.7,0.766,909,-9.3,0.622,8088,-7.4,4.33,1,1,1,1,1,1,0
--a:KDrum -chcopy:1,2 -ea:800 -epp:50
+-a:KDrum -chcopy:1,2 -eadb:20 -epp:50
 
 -a:Snare -i jack_multi,DrumGizmo:1-Snare
--a:Snare -elv2:urn:ardour:a-comp,10,80,0,4,-30,0
--a:Snare -elv2:urn:ardour:a-eq,28,-20,86,3.1,1,194,-4.9,0.38,2500,0,1,660,-3.5,0.32,1947,1.9,3.5,1,1,1,1,1,1,0
--a:Snare -chcopy:1,2 -ea:800 -epp:50
--a:Snare -elv2:urn:ardour:a-reverb,0.3,0.5,0
+-a:Snare -chcopy:1,2 -eadb:15 -epp:50
 
 -a:Hihat -i jack_multi,DrumGizmo:2-Hihat
--a:Hihat -elv2:urn:ardour:a-eq,315,-20,300,0,1,1000,0,1,2500,0,1,6000,0,1,9664,18.6,-14.227,1,1,1,1,1,1,0
--a:Hihat -chcopy:1,2 -ea:800 -epp:30
+-a:Hihat -chcopy:1,2 -eadb:11 -epp:30
 
 -a:Tom1 -i jack_multi,DrumGizmo:3-Tom1
--a:Tom1 -elv2:urn:ardour:a-eq,160,0,300,0,1,106,11.5,0.9,829,-3.1,2.26,5204,13.6,1,9000,0,-4.35,1,1,1,1,1,1,0
--a:Tom1 -chcopy:1,2 -ea:800 -epp:40
+-a:Tom1 -chcopy:1,2 -eadb:20 -epp:40
 
 -a:Tom2 -i jack_multi,DrumGizmo:4-Tom2
--a:Tom2 -elv2:urn:ardour:a-eq,160,0,251,0,1,95,10.5,1.12,829,0,2.26,4676,13,1.08,9000,0,-6.2,1,1,1,1,1,1,0
--a:Tom2 -chcopy:1,2 -ea:800 -epp:60
+-a:Tom2 -chcopy:1,2 -eadb:20 -epp:60
 
 -a:Tom3 -i jack_multi,DrumGizmo:5-Tom3
--a:Tom3 -elv2:urn:ardour:a-eq,160,0,300,0,1,86,11.5,1.04,829,-3.5,2.26,4355,14.6,1.55,9000,0,-4.97,1,1,1,1,1,1,0
--a:Tom3 -chcopy:1,2 -ea:800 -epp:70
+-a:Tom3 -chcopy:1,2 -eadb:20 -epp:70
 
 -a:OHLeft -i jack_multi,DrumGizmo:6-OHLeft
--a:OHLeft -elv2:urn:ardour:a-eq,160,0,300,0,1,100,0,1,2500,0,1,6000,0,1,3321,6,-12,1,1,1,1,1,1,0
--a:OHLeft -chcopy:1,2 -ea:800 -epp:0
+-a:OHLeft -chcopy:1,2 -eadb:12 -epp:0
 
 -a:OHRight -i jack_multi,DrumGizmo:7-OHRight
--a:OHRight -elv2:urn:ardour:a-eq,160,0,300,0,1,100,0,1,2500,0,1,6000,0,1,3321,6,-12,1,1,1,1,1,1,0
--a:OHRight -chcopy:1,2 -ea:800 -epp:100
+-a:OHRight -chcopy:1,2 -eadb:12 -epp:100
 
 -a:all -o jack,system
-
-
-# remote control examples: ----------------
-# echo -e "c-select default\r\nc-mute on\r\n" | nc -w1 localhost 2868
-# echo -e "c-select default\r\nc-mute off\r\n" | nc -w1 localhost 2868
-# echo -e "cop-status\r\n" | nc -w1 localhost 2868
-# echo -e "cop-set 1,17,0\r\n" | nc -w1 localhost 2868
-# echo -e "cop-get 1,17\r\n" | nc -w1 localhost 2868
-# echo -e "c-select Snare\r\ncop-set 2,1,100\r\n" | nc -w1 localhost 2868
-# echo -e "cs-status\r\n" | nc -w1 localhost 2868
-
-
-# a-eq parameters: ------------------------
-# freql:   Frequency L  { 20, 20000} Hz
-# gl:      Gain L       {-20,    20} dB
-# freq1:   Frequency 1  { 20, 20000} Hz
-# g1:      Gain 1       {-20,    20} dB
-# bw1:     Bandwidth 1  {0.1,     4}
-# freq2:   Frequency 2  { 20, 20000} Hz
-# g2:      Gain 2       {-20,    20} dB
-# bw2:     Bandwidth 2  {0.1,     4}
-# freq3:   Frequency 3  { 20, 20000} Hz
-# g3:      Gain 3       {-20,    20} dB
-# bw3:     Bandwidth 3  {0.1,     4}
-# freq4:   Frequency 4  { 20, 20000} Hz
-# g4:      Gain 4       {-20,    20} dB
-# bw4:     Bandwidth 4  {0.1,     4}
-# freqh:   Frequency H  { 20, 20000} Hz
-# gh:      Gain H       {-20,    20} dB
-# master:  Master Gain  {-20,    20} dB
-# filtogl: Filter L     {  0,     1} on/off
-# filtog1: Filter 1     {  0,     1} on/off
-# filtog2: Filter 2     {  0,     1} on/off
-# filtog3: Filter 3     {  0,     1} on/off
-# filtog4: Filter 4     {  0,     1} on/off
-# filtogh: Filter H     {  0,     1} on/off
-# enable:  Enable       {  0,     1} on/off
-
-
-# a-comp parameters: ----------------------
-# att:    Attack    {0.1,  100} ms
-# rel:    Release   {  1, 2000} ms
-# kn:     Knee      {  0,    8} dB
-# rat:    Ratio     {  1,   20}
-# thr:    Threshold {-60,    0} dB
-# mak:    Makeup    {  0,   30} dB
-# sidech: Sidechain {  0,    1} on/off
-# enable: Enable    {  0,    1} on/off
-
-
-# a-reverb parameters: --------------------
-# blend:  Blend     {0.0, 1}
-# roomsz: Room Size {0.5, 1}
-# enable: Enable    {  0, 1} on/off
 
