@@ -65,8 +65,8 @@ void setup()
                                            &status_LED_pin );
 
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
-#ifdef ESP_PLATFORM // ### MARKER: ESP32 issue with read/write settings ###
-  preset_settings(); // for ESP32, the read/save is disabled -> therefore we need to apply the preset
+#ifdef ESP_PLATFORM
+  preset_settings(); // for ESP32, the load/save of settings is not supported, preset instead
 #else
   read_settings();
 #endif

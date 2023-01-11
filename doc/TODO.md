@@ -22,22 +22,11 @@ The road map items are sorted by priority.
   use the position of the last detected peak if it is close to the current peak in time (e.g., if
   we have a fast roll situation).
 
-- [ ] **Improve Edrumulus/Drumgizmo usage on Raspberry Pi (Pi4, Pi 3+ and Pi Zero)**
-
-  Maybe use ecasound to mix all the Drumgizmo audio channels in real-time to change the sound of the
-  kit instantly without loading new samples in Drumgizmo.
-
 - [ ] **Support positional sensing for rim shots**
 
 - [ ] **Hot spot suppression on mesh pads with center piezo**
 
   Striking directly on the piezo results in detected velocity values which are much too high.
-
-- [ ] **Fix EEPROM issue on the ESP32**
-
-  The ESP32 storage seems to be unreliable (which is maybe caused by the way we are dealing with the threads), i.e.,
-  some parameters are changed from time to time to a large value. Search for `### MARKER: ESP32 issue with read/write settings ###`
-  in the code.
 
 - [ ] **Improve dynamics for Drumgizmo**
 

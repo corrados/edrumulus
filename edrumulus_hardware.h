@@ -143,8 +143,8 @@ public:
                             const int   input_channel_index,
                             const int   level );
 
-  void write_setting ( const int pad_index, const int address, const byte value );
-  byte read_setting  ( const int pad_index, const int address );
+  void write_setting ( const int, const int, const byte ) {}; // not supported
+  byte read_setting  ( const int, const int ) {};             // not supported
 
 protected:
   int                        Fs;
@@ -154,7 +154,7 @@ protected:
   static void IRAM_ATTR      on_timer();
   static void                start_timer_core0_task ( void* param );
 
-  void     setup_timer ( const bool clear_timer = false );
+  void     setup_timer();
   void     init_my_analogRead();
   uint16_t my_analogRead ( const uint8_t pin );
   void my_analogRead_parallel ( const uint32_t channel_adc1_bitval,
