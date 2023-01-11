@@ -45,6 +45,7 @@ instruments = [["kick",            ["KDrum", "OHLeft", "OHRight"], [36],     "",
                ["hihat_closedtop", ["Hihat", "OHLeft", "OHRight"], [42],     "hihat", 0.2,  20], \
                ["hihat_open",      ["Hihat", "OHLeft", "OHRight"], [26],     "hihat", 0.7,  23], \
                ["hihat_opentop",   ["Hihat", "OHLeft", "OHRight"], [46],     "hihat", 0.4,  23], \
+               ["hihat_foot",      ["Hihat", "OHLeft", "OHRight"], [44],     "hihat", 0.1,  23], \
                ["tom1",            ["Tom1", "OHLeft", "OHRight"],  [48, 50], "",      0.2,  15], \
                ["tom2",            ["Tom2", "OHLeft", "OHRight"],  [45, 47], "",      0.2,  15], \
                ["tom3",            ["Tom3", "OHLeft", "OHRight"],  [43, 58], "",      0.4,  15], \
@@ -63,7 +64,7 @@ thresh_from_max_for_start = 20 # dB
 add_samples_at_start      = 20 # additional samples considered at strike start
 
 # TEST for optimizing the algorithms, only use one instrument
-#instruments = [instruments[3]]
+#instruments = [instruments[7]]
 disable_positional_sensing_support = False#True#
 
 
