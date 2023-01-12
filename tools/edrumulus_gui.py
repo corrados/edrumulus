@@ -20,8 +20,9 @@
 # Edrumulus simple terminal GUI
 
 import sys
-import jack
+import socket
 import time
+import jack
 no_gui      = len(sys.argv) > 1 and sys.argv[1] == "no_gui"    # no GUI but blocking (just settings management)
 non_block   = len(sys.argv) > 1 and sys.argv[1] == "non_block" # no GUI and non-blocking (just settings management)
 use_lcd     = len(sys.argv) > 1 and sys.argv[1] == "lcd"       # LCD GUI mode on Raspberry Pi
@@ -56,6 +57,7 @@ midi_previous_send_cmd  = -1
 midi_send_val           = -1
 auto_pad_sel            = False; # no auto pad selection per default
 is_load_settings        = False
+selected_kit            = ""
 
 # initialize jack audio for MIDI
 client      = jack.Client("EdrumulusGUI")
@@ -94,6 +96,7 @@ def ncurses_cleanup():
 def ncurses_update_param_outputs():
   if version_major >= 0 and version_minor >= 0:
     mainwin.addstr(row_start - 1, col_start, "Edrumulus v{0}.{1}".format(version_major, version_minor))
+  mainwin.addstr(row_start - 1, col_start + 30, selected_kit + "                                     ")
   mainwin.addstr(row_start, col_start, "Press a key (q:quit; s,S:sel pad; c,C:sel command; a,A: auto pad sel; up,down: change param; r: reset)")
   if auto_pad_sel:
     mainwin.addstr(row_start + 2, col_start, "Selected pad (auto):  {:2d} ({:s})      ".format(sel_pad, pad_names[sel_pad]))
@@ -172,6 +175,8 @@ def ncurses_input_loop():
           send_value_to_edrumulus(115, 0) # midi_send_val will be ignored by Edrumulus for this command
         mainwin.nodelay(True) # go back to unblocking getch()
         mainwin.addstr(row_start + 1, col_start, "                                                           ")
+      elif ch == ord("k") or ch == ord("K"): # kit selection #########################
+        ecasound_switch_chains(ch == ord("k"))
       do_update_param_outputs = True
 
     if do_update_param_outputs:
@@ -306,6 +311,41 @@ def load_settings():
         while database[cur_cmd] != int(value): # wait for parameter to be applied in Edrumulus
           time.sleep(0.001)
   is_load_settings = False # we are done now
+
+
+################################################################################
+# Ecasound handling (via socket) ###############################################
+################################################################################
+ecasound_socket = []
+chain_setups    = []
+chain_index     = 0
+
+def ecasound_connection():
+  global ecasound_socket
+  ecasound_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  ecasound_socket.settimeout(0.2)
+  ecasound_socket.connect(('localhost', 2868))
+
+
+def ecasound_get_chainsetups():
+  try:
+    if not ecasound_socket:
+      ecasound_connection()
+    ecasound_socket.sendall("cs-list\r\n".encode("utf8"))
+    data = ecasound_socket.recv(1024)
+    return str(data).split("\\r\\n")[1].split(",")
+  except:
+    return []
+
+
+def ecasound_switch_chains(do_increment):
+  global chain_setups, chain_index, selected_kit
+  if not chain_setups:
+    chain_setups = ecasound_get_chainsetups()
+  if chain_setups:
+    chain_index  = chain_index + 1 if chain_index < len(chain_setups) - 1 else 0
+    selected_kit = chain_setups[chain_index]
+    ecasound_socket.sendall("engine-halt\r\ncs-select {0}\r\ncs-connect {0}\r\nengine-launch\r\nstart\r\n".format(selected_kit).encode("utf8"))
 
 
 ################################################################################
