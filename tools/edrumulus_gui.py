@@ -58,6 +58,7 @@ midi_send_val           = -1
 auto_pad_sel            = False; # no auto pad selection per default
 is_load_settings        = False
 selected_kit            = ""
+kit_volume              = 0 # dB
 
 # initialize jack audio for MIDI
 client      = jack.Client("EdrumulusGUI")
@@ -94,9 +95,12 @@ def ncurses_cleanup():
 
 
 def ncurses_update_param_outputs():
+  mainwin.move(row_start - 1, col_start) # clear first line
+  mainwin.clrtoeol()                     # clear first line
   if version_major >= 0 and version_minor >= 0:
     mainwin.addstr(row_start - 1, col_start, "Edrumulus v{0}.{1}".format(version_major, version_minor))
-  mainwin.addstr(row_start - 1, col_start + 30, selected_kit + "                                     ")
+  if selected_kit:
+    mainwin.addstr(row_start - 1, col_start + 30, selected_kit + ", Kit-Vol: " + str(kit_volume) + " dB")
   mainwin.addstr(row_start, col_start, "Press a key (q:quit; s,S:sel pad; c,C:sel command; a,A: auto pad sel; up,down: change param; r: reset)")
   if auto_pad_sel:
     mainwin.addstr(row_start + 2, col_start, "Selected pad (auto):  {:2d} ({:s})      ".format(sel_pad, pad_names[sel_pad]))
@@ -177,6 +181,8 @@ def ncurses_input_loop():
         mainwin.addstr(row_start + 1, col_start, "                                                           ")
       elif ch == ord("k") or ch == ord("K"): # kit selection #########################
         ecasound_switch_chains(ch == ord("k"))
+      elif ch == ord("v") or ch == ord("V"): # kit volume ############################
+        ecasound_kit_volume(ch == ord("v"))
       do_update_param_outputs = True
 
     if do_update_param_outputs:
@@ -339,13 +345,29 @@ def ecasound_get_chainsetups():
 
 
 def ecasound_switch_chains(do_increment):
-  global chain_setups, chain_index, selected_kit
+  global chain_setups, chain_index, selected_kit, kit_volume
   if not chain_setups:
     chain_setups = ecasound_get_chainsetups()
   if chain_setups:
-    chain_index  = chain_index + 1 if chain_index < len(chain_setups) - 1 else 0
+    chain_index = chain_index + 1 if do_increment else chain_index - 1
+    chain_index = chain_index % len(chain_setups)
     selected_kit = chain_setups[chain_index]
     ecasound_socket.sendall("engine-halt\r\ncs-select {0}\r\ncs-connect {0}\r\nengine-launch\r\nstart\r\n".format(selected_kit).encode("utf8"))
+    kit_volume = 0 # reset volume if a kit is changed and try to query current value
+    #ecasound_socket.sendall("c-select Master\r\ncop-get 1,1\r\n".encode("utf8"))
+    #data = ecasound_socket.recv(1024)
+    #print(data)
+    #for substr in str(data).split("\\r\\n"):
+    #  if "." in substr:
+    #    kit_volume = int(float(substr))
+
+
+def ecasound_kit_volume(do_increment):
+  global kit_volume
+  if ecasound_socket:
+    kit_volume = kit_volume + 1 if do_increment else kit_volume - 1
+    kit_volume = max(min(kit_volume, 30), -30)
+    ecasound_socket.sendall("c-select Master\r\ncop-set 1,1,{0}\r\n".format(kit_volume).encode("utf8"))
 
 
 ################################################################################
