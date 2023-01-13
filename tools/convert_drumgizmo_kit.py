@@ -25,7 +25,8 @@ import xml.etree.ElementTree as ET
 from scipy.io import wavfile
 
 # specify the Drumgizmo kit path
-kit_path = "/home/corrados/edrumulus/tools/CrocellKit"
+#kit_path = "/home/corrados/edrumulus/tools/CrocellKit"
+kit_path = "/home/corrados/edrumulus/tools/PearlMMX"
 
 # get all intruments (each instrument must have its own directory and configuration XML file)
 instruments = []
@@ -35,7 +36,8 @@ for file_name in os.listdir(kit_path):
 
 
 # TEST select just one instrument for testing
-instruments = [instruments[9]] # Snare
+print(instruments)
+instruments = [instruments[16]]
 
 
 # get all powers which are in the instrument XML files
