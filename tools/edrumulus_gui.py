@@ -92,6 +92,10 @@ def process_user_input(ch):
   elif ch == "v" or ch == "V": # kit volume
     ecasound_kit_volume(ch == "v")
 
+def parse_cmd_param(cmd):
+  # check for "pad type" and "curve type" special cases, otherwise convert integer in string
+  return pad_types[database[cmd]] if cmd == 0 else curve_types[database[cmd]] if cmd == 6 else str(database[cmd])
+
 
 ################################################################################
 # ncurses GUI implementation ###################################################
@@ -99,7 +103,6 @@ def process_user_input(ch):
 col_start = 5  # start column of parameter display
 row_start = 1  # start row of parameter display
 box_len   = 17 # length of the output boxes
-
 
 def ncurses_init():
   global mainwin, midiwin, midigwin, poswin, posgwin, ctrlwin
@@ -114,12 +117,10 @@ def ncurses_init():
   mainwin.nodelay(True) # we want a non-blocking getch()
   curses.curs_set(0)    # suppress cursor
 
-
 def ncurses_cleanup():
   mainwin.keypad(False)
   curses.echo()
   curses.endwin()
-
 
 def ncurses_update_param_outputs():
   mainwin.move(row_start - 1, col_start) # clear first line
@@ -133,9 +134,7 @@ def ncurses_update_param_outputs():
     mainwin.addstr(row_start + 2, col_start, "Selected pad (auto):  {:2d} ({:s})      ".format(sel_pad, pad_names[sel_pad]))
   else:
     mainwin.addstr(row_start + 2, col_start, "Selected pad:         {:2d} ({:s})      ".format(sel_pad, pad_names[sel_pad]))
-
-  mainwin.addstr(row_start + 3, col_start, "Parameter: {:>10s}: {:s}             ".format(cmd_names[sel_cmd], \
-    pad_types[database[sel_cmd]] if sel_cmd == 0 else curve_types[database[sel_cmd]] if sel_cmd == 6 else str(database[sel_cmd])))
+  mainwin.addstr(row_start + 3, col_start, "Parameter: {:>10s}: {:s}             ".format(cmd_names[sel_cmd], parse_cmd_param(sel_cmd)))
   mainwin.refresh()
   midiwin.box() # in this box the received note-on MIDI notes are shown
   midiwin.addstr(0, 8, "MIDI-IN")
@@ -157,7 +156,6 @@ def ncurses_update_param_outputs():
   ctrlwin.vline(2, 3, " ", int((127.0 - hi_hat_ctrl) / 127 * (box_len - 3)))
   ctrlwin.refresh()
 
-
 def ncurses_update_midi_win(key, value, instrument_name):
   midiwin.move(2, 0)
   midiwin.insdelln(1)
@@ -167,7 +165,6 @@ def ncurses_update_midi_win(key, value, instrument_name):
   midigwin.move(2, 1)
   midigwin.hline(curses.ACS_BLOCK, max(1, int(float(value) / 128 * 25)))
 
-
 def ncurses_update_possense_win(value):
   poswin.move(1, 0)
   poswin.insdelln(1)
@@ -176,7 +173,6 @@ def ncurses_update_possense_win(value):
   posgwin.insdelln(1)
   posgwin.addstr(1, 1, "M--------------------E")
   posgwin.addch(1, 2 + int(float(value) / 128 * 20), curses.ACS_BLOCK)
-
 
 def ncurses_input_loop():
   global sel_pad, sel_cmd, database, auto_pad_sel, do_update_param_outputs
@@ -205,7 +201,6 @@ def ncurses_input_loop():
 ################################################################################
 button_name = {25: "back", 11: "OK", 8: "down", 7: "up", 12: "left", 13: "right"}
 
-
 def lcd_button_handler(pin):
   if GPIO.input(pin) == 0: # note that button is inverted
     name       = button_name[pin] # current button name
@@ -228,12 +223,10 @@ def lcd_button_handler(pin):
         # TODO: implementation of going a menu level up...
         pass
 
-
 def lcd_on_button_pressed(button_name):
   # TODO implement different menu levels here...
   # if we are in trigger settings menu level
   lcd_update_trigger_settings_menu(button_name)
-
 
 def lcd_update_trigger_settings_menu(button_name):
   if button_name == "OK":
@@ -250,21 +243,12 @@ def lcd_update_trigger_settings_menu(button_name):
     process_user_input(chr(258))
   lcd_update()
 
-
 def lcd_update():
   lcd.clear()
   lcd.cursor_pos = (0, 0)
   lcd.write_string("%s:%s" % (pad_names[sel_pad], cmd_names[sel_cmd]))
-  if sel_cmd == 0:   # pad_types
-    lcd.cursor_pos = (1, 3)
-    lcd.write_string("<%s>" % pad_types[database[sel_cmd]])
-  elif sel_cmd == 6: # curve_types
-    lcd.cursor_pos = (1, 4)
-    lcd.write_string("<%s>" % curve_types[database[sel_cmd]])
-  else:                         # use a number
-    lcd.cursor_pos = (1, 6)
-    lcd.write_string("<%d>" % database[sel_cmd])
-
+  lcd.cursor_pos = (1, 4)
+  lcd.write_string("<%s>" % parse_cmd_param(sel_cmd))
 
 def lcd_init():
   global lcd
@@ -296,7 +280,6 @@ def store_settings():
         time.sleep(0.001)
       for (idx, midi_id) in enumerate(cmd_val):
         f.write("%d,%d,%d\n" % (pad_index, midi_id, database[idx]))
-
 
 def load_settings():
   global database, is_load_settings
@@ -334,7 +317,6 @@ def ecasound_connection():
   ecasound_socket.settimeout(0.2)
   ecasound_socket.connect(('localhost', 2868))
 
-
 def ecasound_get_chainsetups():
   try:
     if not ecasound_socket:
@@ -344,7 +326,6 @@ def ecasound_get_chainsetups():
     return str(data).split("\\r\\n")[1].split(",")
   except:
     return []
-
 
 def ecasound_switch_chains(do_increment):
   global chain_setups, chain_index, selected_kit, kit_vol_str
@@ -357,7 +338,6 @@ def ecasound_switch_chains(do_increment):
     ecasound_socket.sendall("engine-halt\r\ncs-select {0}\r\ncs-connect {0}\r\nengine-launch\r\nstart\r\n".format(selected_kit).encode("utf8"))
     ecasound_socket.recv(4096) # clear input buffer
     kit_vol_str = "" # invalidate on new kit
-
 
 def ecasound_kit_volume(do_increment):
   global kit_volume, kit_vol_str
@@ -384,7 +364,6 @@ def send_value_to_edrumulus(command, value):
   (midi_send_cmd, midi_send_val) = (command, value);
   while midi_send_cmd >= 0:
     time.sleep(0.001)
-
 
 # jack audio callback function
 @client.set_process_callback
