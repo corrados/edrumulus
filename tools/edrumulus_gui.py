@@ -71,19 +71,19 @@ output_port = client.midi_outports.register("MIDI_out")
 ################################################################################
 def process_user_input(ch):
   global sel_pad, sel_cmd, database, auto_pad_sel
-  if ch == "s" or ch == "S": # change selected pad
-    cur_sel_pad = sel_pad
-    cur_sel_pad = cur_sel_pad + 1 if ch == "s" else cur_sel_pad - 1
-    sel_pad     = max(0, min(max_num_pads - 1, cur_sel_pad))
-    send_value_to_edrumulus(108, sel_pad)
-  elif ch == "c" or ch == "C": # change selected command
-    cur_sel_cmd = sel_cmd
-    cur_sel_cmd = cur_sel_cmd + 1 if ch == "c" else cur_sel_cmd - 1
-    sel_cmd     = max(0, min(len(cmd_val) - 1, cur_sel_cmd))
-  elif ch == chr(258) or ch == chr(259): # change parameter value with up/down keys
-    cur_sel_val       = database[sel_cmd]
-    cur_sel_val       = cur_sel_val + 1 if ch == chr(259) else cur_sel_val - 1
-    database[sel_cmd] = max(0, min(cmd_val_rng[sel_cmd], cur_sel_val))
+  if ch == "s" and sel_pad < max_num_pads - 1:
+    send_value_to_edrumulus(108, sel_pad := sel_pad + 1)
+  elif ch == "S" and sel_pad > 0:
+    send_value_to_edrumulus(108, sel_pad := sel_pad - 1)
+  elif ch == "c" and sel_cmd < len(cmd_val) - 1:
+    sel_cmd += 1
+  elif ch == "C" and sel_cmd > 0:
+    sel_cmd -= 1
+  elif ch == chr(259) and database[sel_cmd] < cmd_val_rng[sel_cmd]: # 259: up key
+    database[sel_cmd] += 1
+    send_value_to_edrumulus(cmd_val[sel_cmd], database[sel_cmd])
+  elif ch == chr(258) and database[sel_cmd] > 0: # 258: down key
+    database[sel_cmd] -= 1
     send_value_to_edrumulus(cmd_val[sel_cmd], database[sel_cmd])
   elif ch == "a" or ch == "A": # enable/disable auto pad selection
     auto_pad_sel = ch == "a" # capital "A" disables auto pad selection
