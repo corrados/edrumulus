@@ -193,11 +193,12 @@ fi
 # maybe use -p close=1,position=0,diverse=0,random=0
 if [[ -v is_raspi ]]; then
   ./drumgizmo/drumgizmo/drumgizmo -b 0.5 -l -L max=2,rampdown=0.02 -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
-  sleep 35
 else
   ./drumgizmo/drumgizmo/drumgizmo -b 0.5 -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
-  sleep 5
 fi
+
+# wait for Drumgizmo to be fully loaded and available (check for jack audio ports)
+while [[ $(jack_lsp) != *"DrumGizmo"* ]]; do sleep 0.1; done
 
 if [[ -v use_ecasound ]]; then
   ./ecasound/ecasound/ecasound --server -q -s settings/*.ecs &
