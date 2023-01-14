@@ -236,24 +236,18 @@ def lcd_on_button_pressed(button_name):
 
 
 def lcd_update_trigger_settings_menu(button_name):
-  global sel_pad, sel_cmd, database
-  database_index = sel_cmd
-  if button_name == "down" and sel_cmd > 0:
-    sel_cmd -= 1
-  elif button_name == "up" and sel_cmd < len(cmd_val) - 1:
-      sel_cmd += 1
-  elif button_name == "right" and database[database_index] < cmd_val_rng[sel_cmd]:
-    database[database_index] += 1
-    send_value_to_edrumulus(database_index, database [database_index])
-  elif button_name == "left" and database[database_index] > 0:
-    database[database_index] -= 1
-    send_value_to_edrumulus(database_index, database[database_index])
-  elif button_name == "OK" and sel_pad < 8:
-    sel_pad += 1
-    send_value_to_edrumulus(108, sel_pad)
-  elif button_name == "back" and sel_pad > 0:
-    sel_pad -= 1
-    send_value_to_edrumulus(108, sel_pad)
+  if button_name == "OK":
+    process_user_input("s")
+  elif button_name == "back":
+    process_user_input("S")
+  elif button_name == "up":
+    process_user_input("c")
+  elif button_name == "down":
+    process_user_input("C")
+  elif button_name == "right":
+    process_user_input(chr(259))
+  elif button_name == "left":
+    process_user_input(chr(258))
   lcd_update()
 
 
