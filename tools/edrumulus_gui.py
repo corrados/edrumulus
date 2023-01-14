@@ -22,6 +22,7 @@
 import sys
 import socket
 import time
+import threading
 import jack
 no_gui      = len(sys.argv) > 1 and sys.argv[1] == "no_gui"    # no GUI but blocking (just settings management)
 non_block   = len(sys.argv) > 1 and sys.argv[1] == "non_block" # no GUI and non-blocking (just settings management)
@@ -321,32 +322,32 @@ def load_settings():
 ################################################################################
 # Ecasound handling (via socket) ###############################################
 ################################################################################
-ecasound_socket = []
-chain_setups    = []
-chain_index     = 0
-kit_volume      = 0 # dB
+ecasound_socket          = []
+chain_setups             = []
+chain_index              = 0
+kit_volume               = 0 # dB
+ecasound_socket          = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+ecasound_connect_try_cnt = 20 # 20 * 0.5s = 10s
 
 def ecasound_connection():
-  global ecasound_socket
-  ecasound_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  global ecasound_socket, ecasound_connect_try_cnt, do_update_param_outputs, chain_setups
   ecasound_socket.settimeout(0.2)
-  ecasound_socket.connect(('localhost', 2868))
-
-def ecasound_get_chainsetups():
   try:
-    if not ecasound_socket:
-      ecasound_connection()
-    ecasound_socket.sendall("cs-list\r\n".encode("utf8"))
-    data = ecasound_socket.recv(1024)
-    return str(data).split("\\r\\n")[1].split(",")
+    ecasound_socket.connect(('localhost', 2868))
+    ecasound_socket.sendall("cs-list\r\n".encode("utf8")) # query chain names
+    data         = ecasound_socket.recv(1024)
+    chain_setups = str(data).split("\\r\\n")[1].split(",")
+    ecasound_connect_try_cnt = 0 # 0 means socket connected successful and chain names received
+    ecasound_switch_chains(True) # initial chain select
+    do_update_param_outputs = True # update GUI
   except:
-    return []
+    ecasound_connect_try_cnt -= 1
+    if ecasound_connect_try_cnt > 1: # will stop trying at ecasound_connect_try_cnt == 1
+      threading.Timer(0.5, ecasound_connection).start()
 
 def ecasound_switch_chains(do_increment):
   global chain_setups, chain_index, selected_kit, kit_vol_str
-  if not chain_setups:
-    chain_setups = ecasound_get_chainsetups()
-  if chain_setups:
+  if ecasound_connect_try_cnt == 0:
     chain_index = chain_index + 1 if do_increment else chain_index - 1
     chain_index = chain_index % len(chain_setups)
     selected_kit = chain_setups[chain_index]
@@ -356,7 +357,7 @@ def ecasound_switch_chains(do_increment):
 
 def ecasound_kit_volume(do_increment):
   global kit_volume, kit_vol_str
-  if ecasound_socket:
+  if ecasound_connect_try_cnt == 0:
     # first, query current volume value
     ecasound_socket.sendall("c-select Master\r\ncop-get 1,1\r\n".encode("utf8"))
     data = ecasound_socket.recv(4096)
@@ -472,6 +473,9 @@ with client:
     lcd_update()
   elif use_ncurses:
     ncurses_update_param_outputs()
+
+  # it takes time for ecasound to start up -> we need a timer thread for socket connection
+  threading.Timer(0.0, ecasound_connection).start()
 
   # main loop (LCD is event driven and does not need a loop)
   if use_lcd or no_gui:
