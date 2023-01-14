@@ -217,7 +217,7 @@ def lcd_button_handler(pin):
           lcd_on_button_pressed(name)
           auto_press_index += 1
     else:
-      while GPIO.input(pin) == 0: # wait for the button up
+      while GPIO.input(pin) == 0 and time.time() - start_time < 0.7: # wait for the button up or time-out
         time.sleep(0.01)
       if time.time() - start_time < 0.7:
         lcd_on_button_pressed(name) # on button up
@@ -228,7 +228,7 @@ def lcd_button_handler(pin):
 
 def lcd_on_button_pressed(button_name):
   global lcd_menu_id
-  if lcd_menu_id == 0:
+  if lcd_menu_id == 0: # main menu #####
     if button_name == "up":
       process_user_input("k")
     elif button_name == "down":
@@ -238,8 +238,8 @@ def lcd_on_button_pressed(button_name):
     elif button_name == "left":
       process_user_input("V")
     elif button_name == "OK":
-      lcd_menu_id = 1 # go in trigger menu
-  elif lcd_menu_id == 1:
+      lcd_menu_id = 1 # go into trigger menu
+  elif lcd_menu_id == 1: # trigger menu #####
     if button_name == "OK":
       process_user_input("s")
     elif button_name == "back":
