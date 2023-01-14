@@ -192,9 +192,9 @@ fi
 # run Edrumulus ----------------------------------------------------------------
 # maybe use -p close=1,position=0,diverse=0,random=0
 if [[ -v is_raspi ]]; then
-  ./drumgizmo/drumgizmo/drumgizmo -b 0.5 -l -L max=2,rampdown=0.02 -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
+  ./drumgizmo/drumgizmo/drumgizmo -l -L max=2,rampdown=0.02 -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
 else
-  ./drumgizmo/drumgizmo/drumgizmo -b 0.5 -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
+  ./drumgizmo/drumgizmo/drumgizmo -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
 fi
 
 # wait for Drumgizmo to be fully loaded and available (check for jack audio ports)

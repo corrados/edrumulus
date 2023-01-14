@@ -65,7 +65,8 @@ add_samples_at_start      = 20 # additional samples considered at strike start
 
 # TEST for optimizing the algorithms, only use one instrument
 #instruments = [instruments[7]]
-disable_positional_sensing_support = False#True#
+disable_positional_sensing_support  = False#True#
+only_master_channels_per_instrument = False#True#
 
 
 for instrument in instruments:
@@ -212,6 +213,12 @@ for instrument in instruments:
   instrument_xml.set("name", instrument_name)
   samples_xml = ET.SubElement(instrument_xml, "samples")
 
+  # get indexes of main channels of this instrument
+  instrument_master_channel_indexes = []
+  for idx, channel_name in enumerate(channel_names):
+    if channel_name in instrument[1]:
+      instrument_master_channel_indexes.append(idx)
+
   for p in positions:
     power_sort_indexes = np.argsort(sample_powers[p])
     for i in range(0, len(sample_strikes[p])):
@@ -222,7 +229,10 @@ for instrument in instruments:
       if len(positions) > 1:
         sample_file_name += "-" + str(p)
       os.makedirs(instrument_sample_path, exist_ok=True)
-      wavfile.write(instrument_sample_path + sample_file_name + ".wav", sample_rate, sample_strikes[p][strike_index])
+      if only_master_channels_per_instrument:
+        wavfile.write(instrument_sample_path + sample_file_name + ".wav", sample_rate, sample_strikes[p][strike_index][:, instrument_master_channel_indexes])
+      else:
+        wavfile.write(instrument_sample_path + sample_file_name + ".wav", sample_rate, sample_strikes[p][strike_index])
 
       # write XML content for current sample
       sample_xml = ET.SubElement(samples_xml, "sample")
@@ -231,10 +241,17 @@ for instrument in instruments:
       sample_xml.set("name", instrument_name + "-" + str(i + 1))
       sample_xml.set("power", "{:.19f}".format(sample_powers[p][strike_index]))
       for j, channel_name in enumerate(channel_names):
-        audiofile_xml = ET.SubElement(sample_xml, "audiofile")
-        audiofile_xml.set("channel", channel_name)
-        audiofile_xml.set("file", samples_dir_name + "/" + sample_file_name + ".wav")
-        audiofile_xml.set("filechannel", str(j + 1))
+        if only_master_channels_per_instrument:
+          if channel_name in instrument[1]:
+            audiofile_xml = ET.SubElement(sample_xml, "audiofile")
+            audiofile_xml.set("channel", channel_name)
+            audiofile_xml.set("file", samples_dir_name + "/" + sample_file_name + ".wav")
+            audiofile_xml.set("filechannel", str(instrument[1].index(channel_name) + 1))
+        else:
+          audiofile_xml = ET.SubElement(sample_xml, "audiofile")
+          audiofile_xml.set("channel", channel_name)
+          audiofile_xml.set("file", samples_dir_name + "/" + sample_file_name + ".wav")
+          audiofile_xml.set("filechannel", str(j + 1))
 
   # write instrument XML file
   tree_xml = ET.ElementTree(instrument_xml)
