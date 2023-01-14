@@ -203,9 +203,7 @@ def ncurses_input_loop():
 ################################################################################
 # LCD GUI implementation #######################################################
 ################################################################################
-button_name        = {25: "back", 11: "OK", 8: "down", 7: "up", 12: "left", 13: "right"}
-selected_menu_item = 0
-selected_pad       = 0
+button_name = {25: "back", 11: "OK", 8: "down", 7: "up", 12: "left", 13: "right"}
 
 
 def lcd_button_handler(pin):
@@ -238,40 +236,40 @@ def lcd_on_button_pressed(button_name):
 
 
 def lcd_update_trigger_settings_menu(button_name):
-  global selected_menu_item, selected_pad, database
-  database_index = selected_menu_item
-  if button_name == "down" and selected_menu_item > 0:
-    selected_menu_item -= 1
-  elif button_name == "up" and selected_menu_item < len(cmd_val) - 1:
-      selected_menu_item += 1
-  elif button_name == "right" and database[database_index] < cmd_val_rng[selected_menu_item]:
+  global sel_pad, sel_cmd, database
+  database_index = sel_cmd
+  if button_name == "down" and sel_cmd > 0:
+    sel_cmd -= 1
+  elif button_name == "up" and sel_cmd < len(cmd_val) - 1:
+      sel_cmd += 1
+  elif button_name == "right" and database[database_index] < cmd_val_rng[sel_cmd]:
     database[database_index] += 1
     send_value_to_edrumulus(database_index, database [database_index])
   elif button_name == "left" and database[database_index] > 0:
     database[database_index] -= 1
     send_value_to_edrumulus(database_index, database[database_index])
-  elif button_name == "OK" and selected_pad < 8:
-    selected_pad += 1
-    send_value_to_edrumulus(108, selected_pad)
-  elif button_name == "back" and selected_pad > 0:
-    selected_pad -= 1
-    send_value_to_edrumulus(108, selected_pad)
+  elif button_name == "OK" and sel_pad < 8:
+    sel_pad += 1
+    send_value_to_edrumulus(108, sel_pad)
+  elif button_name == "back" and sel_pad > 0:
+    sel_pad -= 1
+    send_value_to_edrumulus(108, sel_pad)
   lcd_update()
 
 
 def lcd_update():
   lcd.clear()
   lcd.cursor_pos = (0, 0)
-  lcd.write_string("%s:%s" % (pad_names[selected_pad], cmd_names[selected_menu_item]))
-  if selected_menu_item == 0:   # pad_types
+  lcd.write_string("%s:%s" % (pad_names[sel_pad], cmd_names[sel_cmd]))
+  if sel_cmd == 0:   # pad_types
     lcd.cursor_pos = (1, 3)
-    lcd.write_string("<%s>" % pad_types[database[selected_menu_item]])
-  elif selected_menu_item == 6: # curve_types
+    lcd.write_string("<%s>" % pad_types[database[sel_cmd]])
+  elif sel_cmd == 6: # curve_types
     lcd.cursor_pos = (1, 4)
-    lcd.write_string("<%s>" % curve_types[database[selected_menu_item]])
+    lcd.write_string("<%s>" % curve_types[database[sel_cmd]])
   else:                         # use a number
     lcd.cursor_pos = (1, 6)
-    lcd.write_string("<%d>" % database[selected_menu_item])
+    lcd.write_string("<%d>" % database[sel_cmd])
 
 
 def lcd_init():
