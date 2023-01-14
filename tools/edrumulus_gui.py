@@ -200,8 +200,10 @@ def ncurses_input_loop():
 # LCD GUI implementation #######################################################
 ################################################################################
 button_name = {25: "back", 11: "OK", 8: "down", 7: "up", 12: "left", 13: "right"}
+lcd_menu_id = 0 # 0: main menu, 1: trigger menu
 
 def lcd_button_handler(pin):
+  global lcd_menu_id
   if GPIO.input(pin) == 0: # note that button is inverted
     name       = button_name[pin] # current button name
     start_time = time.time()
@@ -220,35 +222,48 @@ def lcd_button_handler(pin):
       if time.time() - start_time < 0.7:
         lcd_on_button_pressed(name) # on button up
       else:
-        # TODO: implementation of going a menu level up...
-        pass
+        if name == "back":
+          lcd_menu_id = 0 # long press of "back" always goes in main menu
+    lcd_update()
 
 def lcd_on_button_pressed(button_name):
-  # TODO implement different menu levels here...
-  # if we are in trigger settings menu level
-  lcd_update_trigger_settings_menu(button_name)
-
-def lcd_update_trigger_settings_menu(button_name):
-  if button_name == "OK":
-    process_user_input("s")
-  elif button_name == "back":
-    process_user_input("S")
-  elif button_name == "up":
-    process_user_input("c")
-  elif button_name == "down":
-    process_user_input("C")
-  elif button_name == "right":
-    process_user_input(chr(259))
-  elif button_name == "left":
-    process_user_input(chr(258))
-  lcd_update()
+  global lcd_menu_id
+  if lcd_menu_id == 0:
+    if button_name == "up":
+      process_user_input("k")
+    elif button_name == "down":
+      process_user_input("K")
+    elif button_name == "right":
+      process_user_input("v")
+    elif button_name == "left":
+      process_user_input("V")
+    elif button_name == "OK":
+      lcd_menu_id = 1 # go in trigger menu
+  elif lcd_menu_id == 1:
+    if button_name == "OK":
+      process_user_input("s")
+    elif button_name == "back":
+      process_user_input("S")
+    elif button_name == "up":
+      process_user_input("c")
+    elif button_name == "down":
+      process_user_input("C")
+    elif button_name == "right":
+      process_user_input(chr(259))
+    elif button_name == "left":
+      process_user_input(chr(258))
 
 def lcd_update():
   lcd.clear()
   lcd.cursor_pos = (0, 0)
-  lcd.write_string("%s:%s" % (pad_names[sel_pad], cmd_names[sel_cmd]))
-  lcd.cursor_pos = (1, 4)
-  lcd.write_string("<%s>" % parse_cmd_param(sel_cmd))
+  if lcd_menu_id == 0: # main menu
+    lcd.write_string(selected_kit)
+    lcd.cursor_pos = (1, 0)
+    lcd.write_string("Vol: %s" % kit_vol_str)
+  elif lcd_menu_id == 1: # trigger menu
+    lcd.write_string("%s:%s" % (pad_names[sel_pad], cmd_names[sel_cmd]))
+    lcd.cursor_pos = (1, 4)
+    lcd.write_string("<%s>" % parse_cmd_param(sel_cmd))
 
 def lcd_init():
   global lcd
