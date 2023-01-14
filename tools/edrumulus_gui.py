@@ -67,6 +67,33 @@ output_port = client.midi_outports.register("MIDI_out")
 
 
 ################################################################################
+# Common GUI functions #########################################################
+################################################################################
+def process_user_input(ch):
+  global sel_pad, sel_cmd, database, auto_pad_sel
+  if ch == "s" or ch == "S": # change selected pad
+    cur_sel_pad = sel_pad
+    cur_sel_pad = cur_sel_pad + 1 if ch == "s" else cur_sel_pad - 1
+    sel_pad     = max(0, min(max_num_pads - 1, cur_sel_pad))
+    send_value_to_edrumulus(108, sel_pad)
+  elif ch == "c" or ch == "C": # change selected command
+    cur_sel_cmd = sel_cmd
+    cur_sel_cmd = cur_sel_cmd + 1 if ch == "c" else cur_sel_cmd - 1
+    sel_cmd     = max(0, min(len(cmd_val) - 1, cur_sel_cmd))
+  elif ch == chr(258) or ch == chr(259): # change parameter value with up/down keys
+    cur_sel_val       = database[sel_cmd]
+    cur_sel_val       = cur_sel_val + 1 if ch == chr(259) else cur_sel_val - 1
+    database[sel_cmd] = max(0, min(cmd_val_rng[sel_cmd], cur_sel_val))
+    send_value_to_edrumulus(cmd_val[sel_cmd], database[sel_cmd])
+  elif ch == "a" or ch == "A": # enable/disable auto pad selection
+    auto_pad_sel = ch == "a" # capital "A" disables auto pad selection
+  elif ch == "k" or ch == "K": # kit selection
+    ecasound_switch_chains(ch == "k")
+  elif ch == "v" or ch == "V": # kit volume
+    ecasound_kit_volume(ch == "v")
+
+
+################################################################################
 # ncurses GUI implementation ###################################################
 ################################################################################
 col_start = 5  # start column of parameter display
@@ -156,34 +183,16 @@ def ncurses_input_loop():
   # loop until user presses q
   while (ch := mainwin.getch()) != ord("q"):
     if ch != -1:
-      if ch == ord("s") or ch == ord("S"): # change selected pad #####################
-        cur_sel_pad = sel_pad
-        cur_sel_pad = cur_sel_pad + 1 if ch == ord("s") else cur_sel_pad - 1
-        sel_pad     = max(0, min(max_num_pads - 1, cur_sel_pad))
-        send_value_to_edrumulus(108, sel_pad)
-      elif ch == ord("c") or ch == ord("C"): # change selected command ###############
-        cur_sel_cmd = sel_cmd
-        cur_sel_cmd = cur_sel_cmd + 1 if ch == ord("c") else cur_sel_cmd - 1
-        sel_cmd     = max(0, min(len(cmd_val) - 1, cur_sel_cmd))
-      elif ch == 258 or ch == 259: # change parameter value with up/down keys ########
-        cur_sel_val       = database[sel_cmd]
-        cur_sel_val       = cur_sel_val + 1 if ch == 259 else cur_sel_val - 1
-        database[sel_cmd] = max(0, min(cmd_val_rng[sel_cmd], cur_sel_val))
-        send_value_to_edrumulus(cmd_val[sel_cmd], database[sel_cmd])
-      elif ch == ord("a") or ch == ord("A"): # enable/disable auto pad selection #####
-        auto_pad_sel = (ch == ord("a")) # capital "A" disables auto pad selection
-      elif ch == ord("r"): # reset all settings ######################################
+      do_update_param_outputs = True
+      if ch == ord("r"): # reset all settings
         mainwin.addstr(row_start + 1, col_start, "DO YOU REALLY WANT TO RESET ALL EDRUMULUS PARAMETERS [y/n]?")
         mainwin.nodelay(False) # temporarily, use blocking getch()
         if mainwin.getch() == ord("y"):
           send_value_to_edrumulus(115, 0) # midi_send_val will be ignored by Edrumulus for this command
         mainwin.nodelay(True) # go back to unblocking getch()
         mainwin.addstr(row_start + 1, col_start, "                                                           ")
-      elif ch == ord("k") or ch == ord("K"): # kit selection #########################
-        ecasound_switch_chains(ch == ord("k"))
-      elif ch == ord("v") or ch == ord("V"): # kit volume ############################
-        ecasound_kit_volume(ch == ord("v"))
-      do_update_param_outputs = True
+      else:
+        process_user_input(chr(ch))
 
     if do_update_param_outputs:
       ncurses_update_param_outputs()
