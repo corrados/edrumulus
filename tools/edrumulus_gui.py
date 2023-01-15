@@ -129,7 +129,7 @@ def ncurses_update_param_outputs():
   if version_major >= 0 and version_minor >= 0:
     mainwin.addstr(row_start - 1, col_start, "Edrumulus v{0}.{1}".format(version_major, version_minor))
   if selected_kit:
-    mainwin.addstr(row_start - 1, col_start + 30, selected_kit + ", Kit-Vol: " + kit_vol_str)
+    mainwin.addstr(row_start - 1, col_start + 30, selected_kit + ", Kit-Vol: " + kit_vol_str if kit_vol_str else selected_kit)
   mainwin.addstr(row_start, col_start, "Press a key (q:quit; s,S:sel pad; c,C:sel command; a,A: auto pad sel; up,down: change param; r: reset)")
   if auto_pad_sel:
     mainwin.addstr(row_start + 2, col_start, "Selected pad (auto):  {:2d} ({:s})      ".format(sel_pad, pad_names[sel_pad]))
@@ -258,9 +258,11 @@ def lcd_update():
   lcd.clear()
   lcd.cursor_pos = (0, 0)
   if lcd_menu_id == 0: # main menu
-    lcd.write_string(selected_kit)
-    lcd.cursor_pos = (1, 0)
-    lcd.write_string("Vol: %s" % kit_vol_str)
+    if selected_kit: # only show main menu if selected kit name is available
+      lcd.write_string(selected_kit)
+      if kit_vol_str: # only show kit volume if available
+        lcd.cursor_pos = (1, 0)
+        lcd.write_string("Vol: %s" % kit_vol_str)
   elif lcd_menu_id == 1: # trigger menu
     lcd.write_string("%s:%s" % (pad_names[sel_pad], cmd_names[sel_cmd]))
     lcd.cursor_pos = (1, 4)
