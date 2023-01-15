@@ -19,6 +19,7 @@
 
 # Edrumulus simple terminal GUI
 
+import os
 import sys
 import socket
 import time
@@ -202,8 +203,9 @@ def ncurses_input_loop():
 ################################################################################
 # LCD GUI implementation #######################################################
 ################################################################################
-button_name = {25: "back", 11: "OK", 8: "down", 7: "up", 12: "left", 13: "right"}
-lcd_menu_id = 0 # 0: main menu, 1: trigger menu
+button_name          = {25: "back", 11: "OK", 8: "down", 7: "up", 12: "left", 13: "right"}
+lcd_menu_id          = 0 # 0: main menu, 1: trigger menu
+lcd_shutdown_confirm = False
 
 def lcd_button_handler(pin):
   global lcd_menu_id
@@ -226,7 +228,7 @@ def lcd_button_handler(pin):
     lcd_update()
 
 def lcd_on_button_pressed(button_name, is_long_press):
-  global lcd_menu_id
+  global lcd_menu_id, lcd_shutdown_confirm
   if lcd_menu_id == 0: # main menu #####
     if button_name == "up":
       process_user_input("k") # change kit
@@ -237,7 +239,13 @@ def lcd_on_button_pressed(button_name, is_long_press):
     elif button_name == "left":
       process_user_input("V")
     elif button_name == "OK" and not is_long_press:
-      lcd_menu_id = 1 # go into trigger menu
+      if lcd_shutdown_confirm:
+        lcd_shutdown()
+      else:
+        lcd_menu_id = 1 # go into trigger menu
+    elif button_name == "back" and not is_long_press:
+      lcd_shutdown_confirm = False # cancel shutdown precedure
+      lcd_update()
     elif button_name == "back" and is_long_press:
       lcd_shutdown()
   elif lcd_menu_id == 1: # trigger menu #####
@@ -257,7 +265,16 @@ def lcd_on_button_pressed(button_name, is_long_press):
       process_user_input(chr(258))
 
 def lcd_shutdown():
-  pass # TODO
+  global lcd_shutdown_confirm
+  if not lcd_shutdown_confirm:
+    lcd.clear()
+    lcd.cursor_pos = (0, 0)
+    lcd.write_string("Really Shutdown?")
+    lcd_shutdown_confirm = True
+  else:
+    lcd.clear()
+    store_settings()
+    os.system("sudo shutdown -h now")
 
 def lcd_update_timer_callback():
   global do_update_display
@@ -267,18 +284,19 @@ def lcd_update_timer_callback():
   threading.Timer(1.0, lcd_update_timer_callback).start() # recursive timed call
 
 def lcd_update():
-  lcd.clear()
-  lcd.cursor_pos = (0, 0)
-  if lcd_menu_id == 0: # main menu
-    if selected_kit: # only show main menu if selected kit name is available
-      lcd.write_string(selected_kit)
-      if kit_vol_str: # only show kit volume if available
-        lcd.cursor_pos = (1, 0)
-        lcd.write_string("Vol: %s" % kit_vol_str)
-  elif lcd_menu_id == 1: # trigger menu
-    lcd.write_string("%s:%s" % (pad_names[sel_pad], cmd_names[sel_cmd]))
-    lcd.cursor_pos = (1, 4)
-    lcd.write_string("<%s>" % parse_cmd_param(sel_cmd))
+  if not lcd_shutdown_confirm:
+    lcd.clear()
+    lcd.cursor_pos = (0, 0)
+    if lcd_menu_id == 0: # main menu
+      if selected_kit: # only show main menu if selected kit name is available
+        lcd.write_string(selected_kit)
+        if kit_vol_str: # only show kit volume if available
+          lcd.cursor_pos = (1, 0)
+          lcd.write_string("Vol: %s" % kit_vol_str)
+    elif lcd_menu_id == 1: # trigger menu
+      lcd.write_string("%s:%s" % (pad_names[sel_pad], cmd_names[sel_cmd]))
+      lcd.cursor_pos = (1, 4)
+      lcd.write_string("<%s>" % parse_cmd_param(sel_cmd))
 
 def lcd_init():
   global lcd
