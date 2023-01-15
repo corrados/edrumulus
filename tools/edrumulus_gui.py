@@ -212,24 +212,20 @@ def lcd_button_handler(pin):
     start_time = time.time()
     # auto press functionality for up/down/left/right buttons
     if (name == "left") or (name == "down") or (name == "up") or (name == "right"):
-      lcd_on_button_pressed(name) # initial button press action
+      lcd_on_button_pressed(name, False) # initial button press action
       auto_press_index = 0
       while GPIO.input(pin) == 0: # wait for the button up
         time.sleep(0.01)
         if time.time() - start_time - 0.7 - auto_press_index * 0.1 > 0: # after 0.7 s, auto press every 100 ms
-          lcd_on_button_pressed(name)
+          lcd_on_button_pressed(name, False)
           auto_press_index += 1
     else:
       while GPIO.input(pin) == 0 and time.time() - start_time < 0.7: # wait for the button up or time-out
         time.sleep(0.01)
-      if time.time() - start_time < 0.7:
-        lcd_on_button_pressed(name) # on button up
-      else:
-        if name == "back":
-          lcd_menu_id = 0 # long press of "back" always goes in main menu
+      lcd_on_button_pressed(name, time.time() - start_time > 0.7)
     lcd_update()
 
-def lcd_on_button_pressed(button_name):
+def lcd_on_button_pressed(button_name, is_long_press):
   global lcd_menu_id
   if lcd_menu_id == 0: # main menu #####
     if button_name == "up":
@@ -240,13 +236,17 @@ def lcd_on_button_pressed(button_name):
       process_user_input("v") # change kit volume
     elif button_name == "left":
       process_user_input("V")
-    elif button_name == "OK":
+    elif button_name == "OK" and not is_long_press:
       lcd_menu_id = 1 # go into trigger menu
+    elif button_name == "back" and is_long_press:
+      lcd_shutdown()
   elif lcd_menu_id == 1: # trigger menu #####
-    if button_name == "OK":
+    if button_name == "OK" and not is_long_press:
       process_user_input("s") # select pad
-    elif button_name == "back":
+    elif button_name == "back" and not is_long_press:
       process_user_input("S")
+    elif button_name == "back" and is_long_press:
+      lcd_menu_id = 0 # long press of "back" returns in main menu
     elif button_name == "up":
       process_user_input("c") # select trigger parameter
     elif button_name == "down":
@@ -255,6 +255,9 @@ def lcd_on_button_pressed(button_name):
       process_user_input(chr(259)) # change trigger parameter
     elif button_name == "left":
       process_user_input(chr(258))
+
+def lcd_shutdown():
+  pass # TODO
 
 def lcd_update_timer_callback():
   global do_update_display
