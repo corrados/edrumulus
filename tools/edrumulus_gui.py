@@ -21,6 +21,7 @@
 
 import os
 import sys
+import signal
 import socket
 import time
 import threading
@@ -55,6 +56,8 @@ version_major           = -1
 version_minor           = -1
 do_update_midi_in       = False
 do_update_display       = False
+SIGINT_received         = False
+original_sigint_handler = []
 midi_send_cmd           = -1 # invalidate per default
 midi_previous_send_cmd  = -1
 midi_send_val           = -1
@@ -98,6 +101,11 @@ def process_user_input(ch):
 def parse_cmd_param(cmd):
   # check for "pad type" and "curve type" special cases, otherwise convert integer in string
   return pad_types[database[cmd]] if cmd == 0 else curve_types[database[cmd]] if cmd == 6 else str(database[cmd])
+
+def signal_handler(sig, frame):
+  global SIGINT_received
+  signal.signal(signal.SIGINT, original_sigint_handler) # we are done, restore original signal handler
+  SIGINT_received = True
 
 
 ################################################################################
@@ -180,7 +188,7 @@ def ncurses_update_possense_win(value):
 def ncurses_input_loop():
   global sel_pad, sel_cmd, database, auto_pad_sel, do_update_display, do_update_midi_in
   # loop until user presses q
-  while (ch := mainwin.getch()) != ord("q"):
+  while (ch := mainwin.getch()) != ord("q") and not SIGINT_received:
     if ch != -1:
       do_update_display = True
       if ch == ord("r"): # reset all settings
@@ -244,7 +252,7 @@ def lcd_on_button_pressed(button_name, is_long_press):
       else:
         lcd_menu_id = 1 # go into trigger menu
     elif button_name == "back" and not is_long_press:
-      lcd_shutdown_confirm = False # cancel shutdown precedure
+      lcd_shutdown_confirm = False # cancel shutdown procedure
       lcd_update()
     elif button_name == "back" and is_long_press:
       lcd_shutdown()
@@ -276,15 +284,16 @@ def lcd_shutdown():
     store_settings()
     os.system("sudo shutdown -h now")
 
-def lcd_update_timer_callback():
+def lcd_loop():
   global do_update_display
-  if do_update_display:
-    lcd_update()
-    do_update_display = False
-  threading.Timer(1.0, lcd_update_timer_callback).start() # recursive timed call
+  while not SIGINT_received:
+    if do_update_display:
+      lcd_update()
+      do_update_display = False
+    time.sleep(0.1)
 
 def lcd_update():
-  if not lcd_shutdown_confirm:
+  if not lcd_shutdown_confirm: # do not overwrite shutdown question text
     lcd.clear()
     lcd.cursor_pos = (0, 0)
     if lcd_menu_id == 0: # main menu
@@ -302,7 +311,6 @@ def lcd_init():
   global lcd
   lcd = CharLCD(pin_rs = 27, pin_rw = None, pin_e = 17, pins_data = [22, 23, 24, 10],
                 numbering_mode = GPIO.BCM, cols = 16, rows = 2, auto_linebreaks = False)
-  lcd_update_timer_callback() # initiate timer for periodic display update checks
   # startup message on LCD
   lcd.clear()
   lcd.cursor_pos = (0, 3)
@@ -481,8 +489,8 @@ if use_lcd:
 elif use_ncurses:
   ncurses_init()
 
-if not use_ncurses and not non_block:
-  print("press Return to quit")
+# ctrl+c quits the application
+original_sigint_handler = signal.signal(signal.SIGINT, signal_handler)
 
 with client:
   try:
@@ -506,11 +514,14 @@ with client:
   do_update_display = True
 
   # it takes time for ecasound to start up -> we need a timer thread for socket connection
-  threading.Timer(0.0, ecasound_connection).start()
+  ecasound_connection()
 
-  # main loop (LCD is event driven and does not need a loop)
-  if use_lcd or no_gui:
-    input() # simply wait until a key is pressed to quit the application
+  # main loop
+  if no_gui:
+    print("press Return to quit")
+    input() # wait until a key is pressed to quit the application
+  elif use_lcd:
+    lcd_loop()
   elif use_ncurses:
     ncurses_input_loop()
 
