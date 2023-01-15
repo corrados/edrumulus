@@ -231,28 +231,35 @@ def lcd_on_button_pressed(button_name):
   global lcd_menu_id
   if lcd_menu_id == 0: # main menu #####
     if button_name == "up":
-      process_user_input("k")
+      process_user_input("k") # change kit
     elif button_name == "down":
       process_user_input("K")
     elif button_name == "right":
-      process_user_input("v")
+      process_user_input("v") # change kit volume
     elif button_name == "left":
       process_user_input("V")
     elif button_name == "OK":
       lcd_menu_id = 1 # go into trigger menu
   elif lcd_menu_id == 1: # trigger menu #####
     if button_name == "OK":
-      process_user_input("s")
+      process_user_input("s") # select pad
     elif button_name == "back":
       process_user_input("S")
     elif button_name == "up":
-      process_user_input("c")
+      process_user_input("c") # select trigger parameter
     elif button_name == "down":
       process_user_input("C")
     elif button_name == "right":
-      process_user_input(chr(259))
+      process_user_input(chr(259)) # change trigger parameter
     elif button_name == "left":
       process_user_input(chr(258))
+
+def lcd_update_timer_callback():
+  global do_update_param_outputs
+  if do_update_param_outputs:
+    lcd_update()
+    do_update_param_outputs = False
+  threading.Timer(1.0, lcd_update_timer_callback).start() # recursive timed call
 
 def lcd_update():
   lcd.clear()
@@ -272,6 +279,7 @@ def lcd_init():
   global lcd
   lcd = CharLCD(pin_rs = 27, pin_rw = None, pin_e = 17, pins_data = [22, 23, 24, 10],
                 numbering_mode = GPIO.BCM, cols = 16, rows = 2, auto_linebreaks = False)
+  lcd_update_timer_callback() # initiate timer for periodic display update checks
   # startup message on LCD
   lcd.clear()
   lcd.cursor_pos = (0, 3)
@@ -336,6 +344,7 @@ def ecasound_connection():
   ecasound_socket.settimeout(0.2)
   try:
     ecasound_socket.connect(('localhost', 2868))
+    time.sleep(0.5) # give ecasound some time to load all .ecs files
     ecasound_socket.sendall("cs-list\r\n".encode("utf8")) # query chain names
     data         = ecasound_socket.recv(1024)
     chain_setups = str(data).split("\\r\\n")[1].split(",")
@@ -471,10 +480,7 @@ with client:
 
   send_value_to_edrumulus(108, sel_pad) # to query all Edrumulus current parameters
   time.sleep(0.2)
-  if use_lcd:
-    lcd_update()
-  elif use_ncurses:
-    ncurses_update_param_outputs()
+  do_update_param_outputs = True
 
   # it takes time for ecasound to start up -> we need a timer thread for socket connection
   threading.Timer(0.0, ecasound_connection).start()
