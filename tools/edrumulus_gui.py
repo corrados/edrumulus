@@ -52,7 +52,8 @@ sel_pad                 = 0
 sel_cmd                 = 0
 version_major           = -1
 version_minor           = -1
-do_update_param_outputs = False
+do_update_midi_in       = False
+do_update_display       = False
 midi_send_cmd           = -1 # invalidate per default
 midi_previous_send_cmd  = -1
 midi_send_val           = -1
@@ -176,11 +177,11 @@ def ncurses_update_possense_win(value):
   posgwin.addch(1, 2 + int(float(value) / 128 * 20), curses.ACS_BLOCK)
 
 def ncurses_input_loop():
-  global sel_pad, sel_cmd, database, auto_pad_sel, do_update_param_outputs
+  global sel_pad, sel_cmd, database, auto_pad_sel, do_update_display, do_update_midi_in
   # loop until user presses q
   while (ch := mainwin.getch()) != ord("q"):
     if ch != -1:
-      do_update_param_outputs = True
+      do_update_display = True
       if ch == ord("r"): # reset all settings
         mainwin.addstr(row_start + 1, col_start, "DO YOU REALLY WANT TO RESET ALL EDRUMULUS PARAMETERS [y/n]?")
         mainwin.nodelay(False) # temporarily, use blocking getch()
@@ -191,9 +192,10 @@ def ncurses_input_loop():
       else:
         process_user_input(chr(ch))
 
-    if do_update_param_outputs:
+    if do_update_midi_in or do_update_display:
       ncurses_update_param_outputs()
-      do_update_param_outputs = False
+      do_update_display = False
+      do_update_midi_in = False
     time.sleep(0.01)
 
 
@@ -255,10 +257,10 @@ def lcd_on_button_pressed(button_name):
       process_user_input(chr(258))
 
 def lcd_update_timer_callback():
-  global do_update_param_outputs
-  if do_update_param_outputs:
+  global do_update_display
+  if do_update_display:
     lcd_update()
-    do_update_param_outputs = False
+    do_update_display = False
   threading.Timer(1.0, lcd_update_timer_callback).start() # recursive timed call
 
 def lcd_update():
@@ -340,7 +342,7 @@ ecasound_socket          = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 ecasound_connect_try_cnt = 20 # 20 * 0.5s = 10s
 
 def ecasound_connection():
-  global ecasound_socket, ecasound_connect_try_cnt, do_update_param_outputs, chain_setups
+  global ecasound_socket, ecasound_connect_try_cnt, do_update_display, chain_setups
   ecasound_socket.settimeout(0.2)
   try:
     ecasound_socket.connect(('localhost', 2868))
@@ -350,7 +352,7 @@ def ecasound_connection():
     chain_setups = str(data).split("\\r\\n")[1].split(",")
     ecasound_connect_try_cnt = 0 # 0 means socket connected successful and chain names received
     ecasound_switch_chains(True) # initial chain select
-    do_update_param_outputs = True # update GUI
+    do_update_display = True # update GUI
   except:
     ecasound_connect_try_cnt -= 1
     if ecasound_connect_try_cnt > 1: # will stop trying at ecasound_connect_try_cnt == 1
@@ -395,7 +397,7 @@ def send_value_to_edrumulus(command, value):
 # jack audio callback function
 @client.set_process_callback
 def process(frames):
-  global database, midi_send_val, midi_send_cmd, midi_previous_send_cmd, do_update_param_outputs, \
+  global database, midi_send_val, midi_send_cmd, midi_previous_send_cmd, do_update_midi_in, \
          version_major, version_minor, hi_hat_ctrl, sel_pad
   output_port.clear_buffer()
   for offset, data in input_port.incoming_midi_events():
@@ -409,8 +411,8 @@ def process(frames):
           cur_cmd = cmd_val.index(key)
           # do not update command which was just changed to avoid the value jumps back to old value
           if (midi_previous_send_cmd != key) or is_load_settings:
-            database[cur_cmd]       = max(0, min(cmd_val_rng[cur_cmd], value));
-            do_update_param_outputs = True;
+            database[cur_cmd] = max(0, min(cmd_val_rng[cur_cmd], value));
+            do_update_midi_in = True;
         if key == 127: # check for major version number
           version_major = value
         if key == 126: # check for minor version number
@@ -423,7 +425,7 @@ def process(frames):
           instrument_name = "" # not all MIDI values have a defined instrument name
         if use_ncurses:
           ncurses_update_midi_win(key, value, instrument_name)
-        do_update_param_outputs = True
+        do_update_midi_in = True
         if auto_pad_sel and instrument_name and value > 10: # auto pad selection (velocity threshold of 10)
           try:
             pad_index = pad_names.index(instrument_name) # throws exception if pad was not found
@@ -438,10 +440,10 @@ def process(frames):
         if key == 16: # positional sensing
           if use_ncurses:
             ncurses_update_possense_win(value)
-          do_update_param_outputs = True
+          do_update_midi_in = True
         if key == 4: # hi-hat controller
-          hi_hat_ctrl             = value
-          do_update_param_outputs = True
+          hi_hat_ctrl       = value
+          do_update_midi_in = True
 
   if midi_send_cmd >= 0:
     output_port.write_midi_event(0, (185, midi_send_cmd, midi_send_val))
@@ -480,7 +482,7 @@ with client:
 
   send_value_to_edrumulus(108, sel_pad) # to query all Edrumulus current parameters
   time.sleep(0.2)
-  do_update_param_outputs = True
+  do_update_display = True
 
   # it takes time for ecasound to start up -> we need a timer thread for socket connection
   threading.Timer(0.0, ecasound_connection).start()
