@@ -22,7 +22,7 @@ if aconnect -l|grep -q Edrumulus; then
 fi
 
 # check if we are running on a Raspberry Pi by checking if the user name is pi
-if [ $USER = "pi" ]; then
+if [ "$USER" == "pi" ]; then
   echo "-> Running on a Raspberry pi"
   is_raspi=true
 fi
