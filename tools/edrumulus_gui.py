@@ -233,7 +233,6 @@ def lcd_button_handler(pin):
       while GPIO.input(pin) == 0 and time.time() - start_time < 0.7: # wait for the button up or time-out
         time.sleep(0.01)
       lcd_on_button_pressed(name, time.time() - start_time > 0.7)
-    lcd_update()
 
 def lcd_on_button_pressed(button_name, is_long_press):
   global lcd_menu_id, lcd_shutdown_confirm
@@ -253,7 +252,6 @@ def lcd_on_button_pressed(button_name, is_long_press):
         lcd_menu_id = 1 # go into trigger menu
     elif button_name == "back" and not is_long_press:
       lcd_shutdown_confirm = False # cancel shutdown procedure
-      lcd_update()
     elif button_name == "back" and is_long_press:
       lcd_shutdown()
   elif lcd_menu_id == 1: # trigger menu #####
@@ -271,6 +269,7 @@ def lcd_on_button_pressed(button_name, is_long_press):
       process_user_input(chr(259)) # change trigger parameter
     elif button_name == "left":
       process_user_input(chr(258))
+  lcd_update()
 
 def lcd_shutdown():
   global lcd_shutdown_confirm
