@@ -376,7 +376,7 @@ def ecasound_connection():
   ecasound_socket.settimeout(0.2)
   try:
     ecasound_socket.connect(('localhost', 2868))
-    time.sleep(0.5) # give ecasound some time to load all .ecs files
+    time.sleep(2.0) # give ecasound some time to load all .ecs files
     ecasound_socket.sendall("cs-list\r\n".encode("utf8")) # query chain names
     data         = ecasound_socket.recv(1024)
     chain_setups = str(data).split("\\r\\n")[1].split(",")
