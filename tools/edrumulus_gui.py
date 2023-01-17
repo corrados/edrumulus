@@ -513,7 +513,7 @@ with client:
   do_update_display = True
 
   # it takes time for ecasound to start up -> we need a timer thread for socket connection
-  ecasound_connection()
+  threading.Timer(0.0, ecasound_connection).start()
 
   # main loop
   if no_gui:
