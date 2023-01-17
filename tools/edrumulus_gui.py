@@ -235,7 +235,7 @@ def lcd_button_handler(pin):
       lcd_on_button_pressed(name, time.time() - start_time > 0.7)
 
 def lcd_on_button_pressed(button_name, is_long_press):
-  global lcd_menu_id, lcd_shutdown_confirm
+  global lcd_menu_id, lcd_shutdown_confirm, auto_pad_sel
   if lcd_menu_id == 0: # main menu #####
     if button_name == "up":
       process_user_input("k") # change kit
@@ -257,6 +257,8 @@ def lcd_on_button_pressed(button_name, is_long_press):
   elif lcd_menu_id == 1: # trigger menu #####
     if button_name == "OK" and not is_long_press:
       process_user_input("s") # select pad
+    if button_name == "OK" and is_long_press:
+      auto_pad_sel = not auto_pad_sel # toggle auto pad selection
     elif button_name == "back" and not is_long_press:
       process_user_input("S")
     elif button_name == "back" and is_long_press:
@@ -302,7 +304,7 @@ def lcd_update():
           lcd.cursor_pos = (1, 0)
           lcd.write_string("Vol: %s" % kit_vol_str)
     elif lcd_menu_id == 1: # trigger menu
-      lcd.write_string("%s:%s" % (pad_names[sel_pad], cmd_names[sel_cmd]))
+      lcd.write_string(("A:" if auto_pad_sel else "") + "%s:%s" % (pad_names[sel_pad], cmd_names[sel_cmd]))
       lcd.cursor_pos = (1, 4)
       lcd.write_string("<%s>" % parse_cmd_param(sel_cmd))
 
@@ -426,7 +428,7 @@ def send_value_to_edrumulus(command, value):
 @client.set_process_callback
 def process(frames):
   global database, midi_send_val, midi_send_cmd, midi_previous_send_cmd, do_update_midi_in, \
-         version_major, version_minor, hi_hat_ctrl, sel_pad
+         version_major, version_minor, hi_hat_ctrl, sel_pad, do_update_display
   output_port.clear_buffer()
   for offset, data in input_port.incoming_midi_events():
     if len(data) == 3:
@@ -458,9 +460,10 @@ def process(frames):
           try:
             pad_index = pad_names.index(instrument_name) # throws exception if pad was not found
             if sel_pad is not pad_index: # only change pad if it is different from current
-              sel_pad       = pad_index
-              midi_send_val = sel_pad # we cannot use send_value_to_edrumulus here
-              midi_send_cmd = 108
+              sel_pad           = pad_index
+              midi_send_val     = sel_pad # we cannot use send_value_to_edrumulus here
+              midi_send_cmd     = 108
+              do_update_display = True
           except:
             pass # pad not found, do nothing
 
