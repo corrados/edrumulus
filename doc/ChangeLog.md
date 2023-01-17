@@ -1,6 +1,23 @@
 # Edrumulus Project Log
 
 
+
+## 2023-01-17 Auto start Edrumulus on Raspberry Pi is not trivial
+
+  To auto start Edrumulus on a Raspberry Pi I tried to use the systemctl with:
+  ```
+  WorkingDirectory=/home/pi/edrumulus/tools
+  Environment="JACK_NO_AUDIO_RESERVATION=1"
+  ExecStart=/bin/sh -c 'exec /home/pi/edrumulus/tools/run_edrumulus.sh lcdgui >/var/log/edrumulus1.log 2>/var/log/edrumulus2.log'
+  ```
+  But that gave me a segmentation fault in Drumgizmo. Only running the service as the pi
+  user in rc.local has worked:
+  ```
+  cd /home/pi/edrumulus/tools
+  export JACK_NO_AUDIO_RESERVATION=1
+  su pi ./run_edrumulus.sh lcdgui &
+  ```
+
 ## 2023-01-08 edrumulus_gui.py replaces EdrumulusGUI
 
   The C++ version of the command line Edrumulus GUI is now replaced by an equivalent Python
