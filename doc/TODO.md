@@ -2,6 +2,12 @@
 
 The road map items are sorted by priority.
 
+- [ ] **Issue with overload compensation**
+
+  Hitting PD8 at the same time with rim and pad gives too high MIDI velocity. This is most probably caused
+  by a second peak which also distorts and is inside the overload_hist. The overload_hist must not be evaluated
+  completely but only the part around the detected peak position to only have the main peak evaluated.
+
 - [ ] **Improve rim shot detection**
 
   Especially for pads like the PDA-120L where the piezos are located near the edge, the rim shot detection does perform poorly.
