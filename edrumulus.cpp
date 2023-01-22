@@ -794,6 +794,16 @@ float Edrumulus::Pad::process_sample ( const float* input,
         first_peak_found = true; // for special case signal only increments, the peak found would be false -> correct this
         s.was_peak_found = true;
 
+
+// TEST
+String serial_print;
+for ( int j1 = 0; j1 < overload_hist_len; j1++ )
+{
+  serial_print += String ( s.overload_hist[j1] ) + ",";
+}
+Serial.println ( serial_print );
+Serial.println ( peak_delay );
+
         // check overload status
         int number_overloaded_samples = 0;
         for ( int i = 0; i < overload_hist_len; i++ )
