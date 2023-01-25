@@ -21,7 +21,6 @@
 % settings.powermap_fixed2_y = 0.3;
 
 function calibrate_drumgizmo_velocity
-global fixed m shelf;
 
 x_roland = 10 .^ ([-63.865,-60.767,-57.64,-54.051,-52.247,-50.309,-48.511,-47.082,-45.155,-44.032,-42.526,-41.212,-40.206,-39.063,-38.203,-37.13,-36.192,-35.283,-34.546,-34.391,-33.583,-33.247,-32.624,-31.948,-31.253,-30.618,-30.052,-29.457,-28.871,-28.357,-27.767,-27.362,-26.764,-26.314,-25.787,-25.548,-25.35,-24.951,-24.415,-23.437,-23.014,-22.608,-22.413,-22.067,-21.724,-21.35,-21.01,-20.646,-20.324,-19.628,-19.336,-18.978,-18.67,-18.381,-18.106,-17.776,-17.507,-17.22,-17.088,-16.943,-16.803,-16.746,-16.449,-16.278,-15.773,-15.74,-15.572,-15.475,-15.233,-14.631,-14.118,-13.867,-13.86,-13.283,-13.246,-13.18,-12.9,-12.484,-12.305,-11.967,-11.966,-11.857,-11.739,-11.558,-11.494,-11.315,-11.29,-11.223,-11.149,-10.798,-10.454,-10.442,-10.217,-10,-9.3581,-9.249,-9.1946,-9.0551,-8.8625,-8.7959,-8.3854,-8.2022,-7.8392,-7.6261,-7.3654,-7.3499,-7.178,-7.1732,-7.1526,-7.1369,-7.0715,-7.0023,-6.7295,-6.4215,-5.519,-5.2762,-5.2646,-5.0334,-4.8305,-4.7959,-4.7495,-4.6087,-4.4192,-3.8489,-1.4902,-0.75066,-0.00053016] / 10) * 127;
 x_3      = [76,25,28,31,33,36,38,38,39,40,41,42,43,44,45,45,46,47,47,48,48,48,49,49,49,50,50,51,51,51,52,52,52,53,53,54,54,54,55,55,55,56,56,56,57,57,58,59,59,60,61,61,62,62,63,63,63,63,64,64,65,66,66,67,67,68,68,68,68,69,69,69,69,69,69,70,70,70,70,71,72,72,72,73,73,73,74,75,75,76,76,76,77,77,77,77,78,78,79,79,80,81,82,83,84,85,87,88,89,89,90,90,92,92,93,94,100,103,112,114,122,123,123,124,124,125,126];
@@ -34,37 +33,69 @@ plot(x_1);
 plot(x_roland);
 
 
+%fixed(1).in  = 0.7;
+%fixed(1).out = 0.06;
+%fixed(2).in  = 0.91;
+%fixed(2).out = 0.25;
+%fixed(3).in  = 0.95;
+%fixed(3).out = 0.26;
+% -> 9.6
+
+%fixed(1).in  = 0.7;
+%fixed(1).out = 0.06;
+%fixed(2).in  = 0.9;
+%fixed(2).out = 0.25;
+%fixed(3).in  = 0.97;
+%fixed(3).out = 0.4;
+% -> 6.2
+
+%fixed(1).in  = 0.4;
+%fixed(1).out = 0.01;
+%fixed(2).in  = 0.9;
+%fixed(2).out = 0.25;
+%fixed(3).in  = 0.97;
+%fixed(3).out = 0.4;
+% -> 3.5
+
 % TEST
 shelf        = false;
-fixed(1).in  = 0.7;
-fixed(1).out = 0.05;
-fixed(2).in  = 0.9;
-fixed(2).out = 0.1;
-fixed(3).in  = 0.95;
-fixed(3).out = 0.3;
-input_val    = 0:0.01:1;
+fixed(1).in  = 0.4;
+fixed(1).out = 0.01;
+fixed(2).in  = 0.83;
+fixed(2).out = 0.17;
+fixed(3).in  = 0.97;
+fixed(3).out = 0.4;
+% -> 2.5
+input_val    = (1:127) / 127;
 
-if shelf
-  X = [fixed(1).in, fixed(2).in, fixed(3).in];
-	Y = [fixed(1).out, fixed(2).out, fixed(3).out];
-else
-  X = [0, fixed(1).in, fixed(2).in, fixed(3).in, 1];
-  Y = [0, fixed(1).out, fixed(2).out, fixed(3).out, 1];
-end
 
-calcSlopes(X, Y);
+y = calc_map_fct(input_val, fixed, shelf);
 
-for idx = 1:length(input_val)
-  y(idx) = map(input_val(idx));
-end
-plot(input_val * 127, y * 127);
+plot(input_val * 127, y);
+
+e = x_roland - y;
+plot(e); title(['MSE: ' num2str(mean(e .^ 2))]);
 
 end
 
 
-function out = map(in)
-  global fixed m shelf;
+function y = calc_map_fct(input_val, fixed, shelf)
+  if shelf
+    X = [fixed(1).in, fixed(2).in, fixed(3).in];
+  	Y = [fixed(1).out, fixed(2).out, fixed(3).out];
+  else
+    X = [0, fixed(1).in, fixed(2).in, fixed(3).in, 1];
+    Y = [0, fixed(1).out, fixed(2).out, fixed(3).out, 1];
+  end
+  m = calcSlopes(X, Y);
 
+  for idx = 1:length(input_val)
+    y(idx) = map(input_val(idx), m, fixed, shelf) * 127;
+  end
+end
+
+
+function out = map(in, m, fixed, shelf)
   if in < fixed(1).in
     if shelf
       out = fixed(1).out;
@@ -98,7 +129,6 @@ end
 
 
 function y = h00(x)
-  x
   y = (1 + 2 * x) * power(1 - x, 2);
 end
 
@@ -115,9 +145,7 @@ function y = h11(x)
 end
 
 
-function calcSlopes(X, Y)
-  global m;
-
+function m = calcSlopes(X, Y)
   m = zeros(length(X), 1);
   d = zeros(length(X) - 1 ,1);
   h = zeros(length(X) - 1 ,1);
