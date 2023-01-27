@@ -190,7 +190,8 @@ fi
 
 
 # run Edrumulus ----------------------------------------------------------------
-# maybe use -p close=1,position=0,diverse=0,random=0
+# maybe use the following for only closed match: -p close=1,position=0,diverse=0,random=0
+# maybe use the following for adjusting the defaults a bit: -p close=0.95,position=1.0,diverse=0.1,random=0.04
 if [[ -v is_raspi ]]; then
   ./drumgizmo/drumgizmo/drumgizmo -l -L max=2,rampdown=0.02 -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
 else
