@@ -94,7 +94,7 @@ y = calc_map_fct(input_val, fixed, shelf);
 plot(input_val * 127, y);
 
 e = x_roland - y;
-plot(e); title(['MSE: ' num2str(mean(e .^ 2))]);
+%plot(e); title(['MSE: ' num2str(mean(e .^ 2))]);
 
 end
 
