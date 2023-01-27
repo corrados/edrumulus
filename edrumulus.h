@@ -143,7 +143,7 @@ protected:
 
       float process_sample ( const float* input,
                              const int    input_len,
-                             const bool*  overload_detected,
+                             const int*   overload_detected,
                              bool&        peak_found,
                              int&         midi_velocity,
                              int&         midi_pos,

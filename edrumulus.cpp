@@ -109,8 +109,8 @@ void Edrumulus::process()
 {
   float sample[MAX_NUM_PAD_INPUTS];
   float stored_sample[MAX_NUM_PAD_INPUTS];
-  bool  overload_detected[MAX_NUM_PAD_INPUTS];
-  bool  stored_overload_detected[MAX_NUM_PAD_INPUTS];
+  int   overload_detected[MAX_NUM_PAD_INPUTS];
+  int   stored_overload_detected[MAX_NUM_PAD_INPUTS];
 
 /*
 // TEST for debugging: take samples from Octave, process and return result to Octave
@@ -186,14 +186,19 @@ Serial.println ( serial_print );
       for ( int j = 0; j < number_inputs[i]; j++ )
       {
         // check for the lowest/largest possible ADC range values with noise consideration
-        if ( ( sample_org_pad[j] >= ( ADC_MAX_RANGE - ADC_MAX_NOISE_AMPL ) ) || ( sample_org_pad[j] <= ADC_MAX_NOISE_AMPL - 1 ) )
+        if ( sample_org_pad[j] >= ( ADC_MAX_RANGE - ADC_MAX_NOISE_AMPL ) )
         {
           overload_LED_cnt     = overload_LED_on_time;
-          overload_detected[j] = true;
+          overload_detected[j] = 2;
+        }
+        else if ( sample_org_pad[j] <= ADC_MAX_NOISE_AMPL - 1 )
+        {
+          overload_LED_cnt     = overload_LED_on_time;
+          overload_detected[j] = 1;
         }
         else
         {
-          overload_detected[j] = false;
+          overload_detected[j] = 0;
         }
       }
 
@@ -586,7 +591,7 @@ void Edrumulus::Pad::initialize()
 
 float Edrumulus::Pad::process_sample ( const float* input,
                                        const int    input_len,
-                                       const bool*  overload_detected,
+                                       const int*   overload_detected,
                                        bool&        peak_found,
                                        int&         midi_velocity,
                                        int&         midi_pos,
@@ -622,8 +627,8 @@ float Edrumulus::Pad::process_sample ( const float* input,
 
     // square input signal and store in FIFO buffer
     const float x_sq = input[in] * input[in];
-    update_fifo ( x_sq,                                x_sq_hist_len,     s_x_sq_hist );
-    update_fifo ( overload_detected[in] ? 1.0f : 0.0f, overload_hist_len, s.overload_hist );
+    update_fifo ( x_sq,                  x_sq_hist_len,     s_x_sq_hist );
+    update_fifo ( overload_detected[in], overload_hist_len, s.overload_hist );
 
 
     // Calculate peak detection ---------------------------------------------------

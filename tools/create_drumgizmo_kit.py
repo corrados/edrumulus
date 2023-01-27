@@ -39,29 +39,30 @@ channel_names   = ["KDrum", "Snare", "Hihat", "Tom1", "Tom2", "Tom3", "OHLeft", 
 
 # instruments: [instrument_name, master_channel(s), MIDI_note(s), group, min_strike_len, threshold]
 instruments = [["kick",            ["KDrum", "OHLeft", "OHRight"], [36],     "",      0.1,  15], \
-               ["snare",           ["Snare", "OHLeft", "OHRight"], [38],     "",      0.2,  15], \
+               ["snare",           ["Snare", "OHLeft", "OHRight"], [38],     "",      0.08, 16], \
                ["snare_rimshot",   ["Snare", "OHLeft", "OHRight"], [40],     "",      0.3,  15], \
                ["hihat_closed",    ["Hihat", "OHLeft", "OHRight"], [22],     "hihat", 0.18, 20], \
                ["hihat_closedtop", ["Hihat", "OHLeft", "OHRight"], [42],     "hihat", 0.2,  20], \
                ["hihat_open",      ["Hihat", "OHLeft", "OHRight"], [26],     "hihat", 0.7,  23], \
-               ["hihat_opentop",   ["Hihat", "OHLeft", "OHRight"], [46],     "hihat", 0.4,  23], \
+               ["hihat_opentop",   ["Hihat", "OHLeft", "OHRight"], [46],     "hihat", 0.7,  24], \
                ["hihat_foot",      ["Hihat", "OHLeft", "OHRight"], [44],     "hihat", 0.1,  23], \
                ["tom1",            ["Tom1", "OHLeft", "OHRight"],  [48, 50], "",      0.2,  15], \
                ["tom2",            ["Tom2", "OHLeft", "OHRight"],  [45, 47], "",      0.2,  15], \
                ["tom3",            ["Tom3", "OHLeft", "OHRight"],  [43, 58], "",      0.4,  15], \
                ["crash",           ["OHLeft", "OHRight"],          [55],     "",      0.5,  15], \
                ["crash_top",       ["OHLeft", "OHRight"],          [49],     "",      0.4,  15], \
-               ["ride",            ["OHRight", "OHLeft"],          [51],     "",      0.4,  15], \
-               ["ride_bell",       ["OHRight", "OHLeft"],          [53],     "",      0.4,  15], \
-               ["ride_side",       ["OHRight", "OHLeft"],          [59],     "",      0.6,  15]]
+               ["ride",            ["OHRight", "OHLeft"],          [51],     "",      1.0,  15], \
+               ["ride_bell",       ["OHRight", "OHLeft"],          [53],     "",      1.0,  16], \
+               ["ride_side",       ["OHRight", "OHLeft"],          [59],     "",      1.0,  15]]
 
 #channel_names = ["SnareL"] # for calibrating dynamic in Drumgizmo
-#instruments   = [["rolandsnare", ["SnareL"], [38], "", 0.1, 24]]
+#instruments   = [["rolandsnare", ["SnareL"], [38], "", 0.03, 23]]
 
 source_samples_dir_name   = "source_samples" # root directory of recorded source samples
-fade_out_percent          = 10 # % of sample at the end is faded out
-thresh_from_max_for_start = 20 # dB
-add_samples_at_start      = 20 # additional samples considered at strike start
+fade_out_percent          = 10  # % of sample at the end is faded out
+thresh_from_max_for_start = 20  # dB
+add_samples_at_start      = 20  # additional samples considered at strike start
+min_time_next_strike_s    = 0.5 # minimum time in seconds between two different strikes
 
 # TEST for optimizing the algorithms, only use one instrument
 #instruments = [instruments[7]]
@@ -117,8 +118,9 @@ for instrument in instruments:
     ##############################################################################
     # WAVE FORM ANALYSIS #########################################################
     ##############################################################################
-    master_channel  = channel_names.index(instrument[1][0]) # first main channel is master
-    min_strike_len  = int(instrument[4] * sample_rate) # calculate minimum strike length in samples
+    master_channel       = channel_names.index(instrument[1][0]) # first main channel is master
+    min_strike_len       = int(instrument[4] * sample_rate) # calculate minimum strike length in samples
+    min_time_next_strike = int(min_time_next_strike_s * sample_rate)
 
     # find samples which are above the threshold
     x            = np.square(sample[master_channel].astype(float))
@@ -131,7 +133,7 @@ for instrument in instruments:
       if not above_thresh[i] and above_thresh[i - 1]:
         first_below_idx = i
       if above_thresh[i] and not above_thresh[i - 1]:
-        if i - first_below_idx < min_strike_len:
+        if i - first_below_idx < min_time_next_strike:
           above_thresh[range(first_below_idx, i)] = True
 
     # remove very short on periods
