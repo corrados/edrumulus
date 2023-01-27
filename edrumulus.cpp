@@ -801,18 +801,14 @@ float Edrumulus::Pad::process_sample ( const float* input,
 
 
 // TEST
-String serial_print, serial_print2;
+String serial_print;
 for ( int j1 = 0; j1 < overload_hist_len; j1++ )
 {
   serial_print += String ( s.overload_hist[j1] ) + ",";
 }
-for ( int j1 = 0; j1 < x_sq_hist_len; j1++ )
-{
-  serial_print2 += String ( sqrt ( s_x_sq_hist[j1] ) ) + ",";
-}
 Serial.println ( serial_print );
-Serial.println ( serial_print2 );
 Serial.println ( peak_delay );
+
 
         // check overload status
         int number_overloaded_samples = 0;
