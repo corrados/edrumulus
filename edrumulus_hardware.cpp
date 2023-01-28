@@ -528,29 +528,33 @@ void Edrumulus_hardware::my_analogRead_parallel ( const uint32_t channel_adc1_bi
 // -----------------------------------------------------------------------------
 // Common hardware functions ---------------------------------------------------
 // -----------------------------------------------------------------------------
-float Edrumulus_hardware::cancel_ADC_spikes ( const float input,
-                                              const int   pad_index,
-                                              const int   input_channel_index,
-                                              const int   level )
+void Edrumulus_hardware::cancel_ADC_spikes ( float&    signal,
+                                             int&      overload_detected,
+                                             const int pad_index,
+                                             const int input_channel_index,
+                                             const int level )
 {
   // remove single/dual sample spikes by checking if right before and right after the
   // detected spike(s) we only have noise and no useful signal (since the ESP32 spikes
   // mostly are on just one or two sample(s))
   const int max_peak_threshold = 150; // maximum assumed ESP32 spike amplitude
 
-  float       return_value = prev_input4[pad_index][input_channel_index]; // normal return value in case no spike was detected
-  const float input_abs    = abs ( input );
-  Espikestate input_state  = ST_OTHER; // initialization value, might be overwritten
+  const float signal_org            = signal;
+  signal                            = prev_input4[pad_index][input_channel_index];    // normal return value in case no spike was detected
+  const int   overload_detected_org = overload_detected;
+  overload_detected                 = prev_overload4[pad_index][input_channel_index]; // normal return value in case no spike was detected
+  const float input_abs             = abs ( signal_org );
+  Espikestate input_state           = ST_OTHER; // initialization value, might be overwritten
 
   if ( input_abs < ADC_MAX_NOISE_AMPL )
   {
     input_state = ST_NOISE;
   }
-  else if ( ( input < max_peak_threshold ) && ( input > 0 ) )
+  else if ( ( signal_org < max_peak_threshold ) && ( signal_org > 0 ) )
   {
     input_state = ST_SPIKE_HIGH;
   }
-  else if ( ( input > -max_peak_threshold ) && ( input < 0 ) )
+  else if ( ( signal_org > -max_peak_threshold ) && ( signal_org < 0 ) )
   {
     input_state = ST_SPIKE_LOW;
   }
@@ -560,7 +564,7 @@ float Edrumulus_hardware::cancel_ADC_spikes ( const float input,
        ( prev4_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH ) &&
        ( ( prev3_input_state[pad_index][input_channel_index] == ST_NOISE ) || ( prev3_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW ) ) )
   {
-    return_value = 0.0f; // remove single spike
+    signal = 0.0f; // remove single spike
   }
 
   // check for single low spike sample case
@@ -568,7 +572,7 @@ float Edrumulus_hardware::cancel_ADC_spikes ( const float input,
        ( prev4_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW ) &&
        ( ( prev3_input_state[pad_index][input_channel_index] == ST_NOISE ) || ( prev3_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH ) ) )
   {
-    return_value = 0.0f; // remove single spike
+    signal = 0.0f; // remove single spike
   }
 
   if ( level >= 2 )
@@ -579,7 +583,7 @@ float Edrumulus_hardware::cancel_ADC_spikes ( const float input,
          ( prev3_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH ) &&
          ( ( prev2_input_state[pad_index][input_channel_index] == ST_NOISE ) || ( prev2_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW ) ) )
     {
-      return_value                                = 0.0f; // remove two sample spike
+      signal                                      = 0.0f; // remove two sample spike
       prev_input3[pad_index][input_channel_index] = 0.0f; // remove two sample spike
     }
   
@@ -589,7 +593,7 @@ float Edrumulus_hardware::cancel_ADC_spikes ( const float input,
          ( prev3_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW ) &&
          ( ( prev2_input_state[pad_index][input_channel_index] == ST_NOISE ) || ( prev2_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH ) ) )
     {
-      return_value                                = 0.0f; // remove two sample spike
+      signal                                      = 0.0f; // remove two sample spike
       prev_input3[pad_index][input_channel_index] = 0.0f; // remove two sample spike
     }
   }
@@ -603,7 +607,7 @@ float Edrumulus_hardware::cancel_ADC_spikes ( const float input,
          ( prev2_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH ) &&
          ( ( prev1_input_state[pad_index][input_channel_index] == ST_NOISE ) || ( prev1_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW ) ) )
     {
-      return_value                                = 0.0f; // remove three sample spike
+      signal                                      = 0.0f; // remove three sample spike
       prev_input3[pad_index][input_channel_index] = 0.0f; // remove three sample spike
       prev_input2[pad_index][input_channel_index] = 0.0f; // remove three sample spike
     }
@@ -615,7 +619,7 @@ float Edrumulus_hardware::cancel_ADC_spikes ( const float input,
          ( prev2_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW ) &&
          ( ( prev1_input_state[pad_index][input_channel_index] == ST_NOISE ) || ( prev1_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH ) ) )
     {
-      return_value                                = 0.0f; // remove three sample spike
+      signal                                      = 0.0f; // remove three sample spike
       prev_input3[pad_index][input_channel_index] = 0.0f; // remove three sample spike
       prev_input2[pad_index][input_channel_index] = 0.0f; // remove three sample spike
     }
@@ -631,7 +635,7 @@ float Edrumulus_hardware::cancel_ADC_spikes ( const float input,
          ( prev1_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH ) &&
          ( ( input_state == ST_NOISE ) || ( input_state == ST_SPIKE_LOW ) ) )
     {
-      return_value                                = 0.0f; // remove four sample spike
+      signal                                      = 0.0f; // remove four sample spike
       prev_input3[pad_index][input_channel_index] = 0.0f; // remove four sample spike
       prev_input2[pad_index][input_channel_index] = 0.0f; // remove four sample spike
       prev_input1[pad_index][input_channel_index] = 0.0f; // remove four sample spike
@@ -645,7 +649,7 @@ float Edrumulus_hardware::cancel_ADC_spikes ( const float input,
          ( prev1_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW ) &&
          ( ( input_state == ST_NOISE ) || ( input_state == ST_SPIKE_HIGH ) ) )
     {
-      return_value                                = 0.0f; // remove four sample spike
+      signal                                      = 0.0f; // remove four sample spike
       prev_input3[pad_index][input_channel_index] = 0.0f; // remove four sample spike
       prev_input2[pad_index][input_channel_index] = 0.0f; // remove four sample spike
       prev_input1[pad_index][input_channel_index] = 0.0f; // remove four sample spike
@@ -661,24 +665,28 @@ float Edrumulus_hardware::cancel_ADC_spikes ( const float input,
   prev_input4[pad_index][input_channel_index]       = prev_input3[pad_index][input_channel_index];
   prev_input3[pad_index][input_channel_index]       = prev_input2[pad_index][input_channel_index];
   prev_input2[pad_index][input_channel_index]       = prev_input1[pad_index][input_channel_index];
+  prev_overload4[pad_index][input_channel_index]    = prev_overload3[pad_index][input_channel_index];
+  prev_overload3[pad_index][input_channel_index]    = prev_overload2[pad_index][input_channel_index];
+  prev_overload2[pad_index][input_channel_index]    = prev_overload1[pad_index][input_channel_index];
 
   // adjust the latency of the algorithm according to the spike cancellation
   // level, i.e., the higher the level, the higher the latency
   if ( level >= 3 )
   {
     prev1_input_state[pad_index][input_channel_index] = input_state;
-    prev_input1[pad_index][input_channel_index]       = input;
+    prev_input1[pad_index][input_channel_index]       = signal_org;
+    prev_overload1[pad_index][input_channel_index]    = overload_detected_org;
   }
   else if ( level >= 2 )
   {
     prev2_input_state[pad_index][input_channel_index] = input_state;
-    prev_input2[pad_index][input_channel_index]       = input;
+    prev_input2[pad_index][input_channel_index]       = signal_org;
+    prev_overload2[pad_index][input_channel_index]    = overload_detected_org;
   }
   else
   {
     prev3_input_state[pad_index][input_channel_index] = input_state;
-    prev_input3[pad_index][input_channel_index]       = input;
+    prev_input3[pad_index][input_channel_index]       = signal_org;
+    prev_overload3[pad_index][input_channel_index]    = overload_detected_org;
   }
-
-  return return_value;
 }

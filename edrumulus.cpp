@@ -169,23 +169,7 @@ Serial.println ( serial_print );
       // prepare samples for processing
       for ( int j = 0; j < number_inputs[i]; j++ )
       {
-        // update DC offset by using an IIR1 low pass filter
-        dc_offset[i][j] = dc_offset_iir_gamma * dc_offset[i][j] + dc_offset_iir_one_minus_gamma * sample_org_pad[j];
-
-        // compensate DC offset
-        sample[j] = sample_org_pad[j] - dc_offset[i][j];
-
-        // ADC spike cancellation (do not use spike cancellation for rim switches since they have short peaks)
-        if ( ( spike_cancel_level > 0 ) && !( pad[i].get_is_rim_switch() && ( j == 1 ) ) ) // rim is always on second channel
-        {
-          sample[j] = edrumulus_hardware.cancel_ADC_spikes ( sample[j], i, j, spike_cancel_level );
-        }
-      }
-
-      // overload detection
-      for ( int j = 0; j < number_inputs[i]; j++ )
-      {
-        // check for the lowest/largest possible ADC range values with noise consideration
+        // overload detection: check for the lowest/largest possible ADC range values with noise consideration
         if ( sample_org_pad[j] >= ( ADC_MAX_RANGE - ADC_MAX_NOISE_AMPL ) )
         {
           overload_LED_cnt     = overload_LED_on_time;
@@ -199,6 +183,18 @@ Serial.println ( serial_print );
         else
         {
           overload_detected[j] = 0;
+        }
+
+        // update DC offset by using an IIR1 low pass filter
+        dc_offset[i][j] = dc_offset_iir_gamma * dc_offset[i][j] + dc_offset_iir_one_minus_gamma * sample_org_pad[j];
+
+        // compensate DC offset
+        sample[j] = sample_org_pad[j] - dc_offset[i][j];
+
+        // ADC spike cancellation (do not use spike cancellation for rim switches since they have short peaks)
+        if ( ( spike_cancel_level > 0 ) && !( pad[i].get_is_rim_switch() && ( j == 1 ) ) ) // rim is always on second channel
+        {
+          edrumulus_hardware.cancel_ADC_spikes ( sample[j], overload_detected[j], i, j, spike_cancel_level );
         }
       }
 
@@ -630,6 +626,11 @@ float Edrumulus::Pad::process_sample ( const float* input,
     update_fifo ( x_sq,                  x_sq_hist_len,     s_x_sq_hist );
     update_fifo ( overload_detected[in], overload_hist_len, s.overload_hist );
 
+// TEST
+if ( overload_detected[in] > 0 )
+{
+  Serial.println ( " -   " + String ( overload_detected[in] ) + "/" + String ( sqrt ( x_sq ) ) );
+}
 
     // Calculate peak detection ---------------------------------------------------
     // IIR band-pass filter
@@ -801,13 +802,18 @@ float Edrumulus::Pad::process_sample ( const float* input,
 
 
 // TEST
-String serial_print;
+String serial_print, serial_print2;
 for ( int j1 = 0; j1 < overload_hist_len; j1++ )
 {
   serial_print += String ( s.overload_hist[j1] ) + ",";
 }
+for ( int j1 = 0; j1 < x_sq_hist_len; j1++ )
+{
+  serial_print2 += String ( j1 ) + ":" + String ( sqrt ( s_x_sq_hist[j1] ) ) + ",";
+}
 Serial.println ( serial_print );
-Serial.println ( peak_delay );
+Serial.println ( serial_print2 );
+Serial.println ( x_sq_hist_len - scan_time + peak_velocity_idx );
 
 
         // check overload status
