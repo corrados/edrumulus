@@ -507,27 +507,27 @@ void Edrumulus::Pad::initialize()
     allocate_initialize ( &s.x_rim_switch_hist, rim_shot_window_len ); // memory for rim switch detection
     allocate_initialize ( &s.overload_hist,     overload_hist_len );   // memory for overload detection status
 
-    s.was_above_threshold            = false;
-    s.is_overloaded_state            = false;
-    s.mask_back_cnt                  = 0;
-    s.first_peak_val                 = 0.0f;
-    s.peak_val                       = 0.0f;
-    s.decay_back_cnt                 = 0;
-    s.decay_scaling                  = 1.0f;
-    s.scan_time_cnt                  = 0;
-    s.decay_pow_est_start_cnt        = 0;
-    s.decay_pow_est_cnt              = 0;
-    s.decay_pow_est_sum              = 0.0f;
-    s.pos_sense_cnt                  = 0;
-    s.x_low_hist_idx                 = 0;
-    s.rim_shot_cnt                   = 0;
-    s.rim_switch_on_cnt              = 0;
-    s.max_x_filt_val                 = 0.0f;
-    s.max_mask_x_filt_val            = 0.0f;
-    s.was_peak_found                 = false;
-    s.was_pos_sense_ready            = false;
-    s.was_rim_shot_ready             = false;
-    s.stored_is_rimshot              = false;
+    s.was_above_threshold     = false;
+    s.is_overloaded_state     = false;
+    s.mask_back_cnt           = 0;
+    s.first_peak_val          = 0.0f;
+    s.peak_val                = 0.0f;
+    s.decay_back_cnt          = 0;
+    s.decay_scaling           = 1.0f;
+    s.scan_time_cnt           = 0;
+    s.decay_pow_est_start_cnt = 0;
+    s.decay_pow_est_cnt       = 0;
+    s.decay_pow_est_sum       = 0.0f;
+    s.pos_sense_cnt           = 0;
+    s.x_low_hist_idx          = 0;
+    s.rim_shot_cnt            = 0;
+    s.rim_switch_on_cnt       = 0;
+    s.max_x_filt_val          = 0.0f;
+    s.max_mask_x_filt_val     = 0.0f;
+    s.was_peak_found          = false;
+    s.was_pos_sense_ready     = false;
+    s.was_rim_shot_ready      = false;
+    s.stored_is_rimshot       = false;
   }
 
   // calculate positional sensing low-pass filter coefficients
