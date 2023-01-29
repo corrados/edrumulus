@@ -407,7 +407,7 @@ void Edrumulus::Pad::initialize()
   ctrl_history_len         = 10;   // (MUST BE AN EVEN VALUE) control history length, use a fixed value
   ctrl_velocity_range_fact = 4.0f; // use a fixed value (TODO make it adjustable)
   ctrl_velocity_threshold  = 5.0f; // use a fixed value (TODO make it adjustable)
-  overload_hist_len        = x_sq_hist_len; // same length as x squared history length needed
+  overload_hist_len        = scan_time + x_filt_delay;
   max_num_overloads        = 3; // maximum allowed number of overloaded samples until the overload special case is activated
   overload_num_thresh_1db  = 1;
   overload_num_thresh_2db  = 2;
