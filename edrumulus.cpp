@@ -626,11 +626,6 @@ float Edrumulus::Pad::process_sample ( const float* input,
     update_fifo ( x_sq,                  x_sq_hist_len,     s_x_sq_hist );
     update_fifo ( overload_detected[in], overload_hist_len, s.overload_hist );
 
-// TEST
-if ( overload_detected[in] > 0 )
-{
-  Serial.println ( " -   " + String ( overload_detected[in] ) + "/" + String ( sqrt ( x_sq ) ) );
-}
 
     // Calculate peak detection ---------------------------------------------------
     // IIR band-pass filter
@@ -813,7 +808,7 @@ for ( int j1 = 0; j1 < x_sq_hist_len; j1++ )
 }
 Serial.println ( serial_print );
 Serial.println ( serial_print2 );
-Serial.println ( x_sq_hist_len - scan_time + peak_velocity_idx );
+Serial.println ( overload_hist_len - scan_time + peak_velocity_idx );
 
 
         // check overload status
