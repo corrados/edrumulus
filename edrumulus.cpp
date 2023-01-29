@@ -839,9 +839,8 @@ float Edrumulus::Pad::process_sample ( const float* input,
           {
             s.peak_val *= 1.2589; // 1 dB
           }
-
 /*
-// TEST
+// TEST for debugging the overload correction algorithm
 String serial_print;
 for ( int j1 = 0; j1 < overload_hist_len; j1++ )
 {
