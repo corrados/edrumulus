@@ -398,19 +398,21 @@ void Edrumulus::Pad::initialize()
   decay_est_len            = round ( pad_settings.decay_est_len_ms   * 1e-3f * Fs );
   decay_est_fact           = pow ( 10.0f, pad_settings.decay_est_fact_db / 10 );
   rim_shot_window_len      = round ( pad_settings.rim_shot_window_len_ms * 1e-3f * Fs );        // window length (e.g. 5 ms)
-  rim_shot_treshold_dB     = static_cast<float> ( pad_settings.rim_shot_treshold ) - 44;    // rim shot threshold
+  rim_shot_treshold_dB     = static_cast<float> ( pad_settings.rim_shot_treshold ) - 44;        // rim shot threshold
   rim_switch_treshold      = -ADC_MAX_NOISE_AMPL + 9 * ( pad_settings.rim_shot_treshold - 31 ); // rim switch linear threshold
   rim_switch_on_cnt_thresh = round ( 10.0f * 1e-3f * Fs );                                      // number of on samples until we detect a choke
   rim_max_power_low_limit  = ADC_MAX_NOISE_AMPL * ADC_MAX_NOISE_AMPL / 31.0f; // lower limit on detected rim power, 15 dB below max noise amplitude
   x_rim_hist_len           = x_sq_hist_len + rim_shot_window_len;
-  cancellation_factor      = static_cast<float> ( pad_settings.cancellation ) / 31.0f;          // cancellation factor: range of 0.0..1.0
+  cancellation_factor      = static_cast<float> ( pad_settings.cancellation ) / 31.0f; // cancellation factor: range of 0.0..1.0
   ctrl_history_len         = 10;   // (MUST BE AN EVEN VALUE) control history length, use a fixed value
   ctrl_velocity_range_fact = 4.0f; // use a fixed value (TODO make it adjustable)
   ctrl_velocity_threshold  = 5.0f; // use a fixed value (TODO make it adjustable)
-  overload_hist_len        = scan_time + x_filt_delay;
+  overload_hist_len        = x_sq_hist_len; // same length as x squared history length needed
   max_num_overloads        = 3; // maximum allowed number of overloaded samples until the overload special case is activated
-  overload_num_thresh_2db  = 5;
-  overload_num_thresh_3db  = 7;
+  overload_num_thresh_1db  = 1;
+  overload_num_thresh_2db  = 2;
+  overload_num_thresh_3db  = 3;
+  overload_num_thresh_4db  = 4;
 
   // The ESP32 ADC has 12 bits resulting in a range of 20*log10(2048)=66.2 dB.
   // The sensitivity parameter shall be in the range of 0..31. This range should then be mapped to the
@@ -795,52 +797,59 @@ float Edrumulus::Pad::process_sample ( const float* input,
         first_peak_found = true; // for special case signal only increments, the peak found would be false -> correct this
         s.was_peak_found = true;
 
+        // check overload status and correct the peak if necessary
+        const int peak_velocity_idx_in_overload_history = overload_hist_len - scan_time + peak_velocity_idx;
+        int       number_overloaded_samples = 1; // we check for overload history at peak position is > 0 below -> start with one
 
-// TEST
-String serial_print, serial_print2;
-for ( int j1 = 0; j1 < overload_hist_len; j1++ )
-{
-  serial_print += String ( s.overload_hist[j1] ) + ",";
-}
-for ( int j1 = 0; j1 < x_sq_hist_len; j1++ )
-{
-  serial_print2 += String ( j1 ) + ":" + String ( sqrt ( s_x_sq_hist[j1] ) ) + ",";
-}
-Serial.println ( serial_print );
-Serial.println ( serial_print2 );
-Serial.println ( overload_hist_len - scan_time + peak_velocity_idx );
-
-
-        // check overload status
-        int number_overloaded_samples = 0;
-        for ( int i = 0; i < overload_hist_len; i++ )
+        if ( s.overload_hist[peak_velocity_idx_in_overload_history] > 0.0f )
         {
-          if ( s.overload_hist[i] > 0.0f )
+          // NOTE: the static_cast<int> is a workaround for the ESP32 compiler issue: "unknown opcode or format name 'lsiu'"
+          // run to the right to find same overloads
+          int cur_idx = peak_velocity_idx_in_overload_history;
+          while ( ( cur_idx < overload_hist_len - 1 ) && ( static_cast<int> ( s.overload_hist[cur_idx] ) == static_cast<int> ( s.overload_hist[cur_idx + 1] ) ) )
           {
+            cur_idx++;
             number_overloaded_samples++;
           }
-        }
-        if ( number_overloaded_samples > max_num_overloads )
-        {
-          s.is_overloaded_state = true;
+
+          // run to the left to find same overloads
+          cur_idx = peak_velocity_idx_in_overload_history;
+          while ( ( cur_idx > 1 ) && ( static_cast<int> ( s.overload_hist[cur_idx] ) == static_cast<int> ( s.overload_hist[cur_idx - 1] ) ) )
+          {
+            cur_idx--;
+            number_overloaded_samples++;
+          }
+
+          s.is_overloaded_state = ( number_overloaded_samples > max_num_overloads );
 
           // overload correctdion: correct the peak value according to the number of clipped samples
-          if ( number_overloaded_samples <= max_num_overloads )
-          {
-            s.peak_val *= 1.2589; // 1 dB
-          }
-          else if ( number_overloaded_samples <= overload_num_thresh_2db )
-          {
-            s.peak_val *= 1.5849; // 2 dB
-          }
-          else if ( number_overloaded_samples <= overload_num_thresh_3db )
-          {
-            s.peak_val *= 2; // 3 dB
-          }
-          else
+          if ( number_overloaded_samples > overload_num_thresh_4db )
           {
             s.peak_val *= 2.5119; // 4 dB
           }
+          else if ( number_overloaded_samples > overload_num_thresh_3db )
+          {
+            s.peak_val *= 2; // 3 dB
+          }
+          else if ( number_overloaded_samples > overload_num_thresh_2db )
+          {
+            s.peak_val *= 1.5849; // 2 dB
+          }
+          else if ( number_overloaded_samples > overload_num_thresh_1db )
+          {
+            s.peak_val *= 1.2589; // 1 dB
+          }
+
+/*
+// TEST
+String serial_print;
+for ( int j1 = 0; j1 < overload_hist_len; j1++ )
+{
+  serial_print += String ( j1 ) + ":" + String ( s.overload_hist[j1] ) + ",";
+}
+Serial.println ( serial_print );
+Serial.println ( "idx: " + String ( peak_velocity_idx_in_overload_history ) + ", num: " + String ( number_overloaded_samples ) );
+*/
         }
 
         // calculate the MIDI velocity value with clipping to allowed MIDI value range
