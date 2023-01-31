@@ -2,31 +2,10 @@
 
 The road map items are sorted by priority.
 
-- [ ] **Issue with overload compensation**
+- [ ] **On ESP32 cymbal choke does not work correctly**
 
-  Hitting PD8 at the same time with rim and pad gives too high MIDI velocity. This is most probably caused
-  by a second peak which also distorts and is inside the overload_hist. The overload_hist must not be evaluated
-  completely but only the part around the detected peak position to only have the main peak evaluated.
-
-- [ ] **Improve rim shot detection**
-
-  Especially for pads like the PDA-120L where the piezos are located near the edge, the rim shot detection does perform poorly.
-
-- [ ] **Use rim switch theshold in dB**
-
-  Do not use a linear parameter as it is implemented right now.
-
-- [ ] **Introduce a first peak detection reliability**
-
-  This can be used to improve the positional sensing. E.g., if the reliability is low, we could
-  use the position of the last detected peak if it is close to the current peak in time (e.g., if
-  we have a fast roll situation).
-
-- [ ] **Support positional sensing for rim shots**
-
-- [ ] **Hot spot suppression on mesh pads with center piezo**
-
-  Striking directly on the piezo results in detected velocity values which are much too high.
+  If cymbal is choked and the pad is held for a while, it is no longer possible to choke the
+  cymbal again. This seems to be an issue with the DC offset correction which corrects too quickly.
 
 - [ ] **Improve dynamics for Drumgizmo**
 
@@ -40,13 +19,33 @@ The road map items are sorted by priority.
 
   Maybe Bent can help out here.
 
-- [ ] **Documentation (user manual)**
+- [ ] **Use rim switch theshold in dB**
 
-  Create an Edrumulus manual which describes the hardware/software setup, parameter description, HOWTOs, etc.
+  Do not use a linear parameter as it is implemented right now.
+
+- [ ] **Improve rim shot detection**
+
+  Especially for pads like the PDA-120L where the piezos are located near the edge, the rim shot detection does perform poorly.
+
+- [ ] **Introduce a first peak detection reliability**
+
+  This can be used to improve the positional sensing. E.g., if the reliability is low, we could
+  use the position of the last detected peak if it is close to the current peak in time (e.g., if
+  we have a fast roll situation).
+
+- [ ] **For the ESP32 prototype, adjust the ADC_noise_peak_velocity_scaling in edrumulus.h correctly**
+
+- [ ] **Support positional sensing for rim shots**
 
 - [ ] **Should we consider pre-scan time high peaks for velocity estimation?**
 
-- [ ] **For the ESP32 prototype, adjust the ADC_noise_peak_velocity_scaling in edrumulus.h correctly**
+- [ ] **Hot spot suppression on mesh pads with center piezo**
+
+  Striking directly on the piezo results in detected velocity values which are much too high.
+
+- [ ] **Documentation (user manual)**
+
+  Create an Edrumulus manual which describes the hardware/software setup, parameter description, HOWTOs, etc.
 
 - [ ] **Algorihm documentation**
 
