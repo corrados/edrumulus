@@ -169,6 +169,8 @@ Serial.println ( serial_print );
       // prepare samples for processing
       for ( int j = 0; j < number_inputs[i]; j++ )
       {
+        const bool is_rim_switch_input = ( j == 1 ) && pad[i].get_is_rim_switch(); // rim is always on second channel
+
         // overload detection: check for the lowest/largest possible ADC range values with noise consideration
         if ( sample_org_pad[j] >= ( ADC_MAX_RANGE - ADC_MAX_NOISE_AMPL ) )
         {
@@ -185,14 +187,19 @@ Serial.println ( serial_print );
           overload_detected[j] = 0;
         }
 
-        // update DC offset by using an IIR1 low pass filter
-        dc_offset[i][j] = dc_offset_iir_gamma * dc_offset[i][j] + dc_offset_iir_one_minus_gamma * sample_org_pad[j];
+        // update DC offset by using an IIR1 low pass filter (but disable update if
+        // rim switch input is on to avoid the DC offset is incorrect in case the switch is
+        // held for a while by the user)
+        if ( !( is_rim_switch_input && pad[i].get_is_rim_switch_on() ) )
+        {
+          dc_offset[i][j] = dc_offset_iir_gamma * dc_offset[i][j] + dc_offset_iir_one_minus_gamma * sample_org_pad[j];
+        }
 
         // compensate DC offset
         sample[j] = sample_org_pad[j] - dc_offset[i][j];
 
         // ADC spike cancellation (do not use spike cancellation for rim switches since they have short peaks)
-        if ( ( spike_cancel_level > 0 ) && !( pad[i].get_is_rim_switch() && ( j == 1 ) ) ) // rim is always on second channel
+        if ( ( spike_cancel_level > 0 ) && !is_rim_switch_input )
         {
           edrumulus_hardware.cancel_ADC_spikes ( sample[j], overload_detected[j], i, j, spike_cancel_level );
         }

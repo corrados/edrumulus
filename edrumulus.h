@@ -198,6 +198,7 @@ protected:
       float get_cancellation_factor() { return cancellation_factor; }
       bool  get_is_control()          { return pad_settings.is_control; }
       bool  get_is_rim_switch()       { return pad_settings.is_rim_switch; }
+      bool  get_is_rim_switch_on()    { return sSensor[0].rim_switch_on_cnt > 0; }
 
       // definitions which can be used outside the pad class, too
       static const int control_midi_hysteresis       = ADC_MAX_NOISE_AMPL / 2; // MIDI hysteresis for the controller to suppress noise

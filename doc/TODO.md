@@ -2,11 +2,6 @@
 
 The road map items are sorted by priority.
 
-- [ ] **On ESP32 cymbal choke does not work correctly**
-
-  If cymbal is choked and the pad is held for a while, it is no longer possible to choke the
-  cymbal again. This seems to be an issue with the DC offset correction which corrects too quickly.
-
 - [ ] **Improve dynamics for Drumgizmo**
 
   Could be done for official drum kits as well as self-recorded kit.
