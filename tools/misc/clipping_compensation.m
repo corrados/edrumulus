@@ -33,7 +33,17 @@ for i = 1:size(test_files, 1)
       y          = max(-clip_limit, min(clip_limit, x_org));
 
       % count clipped values
-      num_clipped_val(idx, cnt) = length(find(abs(y - clip_limit) < 5 / 2^12));
+      clip_indexes              = find(abs(y - clip_limit) < 5 / 2^12);
+      num_clipped_val(idx, cnt) = length(clip_indexes);
+
+
+% TEST
+left_index  = min(clip_indexes) - 1;
+right_index = max(clip_indexes) + 1;
+if ( left_index > 0 ) && ( right_index <= length(x_org) )
+  max_neighbor = max(x_org(left_index), x_org(right_index));
+end
+
 
     end
 
