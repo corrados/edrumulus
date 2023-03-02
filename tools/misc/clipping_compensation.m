@@ -7,10 +7,15 @@ close all;
 test_files = {"../../algorithm/signals/pd120_single_hits.wav", {9917:9931, 14974:14985, 22525:22538, 35014:35025}; ...
               "../../algorithm/signals/pd8.wav",               {67140:67146, 70170:70175, 73359:73363, 246312:246317, 252036:252039, 296753:296757}};
 
-%attenuation_mapping = 0:20; % 1 dB per number of clipping samples -> current implementation in C++
-attenuation_mapping = [0.18, 0.22, 0.8, 1.3, 2, 3, 5, 6.5, 9, 12, 16, 23, 30, 40, 50];
+test_files = {"../../algorithm/signals/pd120_single_hits.wav", {9917:9931, 14974:14985, 22525:22538, 35014:35025}};
 
-clip_limit_range         = 0.05:0.001:1;%0.031623:9.6838e-03:1;
+%test_files = {"../../algorithm/signals/pd8.wav", {67140:67146, 70170:70175, 73359:73363, 246312:246317, 252036:252039, 296753:296757}};
+
+%attenuation_mapping = 0:20; % 1 dB per number of clipping samples -> current implementation in C++
+attenuation_mapping = [0.18, 0.22, 0.8, 1.3, 2, 3, 5, 6.5, 9, 12, 16, 23, 30, 40, 50]; % optimized for PD120
+%attenuation_mapping = [0.1, 5, 8, 13:40]; % optimized for PD8
+
+clip_limit_range         = 0.05:0.01:1;%0.05:0.001:1;%0.031623:9.6838e-03:1;
 num_clipped_val          = [];
 attenuation_compensation = [];
 cnt                      = 1;
@@ -31,20 +36,26 @@ for i = 1:size(test_files, 1)
     for idx = 1:length(clip_limit_range)
 
       % clip
-      clip_limit = clip_limit_range(idx);
-      y          = max(-clip_limit, min(clip_limit, x_org));
+      clip_limit    = clip_limit_range(idx);
+      x_org_clipped = max(-clip_limit, min(clip_limit, x_org));
 
       % count clipped values
-      clip_indexes                       = find(abs(y - clip_limit) < 5 / 2^12);
+      clip_indexes                       = find(abs(x_org_clipped - clip_limit) < 5 / 2^12);
       num_clipped_val(idx, cnt)          = length(clip_indexes);
       attenuation_compensation(idx, cnt) = -attenuation_mapping(1 + num_clipped_val(idx, cnt));
 
 
-% TEST
+% TEST use distance of max neighbor sample to clipping limit as additional offset
 left_index  = min(clip_indexes) - 1;
 right_index = max(clip_indexes) + 1;
 if ( left_index > 0 ) && ( right_index <= length(x_org) )
   max_neighbor = max(x_org(left_index), x_org(right_index));
+
+  if max_neighbor > 0
+    offset                             = 20 * log10(clip_limit) - 20 * log10(max_neighbor);
+    attenuation_compensation(idx, cnt) = attenuation_compensation(idx, cnt) + offset;
+  end
+
 end
 
 
