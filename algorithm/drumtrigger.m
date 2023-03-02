@@ -55,7 +55,7 @@ plot(10 * log10([x(:, 1) .^ 2, x_filt, decay_all, x_filt_decay]));
 plot(all_first_peaks, 10 * log10(x(all_first_peaks, 1) .^ 2), 'b*');
 %plot(all_hot_spots, 10 * log10(x(all_hot_spots, 1) .^ 2) - pad.hot_spot_attenuation_db, 'c*', "markersize", 15);
 plot(all_peaks, 10 * log10(x(all_peaks, 1) .^ 2), 'g*');
-plot(all_peaks_filt, 10 * log10(x_filt(all_peaks_filt)), 'y*');
+plot(all_peaks_filt, 10 * log10(x_filt(all_peaks_filt)), 'c*');
 plot(all_first_peaks, pos_sense_metric + 40, 'k*');
 plot(all_peaks, rim_metric_db + 40, '*-');
 plot(all_peaks(is_rim_shot), rim_metric_db(is_rim_shot) + 40, '*');
