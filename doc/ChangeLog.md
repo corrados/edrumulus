@@ -37,10 +37,11 @@
   The challenge is to detect the first peak of each sensor correctly. Also, since we process
   each sensor separately, it is important to combine the three peaks correctly. Otherwise we get
   double trigger problems. Another issue is to derive the position from the measured distances.
-  Right now I am using a simple approximation.<br/>
+  Right now I am using a simple approximation. This [Youtube Video](https://youtu.be/HZXtSe5p0rs)
+  shows how the algorithm performs.<br/>
   A simple way to eliminate the hot spots is to average the detected velocities of all sensors.
   First tests showed that this works very well. The detected velocity is consistent independent
-  on the strike position, i.e., even on the edge of the pad and if a piezo sensor is hit directly.
+  on the strike position, i.e., even on the edge of the pad and if a piezo sensor is hit directly.<br/>
 
 ## 2022-08-18 Edrumulus prototype 5 (advanced Raspberry Pi hat PCB)
 
