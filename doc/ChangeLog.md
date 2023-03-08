@@ -41,7 +41,7 @@
   shows how the algorithm performs.<br/>
   A simple way to eliminate the hot spots is to average the detected velocities of all sensors.
   First tests showed that this works very well. The detected velocity is consistent independent
-  on the strike position, i.e., even on the edge of the pad and if a piezo sensor is hit directly.<br/>
+  on the strike position, i.e., even on the edge of the pad and if a piezo sensor is hit directly.
 
 ## 2022-08-18 Edrumulus prototype 5 (advanced Raspberry Pi hat PCB)
 
