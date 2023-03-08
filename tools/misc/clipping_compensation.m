@@ -18,7 +18,7 @@ else
   attenuation_mapping = [0, 6.5, 10, 17:40];%[0, 9, 39, 13:40]; % optimized for PD8
 end
 
-clip_limit_range         = 0.05:0.04:1;%0.05:0.001:1;%0.031623:9.6838e-03:1;
+clip_limit_range         = 1:-0.05:0.04;%0.05:0.04:1;%0.05:0.001:1;%0.031623:9.6838e-03:1;
 num_clipped_val          = [];
 attenuation_compensation = [];
 cnt                      = 1;
@@ -33,8 +33,8 @@ for i = 1:size(test_files, 1)
   for j = 1:length(test_files{i, 2})
 
     % pick one peak and normalize
-    x_org = x(test_files{i, 2}{j}, :);
-    x_org = x_org * 1 / max(x_org);
+    x_org = x(test_files{i, 2}{j}, 1);
+    x_org = x_org / max(x_org);
 
 %figure; subplot(211), plot(x_org, '.-'); grid on; subplot(212), plot(20 * log10(abs(x_org)), '.-'); grid on;
 
@@ -55,7 +55,8 @@ if num_clipped_val(idx, cnt) > 0
 
   left_index  = min(clip_indexes) - 1;
   right_index = max(clip_indexes) + 1;
-  if ( left_index > 0 ) && ( right_index <= length(x_org) )
+
+  if (left_index > 0) && (right_index <= length(x_org))
 
     max_offset = attenuation_mapping(1 + num_clipped_val(idx, cnt)) - attenuation_mapping(1 + num_clipped_val(idx, cnt) - 1);
 
@@ -80,6 +81,14 @@ if num_clipped_val(idx, cnt) > 0
 
     offset = 20 * log10(clip_limit / neighbor);
     offset = min(offset, max_offset);
+
+%% if mean of neighors is way off, try out max instead
+%if offset == max_offset
+%  neighbor = max(0, max(x_org(left_index), x_org(right_index)));
+%  offset   = 20 * log10(clip_limit / neighbor);
+%  offset   = min(offset, max_offset);
+%end
+
 
 %disp([num2str(attenuation_compensation(idx, cnt)) ', ' num2str(offset)])
 
