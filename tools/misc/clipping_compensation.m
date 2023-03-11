@@ -4,7 +4,8 @@
 pkg load signal
 close all;
 
-testsignal = 1;
+testsignal         = 1;
+use_log_correction = true;
 
 %test_files = {"../../algorithm/signals/pd120_single_hits.wav", {9917:9931, 14974:14985, 22525:22538, 35014:35025}; ...
 %              "../../algorithm/signals/pd8.wav",               {67140:67146, 70170:70175, 73359:73363, 246312:246317, 252036:252039, 296753:296757}};
@@ -79,8 +80,10 @@ if num_clipped_val(idx, cnt) > 0
 
 %disp([num2str(clip_limit) ', ' num2str(neighbor)])
 
-    offset = 20 * log10(clip_limit / neighbor);
-    offset = min(offset, max_offset);
+    if use_log_correction
+
+      offset = 20 * log10(clip_limit / neighbor);
+      offset = min(offset, max_offset);
 
 %% if mean of neighors is way off, try out max instead
 %if offset == max_offset
@@ -89,10 +92,19 @@ if num_clipped_val(idx, cnt) > 0
 %  offset   = min(offset, max_offset);
 %end
 
-
 %disp([num2str(attenuation_compensation(idx, cnt)) ', ' num2str(offset)])
 
-    attenuation_compensation(idx, cnt) = attenuation_compensation(idx, cnt) + offset;
+      attenuation_compensation(idx, cnt) = attenuation_compensation(idx, cnt) + offset;
+
+    else
+
+      % TEST: use linear domain for offset calculation
+      offset = clip_limit - neighbor;
+      offset = min(offset, 10 ^ (max_offset / 20));
+
+      attenuation_compensation(idx, cnt) = 20 * log10(10 ^ (attenuation_compensation(idx, cnt) / 20) + offset);
+
+    end
 
   end
 
