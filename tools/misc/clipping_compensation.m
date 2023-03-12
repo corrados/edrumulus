@@ -4,8 +4,9 @@
 pkg load signal
 close all;
 
-testsignal         = 1;
-use_log_correction = true;
+testsignal         = 0;
+use_log_correction = false;
+%use_log_correction = true;
 
 %test_files = {"../../algorithm/signals/pd120_single_hits.wav", {9917:9931, 14974:14985, 22525:22538, 35014:35025}; ...
 %              "../../algorithm/signals/pd8.wav",               {67140:67146, 70170:70175, 73359:73363, 246312:246317, 252036:252039, 296753:296757}};
@@ -13,7 +14,13 @@ use_log_correction = true;
 
 if testsignal == 0
   test_files = {"../../algorithm/signals/pd120_single_hits.wav", {9917:9931, 14974:14985, 22525:22538, 35014:35025}};
-  attenuation_mapping = [0, 0.22, 0.8, 1.3, 2, 3, 5, 6.5, 9, 12, 16, 23, 30, 40, 50]; % optimized for PD120
+
+  if use_log_correction
+    attenuation_mapping = [0, 0.22, 0.8, 1.3, 2, 3, 5, 6.5, 9, 12, 16, 23, 30, 40, 50]; % optimized for PD120
+  else
+    attenuation_mapping = [0, 0.2, 1, 1.8, 2.7, 4.5, 5.5, 9, 10, 15, 18, 20, 30, 40];%[0, 0.22, 0.8, 1.3, 2, 3, 5, 6.5, 9, 12, 16, 23, 30, 40, 50]; % optimized for PD120
+  end
+
 else
   test_files = {"../../algorithm/signals/pd8.wav", {67140:67146, 70170:70175, 73359:73363, 246312:246317, 252036:252039, 296753:296757}};
   attenuation_mapping = [0, 6.5, 10, 17:40];%[0, 9, 39, 13:40]; % optimized for PD8
@@ -122,6 +129,7 @@ end
 
 %figure; plot(num_clipped_val, 20 * log10(clip_limit_range)); grid on;
 figure; plot(20 * log10(clip_limit_range), attenuation_compensation, '.-'); grid on;
-hold on; plot(20 * log10(clip_limit_range), 20 * log10(clip_limit_range), '--k')
+hold on; plot(20 * log10(clip_limit_range), 20 * log10(clip_limit_range), '--k');
+axis(20 * log10([min(clip_limit_range), max(clip_limit_range), min(clip_limit_range), max(clip_limit_range)]));
 
 
