@@ -15,7 +15,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 \******************************************************************************/
 
-#define USE_MIDI
+//#define USE_MIDI
 
 #include "edrumulus.h"
 
@@ -78,9 +78,10 @@ void setup()
   read_settings();
 #endif
 
-/*
+
 // TEST use the ride input for 2nd/3rd head sensor input for the snare
 edrumulus.set_coupled_pad_idx      ( 6 );
+/*
 edrumulus.set_pad_type             ( 0, Edrumulus::PDA120LS );
 edrumulus.set_velocity_threshold   ( 0, 4 );
 edrumulus.set_velocity_sensitivity ( 0, 7 );

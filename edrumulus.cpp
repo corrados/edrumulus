@@ -211,15 +211,26 @@ Serial.println ( serial_print );
         // special case: couple pad inputs for multiple head sensor capturing
         if ( i == 0 )
         {
+/*          
           // store the current input for pad 0
           for ( int j = 0; j < number_inputs[0]; j++ )
           {
             stored_sample[j]            = sample[j];
             stored_overload_detected[j] = overload_detected[j];
           }
+*/
+
+          sample[2] = sample[0];
+          overload_detected[2] = overload_detected[0];
+
+          pad[0].process_sample ( sample, 1 + number_inputs[i], overload_detected,
+                                  peak_found[0],  midi_velocity[0], midi_pos[0],
+                                  is_rim_shot[0], is_choke_on[0],   is_choke_off[0] );
+
         }
         else
         {
+/*          
           // combine samples and process pad 0 which is the couple master per definition
           float sample_sum = 0.0f; // input 0 is the sum of the head sensor signal per definition
           for ( int j = number_inputs[i] - 1; j >= 0; j-- ) // count backwards to avoid overwriting
@@ -239,6 +250,7 @@ Serial.println ( serial_print );
           pad[0].process_sample ( sample, 3 + number_inputs[i], overload_detected,
                                   peak_found[0],  midi_velocity[0], midi_pos[0],
                                   is_rim_shot[0], is_choke_on[0],   is_choke_off[0] );
+*/                                  
         }
       }
       else
@@ -381,7 +393,7 @@ void Edrumulus::Pad::manage_delayed_initialization()
 void Edrumulus::Pad::initialize()
 {
   // in case we have a coupled sensor pad, the number of head sensors is 4, where 3 sensor signals and one sum
-  number_head_sensors = use_coupling ? 4 : 1; // 1 or 4 head sensor inputs
+  number_head_sensors = use_coupling ? 2 : 1; // 1 or 4 head sensor inputs
 
   // set algorithm parameters
   const float threshold_db = 20 * log10 ( ADC_MAX_NOISE_AMPL ) - 16.0f + pad_settings.velocity_threshold; // threshold range considering the maximum ADC noise level
@@ -828,7 +840,7 @@ float Edrumulus::Pad::process_sample ( const float* input,
           }
 
           s.is_overloaded_state = ( number_overloaded_samples > max_num_overloads );
-
+/*
           // overload correctdion: correct the peak value according to the number of clipped samples
           if ( number_overloaded_samples > overload_num_thresh_4db )
           {
@@ -846,6 +858,7 @@ float Edrumulus::Pad::process_sample ( const float* input,
           {
             s.peak_val *= 1.2589; // 1 dB
           }
+*/          
 /*
 // TEST for debugging the overload correction algorithm
 String serial_print;
@@ -856,7 +869,11 @@ for ( int j1 = 0; j1 < overload_hist_len; j1++ )
 Serial.println ( serial_print );
 Serial.println ( "idx: " + String ( peak_velocity_idx_in_overload_history ) + ", num: " + String ( number_overloaded_samples ) );
 */
+
         }
+
+Serial.println ( "head_sensor_cnt " + String ( head_sensor_cnt ) + ": " + String ( sqrt ( s.peak_val ) ) );
+
 
         // calculate the MIDI velocity value with clipping to allowed MIDI value range
         s.stored_midi_velocity = velocity_factor * pow ( s.peak_val * ADC_noise_peak_velocity_scaling, velocity_exponent ) + velocity_offset;
