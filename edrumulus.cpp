@@ -220,8 +220,30 @@ Serial.println ( serial_print );
           }
 */
 
-          sample[2] = sample[0];
+          sample[2]            = sample[0];
           overload_detected[2] = overload_detected[0];
+
+
+// TEST introduce artificial clipping on channel 0
+const int new_clip_level = 500; // TEST
+if ( sample[0] >= new_clip_level )
+{
+  overload_LED_cnt     = overload_LED_on_time;
+  overload_detected[0] = 2;
+  sample[0]            = new_clip_level;
+}
+else if ( sample[0] <= -new_clip_level )
+{
+  overload_LED_cnt     = overload_LED_on_time;
+  overload_detected[0] = 1;
+  sample[0]            = -new_clip_level;
+}
+else
+{
+  overload_detected[0] = 0;
+}
+
+
 
           pad[0].process_sample ( sample, 1 + number_inputs[i], overload_detected,
                                   peak_found[0],  midi_velocity[0], midi_pos[0],
@@ -820,6 +842,9 @@ float Edrumulus::Pad::process_sample ( const float* input,
         const int peak_velocity_idx_in_overload_history = overload_hist_len - scan_time + peak_velocity_idx;
         int       number_overloaded_samples = 1; // we check for overload history at peak position is > 0 below -> start with one
 
+// TEST
+bool corrected = false;
+
         if ( s.overload_hist[peak_velocity_idx_in_overload_history] > 0.0f )
         {
           // NOTE: the static_cast<int> is a workaround for the ESP32 compiler issue: "unknown opcode or format name 'lsiu'"
@@ -840,25 +865,29 @@ float Edrumulus::Pad::process_sample ( const float* input,
           }
 
           s.is_overloaded_state = ( number_overloaded_samples > max_num_overloads );
-/*
+
           // overload correctdion: correct the peak value according to the number of clipped samples
           if ( number_overloaded_samples > overload_num_thresh_4db )
           {
             s.peak_val *= 2.5119; // 4 dB
+            corrected = true;
           }
           else if ( number_overloaded_samples > overload_num_thresh_3db )
           {
             s.peak_val *= 2; // 3 dB
+            corrected = true;
           }
           else if ( number_overloaded_samples > overload_num_thresh_2db )
           {
             s.peak_val *= 1.5849; // 2 dB
+            corrected = true;
           }
           else if ( number_overloaded_samples > overload_num_thresh_1db )
           {
             s.peak_val *= 1.2589; // 1 dB
+            corrected = true;
           }
-*/          
+         
 /*
 // TEST for debugging the overload correction algorithm
 String serial_print;
@@ -872,7 +901,15 @@ Serial.println ( "idx: " + String ( peak_velocity_idx_in_overload_history ) + ",
 
         }
 
-Serial.println ( "head_sensor_cnt " + String ( head_sensor_cnt ) + ": " + String ( sqrt ( s.peak_val ) ) );
+if ( corrected )
+{
+  Serial.println ( "head_sensor_cnt " + String ( head_sensor_cnt ) + ": " + String ( sqrt ( s.peak_val ) ) + " (corrected)" );  
+}
+else
+{
+  Serial.println ( "head_sensor_cnt " + String ( head_sensor_cnt ) + ": " + String ( sqrt ( s.peak_val ) ) );  
+}
+
 
 
         // calculate the MIDI velocity value with clipping to allowed MIDI value range
