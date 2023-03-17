@@ -4,7 +4,7 @@
 pkg load signal
 close all;
 
-testsignal         = 0;
+testsignal         = 1;
 use_log_correction = false;
 %use_log_correction = true;
 
@@ -23,7 +23,16 @@ if testsignal == 0
 
 else
   test_files = {"../../algorithm/signals/pd8.wav", {67140:67146, 70170:70175, 73359:73363, 246312:246317, 252036:252039, 296753:296757}};
-  attenuation_mapping = [0, 6.5, 10, 17:40];%[0, 9, 39, 13:40]; % optimized for PD8
+
+  if use_log_correction
+    attenuation_mapping = [0, 6.5, 10, 17:40];%[0, 9, 39, 13:40]; % optimized for PD8
+  else
+
+% TEST
+attenuation_mapping = [0, 6, 11, 30, 50:100];%[0, 9, 39, 13:40]; % optimized for PD8
+
+  end
+
 end
 
 clip_limit_range         = 1:-0.05:0.04;%0.05:0.04:1;%0.05:0.001:1;%0.031623:9.6838e-03:1;
@@ -105,9 +114,13 @@ if num_clipped_val(idx, cnt) > 0
 
     else
 
+% TEST
+neighbor = mean([x_org(left_index), x_org(right_index)]);
+%neighbor = max(x_org(left_index), x_org(right_index));
+
       % TEST: use linear domain for offset calculation
       offset = clip_limit - neighbor;
-      offset = min(offset, 10 ^ (max_offset / 20));
+      %offset = min(offset, 10 ^ (max_offset / 20));
 
       attenuation_compensation(idx, cnt) = 20 * log10(10 ^ (attenuation_compensation(idx, cnt) / 20) + offset);
 
