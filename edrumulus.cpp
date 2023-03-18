@@ -840,28 +840,60 @@ float Edrumulus::Pad::process_sample ( const float* input,
 
         // check overload status and correct the peak if necessary
         const int peak_velocity_idx_in_overload_history = overload_hist_len - scan_time + peak_velocity_idx;
+
+const int peak_velocity_idx_in_x_sq_hist = x_sq_hist_len - scan_time + peak_velocity_idx;
+        
         int       number_overloaded_samples = 1; // we check for overload history at peak position is > 0 below -> start with one
 
 // TEST
 bool corrected = false;
+bool neighbor_ok = true;
+float left_neighbor = 0;
+float right_neighbor = 0;
+float test_left_neighbor = 0;
+float test_right_neighbor = 0;
 
         if ( s.overload_hist[peak_velocity_idx_in_overload_history] > 0.0f )
         {
           // NOTE: the static_cast<int> is a workaround for the ESP32 compiler issue: "unknown opcode or format name 'lsiu'"
           // run to the right to find same overloads
           int cur_idx = peak_velocity_idx_in_overload_history;
+
+int cur_idx_x_sq = peak_velocity_idx_in_x_sq_hist;
+          
           while ( ( cur_idx < overload_hist_len - 1 ) && ( static_cast<int> ( s.overload_hist[cur_idx] ) == static_cast<int> ( s.overload_hist[cur_idx + 1] ) ) )
           {
             cur_idx++;
+            cur_idx_x_sq++;
             number_overloaded_samples++;
+          }
+          if ( cur_idx_x_sq + 1 < x_sq_hist_len )
+          {
+            right_neighbor = s_x_sq_hist[cur_idx_x_sq + 1];
+            test_right_neighbor = s_x_sq_hist[cur_idx_x_sq]; // just for testing -> must be 500
+          }
+          else
+          {
+            neighbor_ok = false;
           }
 
           // run to the left to find same overloads
           cur_idx = peak_velocity_idx_in_overload_history;
+cur_idx_x_sq = peak_velocity_idx_in_x_sq_hist;
           while ( ( cur_idx > 1 ) && ( static_cast<int> ( s.overload_hist[cur_idx] ) == static_cast<int> ( s.overload_hist[cur_idx - 1] ) ) )
           {
             cur_idx--;
+            cur_idx_x_sq--;
             number_overloaded_samples++;
+          }
+          if ( cur_idx_x_sq - 1 >= 0 )
+          {
+            left_neighbor = s_x_sq_hist[cur_idx_x_sq - 1];
+            test_left_neighbor = s_x_sq_hist[cur_idx_x_sq]; // just for testing -> must be 500
+          }
+          else
+          {
+            neighbor_ok = false;
           }
 
           s.is_overloaded_state = ( number_overloaded_samples > max_num_overloads );
@@ -903,11 +935,16 @@ Serial.println ( "idx: " + String ( peak_velocity_idx_in_overload_history ) + ",
 
 if ( corrected )
 {
-  Serial.println ( "head_sensor_cnt " + String ( head_sensor_cnt ) + ": " + String ( sqrt ( s.peak_val ) ) + " (corrected)" );  
+  Serial.println ( "head_sensor_cnt " + String ( head_sensor_cnt ) + ": " + String ( sqrt ( s.peak_val ) ) + ", " + String ( 20 * log10 ( sqrt ( s.peak_val ) ) ) + " dB (corrected)" );  
 }
 else
 {
-  Serial.println ( "head_sensor_cnt " + String ( head_sensor_cnt ) + ": " + String ( sqrt ( s.peak_val ) ) );  
+  Serial.println ( "head_sensor_cnt " + String ( head_sensor_cnt ) + ": " + String ( sqrt ( s.peak_val ) ) + ", " + String ( 20 * log10 ( sqrt ( s.peak_val ) ) ) + " dB" );  
+}
+if ( head_sensor_cnt == 0 && neighbor_ok )
+{
+  Serial.println ( "left_neighbor " + String ( sqrt ( left_neighbor ) ) + ", right_neighbor " + String ( sqrt ( right_neighbor ) ) );  
+  Serial.println ( "test_left_neighbor " + String ( sqrt ( test_left_neighbor ) ) + ", test_right_neighbor " + String ( sqrt ( test_right_neighbor ) ) );  
 }
 
 
