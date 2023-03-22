@@ -919,10 +919,11 @@ const float clip_offset = clip_limit - mean_neighbor;
 attenuation_compensation = 20 * log10 ( pow ( 10.0f, attenuation_compensation1 / 20.0f ) + clip_offset );
 corrected = true;
 
-
+/*
 Serial.println ( "attenuation_compensation " + String ( attenuation_compensation ) + ", number_overloaded_samples " + String ( number_overloaded_samples ) +
   ", clip_offset " + String ( clip_offset ) +
   ", mean_neighbor " + String ( mean_neighbor ) + ", left_neighbor_x " + String ( left_neighbor_x ) + ", right_neighbor_x " + String ( right_neighbor_x ) );
+*/
 
 /*
           // overload correctdion: correct the peak value according to the number of clipped samples
@@ -961,6 +962,7 @@ Serial.println ( "idx: " + String ( peak_velocity_idx_in_overload_history ) + ",
 
         }
 
+/*
 if ( corrected )
 {
   Serial.println ( "head_sensor_cnt " + String ( head_sensor_cnt ) + ": " + String ( sqrt ( s.peak_val ) ) + ", " + String ( 20 * log10 ( sqrt ( s.peak_val ) ) ) + " dB (corrected)" );  
@@ -975,6 +977,7 @@ if ( head_sensor_cnt == 0 && neighbor_ok )
   //Serial.println ( "left_neighbor " + String ( left_neighbor ) + ", right_neighbor " + String ( right_neighbor ) );  
   //Serial.println ( "test_left_neighbor " + String ( sqrt ( test_left_neighbor ) ) + ", test_right_neighbor " + String ( sqrt ( test_right_neighbor ) ) );  
 }
+*/
 
 
 
@@ -989,6 +992,20 @@ if ( head_sensor_cnt == 0 && neighbor_ok )
         s.decay_back_cnt      = decay_len; // per definition decay starts right after mask time
         s.decay_scaling       = decay_fact * s.max_x_filt_val; // take maximum of filtered signal in scan+mask time
         s.was_above_threshold = false;
+
+
+// TEST
+Serial.println ( "max_x_filt_val " + String ( sqrt ( s.max_x_filt_val ) ) + ", peak_val " + String ( sqrt ( s.peak_val ) ) +
+  ", LOG max_x_filt_val " + String ( 20 * log10 ( sqrt ( s.max_x_filt_val ) ) ) + ", LOG peak_val " + String ( 20 * log10 ( sqrt ( s.peak_val ) ) ) );
+
+/* results:
+y=[29.76 36.72 39.44 42.70 45.46 45.40 46.43 46.63 46.46 45.29 46.75 48.11 48.40 50.22 52.54 54.01 53.48 54.98 53.72 56.19 53.95];
+x=[39.49 43.61 45.41 50.69 53.61 54.48 54.60 54.70 55.14 55.60 56.73 57.54 58.27 59.03 63.70 64.35 64.37 64.79 64.89 64.96 65.23] - 9;
+z=[29.76 36.72 39.44 42.70 45.46 45.34 46.19 46.38 46.26 44.40 46.43 47.69 47.38 46.85 49.36 44.81 46.26 49.98 47.72 46.39 49.19];
+%close all; plot(x, y, 'r'); hold on; plot(x, z);
+close all; plot(x, 'r'); hold on; grid on; plot(y, 'g'); plot(z);
+*/
+
       }
     }
 
