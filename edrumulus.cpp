@@ -655,6 +655,11 @@ float Edrumulus::Pad::process_sample ( const float* input,
 
   manage_delayed_initialization();
 
+
+// TEST
+float peak_storage[2];
+
+
   for ( int head_sensor_cnt = 0; head_sensor_cnt < number_head_sensors; head_sensor_cnt++ )
   {
     const int in               = head_sensor_cnt == 0 ? 0 : head_sensor_cnt + 1; // exclude rim input
@@ -908,21 +913,26 @@ cur_idx_x_sq = peak_velocity_idx_in_x_sq_hist;
 
 
 // TEST new clipping compensation
-const int clip_limit = 500;
-right_neighbor = sqrt ( right_neighbor );
-left_neighbor  = sqrt ( left_neighbor );
+const int          clip_limit            = 500;
 static const float attenuation_mapping[] = { 0.0f, 6.0f, 11.0f, 30.0f, 50.0f };
+right_neighbor                  = sqrt ( right_neighbor );
+left_neighbor                   = sqrt ( left_neighbor );
 float attenuation_compensation1 = -attenuation_mapping[min ( 4, number_overloaded_samples )];
-const float mean_neighbor = ( left_neighbor + right_neighbor ) / 2.0f;
-const float mean_neighbor_x = ( left_neighbor_x + right_neighbor_x ) / 2.0f;
-const float clip_offset = clip_limit - mean_neighbor;
-attenuation_compensation = 20 * log10 ( pow ( 10.0f, attenuation_compensation1 / 20.0f ) + clip_offset );
-corrected = true;
+const float mean_neighbor       = ( left_neighbor + right_neighbor ) / 2.0f;
+const float mean_neighbor_x     = ( left_neighbor_x + right_neighbor_x ) / 2.0f;
+const float clip_offset         = clip_limit - mean_neighbor;
+attenuation_compensation        = 20 * log10 ( pow ( 10.0f, attenuation_compensation1 / 20.0f ) + clip_offset );
+corrected                       = true;
+
+s.peak_val = sqrt ( s.peak_val ) + attenuation_compensation1 + clip_offset;
+s.peak_val *= s.peak_val;
 
 
+/*
 Serial.println ( "attenuation_compensation " + String ( attenuation_compensation ) + ", number_overloaded_samples " + String ( number_overloaded_samples ) +
   ", clip_offset " + String ( clip_offset ) +
   ", mean_neighbor " + String ( mean_neighbor ) + ", left_neighbor_x " + String ( left_neighbor_x ) + ", right_neighbor_x " + String ( right_neighbor_x ) );
+*/
 
 /*
           // overload correctdion: correct the peak value according to the number of clipped samples
@@ -946,7 +956,7 @@ Serial.println ( "attenuation_compensation " + String ( attenuation_compensation
             s.peak_val *= 1.2589; // 1 dB
             corrected = true;
           }
-*/          
+*/
          
 /*
 // TEST for debugging the overload correction algorithm
@@ -961,6 +971,15 @@ Serial.println ( "idx: " + String ( peak_velocity_idx_in_overload_history ) + ",
 
         }
 
+
+peak_storage[head_sensor_cnt] = sqrt ( s.peak_val );
+
+if ( head_sensor_cnt == 1 )
+{
+  Serial.println ( String ( peak_storage[0] ) + " " + String ( peak_storage[1] ) );
+}
+
+/*
 if ( corrected )
 {
   Serial.println ( "head_sensor_cnt " + String ( head_sensor_cnt ) + ": " + String ( sqrt ( s.peak_val ) ) + ", " + String ( 20 * log10 ( sqrt ( s.peak_val ) ) ) + " dB (corrected)" );  
@@ -975,6 +994,7 @@ if ( head_sensor_cnt == 0 && neighbor_ok )
   //Serial.println ( "left_neighbor " + String ( left_neighbor ) + ", right_neighbor " + String ( right_neighbor ) );  
   //Serial.println ( "test_left_neighbor " + String ( sqrt ( test_left_neighbor ) ) + ", test_right_neighbor " + String ( sqrt ( test_right_neighbor ) ) );  
 }
+*/
 
 
 
