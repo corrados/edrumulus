@@ -225,22 +225,22 @@ Serial.println ( serial_print );
 
 
 // TEST introduce artificial clipping on channel 0
-const int new_clip_level = 500; // TEST
-if ( sample[0] >= new_clip_level )
+const int new_clip_level = 400; // TEST
+if ( sample[2] >= new_clip_level )
 {
   overload_LED_cnt     = overload_LED_on_time;
-  overload_detected[0] = 2;
-  sample[0]            = new_clip_level;
+  overload_detected[2] = 2;
+  sample[2]            = new_clip_level;
 }
-else if ( sample[0] <= -new_clip_level )
+else if ( sample[2] <= -new_clip_level )
 {
   overload_LED_cnt     = overload_LED_on_time;
-  overload_detected[0] = 1;
-  sample[0]            = -new_clip_level;
+  overload_detected[2] = 1;
+  sample[2]            = -new_clip_level;
 }
 else
 {
-  overload_detected[0] = 0;
+  overload_detected[2] = 0;
 }
 
 
@@ -854,8 +854,10 @@ const int peak_velocity_idx_in_x_sq_hist = x_sq_hist_len - scan_time + peak_velo
         int       number_overloaded_samples = 1; // we check for overload history at peak position is > 0 below -> start with one
 
 // TEST
+const int clip_limit = 400;
 bool corrected = false;
 bool neighbor_ok = true;
+float mean_neighbor_x = 0;
 float left_neighbor = 0;
 float right_neighbor = 0;
 float left_neighbor_x = 0;
@@ -913,18 +915,20 @@ cur_idx_x_sq = peak_velocity_idx_in_x_sq_hist;
 
 
 // TEST new clipping compensation
-const int          clip_limit            = 500;
-static const float attenuation_mapping[] = { 0.0f, 6.0f, 11.0f, 30.0f, 50.0f };
+//static const float attenuation_mapping[] = { 0.0f, 6.0f, 11.0f, 30.0f, 50.0f };
 right_neighbor                  = sqrt ( right_neighbor );
 left_neighbor                   = sqrt ( left_neighbor );
-float attenuation_compensation1 = -attenuation_mapping[min ( 4, number_overloaded_samples )];
+//float attenuation_compensation1 = -attenuation_mapping[min ( 4, number_overloaded_samples )] - 20 * log10 ( clip_limit );
 const float mean_neighbor       = ( left_neighbor + right_neighbor ) / 2.0f;
-const float mean_neighbor_x     = ( left_neighbor_x + right_neighbor_x ) / 2.0f;
-const float clip_offset         = clip_limit - mean_neighbor;
-attenuation_compensation        = 20 * log10 ( pow ( 10.0f, attenuation_compensation1 / 20.0f ) + clip_offset );
+mean_neighbor_x                 = ( left_neighbor_x + right_neighbor_x ) / 2.0f;
+const float clip_offset         = clip_limit - mean_neighbor_x;//mean_neighbor;
+//attenuation_compensation        = 20 * log10 ( pow ( 10.0f, attenuation_compensation1 / 20.0f ) + clip_offset );
 corrected                       = true;
 
-s.peak_val = sqrt ( s.peak_val ) + attenuation_compensation1 + clip_offset;
+static const float attenuation_mapping[] = { 0.0f, 100.0f, 200.0f, 300.0f, 500.0f };
+float attenuation_compensation1 = attenuation_mapping[min ( 4, number_overloaded_samples )];
+
+s.peak_val  = sqrt ( s.peak_val ) + attenuation_compensation1;// - clip_offset;
 s.peak_val *= s.peak_val;
 
 
@@ -976,7 +980,10 @@ peak_storage[head_sensor_cnt] = sqrt ( s.peak_val );
 
 if ( head_sensor_cnt == 1 )
 {
-  Serial.println ( String ( peak_storage[0] ) + " " + String ( peak_storage[1] ) );
+  const bool is_overlaod = s.overload_hist[peak_velocity_idx_in_overload_history] > 0.0f;
+  const int  num_ov      = is_overlaod ? number_overloaded_samples : 0;
+  Serial.println ( String ( peak_storage[0] ) + " " + String ( peak_storage[1] ) + " " +
+                   String ( num_ov * 100 ) + " " + String ( clip_limit - mean_neighbor_x ) );
 }
 
 /*
