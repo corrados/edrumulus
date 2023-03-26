@@ -925,7 +925,13 @@ right_neighbor                  = sqrt ( right_neighbor );
 left_neighbor                   = sqrt ( left_neighbor );
 //float attenuation_compensation1 = -attenuation_mapping[min ( 4, number_overloaded_samples )] - 20 * log10 ( new_clip_level );
 const float mean_neighbor       = ( left_neighbor + right_neighbor ) / 2.0f;
-mean_neighbor_x                 = ( left_neighbor_x + right_neighbor_x ) / 2.0f;
+
+mean_neighbor_x = ( left_neighbor_x + right_neighbor_x ) / 2.0f;
+if ( s.overload_hist[peak_velocity_idx_in_overload_history] == 1 )
+{
+  mean_neighbor_x *= -1; // correct sign
+}
+
 const float clip_offset         = new_clip_level - mean_neighbor_x;//mean_neighbor;
 //attenuation_compensation        = 20 * log10 ( pow ( 10.0f, attenuation_compensation1 / 20.0f ) + clip_offset );
 corrected                       = true;
