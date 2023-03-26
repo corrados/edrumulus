@@ -936,10 +936,10 @@ const float clip_offset         = new_clip_level - mean_neighbor_x;//mean_neighb
 //attenuation_compensation        = 20 * log10 ( pow ( 10.0f, attenuation_compensation1 / 20.0f ) + clip_offset );
 corrected                       = true;
 
-static const float attenuation_mapping[] = { 0.0f, 100.0f, 200.0f, 300.0f, 500.0f };
+static const float attenuation_mapping[] = { 0.0f, 150.0f, 450.0f, 800.0f, 1000.0f };
 float attenuation_compensation1 = attenuation_mapping[min ( 4, number_overloaded_samples )];
 
-s.peak_val  = sqrt ( s.peak_val ) + attenuation_compensation1;// - clip_offset;
+s.peak_val  = sqrt ( s.peak_val ) + attenuation_compensation1 - clip_offset;
 s.peak_val *= s.peak_val;
 
 
