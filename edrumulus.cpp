@@ -20,7 +20,7 @@
 
 
 // TEST global test clip limit
-const int new_clip_level = 400; // TEST
+const int new_clip_level = 500; // TEST
 
 
 
@@ -936,8 +936,9 @@ const float clip_offset         = new_clip_level - mean_neighbor_x;//mean_neighb
 //attenuation_compensation        = 20 * log10 ( pow ( 10.0f, attenuation_compensation1 / 20.0f ) + clip_offset );
 corrected                       = true;
 
-static const float attenuation_mapping[] = { 0.0f, 150.0f, 450.0f, 800.0f, 1000.0f };
-float attenuation_compensation1 = attenuation_mapping[min ( 4, number_overloaded_samples )];
+
+static const float normalized_attenuation_mapping[] = { 0.0f, 0.4f, 0.8f, 2.0f, 4.0f };
+const float attenuation_compensation1 = normalized_attenuation_mapping[min ( 4, number_overloaded_samples )] * new_clip_level;
 
 s.peak_val  = sqrt ( s.peak_val ) + attenuation_compensation1 - clip_offset;
 s.peak_val *= s.peak_val;
@@ -993,8 +994,12 @@ if ( head_sensor_cnt == 1 )
 {
   const bool is_overlaod = s.overload_hist[peak_velocity_idx_in_overload_history] > 0.0f;
   const int  num_ov      = is_overlaod ? number_overloaded_samples : 0;
-  Serial.println ( String ( peak_storage[0] ) + " " + String ( peak_storage[1] ) + " " +
-                   String ( num_ov * 100 ) + " " + String ( mean_neighbor_x ) );
+
+//  Serial.println ( String ( peak_storage[0] ) + " " + String ( peak_storage[1] ) + " " +
+//                   String ( num_ov * 100 ) + " " + String ( mean_neighbor_x ) );
+
+  Serial.println ( String ( 20 * log10 ( peak_storage[0] ) ) + " " + String ( 20 * log10 ( peak_storage[1] ) ) + " " +
+                   String ( num_ov * 10 ) );
 }
 
 /*
