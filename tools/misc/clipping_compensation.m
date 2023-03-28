@@ -1,6 +1,9 @@
 
 % testing clipping compensation
 
+% TEST not working with Octave but with Matlab:
+%n=5;o=0;d=1;x=[0.0, 0.05, 0.08, 0.1, 0.15, 0.2, 0.4, 0.6, 0.8, 0.9, 1.0, 1.1, 1.2];subplot(311),plot(gaussmf(0:d:10,[n o]),'.-');subplot(312),plot(1-gaussmf(0:d:10,[n o]),'.-');subplot(313),plot(x)
+
 pkg load signal
 close all;
 
