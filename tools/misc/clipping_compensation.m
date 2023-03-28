@@ -57,6 +57,7 @@ for i = 1:size(test_files, 1)
     x_org = x_org / max(x_org);
 
 %figure; subplot(211), plot(x_org, '.-'); grid on; subplot(212), plot(20 * log10(abs(x_org)), '.-'); grid on;
+%subplot(211), hold on; plot(1-(((1:22:360) - 140) / 100) .^ 2);
 
     for idx = 1:length(clip_limit_range)
 
