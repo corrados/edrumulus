@@ -500,8 +500,8 @@ with client:
     output_port.connect("ttymidi:MIDI_out") # ESP32
   except:
     try:
-      teensy_out = jack.get_ports("Edrumulus ", is_midi=True, is_input=True)
-      teensy_in  = jack.get_ports("Edrumulus ", is_midi=True, is_output=True)
+      teensy_out = client.get_ports("Edrumulus ", is_midi=True, is_input=True)
+      teensy_in  = client.get_ports("Edrumulus ", is_midi=True, is_output=True)
       if teensy_in and teensy_out:
         input_port.connect(teensy_in[0])   # Teensy
         output_port.connect(teensy_out[0]) # Teensy
