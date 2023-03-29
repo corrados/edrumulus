@@ -7,7 +7,7 @@
 pkg load signal
 close all;
 
-testsignal         = 1;
+testsignal         = 0;
 use_log_correction = false;
 %use_log_correction = true;
 
@@ -21,7 +21,8 @@ if testsignal == 0
   if use_log_correction
     attenuation_mapping = [0, 0.22, 0.8, 1.3, 2, 3, 5, 6.5, 9, 12, 16, 23, 30, 40, 50]; % optimized for PD120
   else
-    attenuation_mapping = [0, 0.2, 1, 1.8, 2.7, 4.5, 5.5, 9, 10, 15, 18, 20, 30, 40];%[0, 0.22, 0.8, 1.3, 2, 3, 5, 6.5, 9, 12, 16, 23, 30, 40, 50]; % optimized for PD120
+    attenuation_mapping = [0:0.4:10] .^ 2;
+    %[0, 0.2, 1, 1.8, 2.7, 4.5, 5.5, 9, 10, 15, 18, 20, 30, 40];%[0, 0.22, 0.8, 1.3, 2, 3, 5, 6.5, 9, 12, 16, 23, 30, 40, 50]; % optimized for PD120
   end
 
 else
@@ -57,7 +58,11 @@ for i = 1:size(test_files, 1)
     x_org = x_org / max(x_org);
 
 %figure; subplot(211), plot(x_org, '.-'); grid on; subplot(212), plot(20 * log10(abs(x_org)), '.-'); grid on;
-%subplot(211), hold on; plot(1-(((1:22:360) - 140) / 100) .^ 2);
+%peak_function = 1-(((1:22:360) - 140) / 100) .^ 2;
+%subplot(211), hold on; plot(peak_function);
+%max_index = find(peak_function == max(peak_function));
+%peak_function = peak_function(max_index:end);
+%figure; plot(-diff(peak_function), '.-'); grid on; hold on; plot(attenuation_mapping / 10, 'r')
 
     for idx = 1:length(clip_limit_range)
 
