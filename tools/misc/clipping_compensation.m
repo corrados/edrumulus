@@ -33,7 +33,8 @@ else
   else
 
 % TEST
-attenuation_mapping = 10 .^ ((-[0, 6, 11, 30, 50:100]) / 20);%[0, 9, 39, 13:40]; % optimized for PD8
+attenuation_mapping = 10 .^ ((-[0:2.5:20] .^ 2) / 20);
+%attenuation_mapping = 10 .^ ((-[0, 6, 11, 30, 50:100]) / 20);%[0, 9, 39, 13:40]; % optimized for PD8
 
   end
 
