@@ -116,8 +116,10 @@ protected:
 // -----------------------------------------------------------------------------
 #ifdef ESP_PLATFORM
 
-#include "soc/sens_reg.h"
-#include "driver/dac.h"
+#ifdef CONFIG_IDF_TARGET_ESP32
+# include "soc/sens_reg.h"
+# include "driver/dac.h"
+#endif
 
 #define BOARD_LED_PIN        2    // pin number of the LED on the ESP32 board
 #define ADC_MAX_RANGE        4096 // ESP32 ADC has 12 bits -> 0..4095
@@ -160,13 +162,15 @@ protected:
   static void IRAM_ATTR      on_timer();
   static void                start_timer_core0_task ( void* param );
 
-  void     setup_timer();
+  void setup_timer();
+#ifdef CONFIG_IDF_TARGET_ESP32
   void     init_my_analogRead();
   uint16_t my_analogRead ( const uint8_t pin );
   void my_analogRead_parallel ( const uint32_t channel_adc1_bitval,
                                 const uint32_t channel_adc2_bitval,
                                 uint16_t&      out_adc1,
                                 uint16_t&      out_adc2 );
+#endif
 
   int         total_number_inputs;
   int         input_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
