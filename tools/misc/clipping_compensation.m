@@ -21,7 +21,7 @@ if testsignal == 0
   if use_log_correction
     attenuation_mapping = -[0, 0.22, 0.8, 1.3, 2, 3, 5, 6.5, 9, 12, 16, 23, 30, 40, 50]; % optimized for PD120
   else
-    attenuation_mapping = -[0:0.4:10] .^ 2;
+    attenuation_mapping = 10 .^ ((-[0:0.4:10] .^ 2) / 20);
     %attenuation_mapping = -[0, 0.2, 1, 1.8, 2.7, 4.5, 5.5, 9, 10, 15, 18, 20, 30, 40];%[0, 0.22, 0.8, 1.3, 2, 3, 5, 6.5, 9, 12, 16, 23, 30, 40, 50]; % optimized for PD120
   end
 
@@ -33,7 +33,7 @@ else
   else
 
 % TEST
-attenuation_mapping = -[0, 6, 11, 30, 50:100];%[0, 9, 39, 13:40]; % optimized for PD8
+attenuation_mapping = 10 .^ ((-[0, 6, 11, 30, 50:100]) / 20);%[0, 9, 39, 13:40]; % optimized for PD8
 
   end
 
@@ -77,6 +77,7 @@ for i = 1:size(test_files, 1)
 
 
 % TEST use distance of max neighbor sample to clipping limit as additional offset
+correction_offset_applied = false;
 if num_clipped_val(idx, cnt) > 0
 
   left_index  = min(clip_indexes) - 1;
@@ -131,12 +132,17 @@ neighbor = mean([x_org(left_index), x_org(right_index)]);
       offset = clip_limit - neighbor;
       %offset = min(offset, 10 ^ (max_offset / 20));
 
-      attenuation_compensation(idx, cnt) = 20 * log10(10 ^ (attenuation_compensation(idx, cnt) / 20) + offset);
+      attenuation_compensation(idx, cnt) = 20 * log10(attenuation_compensation(idx, cnt) + offset);
 
     end
 
+    correction_offset_applied = true;
+
   end
 
+end
+if ~correction_offset_applied
+  attenuation_compensation(idx, cnt) = nan; % invalidate results without offset correction
 end
 
     end
