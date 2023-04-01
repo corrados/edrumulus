@@ -13,27 +13,27 @@ use_log_correction = false;
 
 %test_files = {"../../algorithm/signals/pd120_single_hits.wav", {9917:9931, 14974:14985, 22525:22538, 35014:35025}; ...
 %              "../../algorithm/signals/pd8.wav",               {67140:67146, 70170:70175, 73359:73363, 246312:246317, 252036:252039, 296753:296757}};
-%attenuation_mapping = 0:20; % 1 dB per number of clipping samples -> current implementation in C++
+%attenuation_mapping = -(0:20); % 1 dB per number of clipping samples -> current implementation in C++
 
 if testsignal == 0
   test_files = {"../../algorithm/signals/pd120_single_hits.wav", {9917:9931, 14974:14985, 22525:22538, 35014:35025}};
 
   if use_log_correction
-    attenuation_mapping = [0, 0.22, 0.8, 1.3, 2, 3, 5, 6.5, 9, 12, 16, 23, 30, 40, 50]; % optimized for PD120
+    attenuation_mapping = -[0, 0.22, 0.8, 1.3, 2, 3, 5, 6.5, 9, 12, 16, 23, 30, 40, 50]; % optimized for PD120
   else
-    attenuation_mapping = [0:0.4:10] .^ 2;
-    %[0, 0.2, 1, 1.8, 2.7, 4.5, 5.5, 9, 10, 15, 18, 20, 30, 40];%[0, 0.22, 0.8, 1.3, 2, 3, 5, 6.5, 9, 12, 16, 23, 30, 40, 50]; % optimized for PD120
+    attenuation_mapping = -[0:0.4:10] .^ 2;
+    %attenuation_mapping = -[0, 0.2, 1, 1.8, 2.7, 4.5, 5.5, 9, 10, 15, 18, 20, 30, 40];%[0, 0.22, 0.8, 1.3, 2, 3, 5, 6.5, 9, 12, 16, 23, 30, 40, 50]; % optimized for PD120
   end
 
 else
   test_files = {"../../algorithm/signals/pd8.wav", {67140:67146, 70170:70175, 73359:73363, 246312:246317, 252036:252039, 296753:296757}};
 
   if use_log_correction
-    attenuation_mapping = [0, 6.5, 10, 17:40];%[0, 9, 39, 13:40]; % optimized for PD8
+    attenuation_mapping = -[0, 6.5, 10, 17:40];%[0, 9, 39, 13:40]; % optimized for PD8
   else
 
 % TEST
-attenuation_mapping = [0, 6, 11, 30, 50:100];%[0, 9, 39, 13:40]; % optimized for PD8
+attenuation_mapping = -[0, 6, 11, 30, 50:100];%[0, 9, 39, 13:40]; % optimized for PD8
 
   end
 
@@ -73,7 +73,7 @@ for i = 1:size(test_files, 1)
       % count clipped values
       clip_indexes                       = find(abs(x_org_clipped - clip_limit) < 5 / 2^12);
       num_clipped_val(idx, cnt)          = length(clip_indexes);
-      attenuation_compensation(idx, cnt) = -attenuation_mapping(1 + num_clipped_val(idx, cnt));
+      attenuation_compensation(idx, cnt) = attenuation_mapping(1 + num_clipped_val(idx, cnt));
 
 
 % TEST use distance of max neighbor sample to clipping limit as additional offset
@@ -84,7 +84,7 @@ if num_clipped_val(idx, cnt) > 0
 
   if (left_index > 0) && (right_index <= length(x_org))
 
-    max_offset = attenuation_mapping(1 + num_clipped_val(idx, cnt)) - attenuation_mapping(1 + num_clipped_val(idx, cnt) - 1);
+    max_offset = attenuation_mapping(1 + num_clipped_val(idx, cnt) - 1) - attenuation_mapping(1 + num_clipped_val(idx, cnt));
 
     neighbor = max(0, mean([x_org(left_index), x_org(right_index)]));
 
