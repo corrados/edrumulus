@@ -8,7 +8,7 @@ pkg load signal
 close all;
 
 testsignal = 0;
-max_range = 1800; % approx. for 12 bit ADC
+max_range = 1900; % approx. for 12 bit ADC
 
 if testsignal == 0
 
@@ -22,7 +22,7 @@ else
 
 end
 
-clip_limit_range         = 1:-0.05:0.04
+clip_factor_range        = 1:-0.05:0.04
 num_clipped_val          = [];
 attenuation_compensation = [];
 cnt                      = 1;
@@ -40,10 +40,10 @@ for i = 1:size(test_files, 1)
 % TODO instead of moving the clip limit, we should scale the input signal and leave clip limit at approx. 1800
     x_org = x_org / max(x_org) * max_range;
 
-    for idx = 1:length(clip_limit_range)
+    for idx = 1:length(clip_factor_range)
 
       % clip
-      clip_limit    = clip_limit_range(idx) * max_range;
+      clip_limit    = clip_factor_range(idx) * max_range;
       x_org_clipped = max(-clip_limit, min(clip_limit, x_org));
 
       % count clipped values
@@ -61,14 +61,13 @@ for i = 1:size(test_files, 1)
 
         if (left_index > 0) && (right_index <= length(x_org))
 
-          neighbor = mean([x_org(left_index), x_org(right_index)]);
-
           % note: use linear domain for offset calculation
-          offset = (clip_limit - neighbor) / max_range;
+          neighbor = mean([x_org(left_index), x_org(right_index)]);
+          offset   = (clip_limit - neighbor) / max_range;
 
 % TODO apply clipping if neighbor values are too big
-          %max_offset = attenuation_mapping(1 + num_clipped_val(idx, cnt) - 1) - attenuation_mapping(1 + num_clipped_val(idx, cnt));
-          %offset = min(offset, 10 ^ (max_offset / 20));
+%max_offset = attenuation_mapping(1 + num_clipped_val(idx, cnt) - 1) - attenuation_mapping(1 + num_clipped_val(idx, cnt));
+%offset = min(offset, 10 ^ (max_offset / 20));
 
           attenuation_compensation(idx, cnt) = attenuation_compensation(idx, cnt) + offset;
           correction_offset_applied          = true;
@@ -87,16 +86,16 @@ for i = 1:size(test_files, 1)
 
     cnt = cnt + 1;
 
-%figure; plot(num_clipped_val(:, i), 20 * log10(clip_limit_range)); grid on;
+%figure; plot(num_clipped_val(:, i), 20 * log10(clip_factor_range)); grid on;
 
   end
 
 end
 
-%figure; plot(num_clipped_val, 20 * log10(clip_limit_range)); grid on;
-figure; plot(20 * log10(clip_limit_range), 20 * log10(attenuation_compensation), '.-'); grid on;
-hold on; plot(20 * log10(clip_limit_range), 20 * log10(clip_limit_range), '--k');
-axis(20 * log10([min(clip_limit_range), max(clip_limit_range), min(clip_limit_range), max(clip_limit_range)]));
-xlabel('actual attenuation'); ylabel('estimated attenuation');
+%figure; plot(num_clipped_val, 20 * log10(clip_factor_range)); grid on;
+figure; plot(20 * log10(clip_factor_range), 20 * log10(attenuation_compensation), '.-'); grid on;
+hold on; plot(20 * log10(clip_factor_range), 20 * log10(clip_factor_range), '--k');
+axis(20 * log10([min(clip_factor_range), max(clip_factor_range), min(clip_factor_range), max(clip_factor_range)]));
+xlabel('actual clipping'); ylabel('estimated clipping');
 
 
