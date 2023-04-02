@@ -143,7 +143,14 @@ neighbor = mean([x_org(left_index), x_org(right_index)]);
 
 end
 if ~correction_offset_applied
-  attenuation_compensation(idx, cnt) = nan; % invalidate results without offset correction
+
+  % if no neighbors are available, use worst case assumption of last attenuation
+  if use_log_correction
+    attenuation_compensation(idx, cnt) = attenuation_mapping(1 + num_clipped_val(idx, cnt) - 1);
+  else
+    attenuation_compensation(idx, cnt) = 20 * log10(attenuation_mapping(1 + num_clipped_val(idx, cnt) - 1));
+  end
+
 end
 
     end
@@ -160,5 +167,6 @@ end
 figure; plot(20 * log10(clip_limit_range), attenuation_compensation, '.-'); grid on;
 hold on; plot(20 * log10(clip_limit_range), 20 * log10(clip_limit_range), '--k');
 axis(20 * log10([min(clip_limit_range), max(clip_limit_range), min(clip_limit_range), max(clip_limit_range)]));
+xlabel('actual attenuation'); ylabel('estimated attenuation');
 
 
