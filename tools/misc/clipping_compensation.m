@@ -22,7 +22,7 @@ else
 
 end
 
-clip_limit_range         = 1:-0.05:0.04;%0.05:0.04:1;%0.05:0.001:1;%0.031623:9.6838e-03:1;
+clip_limit_range         = 1:-0.05:0.04
 num_clipped_val          = [];
 attenuation_compensation = [];
 cnt                      = 1;
@@ -32,20 +32,13 @@ for i = 1:size(test_files, 1)
   % load test data
   x = audioread(test_files{i, 1});
 
-%figure; plot(x)
-
   for j = 1:length(test_files{i, 2})
 
     % pick one peak and normalize
     x_org = x(test_files{i, 2}{j}, 1);
-    x_org = x_org / max(x_org) * max_range;
 
-%figure; subplot(211), plot(x_org, '.-'); grid on; subplot(212), plot(20 * log10(abs(x_org)), '.-'); grid on;
-%peak_function = 1-(((1:22:360) - 140) / 100) .^ 2;
-%subplot(211), hold on; plot(peak_function);
-%max_index = find(peak_function == max(peak_function));
-%peak_function = peak_function(max_index:end);
-%figure; plot(-diff(peak_function), '.-'); grid on; hold on; plot(attenuation_mapping / 10, 'r')
+% TODO instead of moving the clip limit, we should scale the input signal and leave clip limit at approx. 1800
+    x_org = x_org / max(x_org) * max_range;
 
     for idx = 1:length(clip_limit_range)
 
@@ -54,12 +47,13 @@ for i = 1:size(test_files, 1)
       x_org_clipped = max(-clip_limit, min(clip_limit, x_org));
 
       % count clipped values
-      clip_indexes                       = find(abs(x_org_clipped - clip_limit) < 5 / 2^12);
+      clip_indexes                       = find(abs(x_org_clipped - clip_limit) < 5 / 2 ^ 12);
       num_clipped_val(idx, cnt)          = length(clip_indexes);
       attenuation_compensation(idx, cnt) = attenuation_mapping(1 + num_clipped_val(idx, cnt));
 
-% TEST use distance of max neighbor sample to clipping limit as additional offset
+      % use distance of mean left/right neighbor samples to clipping limit as additional offset
       correction_offset_applied = false;
+
       if num_clipped_val(idx, cnt) > 0
 
         left_index  = min(clip_indexes) - 1;
@@ -69,9 +63,10 @@ for i = 1:size(test_files, 1)
 
           neighbor = mean([x_org(left_index), x_org(right_index)]);
 
-          % TEST: use linear domain for offset calculation
+          % note: use linear domain for offset calculation
           offset = (clip_limit - neighbor) / max_range;
 
+% TODO apply clipping if neighbor values are too big
           %max_offset = attenuation_mapping(1 + num_clipped_val(idx, cnt) - 1) - attenuation_mapping(1 + num_clipped_val(idx, cnt));
           %offset = min(offset, 10 ^ (max_offset / 20));
 
