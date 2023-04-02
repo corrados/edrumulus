@@ -21,8 +21,8 @@ if testsignal == 0
   if use_log_correction
     attenuation_mapping = -[0, 0.22, 0.8, 1.3, 2, 3, 5, 6.5, 9, 12, 16, 23, 30, 40, 50]; % optimized for PD120
   else
-    attenuation_mapping = 10 .^ ((-[0:0.4:10] .^ 2) / 20);
-    %attenuation_mapping = -[0, 0.2, 1, 1.8, 2.7, 4.5, 5.5, 9, 10, 15, 18, 20, 30, 40];%[0, 0.22, 0.8, 1.3, 2, 3, 5, 6.5, 9, 12, 16, 23, 30, 40, 50]; % optimized for PD120
+    attenuation_mapping = 10 .^ (-[0:0.09:3] .^ 2);
+%attenuation_mapping = 10 .^ ((-[0:0.4:10] .^ 2) / 20);%-[0, 0.2, 1, 1.8, 2.7, 4.5, 5.5, 9, 10, 15, 18, 20, 30, 40];%[0, 0.22, 0.8, 1.3, 2, 3, 5, 6.5, 9, 12, 16, 23, 30, 40, 50]; % optimized for PD120
   end
 
 else
@@ -33,7 +33,7 @@ else
   else
 
 % TEST
-attenuation_mapping = 10 .^ ((-[0:2.5:20] .^ 2) / 20);
+attenuation_mapping = 10 .^ (-[0:0.56:5] .^ 2);
 %attenuation_mapping = 10 .^ ((-[0, 6, 11, 30, 50:100]) / 20);%[0, 9, 39, 13:40]; % optimized for PD8
 
   end
