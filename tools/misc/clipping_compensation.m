@@ -57,40 +57,39 @@ for i = 1:size(test_files, 1)
       num_clipped_val(idx, cnt)          = length(clip_indexes);
       attenuation_compensation(idx, cnt) = attenuation_mapping(1 + num_clipped_val(idx, cnt));
 
-
 % TEST use distance of max neighbor sample to clipping limit as additional offset
-correction_offset_applied = false;
-if num_clipped_val(idx, cnt) > 0
+      correction_offset_applied = false;
+      if num_clipped_val(idx, cnt) > 0
 
-  left_index  = min(clip_indexes) - 1;
-  right_index = max(clip_indexes) + 1;
+        left_index  = min(clip_indexes) - 1;
+        right_index = max(clip_indexes) + 1;
 
-  if (left_index > 0) && (right_index <= length(x_org))
-
-
-    neighbor = mean([x_org(left_index), x_org(right_index)]);
-
-    % TEST: use linear domain for offset calculation
-    offset = clip_limit - neighbor;
-
-    %max_offset = attenuation_mapping(1 + num_clipped_val(idx, cnt) - 1) - attenuation_mapping(1 + num_clipped_val(idx, cnt));
-    %offset = min(offset, 10 ^ (max_offset / 20));
-
-    attenuation_compensation(idx, cnt) = 20 * log10(attenuation_compensation(idx, cnt) + offset);
+        if (left_index > 0) && (right_index <= length(x_org))
 
 
+          neighbor = mean([x_org(left_index), x_org(right_index)]);
 
-    correction_offset_applied = true;
+          % TEST: use linear domain for offset calculation
+          offset = clip_limit - neighbor;
 
-  end
+          %max_offset = attenuation_mapping(1 + num_clipped_val(idx, cnt) - 1) - attenuation_mapping(1 + num_clipped_val(idx, cnt));
+          %offset = min(offset, 10 ^ (max_offset / 20));
 
-end
-if ~correction_offset_applied
+          attenuation_compensation(idx, cnt) = attenuation_compensation(idx, cnt) + offset;
 
-  % if no neighbors are available, use worst case assumption of last attenuation
-  attenuation_compensation(idx, cnt) = 20 * log10(attenuation_mapping(1 + num_clipped_val(idx, cnt) - 1));
 
-end
+
+          correction_offset_applied = true;
+
+        end
+
+      end
+      if ~correction_offset_applied
+
+        % if no neighbors are available, use worst case assumption of last attenuation
+        attenuation_compensation(idx, cnt) = attenuation_mapping(1 + num_clipped_val(idx, cnt) - 1);
+
+      end
 
     end
 
@@ -103,7 +102,7 @@ end
 end
 
 %figure; plot(num_clipped_val, 20 * log10(clip_limit_range)); grid on;
-figure; plot(20 * log10(clip_limit_range), attenuation_compensation, '.-'); grid on;
+figure; plot(20 * log10(clip_limit_range), 20 * log10(attenuation_compensation), '.-'); grid on;
 hold on; plot(20 * log10(clip_limit_range), 20 * log10(clip_limit_range), '--k');
 axis(20 * log10([min(clip_limit_range), max(clip_limit_range), min(clip_limit_range), max(clip_limit_range)]));
 xlabel('actual attenuation'); ylabel('estimated attenuation');
