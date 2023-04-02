@@ -8,6 +8,7 @@ pkg load signal
 close all;
 
 testsignal = 0;
+max_range = 1800; % approx. for 12 bit ADC
 
 if testsignal == 0
 
@@ -37,7 +38,7 @@ for i = 1:size(test_files, 1)
 
     % pick one peak and normalize
     x_org = x(test_files{i, 2}{j}, 1);
-    x_org = x_org / max(x_org);
+    x_org = x_org / max(x_org) * max_range;
 
 %figure; subplot(211), plot(x_org, '.-'); grid on; subplot(212), plot(20 * log10(abs(x_org)), '.-'); grid on;
 %peak_function = 1-(((1:22:360) - 140) / 100) .^ 2;
@@ -49,7 +50,7 @@ for i = 1:size(test_files, 1)
     for idx = 1:length(clip_limit_range)
 
       % clip
-      clip_limit    = clip_limit_range(idx);
+      clip_limit    = clip_limit_range(idx) * max_range;
       x_org_clipped = max(-clip_limit, min(clip_limit, x_org));
 
       % count clipped values
@@ -66,20 +67,16 @@ for i = 1:size(test_files, 1)
 
         if (left_index > 0) && (right_index <= length(x_org))
 
-
           neighbor = mean([x_org(left_index), x_org(right_index)]);
 
           % TEST: use linear domain for offset calculation
-          offset = clip_limit - neighbor;
+          offset = (clip_limit - neighbor) / max_range;
 
           %max_offset = attenuation_mapping(1 + num_clipped_val(idx, cnt) - 1) - attenuation_mapping(1 + num_clipped_val(idx, cnt));
           %offset = min(offset, 10 ^ (max_offset / 20));
 
           attenuation_compensation(idx, cnt) = attenuation_compensation(idx, cnt) + offset;
-
-
-
-          correction_offset_applied = true;
+          correction_offset_applied          = true;
 
         end
 
