@@ -31,24 +31,19 @@ for i = 1:size(test_files, 1)
   for j = 1:length(test_files{i, 2})
 
     % pick one peak and normalize
-    x_org        = x(test_files{i, 2}{j}, 1);
-    x_org_scaled = x_org / max(x_org) * clip_limit;
-% TODO instead of moving the clip limit, we should scale the input signal and leave clip limit at approx. 1800
-%x_org = x_org / max(x_org); % normalize original input signal
+    x_org = x(test_files{i, 2}{j}, 1);
+    x_org = x_org / max(x_org); % normalize original input signal
 
     for idx = 1:length(clip_factor_range)
 
       % clip
-      clip_limit_cur = clip_factor_range(idx) * clip_limit;
-      x_org_clipped  = max(-clip_limit_cur, min(clip_limit_cur, x_org_scaled));
-% TODO instead of moving the clip limit, we should scale the input signal and leave clip limit at approx. 1800
-%x_org_scaled  = x_org * clip_limit / clip_factor_range(idx);
-%x_org_clipped = max(-clip_limit, min(clip_limit, x_org_scaled));
+      x_org_scaled  = x_org * clip_limit / clip_factor_range(idx);
+      x_org_clipped = max(-clip_limit, min(clip_limit, x_org_scaled));
 
 %figure; plot(x_org_clipped, '.-'); grid on; ax = axis; hold on; plot([ax(1), ax(2)], [clip_limit, clip_limit], 'r')
 
       % count clipped values
-      clip_indexes                       = find(abs(x_org_clipped - clip_limit_cur) < 5 / 2 ^ 12);
+      clip_indexes                       = find(abs(x_org_clipped - clip_limit) < 5 / 2 ^ 12);
       num_clipped_val(idx, cnt)          = length(clip_indexes);
       attenuation_compensation(idx, cnt) = attenuation_mapping(1 + num_clipped_val(idx, cnt));
 
@@ -64,8 +59,23 @@ for i = 1:size(test_files, 1)
 
           % note: use linear domain for offset calculation
           neighbor = mean([x_org_scaled(left_index), x_org_scaled(right_index)]);
-          offset   = (clip_limit_cur - neighbor) / clip_limit;
-%offset   = 1 - neighbor / clip_limit;
+
+% y = x / max(x) * c
+% l = c_r * c
+% o = (l - n) / c
+% z = a(i) + o
+%
+% c: maximum of y  -> unknown
+% l: limit         -> known
+% n: neighbors     -> known
+%
+% z = a(i) + (l - n) / c
+
+%offset = 1 - neighbor / clip_limit;
+%offset = 1 - neighbor / (clip_limit + attenuation_compensation(idx, cnt) * clip_limit);
+offset = 0;
+%clip_limit - neighbor
+%attenuation_compensation(idx, cnt) * clip_limit
 
 % TODO apply clipping if neighbor values are too big
 %max_offset = attenuation_mapping(1 + num_clipped_val(idx, cnt) - 1) - attenuation_mapping(1 + num_clipped_val(idx, cnt));
