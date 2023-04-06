@@ -60,32 +60,13 @@ for i = 1:size(test_files, 1)
           % note: use linear domain for offset calculation
           neighbor = mean([x_org_scaled(left_index), x_org_scaled(right_index)]);
 
-% y = x / max(x) * c
-% l = c_r * c
-% o = (l - n) / c
-% z = a(i) + o
-%
-% c: maximum of y  -> unknown
-% l: limit         -> known
-% n: neighbors     -> known
-%
-% z = a(i) + (l - n) / c
-
-%offset = 1 - neighbor / clip_limit;
-%offset = 1 - neighbor / (clip_limit + attenuation_compensation(idx, cnt) * clip_limit);
-offset = 0;
-%clip_limit - neighbor
-%attenuation_compensation(idx, cnt) * clip_limit
-
-% TODO apply clipping if neighbor values are too big
-%max_offset = attenuation_mapping(1 + num_clipped_val(idx, cnt) - 1) - attenuation_mapping(1 + num_clipped_val(idx, cnt));
-%offset = min(offset, 10 ^ (max_offset / 20));
-
-          attenuation_compensation(idx, cnt) = attenuation_compensation(idx, cnt) + offset;
-
-% TEST
-%attenuation_compensation(idx, cnt) = attenuation_mapping(1 + num_clipped_val(idx, cnt) + 1) + offset;
-
+          % x: point just below the limit (neighbor)
+          % a: x / x_max, where x_may is the maximum of the peak
+          % l: clip limit (for ESP32 usually ~1800)
+          % y = l / x_max
+          % a = x / x_max
+          % -> y = a * l / x
+          attenuation_compensation(idx, cnt) = attenuation_mapping(1 + num_clipped_val(idx, cnt)) * clip_limit / neighbor;
           correction_offset_applied          = true;
 
         end
