@@ -8,6 +8,7 @@ pkg load signal
 close all;
 
 use_pd120 = true;
+%use_pd120 = false;
 
 if use_pd120
   test_files = {"../../algorithm/signals/pd120_single_hits.wav", {9917:9931, 14974:14985, 22525:22538, 35014:35025}};
@@ -18,7 +19,7 @@ else
 end
 
 clip_limit               = 1900; % approx. for 12 bit ADC
-clip_factor_range        = 1:-0.05:0.04;
+clip_factor_range        = 1:-0.04:0.04;
 num_clipped_val          = [];
 attenuation_compensation = [];
 cnt                      = 1;
@@ -68,6 +69,9 @@ for i = 1:size(test_files, 1)
           % -> y = a * l / x
           attenuation_compensation(idx, cnt) = attenuation_mapping(1 + num_clipped_val(idx, cnt)) * clip_limit / neighbor;
           correction_offset_applied          = true;
+
+% TEST
+attenuation_compensation(idx, cnt) = min(attenuation_compensation(idx, cnt), attenuation_mapping(1 + num_clipped_val(idx, cnt) - 1));
 
         end
 
