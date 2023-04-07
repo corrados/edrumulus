@@ -12,7 +12,7 @@ use_pd120 = true;
 
 if use_pd120
   test_files = {"../../algorithm/signals/pd120_single_hits.wav", {9917:9931, 14974:14985, 22525:22538, 35014:35025}};
-  attenuation_mapping = 10 .^ (-[0:0.09:3] .^ 2);
+  attenuation_mapping = 10 .^ (-[0:0.087:10] .^ 2);
 else
   test_files = {"../../algorithm/signals/pd8.wav", {67140:67146, 70170:70175, 73359:73363, 246312:246317, 252036:252039, 296753:296757}};
   attenuation_mapping = 10 .^ (-[0:0.56:5] .^ 2);
@@ -34,6 +34,8 @@ for i = 1:size(test_files, 1)
     % pick one peak and normalize
     x_org = x(test_files{i, 2}{j}, 1);
     x_org = x_org / max(x_org); % normalize original input signal
+
+%figure; plot(x_org, '.-'); grid on;
 
     for idx = 1:length(clip_factor_range)
 
@@ -72,6 +74,8 @@ for i = 1:size(test_files, 1)
 
 % TEST
 attenuation_compensation(idx, cnt) = min(attenuation_compensation(idx, cnt), attenuation_mapping(1 + num_clipped_val(idx, cnt) - 1));
+
+%attenuation_compensation(idx, cnt) = attenuation_mapping(1 + num_clipped_val(idx, cnt));
 
         end
 
