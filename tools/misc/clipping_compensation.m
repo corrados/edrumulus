@@ -12,17 +12,17 @@ use_pd120 = true;
 
 if use_pd120
   test_files = {"../../algorithm/signals/pd120_single_hits.wav", {9917:9931, 14974:14985, 22525:22538, 35014:35025}};
-  attenuation_mapping = 10 .^ (-[0:0.087:10] .^ 2);
+  amplification_mapping = 10 .^ ([0:0.09:10] .^ 2);
 else
   test_files = {"../../algorithm/signals/pd8.wav", {67140:67146, 70170:70175, 73359:73363, 246312:246317, 252036:252039, 296753:296757}};
-  attenuation_mapping = 10 .^ (-[0:0.56:5] .^ 2);
+  amplification_mapping = 10 .^ ([0:0.56:5] .^ 2);
 end
 
-clip_limit               = 1900; % approx. for 12 bit ADC
-clip_factor_range        = 1:-0.04:0.04;
-num_clipped_val          = [];
-attenuation_compensation = [];
-cnt                      = 1;
+clip_limit                 = 1900; % approx. for 12 bit ADC
+clip_factor_range          = 1 ./ (1:-0.04:0.04);
+num_clipped_val            = [];
+amplification_compensation = [];
+cnt                        = 1;
 
 for i = 1:size(test_files, 1)
 
@@ -40,15 +40,15 @@ for i = 1:size(test_files, 1)
     for idx = 1:length(clip_factor_range)
 
       % clip
-      x_org_scaled  = x_org * clip_limit / clip_factor_range(idx);
+      x_org_scaled  = x_org * clip_limit * clip_factor_range(idx);
       x_org_clipped = max(-clip_limit, min(clip_limit, x_org_scaled));
 
 %figure; plot(x_org_clipped, '.-'); grid on; ax = axis; hold on; plot([ax(1), ax(2)], [clip_limit, clip_limit], 'r')
 
       % count clipped values
-      clip_indexes                       = find(abs(x_org_clipped - clip_limit) < 5 / 2 ^ 12);
-      num_clipped_val(idx, cnt)          = length(clip_indexes);
-      attenuation_compensation(idx, cnt) = attenuation_mapping(1 + num_clipped_val(idx, cnt));
+      clip_indexes                         = find(abs(x_org_clipped - clip_limit) < 5 / 2 ^ 12);
+      num_clipped_val(idx, cnt)            = length(clip_indexes);
+      amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt));
 
       % use distance of mean left/right neighbor samples to clipping limit as additional offset
       correction_offset_applied = false;
@@ -69,13 +69,13 @@ for i = 1:size(test_files, 1)
           % y = l / x_max
           % a = x / x_max
           % -> y = a * l / x
-          attenuation_compensation(idx, cnt) = attenuation_mapping(1 + num_clipped_val(idx, cnt)) * clip_limit / neighbor;
-          correction_offset_applied          = true;
+          amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt)) * neighbor / clip_limit;
+          correction_offset_applied            = true;
 
 % TEST
-attenuation_compensation(idx, cnt) = min(attenuation_compensation(idx, cnt), attenuation_mapping(1 + num_clipped_val(idx, cnt) - 1));
+%amplification_compensation(idx, cnt) = min(amplification_compensation(idx, cnt), amplification_mapping(1 + num_clipped_val(idx, cnt) - 1));
 
-%attenuation_compensation(idx, cnt) = attenuation_mapping(1 + num_clipped_val(idx, cnt));
+%amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt));
 
         end
 
@@ -84,7 +84,7 @@ attenuation_compensation(idx, cnt) = min(attenuation_compensation(idx, cnt), att
       if ~correction_offset_applied
 
         % if no neighbors are available, use worst case assumption of last attenuation
-        attenuation_compensation(idx, cnt) = attenuation_mapping(1 + num_clipped_val(idx, cnt) - 1);
+        amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt) - 1);
 
       end
 
@@ -99,9 +99,9 @@ attenuation_compensation(idx, cnt) = min(attenuation_compensation(idx, cnt), att
 end
 
 % results plot
-figure; plot(20 * log10(clip_factor_range), 20 * log10(attenuation_compensation), '.-'); grid on;
+figure; plot(20 * log10(clip_factor_range), 20 * log10(amplification_compensation), '.-'); grid on;
 hold on; plot(20 * log10(clip_factor_range), 20 * log10(clip_factor_range), '--k');
 axis(20 * log10([min(clip_factor_range), max(clip_factor_range), min(clip_factor_range), max(clip_factor_range)]));
-xlabel('actual clipping'); ylabel('estimated clipping');
+xlabel('actual clipping'); ylabel('estimated clipping amplification');
 
 
