@@ -12,14 +12,14 @@ use_pd120 = true;
 
 if use_pd120
   test_files = {"../../algorithm/signals/pd120_single_hits.wav", {9917:9931, 14974:14985, 22525:22538, 35014:35025}};
-  amplification_mapping = 10 .^ ([0:0.09:10] .^ 2);
+  amplification_mapping = 10 .^ ([0:0.096:10] .^ 2.2);
 else
   test_files = {"../../algorithm/signals/pd8.wav", {67140:67146, 70170:70175, 73359:73363, 246312:246317, 252036:252039, 296753:296757}};
-  amplification_mapping = 10 .^ ([0:0.56:5] .^ 2);
+  amplification_mapping = 10 .^ ([0:0.3:5] .^ 1);
 end
 
 clip_limit                 = 1900; % approx. for 12 bit ADC
-clip_factor_range          = 1 ./ (1:-0.04:0.04);
+clip_factor_range          = 1 ./ (1:-0.01:0.04);
 num_clipped_val            = [];
 amplification_compensation = [];
 cnt                        = 1;
@@ -72,11 +72,16 @@ for i = 1:size(test_files, 1)
           amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt)) * neighbor / clip_limit;
           correction_offset_applied            = true;
 
+%y = amplification_compensation(idx, cnt);
+%a = amplification_mapping(1 + num_clipped_val(idx, cnt) + 1);
+%y
+%a
+
 % TEST
 %amplification_compensation(idx, cnt) = min(amplification_compensation(idx, cnt), amplification_mapping(1 + num_clipped_val(idx, cnt) - 1));
 
 % TEST
-%amplification_compensation(idx, cnt) = max(amplification_compensation(idx, cnt), amplification_mapping(1 + num_clipped_val(idx, cnt) - 1));
+%amplification_compensation(idx, cnt) = min(amplification_compensation(idx, cnt), amplification_mapping(1 + num_clipped_val(idx, cnt) + 1));
 
 %amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt));
 
