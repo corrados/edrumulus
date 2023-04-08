@@ -25,22 +25,17 @@ import signal
 import socket
 import time
 import threading
-try:
-  import jack
-  jack_available = True
-except:
-  jack_available = False
-try:
-  import rtmidi
-  from rtmidi.midiutil import open_midiinput
-  from rtmidi.midiutil import open_midioutput
-  rtmidi_available = True
-except:
-  rtmidi_available = False
+use_rtmidi  = len(sys.argv) > 1 and sys.argv[1] == "rtmidi"    # use rtmidi instead of jack audio
 no_gui      = len(sys.argv) > 1 and sys.argv[1] == "no_gui"    # no GUI but blocking (just settings management)
 non_block   = len(sys.argv) > 1 and sys.argv[1] == "non_block" # no GUI and non-blocking (just settings management)
 use_lcd     = len(sys.argv) > 1 and sys.argv[1] == "lcd"       # LCD GUI mode on Raspberry Pi
 use_ncurses = not no_gui and not non_block and not use_lcd     # normal console GUI mode (default)
+if use_rtmidi:
+  import rtmidi
+  from rtmidi.midiutil import open_midiinput
+  from rtmidi.midiutil import open_midioutput
+else:
+  import jack
 if use_lcd:
   import RPi.GPIO as GPIO
   from RPLCD.gpio import CharLCD
@@ -78,7 +73,7 @@ selected_kit            = ""
 kit_vol_str             = ""
 
 # initialize jack audio for MIDI
-if jack_available:
+if not use_rtmidi:
   client      = jack.Client("EdrumulusGUI")
   input_port  = client.midi_inports.register("MIDI_in")
   output_port = client.midi_outports.register("MIDI_out")
@@ -430,7 +425,7 @@ def ecasound_kit_volume(do_increment):
 ################################################################################
 # MIDI handling (via jack audio) ###############################################
 ################################################################################
-if jack_available:
+if not use_rtmidi:
   def send_value_to_edrumulus(command, value):
     global midi_send_cmd, midi_send_val
     (midi_send_cmd, midi_send_val) = (command, value);
@@ -498,7 +493,7 @@ if jack_available:
 ################################################################################
 # MIDI handling (via rtmidi) ###################################################
 ################################################################################
-if rtmidi_available:
+if use_rtmidi:
   def send_value_to_edrumulus(command, value):
     pass # TODO
 
@@ -522,25 +517,26 @@ elif use_ncurses:
 original_sigint_handler = signal.signal(signal.SIGINT, signal_handler)
 
 with client:
-  try:
-    input_port.connect("ttymidi:MIDI_in")   # ESP32
-    output_port.connect("ttymidi:MIDI_out") # ESP32
-  except:
+  if use_rtmidi:
     try:
-      teensy_out = client.get_ports("Edrumulus ", is_midi=True, is_input=True)
-      teensy_in  = client.get_ports("Edrumulus ", is_midi=True, is_output=True)
-      input_port.connect(teensy_in[0])   # Teensy
-      output_port.connect(teensy_out[0]) # Teensy
+      midiin, port_name_in   = open_midiinput([s for s in rtmidi.MidiIn().get_ports() if "ttymidi:MIDI out" in s][0], client_name="EdrumulusGUI")
+      midiout, port_name_out = open_midioutput([s for s in rtmidi.MidiOut().get_ports() if "ttymidi:MIDI in" in s][0], client_name="EdrumulusGUI")
+      midiin.set_callback(MidiInputHandler(port_name_in))
     except:
-      pass # if no Edrumulus hardware was found, no jack is started
-      if rtmidi_available:
-        try:
-          midiin, port_name_in   = open_midiinput([s for s in rtmidi.MidiIn().get_ports() if "ttymidi:MIDI out" in s][0], client_name="EdrumulusGUI")
-          midiout, port_name_out = open_midioutput([s for s in rtmidi.MidiOut().get_ports() if "ttymidi:MIDI in" in s][0], client_name="EdrumulusGUI")
-          midiin.set_callback(MidiInputHandler(port_name_in))
-        except:
-          pass
-          print("last except...")
+      pass # if no Edrumulus hardware was found, no rtmidi is started
+      print("last except...")
+  else:
+    try:
+      input_port.connect("ttymidi:MIDI_in")   # ESP32
+      output_port.connect("ttymidi:MIDI_out") # ESP32
+    except:
+      try:
+        teensy_out = client.get_ports("Edrumulus ", is_midi=True, is_input=True)
+        teensy_in  = client.get_ports("Edrumulus ", is_midi=True, is_output=True)
+        input_port.connect(teensy_in[0])   # Teensy
+        output_port.connect(teensy_out[0]) # Teensy
+      except:
+        pass # if no Edrumulus hardware was found, no jack is started
 
   # load settings from file
   load_settings()
