@@ -12,7 +12,7 @@ use_pd120 = true;
 
 if use_pd120
   test_files = {"../../algorithm/signals/pd120_single_hits.wav", {9917:9931, 14974:14985, 22525:22538, 35014:35025}};
-  amplification_mapping = 10 .^ ([0:0.096:10] .^ 2.2);
+  amplification_mapping = 10 .^ ([0:0.096:10] .^ 2.2);%10 .^ ([0:0.09:10] .^ 2);%
 else
   test_files = {"../../algorithm/signals/pd8.wav", {67140:67146, 70170:70175, 73359:73363, 246312:246317, 252036:252039, 296753:296757}};
   amplification_mapping = 10 .^ ([0:0.3:5] .^ 1);
