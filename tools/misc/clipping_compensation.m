@@ -66,14 +66,17 @@ for i = 1:size(test_files, 1)
           % x: point just below the limit (neighbor)
           % a: x / x_max, where x_may is the maximum of the peak
           % l: clip limit (for ESP32 usually ~1800)
-          % y = l / x_max
-          % a = x / x_max
-          % -> y = a * l / x
+          % y = x_max / l
+          % a = x_max / x
+          % -> y = a * x / l
           amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt)) * neighbor / clip_limit;
           correction_offset_applied            = true;
 
 % TEST
 %amplification_compensation(idx, cnt) = min(amplification_compensation(idx, cnt), amplification_mapping(1 + num_clipped_val(idx, cnt) - 1));
+
+% TEST
+%amplification_compensation(idx, cnt) = max(amplification_compensation(idx, cnt), amplification_mapping(1 + num_clipped_val(idx, cnt) - 1));
 
 %amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt));
 
