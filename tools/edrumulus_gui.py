@@ -25,11 +25,11 @@ import signal
 import socket
 import time
 import threading
-use_rtmidi  = len(sys.argv) > 1 and sys.argv[1] == "rtmidi"    # use rtmidi instead of jack audio
-no_gui      = len(sys.argv) > 1 and sys.argv[1] == "no_gui"    # no GUI but blocking (just settings management)
-non_block   = len(sys.argv) > 1 and sys.argv[1] == "non_block" # no GUI and non-blocking (just settings management)
-use_lcd     = len(sys.argv) > 1 and sys.argv[1] == "lcd"       # LCD GUI mode on Raspberry Pi
-use_ncurses = not no_gui and not non_block and not use_lcd     # normal console GUI mode (default)
+use_rtmidi  = "rtmidi"    in sys.argv # use rtmidi instead of jack audio
+no_gui      = "no_gui"    in sys.argv # no GUI but blocking (just settings management)
+non_block   = "non_block" in sys.argv # no GUI and non-blocking (just settings management)
+use_lcd     = "lcd"       in sys.argv # LCD GUI mode on Raspberry Pi
+use_ncurses = not no_gui and not non_block and not use_lcd  # normal console GUI mode (default)
 if use_rtmidi:
   import rtmidi
   from rtmidi.midiutil import open_midiinput
@@ -100,9 +100,9 @@ def process_user_input(ch):
     send_value_to_edrumulus(cmd_val[sel_cmd], database[sel_cmd])
   elif ch == "a" or ch == "A": # enable/disable auto pad selection
     auto_pad_sel = ch == "a" # capital "A" disables auto pad selection
-  elif ch == "k" or ch == "K": # kit selection
+  elif (ch == "k" or ch == "K") and not use_rtmidi: # kit selection (only for jack audio mode)
     ecasound_switch_chains(ch == "k")
-  elif ch == "v" or ch == "V": # kit volume
+  elif (ch == "v" or ch == "V") and not use_rtmidi: # kit volume (only for jack audio mode)
     ecasound_kit_volume(ch == "v")
 
 def parse_cmd_param(cmd):
@@ -501,7 +501,7 @@ if use_rtmidi:
     def __init__(self, port):
       self.port = port
     def __call__(self, event, data=None):
-      print(event[0])
+      print(event[0]) # for debugging...
 
 
 ################################################################################
@@ -516,54 +516,62 @@ elif use_ncurses:
 # ctrl+c quits the application
 original_sigint_handler = signal.signal(signal.SIGINT, signal_handler)
 
-with client:
-  if use_rtmidi:
+if use_rtmidi:
+  try:
+    midiin, port_name_in   = open_midiinput([s for s in rtmidi.MidiIn().get_ports() if "ttymidi:MIDI out" in s][0], client_name="EdrumulusGUI")
+    midiout, port_name_out = open_midioutput([s for s in rtmidi.MidiOut().get_ports() if "ttymidi:MIDI in" in s][0], client_name="EdrumulusGUI")
+    midiin.set_callback(MidiInputHandler(port_name_in))
+  except:
+    pass # if no Edrumulus hardware was found, no rtmidi is started
+    print("last except...")
+else:
+  client.activate()
+  try:
+    input_port.connect("ttymidi:MIDI_in")   # ESP32
+    output_port.connect("ttymidi:MIDI_out") # ESP32
+  except:
     try:
-      midiin, port_name_in   = open_midiinput([s for s in rtmidi.MidiIn().get_ports() if "ttymidi:MIDI out" in s][0], client_name="EdrumulusGUI")
-      midiout, port_name_out = open_midioutput([s for s in rtmidi.MidiOut().get_ports() if "ttymidi:MIDI in" in s][0], client_name="EdrumulusGUI")
-      midiin.set_callback(MidiInputHandler(port_name_in))
+      teensy_out = client.get_ports("Edrumulus ", is_midi=True, is_input=True)
+      teensy_in  = client.get_ports("Edrumulus ", is_midi=True, is_output=True)
+      input_port.connect(teensy_in[0])   # Teensy
+      output_port.connect(teensy_out[0]) # Teensy
     except:
-      pass # if no Edrumulus hardware was found, no rtmidi is started
-      print("last except...")
-  else:
-    try:
-      input_port.connect("ttymidi:MIDI_in")   # ESP32
-      output_port.connect("ttymidi:MIDI_out") # ESP32
-    except:
-      try:
-        teensy_out = client.get_ports("Edrumulus ", is_midi=True, is_input=True)
-        teensy_in  = client.get_ports("Edrumulus ", is_midi=True, is_output=True)
-        input_port.connect(teensy_in[0])   # Teensy
-        output_port.connect(teensy_out[0]) # Teensy
-      except:
-        pass # if no Edrumulus hardware was found, no jack is started
+      pass # if no Edrumulus hardware was found, no jack is started
+      print("client: last except...")
 
-  # load settings from file
-  load_settings()
+# load settings from file
+load_settings()
 
-  send_value_to_edrumulus(108, sel_pad) # to query all Edrumulus current parameters
-  time.sleep(0.2)
-  do_update_display = True
+send_value_to_edrumulus(108, sel_pad) # to query all Edrumulus current parameters
+time.sleep(0.2)
+do_update_display = True
 
-  # it takes time for ecasound to start up -> we need a timer thread for socket connection
+# it takes time for ecasound to start up -> we need a timer thread for socket connection
+if not use_rtmidi: # ecasound is only supported for jack audio mode
   threading.Timer(0.0, ecasound_connection).start()
 
-  # main loop
-  if no_gui:
-    print("press Return to quit")
-    input() # wait until a key is pressed to quit the application
-  elif use_lcd:
-    lcd_loop()
-  elif use_ncurses:
-    ncurses_input_loop()
+# main loop
+if no_gui:
+  print("press Return to quit")
+  input() # wait until a key is pressed to quit the application
+elif use_lcd:
+  lcd_loop()
+elif use_ncurses:
+  ncurses_input_loop()
 
-  # store settings in file
-  if not no_gui and not non_block:
-    store_settings()
+# store settings in file
+if not no_gui and not non_block:
+  store_settings()
 
-  # clean up and exit
-  if use_lcd:
-    lcd.close() # just this single call is needed
-  elif use_ncurses:
-    ncurses_cleanup()
+# clean up and exit
+if use_lcd:
+  lcd.close() # just this single call is needed
+elif use_ncurses:
+  ncurses_cleanup()
+if use_rtmidi:
+  midiin.delete()
+  midiout.delete()
+else:
+  client.deactivate()
+  client.close()
 
