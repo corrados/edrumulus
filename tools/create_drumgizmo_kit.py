@@ -68,6 +68,9 @@ min_time_next_strike_s    = 0.5 # minimum time in seconds between two different 
 #instruments = [instruments[7]]
 disable_positional_sensing_support  = False#True#
 only_master_channels_per_instrument = False#True#
+#for instrument in instruments: # remove some instruments for lowest possible memory requirement
+#  if "tom2" in instrument or "ride_side" in instrument or "crash_top" in instrument or "hihat_opentop" in instrument:
+#    instruments.remove(instrument)
 
 
 for instrument in instruments:

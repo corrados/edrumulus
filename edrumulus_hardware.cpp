@@ -331,8 +331,10 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
     }
   }
 
+#ifdef CONFIG_IDF_TARGET_ESP32
   // prepare the ADC and analog GPIO inputs
   init_my_analogRead();
+#endif
 
   // create timer semaphore
   timer_semaphore = xSemaphoreCreateBinary();
@@ -367,6 +369,7 @@ void Edrumulus_hardware::start_timer_core0_task ( void* param )
 
 void IRAM_ATTR Edrumulus_hardware::on_timer()
 {
+#ifdef CONFIG_IDF_TARGET_ESP32
   // first read the ADC pairs samples
   for ( int i = 0; i < edrumulus_hardware_pointer->num_pin_pairs; i++ )
   {
@@ -383,6 +386,15 @@ void IRAM_ATTR Edrumulus_hardware::on_timer()
     edrumulus_hardware_pointer->input_sample[edrumulus_hardware_pointer->single_index[i]] =
       edrumulus_hardware_pointer->my_analogRead ( edrumulus_hardware_pointer->input_pin[edrumulus_hardware_pointer->single_index[i]] );
   }
+#endif
+
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+  // read the ADC samples
+  for ( int i = 0; i < edrumulus_hardware_pointer->total_number_inputs; i++ )
+  {
+    edrumulus_hardware_pointer->input_sample[i] = analogRead ( edrumulus_hardware_pointer->input_pin[i] );
+  }
+#endif
 
   // tell the main loop that a sample can be processed by setting the semaphore
   static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
@@ -418,6 +430,7 @@ void Edrumulus_hardware::capture_samples ( const int number_pads,
 }
 
 
+#ifdef CONFIG_IDF_TARGET_ESP32
 // Since arduino-esp32 library version 1.0.5, the analogRead was changed to use the IDF interface
 // which made the analogRead function so slow that we cannot use that anymore for Edrumulus:
 // https://github.com/espressif/arduino-esp32/issues/4973, https://github.com/espressif/arduino-esp32/pull/3377
@@ -521,6 +534,7 @@ void Edrumulus_hardware::my_analogRead_parallel ( const uint32_t channel_adc1_bi
   while ( GET_PERI_REG_MASK ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DONE_SAR ) == 0 );
   out_adc2 = GET_PERI_REG_BITS2 ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DATA_SAR, SENS_MEAS2_DATA_SAR_S );
 }
+#endif
 
 #endif
 
