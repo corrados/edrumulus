@@ -10,6 +10,7 @@ close all;
 pad = "pd120"
 %pad = "pd80r"
 %pad = "pd8"
+%pad = "pd5"
 
 if strcmp(pad, "pd120")
   test_files = {"../../algorithm/signals/pd120_single_hits.wav", {9917:9931, 14974:14985, 22525:22538, 35014:35025}};
@@ -23,6 +24,10 @@ elseif strcmp(pad, "pd8")
   test_files = {"../../algorithm/signals/pd8.wav", {67140:67146, 70170:70175, 73359:73363, 246312:246317, 252036:252039, 296753:296757}};
   ampmap_const_exp  = 1;
   ampmap_const_step = 0.3;
+elseif strcmp(pad, "pd5")
+  test_files = {"../../algorithm/signals/pd5.wav", {599216:599220, 344800:344804, 765417:765421}};
+  ampmap_const_exp  = 2;
+  ampmap_const_step = 0.9;
 end
 
 clip_limit                 = 1900; % approx. for 12 bit ADC
@@ -37,6 +42,8 @@ for i = 1:size(test_files, 1)
 
   % load test data
   x = audioread(test_files{i, 1});
+
+%figure; plot(x, '.-'); grid on;
 
   for j = 1:length(test_files{i, 2})
 
