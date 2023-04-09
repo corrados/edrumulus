@@ -7,10 +7,10 @@
 pkg load signal
 close all;
 
-pad = "pd120"
-%pad = "pd80r"
-%pad = "pd8"
-%pad = "pd5"
+pad = "pd120";
+%pad = "pd80r";
+%pad = "pd8";
+%pad = "pd5";
 
 if strcmp(pad, "pd120")
   test_files = {"../../algorithm/signals/pd120_single_hits.wav", {9917:9931, 14974:14985, 22525:22538, 35014:35025}};
