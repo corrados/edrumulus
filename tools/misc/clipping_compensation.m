@@ -7,18 +7,17 @@
 pkg load signal
 close all;
 
-use_pd120 = true;
-%use_pd120 = false;
+pad = "pd120"
+%pad = "pd80r"
+%pad = "pd8"
 
-if use_pd120
+if strcmp(pad, "pd120")
   test_files = {"../../algorithm/signals/pd120_single_hits.wav", {9917:9931, 14974:14985, 22525:22538, 35014:35025}};
-  amplification_mapping = 10 .^ ([0:0.096:10] .^ 2.2);%10 .^ ([0:0.09:10] .^ 2);%
-
-% TEST
-%test_files = {"../../algorithm/signals/pd80r.wav", {48891:48900, 61075:61086, 202210:202222, 242341:242353}};
-%amplification_mapping = 10 .^ ([0:0.11:10] .^ 2);
-
-else
+  amplification_mapping = 10 .^ ([0:0.096:10] .^ 2.2);
+elseif strcmp(pad, "pd80r")
+  test_files = {"../../algorithm/signals/pd80r.wav", {48891:48900, 61075:61086, 202210:202222, 242341:242353}};
+  amplification_mapping = 10 .^ ([0:0.125:10] .^ 2);
+elseif strcmp(pad, "pd8")
   test_files = {"../../algorithm/signals/pd8.wav", {67140:67146, 70170:70175, 73359:73363, 246312:246317, 252036:252039, 296753:296757}};
   amplification_mapping = 10 .^ ([0:0.3:5] .^ 1);
 end
@@ -69,11 +68,10 @@ for i = 1:size(test_files, 1)
 
         if (left_index > 0) && (right_index <= length(x_org_scaled))
 
-          % note: use linear domain for offset calculation
-          %neighbor = mean([x_org_scaled(left_index), x_org_scaled(right_index)]);
-
-% TEST use squared x which is available in Edrumulus Arduino code right now
-neighbor = mean(abs([x_org_scaled(left_index), x_org_scaled(right_index)]));
+          % calculate mean neighbor value
+          % - use linear domain for offset calculation
+          % - use squared x which is available in Edrumulus Arduino code right now
+          neighbor = mean(abs([x_org_scaled(left_index), x_org_scaled(right_index)]));
 
           % x: point just below the limit (neighbor)
           % a: x / x_max, where x_may is the maximum of the peak
