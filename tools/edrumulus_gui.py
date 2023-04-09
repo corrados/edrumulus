@@ -423,6 +423,54 @@ def ecasound_kit_volume(do_increment):
 
 
 ################################################################################
+# MIDI implementation ##########################################################
+################################################################################
+def act_on_midi_in(status, key, value):
+  global database, midi_send_val, midi_send_cmd, midi_previous_send_cmd, do_update_midi_in, \
+         version_major, version_minor, hi_hat_ctrl, sel_pad, do_update_display
+
+  if status == 0x80: # act on control messages
+    if key in cmd_val:
+      cur_cmd = cmd_val.index(key)
+      # do not update command which was just changed to avoid the value jumps back to old value
+      if (midi_previous_send_cmd != key) or is_load_settings:
+        database[cur_cmd] = max(0, min(cmd_val_rng[cur_cmd], value));
+        do_update_midi_in = True;
+    if key == 127: # check for major version number
+      version_major = value
+    if key == 126: # check for minor version number
+      version_minor = value
+
+  if (status & 0xF0) == 0x90: # display current note-on received value
+    try:
+      instrument_name = midi_map[key]
+    except:
+      instrument_name = "" # not all MIDI values have a defined instrument name
+    if use_ncurses:
+      ncurses_update_midi_win(key, value, instrument_name)
+    do_update_midi_in = True
+    if auto_pad_sel and instrument_name and value > 10: # auto pad selection (velocity threshold of 10)
+      try:
+        pad_index = pad_names.index(instrument_name) # throws exception if pad was not found
+        if sel_pad is not pad_index: # only change pad if it is different from current
+          sel_pad           = pad_index
+          midi_send_val     = sel_pad # we cannot use send_value_to_edrumulus here
+          midi_send_cmd     = 108
+          do_update_display = True
+      except:
+        pass # pad not found, do nothing
+
+  if (status & 0xF0) == 0xB0: # display current positional sensing received value
+    if key == 16: # positional sensing
+      if use_ncurses:
+        ncurses_update_possense_win(value)
+      do_update_midi_in = True
+    if key == 4: # hi-hat controller
+      hi_hat_ctrl       = value
+      do_update_midi_in = True
+
+
+################################################################################
 # MIDI handling (via jack audio) ###############################################
 ################################################################################
 if not use_rtmidi:
@@ -435,54 +483,11 @@ if not use_rtmidi:
   # jack audio callback function
   @client.set_process_callback
   def process(frames):
-    global database, midi_send_val, midi_send_cmd, midi_previous_send_cmd, do_update_midi_in, \
-           version_major, version_minor, hi_hat_ctrl, sel_pad, do_update_display
+    global midi_send_cmd, midi_previous_send_cmd
     output_port.clear_buffer()
     for offset, data in input_port.incoming_midi_events():
       if len(data) == 3:
-        status = int.from_bytes(data[0], "big")
-        key    = int.from_bytes(data[1], "big")
-        value  = int.from_bytes(data[2], "big")
-
-        if status == 0x80: # act on control messages
-          if key in cmd_val:
-            cur_cmd = cmd_val.index(key)
-            # do not update command which was just changed to avoid the value jumps back to old value
-            if (midi_previous_send_cmd != key) or is_load_settings:
-              database[cur_cmd] = max(0, min(cmd_val_rng[cur_cmd], value));
-              do_update_midi_in = True;
-          if key == 127: # check for major version number
-            version_major = value
-          if key == 126: # check for minor version number
-            version_minor = value
-
-        if (status & 0xF0) == 0x90: # display current note-on received value
-          try:
-            instrument_name = midi_map[key]
-          except:
-            instrument_name = "" # not all MIDI values have a defined instrument name
-          if use_ncurses:
-            ncurses_update_midi_win(key, value, instrument_name)
-          do_update_midi_in = True
-          if auto_pad_sel and instrument_name and value > 10: # auto pad selection (velocity threshold of 10)
-            try:
-              pad_index = pad_names.index(instrument_name) # throws exception if pad was not found
-              if sel_pad is not pad_index: # only change pad if it is different from current
-                sel_pad           = pad_index
-                midi_send_val     = sel_pad # we cannot use send_value_to_edrumulus here
-                midi_send_cmd     = 108
-                do_update_display = True
-            except:
-              pass # pad not found, do nothing
-
-        if (status & 0xF0) == 0xB0: # display current positional sensing received value
-          if key == 16: # positional sensing
-            if use_ncurses:
-              ncurses_update_possense_win(value)
-            do_update_midi_in = True
-          if key == 4: # hi-hat controller
-            hi_hat_ctrl       = value
-            do_update_midi_in = True
+        act_on_midi_in(int.from_bytes(data[0], "big"), int.from_bytes(data[1], "big"), int.from_bytes(data[2], "big"))
 
     if midi_send_cmd >= 0:
       output_port.write_midi_event(0, (185, midi_send_cmd, midi_send_val))
@@ -495,13 +500,18 @@ if not use_rtmidi:
 ################################################################################
 if use_rtmidi:
   def send_value_to_edrumulus(command, value):
-    pass # TODO
+    global midi_send_cmd, midi_send_val
+    (midi_send_cmd, midi_send_val) = (command, value);
+    midiout.send_message([185, midi_send_cmd, midi_send_val])
+    midi_previous_send_cmd = midi_send_cmd # store previous value
+    midi_send_cmd          = -1 # invalidate current command to prepare for next command
 
   class MidiInputHandler(object):
     def __init__(self, port):
       self.port = port
     def __call__(self, event, data=None):
-      print(event[0]) # for debugging...
+      if len(event[0]) == 3:
+        act_on_midi_in(event[0][0], event[0][1], event[0][2])
 
 
 ################################################################################
@@ -518,12 +528,11 @@ original_sigint_handler = signal.signal(signal.SIGINT, signal_handler)
 
 if use_rtmidi:
   try:
-    midiin, port_name_in   = open_midiinput([s for s in rtmidi.MidiIn().get_ports() if "ttymidi:MIDI out" in s][0], client_name="EdrumulusGUI")
-    midiout, port_name_out = open_midioutput([s for s in rtmidi.MidiOut().get_ports() if "ttymidi:MIDI in" in s][0], client_name="EdrumulusGUI")
+    midiin, port_name_in   = open_midiinput([s for s in rtmidi.MidiIn().get_ports() if "Edrumulus " in s][0], client_name="EdrumulusGUI")
+    midiout, port_name_out = open_midioutput([s for s in rtmidi.MidiOut().get_ports() if "Edrumulus " in s][0], client_name="EdrumulusGUI")
     midiin.set_callback(MidiInputHandler(port_name_in))
   except:
-    pass # if no Edrumulus hardware was found, no rtmidi is started
-    print("last except...")
+    raise Exception("No Teensy Edrumulus device found")
 else:
   client.activate()
   try:
@@ -537,7 +546,6 @@ else:
       output_port.connect(teensy_out[0]) # Teensy
     except:
       pass # if no Edrumulus hardware was found, no jack is started
-      print("client: last except...")
 
 # load settings from file
 load_settings()
