@@ -13,17 +13,22 @@ pad = "pd120"
 
 if strcmp(pad, "pd120")
   test_files = {"../../algorithm/signals/pd120_single_hits.wav", {9917:9931, 14974:14985, 22525:22538, 35014:35025}};
-  amplification_mapping = 10 .^ ([0:0.096:10] .^ 2.2);
+  ampmap_const_exp  = 2.2;
+  ampmap_const_step = 0.096;
 elseif strcmp(pad, "pd80r")
   test_files = {"../../algorithm/signals/pd80r.wav", {48891:48900, 61075:61086, 202210:202222, 242341:242353}};
-  amplification_mapping = 10 .^ ([0:0.125:10] .^ 2);
+  ampmap_const_exp  = 2;
+  ampmap_const_step = 0.125;
 elseif strcmp(pad, "pd8")
   test_files = {"../../algorithm/signals/pd8.wav", {67140:67146, 70170:70175, 73359:73363, 246312:246317, 252036:252039, 296753:296757}};
-  amplification_mapping = 10 .^ ([0:0.3:5] .^ 1);
+  ampmap_const_exp  = 1;
+  ampmap_const_step = 0.3;
 end
 
 clip_limit                 = 1900; % approx. for 12 bit ADC
 clip_factor_range          = 1 ./ (1:-0.01:0.04);
+length_ampmap              = 20;
+amplification_mapping      = 10 .^ ([0:ampmap_const_step:ampmap_const_step * length_ampmap] .^ ampmap_const_exp);
 num_clipped_val            = [];
 amplification_compensation = [];
 cnt                        = 1;
