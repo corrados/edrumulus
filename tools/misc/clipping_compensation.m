@@ -13,6 +13,11 @@ use_pd120 = true;
 if use_pd120
   test_files = {"../../algorithm/signals/pd120_single_hits.wav", {9917:9931, 14974:14985, 22525:22538, 35014:35025}};
   amplification_mapping = 10 .^ ([0:0.096:10] .^ 2.2);%10 .^ ([0:0.09:10] .^ 2);%
+
+% TEST
+%test_files = {"../../algorithm/signals/pd80r.wav", {48891:48900, 61075:61086, 202210:202222, 242341:242353}};
+%amplification_mapping = 10 .^ ([0:0.11:10] .^ 2);
+
 else
   test_files = {"../../algorithm/signals/pd8.wav", {67140:67146, 70170:70175, 73359:73363, 246312:246317, 252036:252039, 296753:296757}};
   amplification_mapping = 10 .^ ([0:0.3:5] .^ 1);
@@ -33,7 +38,7 @@ for i = 1:size(test_files, 1)
 
     % pick one peak and normalize
     x_org = x(test_files{i, 2}{j}, 1);
-    x_org = x_org / max(x_org); % normalize original input signal
+    x_org = x_org / max(abs(x_org)); % normalize original input signal
 
 %figure; plot(x_org, '.-'); grid on;
 
@@ -43,10 +48,14 @@ for i = 1:size(test_files, 1)
       x_org_scaled  = x_org * clip_limit * clip_factor_range(idx);
       x_org_clipped = max(-clip_limit, min(clip_limit, x_org_scaled));
 
-%figure; plot(x_org_clipped, '.-'); grid on; ax = axis; hold on; plot([ax(1), ax(2)], [clip_limit, clip_limit], 'r')
+%figure; plot(x_org_clipped, '.-'); grid on; ax = axis; hold on; plot([ax(1), ax(2)], [clip_limit, clip_limit], 'r'); plot([ax(1), ax(2)], [-clip_limit, -clip_limit], 'r')
 
       % count clipped values
-      clip_indexes                         = find(abs(x_org_clipped - clip_limit) < 5 / 2 ^ 12);
+      if max(x_org) > -min(x_org)
+        clip_indexes = find(abs(x_org_clipped - clip_limit) < 5 / 2 ^ 12);
+      else
+        clip_indexes = find(abs(x_org_clipped + clip_limit) < 5 / 2 ^ 12);
+      end
       num_clipped_val(idx, cnt)            = length(clip_indexes);
       amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt));
 
@@ -61,7 +70,10 @@ for i = 1:size(test_files, 1)
         if (left_index > 0) && (right_index <= length(x_org_scaled))
 
           % note: use linear domain for offset calculation
-          neighbor = mean([x_org_scaled(left_index), x_org_scaled(right_index)]);
+          %neighbor = mean([x_org_scaled(left_index), x_org_scaled(right_index)]);
+
+% TEST use squared x which is available in Edrumulus Arduino code right now
+neighbor = mean(abs([x_org_scaled(left_index), x_org_scaled(right_index)]));
 
           % x: point just below the limit (neighbor)
           % a: x / x_max, where x_may is the maximum of the peak
@@ -71,11 +83,6 @@ for i = 1:size(test_files, 1)
           % -> y = a * x / l
           amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt)) * neighbor / clip_limit;
           correction_offset_applied            = true;
-
-%y = amplification_compensation(idx, cnt);
-%a = amplification_mapping(1 + num_clipped_val(idx, cnt) + 1);
-%y
-%a
 
 % TEST
 %amplification_compensation(idx, cnt) = min(amplification_compensation(idx, cnt), amplification_mapping(1 + num_clipped_val(idx, cnt) - 1));
