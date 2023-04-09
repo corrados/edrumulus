@@ -526,14 +526,15 @@ elif use_ncurses:
 # ctrl+c quits the application
 original_sigint_handler = signal.signal(signal.SIGINT, signal_handler)
 
-if use_rtmidi:
+# initialize MIDI
+if use_rtmidi: # initialize rtmidi (only Teensy board supported)
   try:
     midiin, port_name_in   = open_midiinput([s for s in rtmidi.MidiIn().get_ports() if "Edrumulus " in s][0], client_name="EdrumulusGUI")
     midiout, port_name_out = open_midioutput([s for s in rtmidi.MidiOut().get_ports() if "Edrumulus " in s][0], client_name="EdrumulusGUI")
     midiin.set_callback(MidiInputHandler(port_name_in))
   except:
     raise Exception("No Teensy Edrumulus device found")
-else:
+else: # initialize jack midi
   client.activate()
   try:
     input_port.connect("ttymidi:MIDI_in")   # ESP32
