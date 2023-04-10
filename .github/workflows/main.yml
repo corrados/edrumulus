@@ -43,6 +43,6 @@ jobs:
     - name: ESP32 - PlatformIO
       run: |
         pio lib -g install 62
-        pio ci --lib="." --board=esp32doit-devkit-v1 --board=az-delivery-devkit-v4
+        pio ci --lib="." --board=esp32doit-devkit-v1 --board=az-delivery-devkit-v4 --board=esp32-s3-devkitc-1
       env:
         PLATFORMIO_CI_SRC: ${{ matrix.example }}
