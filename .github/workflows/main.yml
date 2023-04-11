@@ -35,7 +35,10 @@ jobs:
         pip install --upgrade platformio setuptools wheel
         
     - name: Teensy - PlatformIO
-      run: pio ci --lib="." --board=teensy36 --board=teensy40 --board=teensy41
+      run: pio ci --lib="." \
+        --board=teensy36\
+        --board=teensy40\
+        --board=teensy41
       env:
         PLATFORMIO_CI_SRC: ${{ matrix.example }}
         PLATFORMIO_BUILD_FLAGS: -D USB_MIDI
@@ -43,6 +46,9 @@ jobs:
     - name: ESP32 - PlatformIO
       run: |
         pio lib -g install 62
-        pio ci --lib="." --board=esp32doit-devkit-v1 --board=az-delivery-devkit-v4 --board=esp32-s3-devkitc-1
+        pio ci --lib="." \
+          --board=esp32doit-devkit-v1\
+          --board=az-delivery-devkit-v4\
+          --board=esp32-s3-devkitc-1
       env:
         PLATFORMIO_CI_SRC: ${{ matrix.example }}
