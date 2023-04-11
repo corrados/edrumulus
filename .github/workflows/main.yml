@@ -35,7 +35,8 @@ jobs:
         pip install --upgrade platformio setuptools wheel
         
     - name: Teensy - PlatformIO
-      run: pio ci --lib="." \
+      run: |
+        pio ci --lib="." \
         --board=teensy36\
         --board=teensy40\
         --board=teensy41
