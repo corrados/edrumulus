@@ -200,6 +200,7 @@ int Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
                                              int*  number_pins,
                                              int*  status_LED_pin )
 {
+#ifdef CONFIG_IDF_TARGET_ESP32
   // Definition:
   // - Pin 5 is "input enabled, pull-up resistor" -> if read value is 1, we know that we have a
   //   legacy or custom board. Boards which support the identification set this pin to low.
@@ -252,6 +253,17 @@ int Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
   *number_pins         = sizeof ( analog_pins4 ) / sizeof ( int );
   *status_LED_pin      = BOARD_LED_PIN;
   return 4;
+#else
+  // ESP32-S3 testing...
+  // analog pins setup:                 snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3  
+  static int analog_pins_s3[]         = {  1};//,     3,      4,        6,          7,      9,    10,    12,    13 };
+  static int analog_pins_rimshot_s3[] = {  2};//,    -1,      5,       -1,          8,     -1,    11,    -1,    -1 };
+  *analog_pins         = analog_pins_s3;
+  *analog_pins_rimshot = analog_pins_rimshot_s3;
+  *number_pins         = sizeof ( analog_pins_s3 ) / sizeof ( int );
+  *status_LED_pin      = BOARD_LED_PIN;
+  return 4;
+#endif
 }
 
 
@@ -341,7 +353,11 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
 
   // create task pinned to core 0 for creating the timer interrupt so that the
   // timer function is not running in our working core 1
+#ifdef CONFIG_IDF_TARGET_ESP32
   xTaskCreatePinnedToCore ( start_timer_core0_task, "start_timer_core0_task", 800, this, 1, NULL, 0 );
+#else
+  xTaskCreatePinnedToCore ( start_timer_core0_task, "start_timer_core0_task", 1000, this, 1, NULL, 0 );
+#endif
 }
 
 
