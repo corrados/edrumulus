@@ -256,8 +256,8 @@ int Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
 #else
   // ESP32-S3 testing...
   // analog pins setup:                 snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3  
-  static int analog_pins_s3[]         = {  1};//,     3,      4,        6,          7,      9,    10,    12,    13 };
-  static int analog_pins_rimshot_s3[] = {  2};//,    -1,      5,       -1,          8,     -1,    11,    -1,    -1 };
+  static int analog_pins_s3[]         = {  1,     3,      4};//,        6,          7,      9,    10,    12,    13 };
+  static int analog_pins_rimshot_s3[] = {  2,    -1,      5};//,       -1,          8,     -1,    11,    -1,    -1 };
   *analog_pins         = analog_pins_s3;
   *analog_pins_rimshot = analog_pins_rimshot_s3;
   *number_pins         = sizeof ( analog_pins_s3 ) / sizeof ( int );
@@ -278,7 +278,6 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
 
   // create linear vectors containing the pin/ADC information for each pad and pad-input
   bool input_is_used[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
-  int  input_adc[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
   total_number_inputs = 0; // we use it as a counter, too
 
   for ( int i = 0; i < number_pads; i++ )
@@ -348,6 +347,37 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
   init_my_analogRead();
 #endif
 
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+  gpio_num_t gpio_num;
+  adc1_config_width ( ADC_WIDTH_BIT_12 );
+
+  for ( int i = 0; i < total_number_inputs; i++ )
+  {
+    for ( int channel = 0; channel < 10; channel++ )
+    {
+      if ( adc1_pad_get_io_num ( index_to_adc1channel[channel], &gpio_num ) == ESP_OK )
+      {
+        if ( gpio_num == static_cast<gpio_num_t> ( input_pin[i] ) )
+        {
+          input_adc[i]    = 1;
+          adc1_channel[i] = index_to_adc1channel[channel];
+          adc1_config_channel_atten ( index_to_adc1channel[channel], ADC_ATTEN_DB_0 );
+        }
+      }
+
+      if ( adc2_pad_get_io_num ( index_to_adc2channel[channel], &gpio_num ) == ESP_OK )
+      {
+        if ( gpio_num == static_cast<gpio_num_t> ( input_pin[i] ) )
+        {
+          input_adc[i]    = 2;
+          adc2_channel[i] = index_to_adc2channel[channel];
+          adc2_config_channel_atten ( index_to_adc2channel[channel], ADC_ATTEN_DB_0 );
+        }
+      }
+    }
+  }
+#endif
+
   // create timer semaphore
   timer_semaphore = xSemaphoreCreateBinary();
 
@@ -408,7 +438,16 @@ void IRAM_ATTR Edrumulus_hardware::on_timer()
   // read the ADC samples
   for ( int i = 0; i < edrumulus_hardware_pointer->total_number_inputs; i++ )
   {
-    edrumulus_hardware_pointer->input_sample[i] = analogRead ( edrumulus_hardware_pointer->input_pin[i] );
+    if ( edrumulus_hardware_pointer->input_adc[i] == 1 )
+    {
+      edrumulus_hardware_pointer->input_sample[i] = adc1_get_raw ( edrumulus_hardware_pointer->adc1_channel[i] );
+    }
+    else
+    {
+      int cur_sample;
+      adc2_get_raw ( edrumulus_hardware_pointer->adc2_channel[i], ADC_WIDTH_BIT_12, &cur_sample );
+      edrumulus_hardware_pointer->input_sample[i] = cur_sample;
+    }
   }
 #endif
 

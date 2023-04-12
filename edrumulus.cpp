@@ -134,7 +134,7 @@ return;
                                        analog_pin,
                                        sample_org );
 
-/*
+
 // TEST for plotting all captures samples in the serial plotter (but with low sampling rate)
 String serial_print;
 for ( int i = 0; i < number_pads; i++ )
@@ -148,7 +148,7 @@ for ( int i = 0; i < number_pads; i++ )
   }
 }
 Serial.println ( serial_print );
-*/
+
 
 
   // Process samples -----------------------------------------------------------

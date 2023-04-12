@@ -120,6 +120,10 @@ protected:
 # include "soc/sens_reg.h"
 # include "driver/dac.h"
 #endif
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+# include "driver/adc.h" // TODO as soon as IDF version 5.0 is released for Arduino, use adc_oneshot.h instead
+//# include "esp_adc/adc_oneshot.h"
+#endif
 
 #define BOARD_LED_PIN        2    // pin number of the LED on the ESP32 board
 #define ADC_MAX_RANGE        4096 // ESP32 ADC has 12 bits -> 0..4095
@@ -170,6 +174,21 @@ protected:
                                 const uint32_t channel_adc2_bitval,
                                 uint16_t&      out_adc1,
                                 uint16_t&      out_adc2 );
+#endif
+
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+// TODO as soon as IDF version 5.0 is released for Arduino, use adc_oneshot_unit_handle_t
+//  adc_oneshot_unit_handle_t adc1_handle;
+  int            input_adc[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+  adc1_channel_t adc1_channel[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+  adc2_channel_t adc2_channel[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+
+  const adc1_channel_t index_to_adc1channel[10] = {
+    ADC1_CHANNEL_0, ADC1_CHANNEL_1, ADC1_CHANNEL_2, ADC1_CHANNEL_3, ADC1_CHANNEL_4,
+    ADC1_CHANNEL_5, ADC1_CHANNEL_6, ADC1_CHANNEL_7, ADC1_CHANNEL_8, ADC1_CHANNEL_9 };
+  const adc2_channel_t index_to_adc2channel[10] = {
+    ADC2_CHANNEL_0, ADC2_CHANNEL_1, ADC2_CHANNEL_2, ADC2_CHANNEL_3, ADC2_CHANNEL_4,
+    ADC2_CHANNEL_5, ADC2_CHANNEL_6, ADC2_CHANNEL_7, ADC2_CHANNEL_8, ADC2_CHANNEL_9 };
 #endif
 
   int         total_number_inputs;
