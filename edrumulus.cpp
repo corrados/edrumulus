@@ -20,7 +20,7 @@
 
 
 // TEST global test clip limit
-const int new_clip_level = 1400; // TEST
+const int new_clip_level = 700; // TEST
 
 
 
@@ -921,6 +921,7 @@ cur_idx_x_sq = peak_velocity_idx_in_x_sq_hist;
 
 // TEST new clipping compensation
 //static const float attenuation_mapping[] = { 0.0f, 6.0f, 11.0f, 30.0f, 50.0f };
+corrected                       = true;
 right_neighbor                  = sqrt ( right_neighbor );
 left_neighbor                   = sqrt ( left_neighbor );
 //float attenuation_compensation1 = -attenuation_mapping[min ( 4, number_overloaded_samples )] - 20 * log10 ( new_clip_level );
@@ -932,9 +933,9 @@ if ( s.overload_hist[peak_velocity_idx_in_overload_history] == 1 )
   mean_neighbor_x *= -1; // correct sign
 }
 
+/*
 const float clip_offset         = new_clip_level - mean_neighbor_x;//mean_neighbor;
 //attenuation_compensation        = 20 * log10 ( pow ( 10.0f, attenuation_compensation1 / 20.0f ) + clip_offset );
-corrected                       = true;
 
 // PD-8:
 //static const float normalized_attenuation_mapping[] = { 0.0f, 0.4f, 0.8f, 2.0f, 4.0f };
@@ -947,6 +948,18 @@ const int          att_map_max_idx                  = 12;
 const float attenuation_compensation1 = normalized_attenuation_mapping[min ( att_map_max_idx, number_overloaded_samples )] * new_clip_level;
 
 s.peak_val  = sqrt ( s.peak_val ) + attenuation_compensation1 - clip_offset;
+s.peak_val *= s.peak_val;
+*/
+
+const float ampmap_const_step = 0.11f;
+const int   length_ampmap     = 20;
+float       amplification_mapping[length_ampmap];
+for ( int i1 = 0; i1 < length_ampmap; i1++ )
+{
+  amplification_mapping[i1] = pow ( 10.0f, i1 * ampmap_const_step );
+}
+const float amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor_x / sqrt ( s.peak_val );
+s.peak_val  = sqrt ( s.peak_val ) * amplification_compensation;
 s.peak_val *= s.peak_val;
 
 
