@@ -256,8 +256,8 @@ int Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
 #else // CONFIG_IDF_TARGET_ESP32S3
   // ESP32-S3 testing...
   // analog pins setup:                 snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3  
-  static int analog_pins_s3[]         = {  1};//,     3,      4,        6,          7,      9,    10,    12,    13 };
-  static int analog_pins_rimshot_s3[] = {  2};//,    -1,      5,       -1,          8,     -1,    11,    -1,    -1 };
+  static int analog_pins_s3[]         = {  4,     6,      7};//,        9,         10,     12,    13,    15,    16 };
+  static int analog_pins_rimshot_s3[] = {  5,    -1,      8};//,       -1,         11,     -1,    14,    -1,    -1 };
   *analog_pins         = analog_pins_s3;
   *analog_pins_rimshot = analog_pins_rimshot_s3;
   *number_pins         = sizeof ( analog_pins_s3 ) / sizeof ( int );
