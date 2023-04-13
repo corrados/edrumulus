@@ -117,10 +117,11 @@ protected:
 #ifdef ESP_PLATFORM
 
 #include "soc/sens_reg.h"
-#include "hal/adc_hal.h"
 #include "driver/adc.h"
 #ifdef CONFIG_IDF_TARGET_ESP32
 # include "driver/dac.h"
+#else // CONFIG_IDF_TARGET_ESP32S3
+# include "hal/adc_hal.h"
 #endif
 
 #define BOARD_LED_PIN        2    // pin number of the LED on the ESP32 board
@@ -154,7 +155,7 @@ public:
                            const int level );
 
   void write_setting ( const int, const int, const byte ) {}; // not supported
-  byte read_setting  ( const int, const int ) {};             // not supported
+  byte read_setting  ( const int, const int ) { return 0; };  // not supported
 
 protected:
   int                        Fs;
