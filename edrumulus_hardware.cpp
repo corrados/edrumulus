@@ -473,6 +473,8 @@ void Edrumulus_hardware::init_my_analogRead()
   SET_PERI_REG_BITS ( SENS_SAR_READ_CTRL2_REG,  SENS_SAR2_SAMPLE_BIT,   3, SENS_SAR2_SAMPLE_BIT_S );
 #else // CONFIG_IDF_TARGET_ESP32S3
   adc1_config_width ( ADC_WIDTH_BIT_12 ); // ADC2 bit width is configured when started
+  adc_ll_set_controller ( ADC_NUM_1, ADC_LL_CTRL_RTC );
+  adc_ll_set_controller ( ADC_NUM_2, ADC_LL_CTRL_ARB );
 #endif
 
   // some other initializations
@@ -528,10 +530,26 @@ uint16_t Edrumulus_hardware::my_analogRead ( const uint8_t pin )
     while ( GET_PERI_REG_MASK ( SENS_SAR_MEAS_START1_REG, SENS_MEAS1_DONE_SAR ) == 0 );
     return GET_PERI_REG_BITS2 ( SENS_SAR_MEAS_START1_REG, SENS_MEAS1_DATA_SAR, SENS_MEAS1_DATA_SAR_S );
 #else // CONFIG_IDF_TARGET_ESP32S3
+/*
+    // set channel
+    SENS.sar_meas1_ctrl2.sar1_en_pad = ( 1 << channel );
+
+    // ADC one shot start
+    while ( HAL_FORCE_READ_U32_REG_FIELD ( SENS.sar_slave_addr1, meas_status ) != 0 );
+    SENS.sar_meas1_ctrl2.meas1_start_sar = 0;
+    SENS.sar_meas1_ctrl2.meas1_start_sar = 1;
+
+    // wait
+// TODO this does not work...
+//while ( SENS.sar_meas1_ctrl2.meas1_done_sar != true );
+
+    return HAL_FORCE_READ_U32_REG_FIELD ( SENS.sar_meas1_ctrl2, meas1_data_sar );
+
+    //adc_hal_convert ( ADC_NUM_1, channel, clk_src_freq_hz, &adc_value );
+*/
     return adc1_get_raw ( static_cast<adc1_channel_t> ( channel ) );
 #endif
   }
-#endif
 }
 
 
@@ -560,6 +578,8 @@ void Edrumulus_hardware::my_analogRead_parallel ( const uint32_t channel_adc1_bi
   out_adc2 = GET_PERI_REG_BITS2 ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DATA_SAR, SENS_MEAS2_DATA_SAR_S );
 #endif
 }
+
+#endif
 
 
 // -----------------------------------------------------------------------------

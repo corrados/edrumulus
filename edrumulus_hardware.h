@@ -117,7 +117,7 @@ protected:
 #ifdef ESP_PLATFORM
 
 #include "soc/sens_reg.h"
-//#include "hal/adc_hal.h"
+#include "hal/adc_hal.h"
 #include "driver/adc.h"
 #ifdef CONFIG_IDF_TARGET_ESP32
 # include "driver/dac.h"
