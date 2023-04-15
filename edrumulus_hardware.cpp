@@ -551,37 +551,66 @@ uint16_t Edrumulus_hardware::my_analogRead ( const uint8_t pin )
 adc1_channel_t channel = static_cast<adc1_channel_t> ( channel );
 
     int adc_value;
-    static _lock_t adc1_dma_lock;
-    static int s_sar_power_on_cnt;
-    static uint32_t clk_src_freq_hz;
-    extern portMUX_TYPE rtc_spinlock;
-    typedef enum {
-    SAR_CTRL_LL_POWER_FSM,     //SAR power controlled by FSM
-    SAR_CTRL_LL_POWER_ON,      //SAR power on
-    SAR_CTRL_LL_POWER_OFF,     //SAR power off
-    } sar_ctrl_ll_power_t;
+
+//static _lock_t adc1_dma_lock;
+    static int s_sar_power_on_cnt = 0;
+    //static uint32_t clk_src_freq_hz;
+//extern portMUX_TYPE rtc_spinlock;
+    //typedef enum {
+    //SAR_CTRL_LL_POWER_FSM,     //SAR power controlled by FSM
+    //SAR_CTRL_LL_POWER_ON,      //SAR power on
+    //SAR_CTRL_LL_POWER_OFF,     //SAR power off
+    //} sar_ctrl_ll_power_t;
     
     //adc1_rtc_mode_acquire()
-    _lock_acquire( &adc1_dma_lock ); // SARADC1_ACQUIRE()
+//_lock_acquire( &adc1_dma_lock ); // SARADC1_ACQUIRE()
 
     //s_sar_power_acquire(); // sar_periph_ctrl_adc_oneshot_power_acquire();
-    portENTER_CRITICAL_SAFE(&rtc_spinlock);
+//portENTER_CRITICAL_SAFE(&rtc_spinlock);
     s_sar_power_on_cnt++;
     if (s_sar_power_on_cnt == 1) {
         //sar_ctrl_ll_set_power_mode(SAR_CTRL_LL_POWER_ON);
         SENS.sar_peri_clk_gate_conf.saradc_clk_en = 1;
         SENS.sar_power_xpd_sar.force_xpd_sar = 0x3;
     }
-    portEXIT_CRITICAL_SAFE(&rtc_spinlock);
+//portEXIT_CRITICAL_SAFE(&rtc_spinlock);
+
+
+#if SOC_ADC_CALIBRATION_V1_SUPPORTED
+    //adc_atten_t atten = adc_ll_get_atten(ADC_NUM_1, channel)
+    //if (adc_n == ADC_UNIT_1) {
+        adc_atten_t atten = (adc_atten_t)((SENS.sar_atten1 >> (channel * 2)) & 0x3);
+    //} else {
+    //    return (adc_atten_t)((SENS.sar_atten2 >> (channel * 2)) & 0x3);
+    //}
+    
+    //adc_set_hw_calibration_code(ADC_UNIT_1, atten)
+    //adc_hal_set_calibration_param(ADC_NUM_1, s_adc_cali_param[adc_n][atten]);
+
+// test
+//uint32_t param = 1000;
+//uint8_t msb = param >> 8;
+//uint8_t lsb = param & 0xFF;
+////if (adc_n == ADC_UNIT_1) {
+//    REGI2C_WRITE_MASK(I2C_SAR_ADC, ADC_SAR1_INITIAL_CODE_HIGH_ADDR, msb);
+//    REGI2C_WRITE_MASK(I2C_SAR_ADC, ADC_SAR1_INITIAL_CODE_LOW_ADDR, lsb);
+    
+#endif  //SOC_ADC_CALIBRATION_V1_SUPPORTED
+
 
     
-    portENTER_CRITICAL(&rtc_spinlock); // RTC_ENTER_CRITICAL(); // SARADC1_ENTER();
+//portENTER_CRITICAL(&rtc_spinlock); // RTC_ENTER_CRITICAL(); // SARADC1_ENTER();
+    
     // switch SARADC into RTC channel.
-    adc_ll_set_controller(ADC_NUM_1, ADC_LL_CTRL_RTC);
-    portEXIT_CRITICAL(&rtc_spinlock); // RTC_EXIT_CRITICAL(); // SARADC1_EXIT();
+    //adc_ll_set_controller(ADC_NUM_1, ADC_LL_CTRL_RTC)
+    SENS.sar_meas1_mux.sar1_dig_force       = 0;    // 1: Select digital control;       0: Select RTC control.
+    SENS.sar_meas1_ctrl2.meas1_start_force  = 1;    // 1: SW control RTC ADC start;     0: ULP control RTC ADC start.
+    SENS.sar_meas1_ctrl2.sar1_en_pad_force  = 1;    // 1: SW control RTC ADC bit map;   0: ULP control RTC ADC bit map;    
+    
+//portEXIT_CRITICAL(&rtc_spinlock); // RTC_EXIT_CRITICAL(); // SARADC1_EXIT();
 
-    portENTER_CRITICAL(&rtc_spinlock); // RTC_ENTER_CRITICAL(); // SARADC1_ENTER();
-    adc_ll_set_controller(ADC_NUM_1, ADC_LL_CTRL_RTC);    //Set controller
+//portENTER_CRITICAL(&rtc_spinlock); // RTC_ENTER_CRITICAL(); // SARADC1_ENTER();
+    //adc_ll_set_controller(ADC_NUM_1, ADC_LL_CTRL_RTC);    //Set controller
     
     //adc_oneshot_ll_set_channel(ADC_UNIT_1, channel)
     //if (adc_n == ADC_NUM_1) {
@@ -634,21 +663,24 @@ adc1_channel_t channel = static_cast<adc1_channel_t> ( channel );
     //HW workaround: when enabling periph clock, this should be false
     //adc_oneshot_ll_disable_all_unit(); //For compatibility
     
-
     
-    adc_ll_rtc_reset();    //Reset FSM of rtc controller
-    portEXIT_CRITICAL(&rtc_spinlock); // RTC_EXIT_CRITICAL(); // SARADC1_EXIT();
+    //adc_ll_rtc_reset()    //Reset FSM of rtc controller
+    SENS.sar_peri_reset_conf.saradc_reset = 1;
+    SENS.sar_peri_reset_conf.saradc_reset = 0;
+    
+//portEXIT_CRITICAL(&rtc_spinlock); // RTC_EXIT_CRITICAL(); // SARADC1_EXIT();
 
     //adc1_lock_release()
     
     //s_sar_power_release(); // sar_periph_ctrl_adc_oneshot_power_release();
-    portENTER_CRITICAL_SAFE(&rtc_spinlock);
+//portENTER_CRITICAL_SAFE(&rtc_spinlock);
     s_sar_power_on_cnt--;
     //if (s_sar_power_on_cnt < 0) {
     //    portEXIT_CRITICAL(&rtc_spinlock);
     //    ESP_LOGE(TAG, "%s called, but s_sar_power_on_cnt == 0", __func__);
     //    abort();
-    //} else if (s_sar_power_on_cnt == 0) {
+    //} else
+    if (s_sar_power_on_cnt == 0) {
         //sar_ctrl_ll_set_power_mode(SAR_CTRL_LL_POWER_FSM)
         //if (mode == SAR_CTRL_LL_POWER_FSM) {
             SENS.sar_peri_clk_gate_conf.saradc_clk_en = 1;
@@ -659,11 +691,11 @@ adc1_channel_t channel = static_cast<adc1_channel_t> ( channel );
         //} else {
         //    SENS.sar_peri_clk_gate_conf.saradc_clk_en = 0;
         //    SENS.sar_power_xpd_sar.force_xpd_sar = 0x2;
-        //}
+    }
     //}
-    portEXIT_CRITICAL_SAFE(&rtc_spinlock);
+//portEXIT_CRITICAL_SAFE(&rtc_spinlock);
     
-    _lock_release( &adc1_dma_lock ); // SARADC1_RELEASE();
+//_lock_release( &adc1_dma_lock ); // SARADC1_RELEASE();
         
     return adc_value;
 */
