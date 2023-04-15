@@ -2,6 +2,8 @@
 
 The road map items are sorted by priority.
 
+- [ ] **Add support for ESP32-S3**
+
 - [ ] **Use rim switch theshold in dB**
 
   Do not use a linear parameter as it is implemented right now.
