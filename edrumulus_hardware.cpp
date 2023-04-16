@@ -458,8 +458,8 @@ void Edrumulus_hardware::init_my_analogRead()
   WRITE_PERI_REG ( SENS_SAR_ATTEN1_REG, 0xFFFFFFFFF );
   WRITE_PERI_REG ( SENS_SAR_ATTEN2_REG, 0xFFFFFFFFF );
 
-  // set both ADCs to 12 bit resolution using 8 cycles and 1 sample
 #ifdef CONFIG_IDF_TARGET_ESP32
+  // set both ADCs to 12 bit resolution using 8 cycles and 1 sample
   SET_PERI_REG_BITS ( SENS_SAR_READ_CTRL_REG,   SENS_SAR1_SAMPLE_CYCLE, 8, SENS_SAR1_SAMPLE_CYCLE_S ); // cycles
   SET_PERI_REG_BITS ( SENS_SAR_READ_CTRL2_REG,  SENS_SAR2_SAMPLE_CYCLE, 8, SENS_SAR2_SAMPLE_CYCLE_S );
   SET_PERI_REG_BITS ( SENS_SAR_READ_CTRL_REG,   SENS_SAR1_SAMPLE_NUM,   0, SENS_SAR1_SAMPLE_NUM_S ); // # samples
@@ -470,21 +470,8 @@ void Edrumulus_hardware::init_my_analogRead()
   SET_PERI_REG_BITS ( SENS_SAR_READ_CTRL_REG,   SENS_SAR1_SAMPLE_BIT,   3, SENS_SAR1_SAMPLE_BIT_S );
   SET_PERI_REG_BITS ( SENS_SAR_START_FORCE_REG, SENS_SAR2_BIT_WIDTH,    3, SENS_SAR2_BIT_WIDTH_S );
   SET_PERI_REG_BITS ( SENS_SAR_READ_CTRL2_REG,  SENS_SAR2_SAMPLE_BIT,   3, SENS_SAR2_SAMPLE_BIT_S );
-#else // CONFIG_IDF_TARGET_ESP32S3
-  adc1_config_width ( ADC_WIDTH_BIT_12 ); // ADC2 bit width is configured when started
-  adc_ll_set_controller ( ADC_NUM_1, ADC_LL_CTRL_RTC );
-  adc_ll_set_controller ( ADC_NUM_2, ADC_LL_CTRL_ARB );
-  SENS.sar_peri_clk_gate_conf.saradc_clk_en = 1;
-  SENS.sar_power_xpd_sar.force_xpd_sar      = 0x3;
-  SENS.sar_meas1_mux.sar1_dig_force         = 0; // 1: Select digital control;     0: Select RTC control.
-  SENS.sar_meas1_ctrl2.meas1_start_force    = 1; // 1: SW control RTC ADC start;   0: ULP control RTC ADC start.
-  SENS.sar_meas1_ctrl2.sar1_en_pad_force    = 1; // 1: SW control RTC ADC bit map; 0: ULP control RTC ADC bit map;
-  SENS.sar_meas2_ctrl2.meas2_start_force    = 1; // 1: SW control RTC ADC start;   0: ULP control RTC ADC start.
-  SENS.sar_meas2_ctrl2.sar2_en_pad_force    = 1; // 1: SW control RTC ADC bit map; 0: ULP control RTC ADC bit map;
-#endif
 
   // some other initializations
-#ifdef CONFIG_IDF_TARGET_ESP32
   SET_PERI_REG_MASK   ( SENS_SAR_READ_CTRL_REG,   SENS_SAR1_DATA_INV );
   SET_PERI_REG_MASK   ( SENS_SAR_READ_CTRL2_REG,  SENS_SAR2_DATA_INV );
   SET_PERI_REG_MASK   ( SENS_SAR_MEAS_START1_REG, SENS_MEAS1_START_FORCE_M ); // SAR ADC1 controller (in RTC) is started by SW
@@ -498,6 +485,17 @@ void Edrumulus_hardware::init_my_analogRead()
   SET_PERI_REG_BITS   ( SENS_SAR_MEAS_WAIT1_REG,  SENS_SAR_AMP_WAIT2, 0x1, SENS_SAR_AMP_WAIT2_S );
   SET_PERI_REG_BITS   ( SENS_SAR_MEAS_WAIT2_REG,  SENS_SAR_AMP_WAIT3, 0x1, SENS_SAR_AMP_WAIT3_S );
   while ( GET_PERI_REG_BITS2 ( SENS_SAR_SLAVE_ADDR1_REG, 0x7, SENS_MEAS_STATUS_S ) != 0 );
+#else // CONFIG_IDF_TARGET_ESP32S3
+  adc1_config_width ( ADC_WIDTH_BIT_12 ); // ADC2 bit width is configured when started
+  adc_ll_set_controller ( ADC_NUM_1, ADC_LL_CTRL_RTC );
+  adc_ll_set_controller ( ADC_NUM_2, ADC_LL_CTRL_ARB );
+  SENS.sar_peri_clk_gate_conf.saradc_clk_en = 1;
+  SENS.sar_power_xpd_sar.force_xpd_sar      = 0x3;
+  SENS.sar_meas1_mux.sar1_dig_force         = 0; // 1: Select digital control;     0: Select RTC control.
+  SENS.sar_meas1_ctrl2.meas1_start_force    = 1; // 1: SW control RTC ADC start;   0: ULP control RTC ADC start.
+  SENS.sar_meas1_ctrl2.sar1_en_pad_force    = 1; // 1: SW control RTC ADC bit map; 0: ULP control RTC ADC bit map;
+  SENS.sar_meas2_ctrl2.meas2_start_force    = 1; // 1: SW control RTC ADC start;   0: ULP control RTC ADC start.
+  SENS.sar_meas2_ctrl2.sar2_en_pad_force    = 1; // 1: SW control RTC ADC bit map; 0: ULP control RTC ADC bit map;
 #endif
 
   // configure all pins to analog read
