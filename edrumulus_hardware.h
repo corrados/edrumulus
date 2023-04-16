@@ -116,9 +116,12 @@ protected:
 // -----------------------------------------------------------------------------
 #ifdef ESP_PLATFORM
 
+#include "soc/sens_reg.h"
+#include "driver/adc.h"
 #ifdef CONFIG_IDF_TARGET_ESP32
-# include "soc/sens_reg.h"
 # include "driver/dac.h"
+#else // CONFIG_IDF_TARGET_ESP32S3
+# include "hal/adc_hal.h"
 #endif
 
 #define BOARD_LED_PIN        2    // pin number of the LED on the ESP32 board
@@ -152,7 +155,7 @@ public:
                            const int level );
 
   void write_setting ( const int, const int, const byte ) {}; // not supported
-  byte read_setting  ( const int, const int ) {};             // not supported
+  byte read_setting  ( const int, const int ) { return 0; };  // not supported
 
 protected:
   int                        Fs;
@@ -162,15 +165,13 @@ protected:
   static void IRAM_ATTR      on_timer();
   static void                start_timer_core0_task ( void* param );
 
-  void setup_timer();
-#ifdef CONFIG_IDF_TARGET_ESP32
+  void     setup_timer();
   void     init_my_analogRead();
   uint16_t my_analogRead ( const uint8_t pin );
-  void my_analogRead_parallel ( const uint32_t channel_adc1_bitval,
-                                const uint32_t channel_adc2_bitval,
-                                uint16_t&      out_adc1,
-                                uint16_t&      out_adc2 );
-#endif
+  void     my_analogRead_parallel ( const uint32_t channel_adc1_bitval,
+                                    const uint32_t channel_adc2_bitval,
+                                    uint16_t&      out_adc1,
+                                    uint16_t&      out_adc2 );
 
   int         total_number_inputs;
   int         input_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
