@@ -23,6 +23,8 @@ The road map items are sorted by priority.
 
   See [this discussion](https://github.com/corrados/edrumulus/discussions/73#discussioncomment-5623391).
 
+- [ ] **Add support for USB OTG MIDI for the ESP32-S3**
+
 - [ ] **Improve dynamics for Drumgizmo**
 
   Could be done for official drum kits as well as self-recorded kit.
