@@ -254,7 +254,6 @@ int Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
   *status_LED_pin      = BOARD_LED_PIN;
   return 4;
 #else // CONFIG_IDF_TARGET_ESP32S3
-  // ESP32-S3 testing...
   // analog pins setup:                 snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3  
   static int analog_pins_s3[]         = {  4,     6,      7,        9,         10,     12,    13,    15,    16 };
   static int analog_pins_rimshot_s3[] = {  5,    -1,      8,       -1,         11,     -1,    14,    -1,    -1 };
@@ -475,20 +474,13 @@ void Edrumulus_hardware::init_my_analogRead()
   adc1_config_width ( ADC_WIDTH_BIT_12 ); // ADC2 bit width is configured when started
   adc_ll_set_controller ( ADC_NUM_1, ADC_LL_CTRL_RTC );
   adc_ll_set_controller ( ADC_NUM_2, ADC_LL_CTRL_ARB );
-
-
-
-// TEST
-SENS.sar_peri_clk_gate_conf.saradc_clk_en = 1;
-SENS.sar_power_xpd_sar.force_xpd_sar      = 0x3;
-SENS.sar_meas1_mux.sar1_dig_force         = 0; // 1: Select digital control;     0: Select RTC control.
-SENS.sar_meas1_ctrl2.meas1_start_force    = 1; // 1: SW control RTC ADC start;   0: ULP control RTC ADC start.
-SENS.sar_meas1_ctrl2.sar1_en_pad_force    = 1; // 1: SW control RTC ADC bit map; 0: ULP control RTC ADC bit map;
-SENS.sar_meas2_ctrl2.meas2_start_force    = 1; // 1: SW control RTC ADC start;   0: ULP control RTC ADC start.
-SENS.sar_meas2_ctrl2.sar2_en_pad_force    = 1; // 1: SW control RTC ADC bit map; 0: ULP control RTC ADC bit map;
-
-
-
+  SENS.sar_peri_clk_gate_conf.saradc_clk_en = 1;
+  SENS.sar_power_xpd_sar.force_xpd_sar      = 0x3;
+  SENS.sar_meas1_mux.sar1_dig_force         = 0; // 1: Select digital control;     0: Select RTC control.
+  SENS.sar_meas1_ctrl2.meas1_start_force    = 1; // 1: SW control RTC ADC start;   0: ULP control RTC ADC start.
+  SENS.sar_meas1_ctrl2.sar1_en_pad_force    = 1; // 1: SW control RTC ADC bit map; 0: ULP control RTC ADC bit map;
+  SENS.sar_meas2_ctrl2.meas2_start_force    = 1; // 1: SW control RTC ADC start;   0: ULP control RTC ADC start.
+  SENS.sar_meas2_ctrl2.sar2_en_pad_force    = 1; // 1: SW control RTC ADC bit map; 0: ULP control RTC ADC bit map;
 #endif
 
   // some other initializations
@@ -530,19 +522,11 @@ uint16_t Edrumulus_hardware::my_analogRead ( const uint8_t pin )
     while ( GET_PERI_REG_MASK ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DONE_SAR ) == 0 );
     return GET_PERI_REG_BITS2 ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DATA_SAR, SENS_MEAS2_DATA_SAR_S );
 #else // CONFIG_IDF_TARGET_ESP32S3
-
-
-// TEST
-SENS.sar_meas2_ctrl2.sar2_en_pad = ( 1 << channel );
-SENS.sar_meas2_ctrl2.meas2_start_sar = 0;
-SENS.sar_meas2_ctrl2.meas2_start_sar = 1;
-while ( !SENS.sar_meas2_ctrl2.meas2_done_sar );
-return HAL_FORCE_READ_U32_REG_FIELD ( SENS.sar_meas2_ctrl2, meas2_data_sar );
-
-
-    //int cur_sample;
-    //adc2_get_raw ( static_cast<adc2_channel_t> ( channel_modified ), ADC_WIDTH_BIT_12, &cur_sample );
-    //return cur_sample;
+    SENS.sar_meas2_ctrl2.sar2_en_pad = ( 1 << channel );
+    SENS.sar_meas2_ctrl2.meas2_start_sar = 0;
+    SENS.sar_meas2_ctrl2.meas2_start_sar = 1;
+    while ( !SENS.sar_meas2_ctrl2.meas2_done_sar );
+    return HAL_FORCE_READ_U32_REG_FIELD ( SENS.sar_meas2_ctrl2, meas2_data_sar );
 #endif
   }
   else
@@ -554,190 +538,12 @@ return HAL_FORCE_READ_U32_REG_FIELD ( SENS.sar_meas2_ctrl2, meas2_data_sar );
     while ( GET_PERI_REG_MASK ( SENS_SAR_MEAS_START1_REG, SENS_MEAS1_DONE_SAR ) == 0 );
     return GET_PERI_REG_BITS2 ( SENS_SAR_MEAS_START1_REG, SENS_MEAS1_DATA_SAR, SENS_MEAS1_DATA_SAR_S );
 #else // CONFIG_IDF_TARGET_ESP32S3
-
-
-// TEST
-SENS.sar_meas1_ctrl2.sar1_en_pad = ( 1 << channel );
-while ( HAL_FORCE_READ_U32_REG_FIELD ( SENS.sar_slave_addr1, meas_status ) );
-SENS.sar_meas1_ctrl2.meas1_start_sar = 0;
-SENS.sar_meas1_ctrl2.meas1_start_sar = 1;
-while ( !SENS.sar_meas1_ctrl2.meas1_done_sar );
-return HAL_FORCE_READ_U32_REG_FIELD ( SENS.sar_meas1_ctrl2, meas1_data_sar );
-
-
-/*
-    // set channel
     SENS.sar_meas1_ctrl2.sar1_en_pad = ( 1 << channel );
-
-    // ADC one shot start
-    while ( HAL_FORCE_READ_U32_REG_FIELD ( SENS.sar_slave_addr1, meas_status ) != 0 );
+    while ( HAL_FORCE_READ_U32_REG_FIELD ( SENS.sar_slave_addr1, meas_status ) );
     SENS.sar_meas1_ctrl2.meas1_start_sar = 0;
     SENS.sar_meas1_ctrl2.meas1_start_sar = 1;
-
-    // wait
-// TODO this does not work...
-//while ( SENS.sar_meas1_ctrl2.meas1_done_sar != true );
-
+    while ( !SENS.sar_meas1_ctrl2.meas1_done_sar );
     return HAL_FORCE_READ_U32_REG_FIELD ( SENS.sar_meas1_ctrl2, meas1_data_sar );
-
-    //adc_hal_convert ( ADC_NUM_1, channel, clk_src_freq_hz, &adc_value );
-*/
-/*
-adc1_channel_t channel = static_cast<adc1_channel_t> ( channel );
-
-    int adc_value;
-
-//static _lock_t adc1_dma_lock;
-    static int s_sar_power_on_cnt = 0;
-    //static uint32_t clk_src_freq_hz;
-//extern portMUX_TYPE rtc_spinlock;
-    //typedef enum {
-    //SAR_CTRL_LL_POWER_FSM,     //SAR power controlled by FSM
-    //SAR_CTRL_LL_POWER_ON,      //SAR power on
-    //SAR_CTRL_LL_POWER_OFF,     //SAR power off
-    //} sar_ctrl_ll_power_t;
-    
-    //adc1_rtc_mode_acquire()
-//_lock_acquire( &adc1_dma_lock ); // SARADC1_ACQUIRE()
-
-    //s_sar_power_acquire(); // sar_periph_ctrl_adc_oneshot_power_acquire();
-//portENTER_CRITICAL_SAFE(&rtc_spinlock);
-    s_sar_power_on_cnt++;
-    if (s_sar_power_on_cnt == 1) {
-        //sar_ctrl_ll_set_power_mode(SAR_CTRL_LL_POWER_ON);
-        SENS.sar_peri_clk_gate_conf.saradc_clk_en = 1;
-        SENS.sar_power_xpd_sar.force_xpd_sar = 0x3;
-    }
-//portEXIT_CRITICAL_SAFE(&rtc_spinlock);
-
-
-#if SOC_ADC_CALIBRATION_V1_SUPPORTED
-    //adc_atten_t atten = adc_ll_get_atten(ADC_NUM_1, channel)
-    //if (adc_n == ADC_UNIT_1) {
-        adc_atten_t atten = (adc_atten_t)((SENS.sar_atten1 >> (channel * 2)) & 0x3);
-    //} else {
-    //    return (adc_atten_t)((SENS.sar_atten2 >> (channel * 2)) & 0x3);
-    //}
-    
-    //adc_set_hw_calibration_code(ADC_UNIT_1, atten)
-    //adc_hal_set_calibration_param(ADC_NUM_1, s_adc_cali_param[adc_n][atten]);
-
-// test
-//uint32_t param = 1000;
-//uint8_t msb = param >> 8;
-//uint8_t lsb = param & 0xFF;
-////if (adc_n == ADC_UNIT_1) {
-//    REGI2C_WRITE_MASK(I2C_SAR_ADC, ADC_SAR1_INITIAL_CODE_HIGH_ADDR, msb);
-//    REGI2C_WRITE_MASK(I2C_SAR_ADC, ADC_SAR1_INITIAL_CODE_LOW_ADDR, lsb);
-    
-#endif  //SOC_ADC_CALIBRATION_V1_SUPPORTED
-
-
-    
-//portENTER_CRITICAL(&rtc_spinlock); // RTC_ENTER_CRITICAL(); // SARADC1_ENTER();
-    
-    // switch SARADC into RTC channel.
-    //adc_ll_set_controller(ADC_NUM_1, ADC_LL_CTRL_RTC)
-    SENS.sar_meas1_mux.sar1_dig_force       = 0;    // 1: Select digital control;       0: Select RTC control.
-    SENS.sar_meas1_ctrl2.meas1_start_force  = 1;    // 1: SW control RTC ADC start;     0: ULP control RTC ADC start.
-    SENS.sar_meas1_ctrl2.sar1_en_pad_force  = 1;    // 1: SW control RTC ADC bit map;   0: ULP control RTC ADC bit map;    
-    
-//portEXIT_CRITICAL(&rtc_spinlock); // RTC_EXIT_CRITICAL(); // SARADC1_EXIT();
-
-//portENTER_CRITICAL(&rtc_spinlock); // RTC_ENTER_CRITICAL(); // SARADC1_ENTER();
-    //adc_ll_set_controller(ADC_NUM_1, ADC_LL_CTRL_RTC);    //Set controller
-    
-    //adc_oneshot_ll_set_channel(ADC_UNIT_1, channel)
-    //if (adc_n == ADC_NUM_1) {
-        SENS.sar_meas1_ctrl2.sar1_en_pad = (1 << channel); //only one channel is selected.
-    //} else { // adc_n == ADC_UNIT_2
-    //    SENS.sar_meas2_ctrl2.sar2_en_pad = (1 << channel); //only one channel is selected.
-    //}
-
-    
-    //adc_hal_convert(ADC_NUM_1, channel, clk_src_freq_hz, &adc_value);   //Start conversion, For ADC1, the data always valid.
-    //uint32_t event = ADC_LL_EVENT_ADC1_ONESHOT_DONE;//(adc_n == ADC_UNIT_1) ? ADC_LL_EVENT_ADC1_ONESHOT_DONE : ADC_LL_EVENT_ADC2_ONESHOT_DONE;
-    //adc_oneshot_ll_clear_event(event); //For compatibility
-    //adc_oneshot_ll_disable_all_unit(); //For compatibility
-    //adc_oneshot_ll_enable(adc_n); //For compatibility
-    
-    //adc_oneshot_ll_set_channel(adc_n, channel)
-    //if (adc_n == ADC_UNIT_1) {
-        SENS.sar_meas1_ctrl2.sar1_en_pad = (1 << channel); //only one channel is selected.
-    //} else { // adc_n == ADC_UNIT_2
-    //    SENS.sar_meas2_ctrl2.sar2_en_pad = (1 << channel); //only one channel is selected.
-    //}
-
-    //adc_hal_onetime_start(adc_n, clk_src_freq_hz);
-    //static inline void adc_oneshot_ll_start(adc_unit_t adc_n)
-    //if (adc_n == ADC_UNIT_1) {
-        while (HAL_FORCE_READ_U32_REG_FIELD(SENS.sar_slave_addr1, meas_status) != 0) {}
-        SENS.sar_meas1_ctrl2.meas1_start_sar = 0;
-        SENS.sar_meas1_ctrl2.meas1_start_sar = 1;
-    //} else { // adc_n == ADC_UNIT_2
-    //    SENS.sar_meas2_ctrl2.meas2_start_sar = 0; //start force 0
-    //    SENS.sar_meas2_ctrl2.meas2_start_sar = 1; //start force 1
-    //}
-
-    //while (adc_oneshot_ll_get_event(event) != true) {
-    while ((bool)SENS.sar_meas1_ctrl2.meas1_done_sar != true) {
-        ;
-    }
-
-    //*out_raw = adc_oneshot_ll_get_raw_result(adc_n);
-    uint32_t ret_val = 0;
-    //if (adc_n == ADC_UNIT_1) {
-        ret_val = HAL_FORCE_READ_U32_REG_FIELD(SENS.sar_meas1_ctrl2, meas1_data_sar);
-    //} else { // adc_n == ADC_UNIT_2
-    //    ret_val = HAL_FORCE_READ_U32_REG_FIELD(SENS.sar_meas2_ctrl2, meas2_data_sar);
-    //}
-    adc_value = ret_val;
-    
-    //if (adc_oneshot_ll_raw_check_valid(adc_n, *out_raw) == false) {
-    //    return ESP_ERR_INVALID_STATE;
-    //}
-
-    //HW workaround: when enabling periph clock, this should be false
-    //adc_oneshot_ll_disable_all_unit(); //For compatibility
-    
-    
-    //adc_ll_rtc_reset()    //Reset FSM of rtc controller
-    SENS.sar_peri_reset_conf.saradc_reset = 1;
-    SENS.sar_peri_reset_conf.saradc_reset = 0;
-    
-//portEXIT_CRITICAL(&rtc_spinlock); // RTC_EXIT_CRITICAL(); // SARADC1_EXIT();
-
-    //adc1_lock_release()
-    
-    //s_sar_power_release(); // sar_periph_ctrl_adc_oneshot_power_release();
-//portENTER_CRITICAL_SAFE(&rtc_spinlock);
-    s_sar_power_on_cnt--;
-    //if (s_sar_power_on_cnt < 0) {
-    //    portEXIT_CRITICAL(&rtc_spinlock);
-    //    ESP_LOGE(TAG, "%s called, but s_sar_power_on_cnt == 0", __func__);
-    //    abort();
-    //} else
-    if (s_sar_power_on_cnt == 0) {
-        //sar_ctrl_ll_set_power_mode(SAR_CTRL_LL_POWER_FSM)
-        //if (mode == SAR_CTRL_LL_POWER_FSM) {
-            SENS.sar_peri_clk_gate_conf.saradc_clk_en = 1;
-            SENS.sar_power_xpd_sar.force_xpd_sar = 0x0;
-        //} else if (mode == SAR_CTRL_LL_POWER_ON) {
-        //    SENS.sar_peri_clk_gate_conf.saradc_clk_en = 1;
-        //    SENS.sar_power_xpd_sar.force_xpd_sar = 0x3;
-        //} else {
-        //    SENS.sar_peri_clk_gate_conf.saradc_clk_en = 0;
-        //    SENS.sar_power_xpd_sar.force_xpd_sar = 0x2;
-    }
-    //}
-//portEXIT_CRITICAL_SAFE(&rtc_spinlock);
-    
-//_lock_release( &adc1_dma_lock ); // SARADC1_RELEASE();
-        
-    return adc_value;
-*/
-
-    //return adc1_get_raw ( static_cast<adc1_channel_t> ( channel ) );
 #endif
   }
 }
