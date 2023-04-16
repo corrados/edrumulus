@@ -547,7 +547,7 @@ uint16_t Edrumulus_hardware::my_analogRead ( const uint8_t pin )
 
     //adc_hal_convert ( ADC_NUM_1, channel, clk_src_freq_hz, &adc_value );
 */
-/*
+
 adc1_channel_t channel = static_cast<adc1_channel_t> ( channel );
 
     int adc_value;
@@ -650,11 +650,13 @@ adc1_channel_t channel = static_cast<adc1_channel_t> ( channel );
     }
 
     //*out_raw = adc_oneshot_ll_get_raw_result(adc_n);
+    uint32_t ret_val = 0;
     //if (adc_n == ADC_UNIT_1) {
-        adc_value = HAL_FORCE_READ_U32_REG_FIELD(SENS.sar_meas1_ctrl2, meas1_data_sar);
+        ret_val = HAL_FORCE_READ_U32_REG_FIELD(SENS.sar_meas1_ctrl2, meas1_data_sar);
     //} else { // adc_n == ADC_UNIT_2
     //    ret_val = HAL_FORCE_READ_U32_REG_FIELD(SENS.sar_meas2_ctrl2, meas2_data_sar);
     //}
+    adc_value = ret_val;
     
     //if (adc_oneshot_ll_raw_check_valid(adc_n, *out_raw) == false) {
     //    return ESP_ERR_INVALID_STATE;
@@ -698,9 +700,9 @@ adc1_channel_t channel = static_cast<adc1_channel_t> ( channel );
 //_lock_release( &adc1_dma_lock ); // SARADC1_RELEASE();
         
     return adc_value;
-*/
 
-    return adc1_get_raw ( static_cast<adc1_channel_t> ( channel ) );
+
+    //return adc1_get_raw ( static_cast<adc1_channel_t> ( channel ) );
 #endif
   }
 }
