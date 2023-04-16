@@ -109,6 +109,12 @@ for i = 1:size(test_files, 1)
 
       end
 
+%figure; plot(x_org_clipped, '.-'); grid on; ax = axis; hold on;
+%  plot([ax(1), ax(2)], [clip_limit, clip_limit], 'r');
+%  plot([ax(1), ax(2)], [-clip_limit, -clip_limit], 'r');
+%  plot(x_org_scaled, '.-k');
+%  plot(x_org_clipped * amplification_compensation(idx, cnt), '.-g');
+
     end
 
     cnt = cnt + 1;
