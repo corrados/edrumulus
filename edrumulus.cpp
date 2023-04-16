@@ -862,6 +862,7 @@ const int peak_velocity_idx_in_x_sq_hist = x_sq_hist_len - scan_time + peak_velo
 // TEST
 bool corrected = false;
 bool neighbor_ok = true;
+float mean_neighbor = 0;
 float mean_neighbor_x = 0;
 float left_neighbor = 0;
 float right_neighbor = 0;
@@ -870,6 +871,7 @@ float right_neighbor_x = 0;
 float test_left_neighbor = 0;
 float test_right_neighbor = 0;
 float attenuation_compensation = 0;
+float amplification_compensation = 0;
 
         if ( s.overload_hist[peak_velocity_idx_in_overload_history] > 0.0f )
         {
@@ -918,14 +920,15 @@ cur_idx_x_sq = peak_velocity_idx_in_x_sq_hist;
 
           s.is_overloaded_state = ( number_overloaded_samples > max_num_overloads );
 
-
+if ( neighbor_ok )
+{
 // TEST new clipping compensation
 //static const float attenuation_mapping[] = { 0.0f, 6.0f, 11.0f, 30.0f, 50.0f };
 corrected                       = true;
 right_neighbor                  = sqrt ( right_neighbor );
 left_neighbor                   = sqrt ( left_neighbor );
 //float attenuation_compensation1 = -attenuation_mapping[min ( 4, number_overloaded_samples )] - 20 * log10 ( new_clip_level );
-const float mean_neighbor       = ( left_neighbor + right_neighbor ) / 2.0f;
+mean_neighbor                   = ( left_neighbor + right_neighbor ) / 2.0f;
 
 mean_neighbor_x = ( left_neighbor_x + right_neighbor_x ) / 2.0f;
 if ( s.overload_hist[peak_velocity_idx_in_overload_history] == 1 )
@@ -959,20 +962,27 @@ for ( int i1 = 0; i1 < length_ampmap; i1++ )
   amplification_mapping[i1] = pow ( 10.0f, ( i1 * ampmap_const_step ) * ( i1 * ampmap_const_step ) );
 }
 
-const float amplification_compensation = amplification_mapping[min ( length_ampmap - 1, 1 + number_overloaded_samples )] * mean_neighbor_x / new_clip_level;
+//amplification_compensation = amplification_mapping[min ( length_ampmap - 1, 1 + number_overloaded_samples )] * mean_neighbor_x / new_clip_level;
+amplification_compensation = amplification_mapping[min ( length_ampmap - 1, 1 + number_overloaded_samples )] * mean_neighbor / new_clip_level;
 //s.peak_val = new_clip_level * new_clip_level * amplification_compensation * amplification_compensation;
 //s.peak_val *= amplification_compensation;// * amplification_compensation;
 
-//const float amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor_x / sqrt ( s.peak_val );
+//amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor_x / sqrt ( s.peak_val );
 //s.peak_val  = sqrt ( s.peak_val ) * amplification_compensation;
 //s.peak_val *= s.peak_val;
 
+if ( head_sensor_cnt == 1 )
+{
+  Serial.println ( String ( amplification_compensation ) + " " + String ( mean_neighbor ) );
 
 /*
 Serial.println ( "attenuation_compensation " + String ( attenuation_compensation ) + ", number_overloaded_samples " + String ( number_overloaded_samples ) +
   ", clip_offset " + String ( clip_offset ) +
   ", mean_neighbor " + String ( mean_neighbor ) + ", left_neighbor_x " + String ( left_neighbor_x ) + ", right_neighbor_x " + String ( right_neighbor_x ) );
 */
+}
+
+}
 
 /*
           // overload correctdion: correct the peak value according to the number of clipped samples
@@ -1019,8 +1029,10 @@ if ( head_sensor_cnt == 1 )
   const bool is_overlaod = s.overload_hist[peak_velocity_idx_in_overload_history] > 0.0f;
   const int  num_ov      = is_overlaod ? number_overloaded_samples : 0;
 
-  Serial.println ( String ( peak_storage[0] ) + " " + String ( peak_storage[1] ) + " " +
-                   String ( num_ov * 100 ) + " " + String ( mean_neighbor_x ) );
+//  Serial.println ( String ( amplification_compensation ) + " " + String ( mean_neighbor ) );
+
+//  Serial.println ( String ( peak_storage[0] ) + " " + String ( peak_storage[1] ) + " " +
+//                   String ( num_ov * 100 ) + " " + String ( mean_neighbor_x ) );
 
 //  Serial.println ( String ( 20 * log10 ( peak_storage[0] ) ) + " " + String ( 20 * log10 ( peak_storage[1] ) ) + " " +
 //                   String ( num_ov * 5 ) );
