@@ -956,11 +956,16 @@ const int   length_ampmap     = 20;
 float       amplification_mapping[length_ampmap];
 for ( int i1 = 0; i1 < length_ampmap; i1++ )
 {
-  amplification_mapping[i1] = pow ( 10.0f, i1 * ampmap_const_step );
+  amplification_mapping[i1] = pow ( 10.0f, ( i1 * ampmap_const_step ) * ( i1 * ampmap_const_step ) );
 }
-const float amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor_x / sqrt ( s.peak_val );
-s.peak_val  = sqrt ( s.peak_val ) * amplification_compensation;
-s.peak_val *= s.peak_val;
+
+const float amplification_compensation = amplification_mapping[min ( length_ampmap - 1, 1 + number_overloaded_samples )] * mean_neighbor_x / new_clip_level;
+//s.peak_val = new_clip_level * new_clip_level * amplification_compensation * amplification_compensation;
+//s.peak_val *= amplification_compensation;// * amplification_compensation;
+
+//const float amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor_x / sqrt ( s.peak_val );
+//s.peak_val  = sqrt ( s.peak_val ) * amplification_compensation;
+//s.peak_val *= s.peak_val;
 
 
 /*
@@ -1014,11 +1019,11 @@ if ( head_sensor_cnt == 1 )
   const bool is_overlaod = s.overload_hist[peak_velocity_idx_in_overload_history] > 0.0f;
   const int  num_ov      = is_overlaod ? number_overloaded_samples : 0;
 
-//  Serial.println ( String ( peak_storage[0] ) + " " + String ( peak_storage[1] ) + " " +
-//                   String ( num_ov * 100 ) + " " + String ( mean_neighbor_x ) );
+  Serial.println ( String ( peak_storage[0] ) + " " + String ( peak_storage[1] ) + " " +
+                   String ( num_ov * 100 ) + " " + String ( mean_neighbor_x ) );
 
-  Serial.println ( String ( 20 * log10 ( peak_storage[0] ) ) + " " + String ( 20 * log10 ( peak_storage[1] ) ) + " " +
-                   String ( num_ov * 5 ) );
+//  Serial.println ( String ( 20 * log10 ( peak_storage[0] ) ) + " " + String ( 20 * log10 ( peak_storage[1] ) ) + " " +
+//                   String ( num_ov * 5 ) );
 }
 
 /*

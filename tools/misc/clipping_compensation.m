@@ -8,7 +8,7 @@ pkg load signal
 close all;
 
 pad = "pd120";
-%pad = "pd80r";
+pad = "pd80r";
 %pad = "pd8";
 %pad = "pd5";
 
