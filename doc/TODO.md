@@ -4,9 +4,9 @@ The road map items are sorted by priority.
 
 - [ ] **Add support for ESP32-S3**
 
-- [ ] **Use rim switch theshold in dB**
+- [ ] **Improve overload compensation algorithm**
 
-  Do not use a linear parameter as it is implemented right now.
+  A good overload compensation is crutial for the rim shot detection (see Improve rim shot detection item).
 
 - [ ] **Improve rim shot detection**
 
@@ -14,6 +14,14 @@ The road map items are sorted by priority.
   The rim shot detection for non-rim-switch pads is highly influenced on the overload of the ADC. This has to be investigated
   (i.e., that loud strikes on the middle of the mesh head triggers a rim shot because the clipped head signal is lower than
   the true peak and therefore we could get over the rim shot threshold since the rim trigger is not overloaded).
+
+- [ ] **Use rim switch theshold in dB**
+
+  Do not use a linear parameter as it is implemented right now.
+
+- [ ] **Support 3-zone pads like the Roland CY-15R**
+
+  See [this discussion](https://github.com/corrados/edrumulus/discussions/73#discussioncomment-5623391).
 
 - [ ] **Improve dynamics for Drumgizmo**
 
