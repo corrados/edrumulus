@@ -452,13 +452,11 @@ void Edrumulus_hardware::init_my_analogRead()
   dac_output_voltage ( DAC_CHANNEL_2, 0 );
   dac_output_disable ( DAC_CHANNEL_2 );
   dac_i2s_disable();
-#endif
 
   // set attenuation of 11 dB
-  WRITE_PERI_REG ( SENS_SAR_ATTEN1_REG, 0xFFFFFFFFF );
-  WRITE_PERI_REG ( SENS_SAR_ATTEN2_REG, 0xFFFFFFFFF );
+  WRITE_PERI_REG ( SENS_SAR_ATTEN1_REG, 0x0FFFFFFFF );
+  WRITE_PERI_REG ( SENS_SAR_ATTEN2_REG, 0x0FFFFFFFF );
 
-#ifdef CONFIG_IDF_TARGET_ESP32
   // set both ADCs to 12 bit resolution using 8 cycles and 1 sample
   SET_PERI_REG_BITS ( SENS_SAR_READ_CTRL_REG,   SENS_SAR1_SAMPLE_CYCLE, 8, SENS_SAR1_SAMPLE_CYCLE_S ); // cycles
   SET_PERI_REG_BITS ( SENS_SAR_READ_CTRL2_REG,  SENS_SAR2_SAMPLE_CYCLE, 8, SENS_SAR2_SAMPLE_CYCLE_S );
@@ -486,16 +484,15 @@ void Edrumulus_hardware::init_my_analogRead()
   SET_PERI_REG_BITS   ( SENS_SAR_MEAS_WAIT2_REG,  SENS_SAR_AMP_WAIT3, 0x1, SENS_SAR_AMP_WAIT3_S );
   while ( GET_PERI_REG_BITS2 ( SENS_SAR_SLAVE_ADDR1_REG, 0x7, SENS_MEAS_STATUS_S ) != 0 );
 #else // CONFIG_IDF_TARGET_ESP32S3
-  adc1_config_width ( ADC_WIDTH_BIT_12 ); // ADC2 bit width is configured when started
+  adc1_config_width ( ADC_WIDTH_BIT_12 ); // ADC2 bit width is always 12 and must not be set here
   adc_ll_set_controller ( ADC_NUM_1, ADC_LL_CTRL_RTC );
   adc_ll_set_controller ( ADC_NUM_2, ADC_LL_CTRL_ARB );
-  SENS.sar_peri_clk_gate_conf.saradc_clk_en = 1;
-  SENS.sar_power_xpd_sar.force_xpd_sar      = 0x3;
-  SENS.sar_meas1_mux.sar1_dig_force         = 0; // 1: Select digital control;     0: Select RTC control.
-  SENS.sar_meas1_ctrl2.meas1_start_force    = 1; // 1: SW control RTC ADC start;   0: ULP control RTC ADC start.
-  SENS.sar_meas1_ctrl2.sar1_en_pad_force    = 1; // 1: SW control RTC ADC bit map; 0: ULP control RTC ADC bit map;
-  SENS.sar_meas2_ctrl2.meas2_start_force    = 1; // 1: SW control RTC ADC start;   0: ULP control RTC ADC start.
-  SENS.sar_meas2_ctrl2.sar2_en_pad_force    = 1; // 1: SW control RTC ADC bit map; 0: ULP control RTC ADC bit map;
+  for ( int channel = 0; channel < 10; channel++ ) // 10 channels per ADC
+  {
+    adc1_config_channel_atten ( static_cast<adc1_channel_t> ( channel ), ADC_ATTEN_DB_11 );
+    adc2_config_channel_atten ( static_cast<adc2_channel_t> ( channel ), ADC_ATTEN_DB_11 );
+  }
+  adc_power_on();
 #endif
 
   // configure all pins to analog read
@@ -520,7 +517,7 @@ uint16_t Edrumulus_hardware::my_analogRead ( const uint8_t pin )
     while ( GET_PERI_REG_MASK ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DONE_SAR ) == 0 );
     return GET_PERI_REG_BITS2 ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DATA_SAR, SENS_MEAS2_DATA_SAR_S );
 #else // CONFIG_IDF_TARGET_ESP32S3
-    SENS.sar_meas2_ctrl2.sar2_en_pad = ( 1 << channel );
+    SENS.sar_meas2_ctrl2.sar2_en_pad     = ( 1 << channel );
     SENS.sar_meas2_ctrl2.meas2_start_sar = 0;
     SENS.sar_meas2_ctrl2.meas2_start_sar = 1;
     while ( !SENS.sar_meas2_ctrl2.meas2_done_sar );
@@ -536,8 +533,7 @@ uint16_t Edrumulus_hardware::my_analogRead ( const uint8_t pin )
     while ( GET_PERI_REG_MASK ( SENS_SAR_MEAS_START1_REG, SENS_MEAS1_DONE_SAR ) == 0 );
     return GET_PERI_REG_BITS2 ( SENS_SAR_MEAS_START1_REG, SENS_MEAS1_DATA_SAR, SENS_MEAS1_DATA_SAR_S );
 #else // CONFIG_IDF_TARGET_ESP32S3
-    SENS.sar_meas1_ctrl2.sar1_en_pad = ( 1 << channel );
-    while ( HAL_FORCE_READ_U32_REG_FIELD ( SENS.sar_slave_addr1, meas_status ) );
+    SENS.sar_meas1_ctrl2.sar1_en_pad     = ( 1 << channel );
     SENS.sar_meas1_ctrl2.meas1_start_sar = 0;
     SENS.sar_meas1_ctrl2.meas1_start_sar = 1;
     while ( !SENS.sar_meas1_ctrl2.meas1_done_sar );
