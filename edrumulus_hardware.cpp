@@ -492,6 +492,13 @@ void Edrumulus_hardware::init_my_analogRead()
     adc1_config_channel_atten ( static_cast<adc1_channel_t> ( channel ), ADC_ATTEN_DB_11 );
     adc2_config_channel_atten ( static_cast<adc2_channel_t> ( channel ), ADC_ATTEN_DB_11 );
   }
+  uint32_t param = 2200; // adc_hal_set_calibration_param -> TODO What is the correct value here?
+  uint8_t  msb   = param >> 8;
+  uint8_t  lsb   = param & 0xFF;
+  REGI2C_WRITE_MASK ( I2C_SAR_ADC, ADC_SAR1_INITIAL_CODE_HIGH_ADDR, msb ); // calibrate ADC1 (MSB)
+  REGI2C_WRITE_MASK ( I2C_SAR_ADC, ADC_SAR1_INITIAL_CODE_LOW_ADDR,  lsb ); // calibrate ADC1 (LSB)
+  REGI2C_WRITE_MASK ( I2C_SAR_ADC, ADC_SAR2_INITIAL_CODE_HIGH_ADDR, msb ); // calibrate ADC2 (MSB)
+  REGI2C_WRITE_MASK ( I2C_SAR_ADC, ADC_SAR2_INITIAL_CODE_LOW_ADDR,  lsb ); // calibrate ADC2 (LSB)
   adc_power_on();
 #endif
 
@@ -517,8 +524,8 @@ uint16_t Edrumulus_hardware::my_analogRead ( const uint8_t pin )
     while ( GET_PERI_REG_MASK ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DONE_SAR ) == 0 );
     return GET_PERI_REG_BITS2 ( SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DATA_SAR, SENS_MEAS2_DATA_SAR_S );
 #else // CONFIG_IDF_TARGET_ESP32S3
-    SENS.sar_meas2_ctrl2.sar2_en_pad     = ( 1 << channel );
     SENS.sar_meas2_ctrl2.meas2_start_sar = 0;
+    SENS.sar_meas2_ctrl2.sar2_en_pad     = ( 1 << channel );
     SENS.sar_meas2_ctrl2.meas2_start_sar = 1;
     while ( !SENS.sar_meas2_ctrl2.meas2_done_sar );
     return HAL_FORCE_READ_U32_REG_FIELD ( SENS.sar_meas2_ctrl2, meas2_data_sar );
@@ -533,8 +540,8 @@ uint16_t Edrumulus_hardware::my_analogRead ( const uint8_t pin )
     while ( GET_PERI_REG_MASK ( SENS_SAR_MEAS_START1_REG, SENS_MEAS1_DONE_SAR ) == 0 );
     return GET_PERI_REG_BITS2 ( SENS_SAR_MEAS_START1_REG, SENS_MEAS1_DATA_SAR, SENS_MEAS1_DATA_SAR_S );
 #else // CONFIG_IDF_TARGET_ESP32S3
-    SENS.sar_meas1_ctrl2.sar1_en_pad     = ( 1 << channel );
     SENS.sar_meas1_ctrl2.meas1_start_sar = 0;
+    SENS.sar_meas1_ctrl2.sar1_en_pad     = ( 1 << channel );
     SENS.sar_meas1_ctrl2.meas1_start_sar = 1;
     while ( !SENS.sar_meas1_ctrl2.meas1_done_sar );
     return HAL_FORCE_READ_U32_REG_FIELD ( SENS.sar_meas1_ctrl2, meas1_data_sar );
