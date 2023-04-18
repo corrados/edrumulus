@@ -1,6 +1,10 @@
 # Edrumulus Project Log
 
+## 2023-04-18 Added initial support for ESP32-S3
 
+  Initial support for the ESP32-S3 developer board was implemented. Edrumulus runs without crashing
+  using 13 ADC inputs. Still outstanding is testing the ESP32-S3 with an analog front-end attached and
+  edrum pads connected to it.
 
 ## 2023-01-17 Auto start Edrumulus on Raspberry Pi is not trivial
 
