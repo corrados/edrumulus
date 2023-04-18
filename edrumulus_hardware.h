@@ -165,26 +165,13 @@ protected:
   static void IRAM_ATTR      on_timer();
   static void                start_timer_core0_task ( void* param );
 
-  void     setup_timer();
-  void     init_my_analogRead();
-  uint16_t my_analogRead ( const uint8_t pin );
-  void     my_analogRead_parallel ( const uint32_t channel_adc1_bitval,
-                                    const uint32_t channel_adc2_bitval,
-                                    uint16_t&      out_adc1,
-                                    uint16_t&      out_adc2 );
+  void        setup_timer();
+  void        init_my_analogRead();
+  uint16_t    my_analogRead ( const uint8_t pin );
 
   int         total_number_inputs;
   int         input_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
   uint16_t    input_sample[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
-
-  int         num_pin_pairs;
-  int         adc1_index[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
-  int         adc2_index[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
-  uint32_t    channel_adc1_bitval[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
-  uint32_t    channel_adc2_bitval[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
-
-  int         num_pin_single;
-  int         single_index[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
 
   Espikestate prev1_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   Espikestate prev2_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
