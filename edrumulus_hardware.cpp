@@ -451,12 +451,6 @@ void Edrumulus_hardware::init_my_analogRead()
     adc2_get_raw              ( static_cast<adc2_channel_t> ( channel ), ADC_WIDTH_BIT_12, &cur_sample );
   }
   adc_power_on();
-
-  // configure all pins to analog read
-  for ( int i = 0; i < total_number_inputs; i++ )
-  {
-    pinMode ( input_pin[i], ANALOG );
-  }
 }
 
 
