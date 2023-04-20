@@ -184,8 +184,11 @@ else
     pigs modes 9 w
     pigs w 9 1
   else
-    mod-ttymidi/ttymidi -b 38400 &                 # for normal ESP32, fails and quits if not present
-    mod-ttymidi/ttymidi -b 38400 -s /dev/ttyACM0 & # for ESP32-S3, fails and quits if not present
+    if [ -r "/dev/ttyACM0" ]; then
+      mod-ttymidi/ttymidi -b 38400 -s /dev/ttyACM0 & # ESP32-S3
+    else
+      mod-ttymidi/ttymidi -b 38400 &                 # ESP32
+    fi
   fi
 fi
 
