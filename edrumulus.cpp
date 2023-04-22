@@ -920,7 +920,7 @@ cur_idx_x_sq = peak_velocity_idx_in_x_sq_hist;
 
           s.is_overloaded_state = ( number_overloaded_samples > max_num_overloads );
 
-if ( neighbor_ok )
+if ( neighbor_ok && ( head_sensor_cnt == 1 ) )
 {
 // TEST new clipping compensation
 //static const float attenuation_mapping[] = { 0.0f, 6.0f, 11.0f, 30.0f, 50.0f };
@@ -954,7 +954,7 @@ s.peak_val  = sqrt ( s.peak_val ) + attenuation_compensation1 - clip_offset;
 s.peak_val *= s.peak_val;
 */
 
-const float ampmap_const_step = 0.11f;
+const float ampmap_const_step = 0.05f;//0.11f;
 const int   length_ampmap     = 20;
 float       amplification_mapping[length_ampmap];
 for ( int i1 = 0; i1 < length_ampmap; i1++ )
@@ -965,23 +965,21 @@ for ( int i1 = 0; i1 < length_ampmap; i1++ )
 //amplification_compensation = amplification_mapping[min ( length_ampmap - 1, 1 + number_overloaded_samples )] * mean_neighbor_x / new_clip_level;
 amplification_compensation = amplification_mapping[min ( length_ampmap - 1, 1 + number_overloaded_samples )] * mean_neighbor / new_clip_level;
 //s.peak_val = new_clip_level * new_clip_level * amplification_compensation * amplification_compensation;
-//s.peak_val *= amplification_compensation;// * amplification_compensation;
+s.peak_val *= amplification_compensation * amplification_compensation;
 
 //amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor_x / sqrt ( s.peak_val );
 //s.peak_val  = sqrt ( s.peak_val ) * amplification_compensation;
 //s.peak_val *= s.peak_val;
 
+/*
 if ( head_sensor_cnt == 1 )
 {
   Serial.println ( String ( amplification_compensation ) + " " + String ( mean_neighbor ) );
-
-/*
-Serial.println ( "attenuation_compensation " + String ( attenuation_compensation ) + ", number_overloaded_samples " + String ( number_overloaded_samples ) +
-  ", clip_offset " + String ( clip_offset ) +
-  ", mean_neighbor " + String ( mean_neighbor ) + ", left_neighbor_x " + String ( left_neighbor_x ) + ", right_neighbor_x " + String ( right_neighbor_x ) );
-*/
+//Serial.println ( "attenuation_compensation " + String ( attenuation_compensation ) + ", number_overloaded_samples " + String ( number_overloaded_samples ) +
+//  ", clip_offset " + String ( clip_offset ) +
+//  ", mean_neighbor " + String ( mean_neighbor ) + ", left_neighbor_x " + String ( left_neighbor_x ) + ", right_neighbor_x " + String ( right_neighbor_x ) );
 }
-
+*/
 }
 
 /*
@@ -1032,10 +1030,14 @@ if ( head_sensor_cnt == 1 )
 //  Serial.println ( String ( amplification_compensation ) + " " + String ( mean_neighbor ) );
 
 //  Serial.println ( String ( peak_storage[0] ) + " " + String ( peak_storage[1] ) + " " +
-//                   String ( num_ov * 100 ) + " " + String ( mean_neighbor_x ) );
+//                   String ( num_ov ) + " " + String ( mean_neighbor ) + " " + String ( amplification_compensation ) );
 
 //  Serial.println ( String ( 20 * log10 ( peak_storage[0] ) ) + " " + String ( 20 * log10 ( peak_storage[1] ) ) + " " +
 //                   String ( num_ov * 5 ) );
+
+//  Serial.println ( String ( 20 * log10 ( peak_storage[0] ) ) + " " + String ( 20 * log10 ( peak_storage[1] ) ) );
+
+  Serial.println ( String ( peak_storage[0] ) + " " + String ( peak_storage[1] ) );
 }
 
 /*
