@@ -347,18 +347,18 @@ y = x;
 
 % amplification_compensation = amplification_mapping[min ( length_ampmap - 1, 1 + number_overloaded_samples )] * mean_neighbor / new_clip_level;
 
-ampmap_const_step     = 0.05; % PD80R
+ampmap_const_step     = 0.049; % PD80R
 clip_limit            = 700;
 amplification_mapping = transpose(10 .^ ([0:ampmap_const_step:ampmap_const_step * 20] .^ 2));
 amplification_compensation = amplification_mapping(2 + y(:, 3)) .* y(:, 4) ./ clip_limit;
 
-%figure; plot(20 * log10(700:2000), 20 * log10(700:2000), 'k-.');
-%xlabel('true'); ylabel('est'); grid on; hold on;
-%plot(20 * log10(y(:, 1)), 20 * log10(clip_limit * amplification_compensation));
-
-figure; plot(500:2000, 500:2000, 'k-.'); axis([500, 2000, 500, 2000]);
+figure; plot(20 * log10(700:2000), 20 * log10(700:2000), 'k-.');
 xlabel('true'); ylabel('est'); grid on; hold on;
-plot(y(:, 1), clip_limit * amplification_compensation);
+plot(20 * log10(y(:, 1)), 20 * log10(clip_limit * amplification_compensation));
+
+%figure; plot(500:2000, 500:2000, 'k-.'); axis([500, 2000, 500, 2000]);
+%xlabel('true'); ylabel('est'); grid on; hold on;
+%plot(y(:, 1), clip_limit * amplification_compensation);
 
 %figure; plot(y(:, 1)); grid on; hold on;
 %plot(clip_limit * amplification_compensation, 'g')

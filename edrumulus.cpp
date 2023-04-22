@@ -954,7 +954,7 @@ s.peak_val  = sqrt ( s.peak_val ) + attenuation_compensation1 - clip_offset;
 s.peak_val *= s.peak_val;
 */
 
-const float ampmap_const_step = 0.05f;//0.11f;
+const float ampmap_const_step = 0.049f;
 const int   length_ampmap     = 20;
 float       amplification_mapping[length_ampmap];
 for ( int i1 = 0; i1 < length_ampmap; i1++ )
