@@ -954,16 +954,26 @@ s.peak_val  = sqrt ( s.peak_val ) + attenuation_compensation1 - clip_offset;
 s.peak_val *= s.peak_val;
 */
 
-const float ampmap_const_step = 0.049f;
+float ampmap_const_step;
+if ( pad_settings.pad_type == PD8 )
+{
+  ampmap_const_step = 0.4; // NOTE use mean_neighbor_x for PD8
+}
+else
+{
+  ampmap_const_step = 0.053f; // PD80R
+}
+
 const int   length_ampmap     = 20;
 float       amplification_mapping[length_ampmap];
 for ( int i1 = 0; i1 < length_ampmap; i1++ )
 {
-  amplification_mapping[i1] = pow ( 10.0f, ( i1 * ampmap_const_step ) * ( i1 * ampmap_const_step ) );
+  // never to higher than 5
+  amplification_mapping[i1] = min ( 5.0f, pow ( 10.0f, ( i1 * ampmap_const_step ) * ( i1 * ampmap_const_step ) ) );
 }
 
-//amplification_compensation = amplification_mapping[min ( length_ampmap - 1, 1 + number_overloaded_samples )] * mean_neighbor_x / new_clip_level;
-amplification_compensation = amplification_mapping[min ( length_ampmap - 1, 1 + number_overloaded_samples )] * mean_neighbor / new_clip_level;
+amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor_x / new_clip_level;
+//amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor / new_clip_level;
 //s.peak_val = new_clip_level * new_clip_level * amplification_compensation * amplification_compensation;
 s.peak_val *= amplification_compensation * amplification_compensation;
 
@@ -1029,14 +1039,19 @@ if ( head_sensor_cnt == 1 )
 
 //  Serial.println ( String ( amplification_compensation ) + " " + String ( mean_neighbor ) );
 
-//  Serial.println ( String ( peak_storage[0] ) + " " + String ( peak_storage[1] ) + " " +
-//                   String ( num_ov ) + " " + String ( mean_neighbor ) + " " + String ( amplification_compensation ) );
+  // export to real_data_clipping_compensation.m
+//  if ( is_overlaod )
+//  {
+//    Serial.println ( String ( peak_storage[0] ) + " " + String ( peak_storage[1] ) + " " +
+//                     String ( num_ov ) + " " + String ( mean_neighbor_x ) + " " + String ( amplification_compensation ) );
+//  }
 
 //  Serial.println ( String ( 20 * log10 ( peak_storage[0] ) ) + " " + String ( 20 * log10 ( peak_storage[1] ) ) + " " +
 //                   String ( num_ov * 5 ) );
 
 //  Serial.println ( String ( 20 * log10 ( peak_storage[0] ) ) + " " + String ( 20 * log10 ( peak_storage[1] ) ) );
 
+  // check live performance: only two traces
   Serial.println ( String ( peak_storage[0] ) + " " + String ( peak_storage[1] ) );
 }
 
