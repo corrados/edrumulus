@@ -936,23 +936,6 @@ if ( s.overload_hist[peak_velocity_idx_in_overload_history] == 1 )
   mean_neighbor_x *= -1; // correct sign
 }
 
-/*
-const float clip_offset         = new_clip_level - mean_neighbor_x;//mean_neighbor;
-//attenuation_compensation        = 20 * log10 ( pow ( 10.0f, attenuation_compensation1 / 20.0f ) + clip_offset );
-
-// PD-8:
-//static const float normalized_attenuation_mapping[] = { 0.0f, 0.4f, 0.8f, 2.0f, 4.0f };
-//const int          att_map_max_idx                  = 4;
-
-// PD80R:
-static const float normalized_attenuation_mapping[] = { 0.0f, 0.05f, 0.08f, 0.1f, 0.15f, 0.2f, 0.4f, 0.6f, 0.8f, 0.9f, 1.0f, 1.1f, 1.2f };
-const int          att_map_max_idx                  = 12;
-
-const float attenuation_compensation1 = normalized_attenuation_mapping[min ( att_map_max_idx, number_overloaded_samples )] * new_clip_level;
-
-s.peak_val  = sqrt ( s.peak_val ) + attenuation_compensation1 - clip_offset;
-s.peak_val *= s.peak_val;
-*/
 
 float ampmap_const_step;
 if ( pad_settings.pad_type == PD8 )
@@ -973,75 +956,10 @@ for ( int i1 = 0; i1 < length_ampmap; i1++ )
 }
 
 amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor_x / new_clip_level;
-//amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor / new_clip_level;
-//s.peak_val = new_clip_level * new_clip_level * amplification_compensation * amplification_compensation;
 s.peak_val *= amplification_compensation * amplification_compensation;
 
-//amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor_x / sqrt ( s.peak_val );
-//s.peak_val  = sqrt ( s.peak_val ) * amplification_compensation;
-//s.peak_val *= s.peak_val;
-
-/*
-if ( head_sensor_cnt == 1 )
-{
-  Serial.println ( String ( amplification_compensation ) + " " + String ( mean_neighbor ) );
-//Serial.println ( "attenuation_compensation " + String ( attenuation_compensation ) + ", number_overloaded_samples " + String ( number_overloaded_samples ) +
-//  ", clip_offset " + String ( clip_offset ) +
-//  ", mean_neighbor " + String ( mean_neighbor ) + ", left_neighbor_x " + String ( left_neighbor_x ) + ", right_neighbor_x " + String ( right_neighbor_x ) );
 }
-*/
-}
-
-/*
-          // overload correctdion: correct the peak value according to the number of clipped samples
-          if ( number_overloaded_samples > overload_num_thresh_4db )
-          {
-            s.peak_val *= 2.5119; // 4 dB
-            corrected = true;
-          }
-          else if ( number_overloaded_samples > overload_num_thresh_3db )
-          {
-            s.peak_val *= 2; // 3 dB
-            corrected = true;
-          }
-          else if ( number_overloaded_samples > overload_num_thresh_2db )
-          {
-            s.peak_val *= 1.5849; // 2 dB
-            corrected = true;
-          }
-          else if ( number_overloaded_samples > overload_num_thresh_1db )
-          {
-            s.peak_val *= 1.2589; // 1 dB
-            corrected = true;
-          }
-*/
-         
-/*
-// TEST for debugging the overload correction algorithm
-String serial_print;
-for ( int j1 = 0; j1 < overload_hist_len; j1++ )
-{
-  serial_print += String ( j1 ) + ":" + String ( s.overload_hist[j1] ) + ",";
-}
-Serial.println ( serial_print );
-Serial.println ( "idx: " + String ( peak_velocity_idx_in_overload_history ) + ", num: " + String ( number_overloaded_samples ) );
-*/
-
         }
-
-
-// DOCUMENTATION
-// To find the best ampmap_const_step parameter for a new pad, do the following:
-// - set the new pad type in "edrumulus.set_pad_type             ( 0, Edrumulus::PD80R );" in edrumulus.ino
-// - disable code "// check live performance: only two traces" and enable "// export to real_data_clipping_compensation.m"
-// - compile and open Serieller Monitor and hit the pad mid/hard
-// - copy output from Serieller Monitor and copy it in the file tools/misc/real_data_clipping_compensation.m
-// - add a new x_newpad, change "x = x_pd80r;" and tweak the parameter ampmap_const_step so that the curve is just
-//   a bit below the black line (avoid overshoots if possible)
-// - add a new section here for the new pad and take the ampmap_const_step value from the real_data_clipping_compensation.m
-// - disable code "// export to real_data_clipping_compensation.m" and enable "// check live performance: only two traces"
-// - compile and open Serieller Plotter and check the performance of the clipping compensation for the new pad
-
 
 peak_storage[head_sensor_cnt] = sqrt ( s.peak_val );
 
@@ -1050,40 +968,9 @@ if ( head_sensor_cnt == 1 )
   const bool is_overlaod = s.overload_hist[peak_velocity_idx_in_overload_history] > 0.0f;
   const int  num_ov      = is_overlaod ? number_overloaded_samples : 0;
 
-//  Serial.println ( String ( amplification_compensation ) + " " + String ( mean_neighbor ) );
-
-  // export to real_data_clipping_compensation.m
-//  if ( is_overlaod )
-//  {
-//    Serial.println ( String ( peak_storage[0] ) + " " + String ( peak_storage[1] ) + " " +
-//                     String ( num_ov ) + " " + String ( mean_neighbor_x ) + " " + String ( amplification_compensation ) );
-//  }
-
-//  Serial.println ( String ( 20 * log10 ( peak_storage[0] ) ) + " " + String ( 20 * log10 ( peak_storage[1] ) ) + " " +
-//                   String ( num_ov * 5 ) );
-
-//  Serial.println ( String ( 20 * log10 ( peak_storage[0] ) ) + " " + String ( 20 * log10 ( peak_storage[1] ) ) );
-
   // check live performance: only two traces
   Serial.println ( String ( peak_storage[0] ) + " " + String ( peak_storage[1] ) );
 }
-
-/*
-if ( corrected )
-{
-  Serial.println ( "head_sensor_cnt " + String ( head_sensor_cnt ) + ": " + String ( sqrt ( s.peak_val ) ) + ", " + String ( 20 * log10 ( sqrt ( s.peak_val ) ) ) + " dB (corrected)" );  
-}
-else
-{
-  Serial.println ( "head_sensor_cnt " + String ( head_sensor_cnt ) + ": " + String ( sqrt ( s.peak_val ) ) + ", " + String ( 20 * log10 ( sqrt ( s.peak_val ) ) ) + " dB" );  
-}
-if ( head_sensor_cnt == 0 && neighbor_ok )
-{
-  //Serial.println ( "attenuation_compensation " + String ( attenuation_compensation ) + ", number_overloaded_samples " + String ( number_overloaded_samples ) );
-  //Serial.println ( "left_neighbor " + String ( left_neighbor ) + ", right_neighbor " + String ( right_neighbor ) );  
-  //Serial.println ( "test_left_neighbor " + String ( sqrt ( test_left_neighbor ) ) + ", test_right_neighbor " + String ( sqrt ( test_right_neighbor ) ) );  
-}
-*/
 
 
 
