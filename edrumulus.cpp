@@ -964,7 +964,7 @@ else
   ampmap_const_step = 0.053f; // PD80R
 }
 
-const int   length_ampmap     = 20;
+const int   length_ampmap = 20;
 float       amplification_mapping[length_ampmap];
 for ( int i1 = 0; i1 < length_ampmap; i1++ )
 {
@@ -1028,6 +1028,19 @@ Serial.println ( "idx: " + String ( peak_velocity_idx_in_overload_history ) + ",
 */
 
         }
+
+
+// DOCUMENTATION
+// To find the best ampmap_const_step parameter for a new pad, do the following:
+// - set the new pad type in "edrumulus.set_pad_type             ( 0, Edrumulus::PD80R );" in edrumulus.ino
+// - disable code "// check live performance: only two traces" and enable "// export to real_data_clipping_compensation.m"
+// - compile and open Serieller Monitor and hit the pad mid/hard
+// - copy output from Serieller Monitor and copy it in the file tools/misc/real_data_clipping_compensation.m
+// - add a new x_newpad, change "x = x_pd80r;" and tweak the parameter ampmap_const_step so that the curve is just
+//   a bit below the black line (avoid overshoots if possible)
+// - add a new section here for the new pad and take the ampmap_const_step value from the real_data_clipping_compensation.m
+// - disable code "// export to real_data_clipping_compensation.m" and enable "// check live performance: only two traces"
+// - compile and open Serieller Plotter and check the performance of the clipping compensation for the new pad
 
 
 peak_storage[head_sensor_cnt] = sqrt ( s.peak_val );
