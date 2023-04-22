@@ -2,11 +2,13 @@
 
 The road map items are sorted by priority.
 
-- [ ] **Add support for ESP32-S3**
-
 - [ ] **Improve overload compensation algorithm**
 
   A good overload compensation is crutial for the rim shot detection (see Improve rim shot detection item).
+
+- [ ] **Use rim switch theshold in dB**
+
+  Do not use a linear parameter as it is implemented right now.
 
 - [ ] **Improve rim shot detection**
 
@@ -15,13 +17,22 @@ The road map items are sorted by priority.
   (i.e., that loud strikes on the middle of the mesh head triggers a rim shot because the clipped head signal is lower than
   the true peak and therefore we could get over the rim shot threshold since the rim trigger is not overloaded).
 
-- [ ] **Use rim switch theshold in dB**
-
-  Do not use a linear parameter as it is implemented right now.
-
 - [ ] **Support 3-zone pads like the Roland CY-15R**
 
   See [this discussion](https://github.com/corrados/edrumulus/discussions/73#discussioncomment-5623391).
+
+- [ ] **Add support for USB OTG MIDI for the ESP32-S3**
+
+  It seems we have to wait for the Github espressif/arduino-esp32 project to support the newest ESP-IDF
+  so that #include "tinyusb.h" does not give a compiler error. See esp-idf/examples/peripherals/usb/device/tusb_midi
+  for an example code.
+
+- [ ] **Testing support for ESP32-S3 with real front-end**
+
+  The initial implementation is done and ADC data from multiple inputs can be processed. Touching the
+  ESP32-S3 developer board gives a lot of MIDI note outputs which makes me believe that everything works
+  as expected. But to make sure it really works, it has to be tested with a real front-end circuit and
+  edrum pads connected which is still outstanding.
 
 - [ ] **Improve dynamics for Drumgizmo**
 
