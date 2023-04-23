@@ -18,13 +18,6 @@
 #include "edrumulus.h"
 
 
-
-// TEST global test clip limit
-const int new_clip_level = 700; // TEST
-
-
-
-
 Edrumulus::Edrumulus() :
   Fs ( 8000 ) // this is the most fundamental system parameter: system sampling rate
 {
@@ -224,14 +217,6 @@ Serial.println ( serial_print );
             stored_sample[j]            = sample[j];
             stored_overload_detected[j] = overload_detected[j];
           }
-
-          sample[2]            = sample[0];
-          overload_detected[2] = overload_detected[0];
-
-          pad[0].process_sample ( sample, 1 + number_inputs[i], overload_detected,
-                                  peak_found[0],  midi_velocity[0], midi_pos[0],
-                                  is_rim_shot[0], is_choke_on[0],   is_choke_off[0] );
-
         }
         else
         {
@@ -396,7 +381,7 @@ void Edrumulus::Pad::manage_delayed_initialization()
 void Edrumulus::Pad::initialize()
 {
   // in case we have a coupled sensor pad, the number of head sensors is 4, where 3 sensor signals and one sum
-  number_head_sensors = use_coupling ? 2 : 1; // 1 or 4 head sensor inputs
+  number_head_sensors = use_coupling ? 4 : 1; // 1 or 4 head sensor inputs
 
   // set algorithm parameters
   const float threshold_db = 20 * log10 ( ADC_MAX_NOISE_AMPL ) - 16.0f + pad_settings.velocity_threshold; // threshold range considering the maximum ADC noise level
@@ -820,29 +805,19 @@ float Edrumulus::Pad::process_sample ( const float* input,
         s.was_peak_found = true;
 
         // check overload status and correct the peak if necessary
+        float     right_neighbor, left_neighbor;
         const int peak_velocity_idx_in_overload_history = overload_hist_len - scan_time + peak_velocity_idx;
-
-const int peak_velocity_idx_in_x_sq_hist = x_sq_hist_len - scan_time + peak_velocity_idx;
-        
-        int       number_overloaded_samples = 1; // we check for overload history at peak position is > 0 below -> start with one
-
-// TEST
-bool corrected = false;
-bool neighbor_ok = true;
-float mean_neighbor = 0;
-float left_neighbor = 0;
-float right_neighbor = 0;
-float attenuation_compensation = 0;
-float amplification_compensation = 0;
+        const int peak_velocity_idx_in_x_sq_hist        = x_sq_hist_len - scan_time + peak_velocity_idx;
+        int       number_overloaded_samples             = 1; // we check for overload history at peak position is > 0 below -> start with one
+        bool      neighbor_ok                           = true; // initialize with ok
 
         if ( s.overload_hist[peak_velocity_idx_in_overload_history] > 0.0f )
         {
           // NOTE: the static_cast<int> is a workaround for the ESP32 compiler issue: "unknown opcode or format name 'lsiu'"
           // run to the right to find same overloads
-          int cur_idx = peak_velocity_idx_in_overload_history;
+          int cur_idx      = peak_velocity_idx_in_overload_history;
+          int cur_idx_x_sq = peak_velocity_idx_in_x_sq_hist;
 
-int cur_idx_x_sq = peak_velocity_idx_in_x_sq_hist;
-          
           while ( ( cur_idx < overload_hist_len - 1 ) && ( static_cast<int> ( s.overload_hist[cur_idx] ) == static_cast<int> ( s.overload_hist[cur_idx + 1] ) ) )
           {
             cur_idx++;
@@ -877,13 +852,12 @@ int cur_idx_x_sq = peak_velocity_idx_in_x_sq_hist;
 
           s.is_overloaded_state = ( number_overloaded_samples > max_num_overloads );
 
+// TEST new clipping compensation
 if ( neighbor_ok )
 {
-// TEST new clipping compensation
-corrected      = true;
-right_neighbor = sqrt ( right_neighbor );
-left_neighbor  = sqrt ( left_neighbor );
-mean_neighbor  = ( left_neighbor + right_neighbor ) / 2.0f;
+right_neighbor            = sqrt ( right_neighbor );
+left_neighbor             = sqrt ( left_neighbor );
+const float mean_neighbor = ( left_neighbor + right_neighbor ) / 2.0f;
 
 float ampmap_const_step;
 if ( pad_settings.pad_type == PD8 )
@@ -903,7 +877,7 @@ for ( int i1 = 0; i1 < length_ampmap; i1++ )
   amplification_mapping[i1] = min ( 5.0f, pow ( 10.0f, ( i1 * ampmap_const_step ) * ( i1 * ampmap_const_step ) ) );
 }
 
-amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor / s.peak_val;
+const float amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor / s.peak_val;
 s.peak_val *= amplification_compensation * amplification_compensation;
 
 }
