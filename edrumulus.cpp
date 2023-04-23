@@ -934,6 +934,8 @@ mean_neighbor_x = ( left_neighbor_x + right_neighbor_x ) / 2.0f;
 if ( s.overload_hist[peak_velocity_idx_in_overload_history] == 1 )
 {
   mean_neighbor_x *= -1; // correct sign
+  left_neighbor_x *= -1;
+  right_neighbor_x *= -1;
 }
 
 /*
@@ -972,8 +974,8 @@ for ( int i1 = 0; i1 < length_ampmap; i1++ )
   amplification_mapping[i1] = min ( 5.0f, pow ( 10.0f, ( i1 * ampmap_const_step ) * ( i1 * ampmap_const_step ) ) );
 }
 
-amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor_x / new_clip_level;
-//amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor / new_clip_level;
+//amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor_x / new_clip_level;
+amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor / new_clip_level;
 //s.peak_val = new_clip_level * new_clip_level * amplification_compensation * amplification_compensation;
 s.peak_val *= amplification_compensation * amplification_compensation;
 
@@ -1056,7 +1058,9 @@ if ( head_sensor_cnt == 1 )
 //  if ( is_overlaod )
 //  {
 //    Serial.println ( String ( peak_storage[0] ) + " " + String ( peak_storage[1] ) + " " +
-//                     String ( num_ov ) + " " + String ( mean_neighbor_x ) + " " + String ( amplification_compensation ) );
+//                     String ( num_ov ) + " " + String ( mean_neighbor ) + " " + String ( amplification_compensation ) + " " +
+//                     String ( left_neighbor_x ) + " " + String ( right_neighbor_x ) + " " +
+//                     String ( left_neighbor ) + " " + String ( right_neighbor ) );
 //  }
 
 //  Serial.println ( String ( 20 * log10 ( peak_storage[0] ) ) + " " + String ( 20 * log10 ( peak_storage[1] ) ) + " " +
