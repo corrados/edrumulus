@@ -972,13 +972,26 @@ Serial.println ( "idx: " + String ( peak_velocity_idx_in_overload_history ) + ",
         // at the end of the scan time search the history buffer for any switch on
         if ( s.was_peak_found )
         {
-          s.stored_is_rimshot = false;
+          s.stored_is_rimshot        = false;
+          int num_neighbor_switch_on = 0;
 
           for ( int i = 0; i < rim_shot_window_len; i++ )
           {
             if ( s.x_rim_switch_hist[i] > 0 )
             {
-              s.stored_is_rimshot = true;
+              num_neighbor_switch_on++;
+
+              // On the ESP32, we had seen crosstalk between head/rim inputs. To avoid that the interference
+              // signal from the head triggers the rim, we check that we have at least two neighbor samples
+              // above the rim threshold (the switch keeps on longer than the piezo signal)
+              if ( num_neighbor_switch_on >= 2 )
+              {
+                s.stored_is_rimshot = true;
+              }
+            }
+            else
+            {
+              num_neighbor_switch_on = 0;
             }
           }
 
