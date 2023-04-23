@@ -386,10 +386,12 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
 
       // real-time debugging support
 #ifdef USE_SERIAL_DEBUG_PLOTTING
-# ifndef TEENSYDUINO // MIDI+Serial possible with the Teensy
-#  undef USE_MIDI // only MIDI or Serial possible with the ESP32
-# endif
+# ifdef TEENSYDUINO // MIDI+Serial possible with the Teensy
       static const int debug_buffer_size    = 500;
+# else
+#  undef USE_MIDI // only MIDI or Serial possible with the ESP32
+      static const int debug_buffer_size    = 400; // smaller size needed for ESP32
+# endif
       static const int number_debug_buffers = 4;
       int              debug_buffer_idx     = 0;
       int              debug_out_cnt        = 0;
@@ -433,8 +435,8 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
 
       void DEBUG_START_PLOTTING()
       {
-        // set debug count to have the peak in the middle of the range
-        debug_out_cnt = debug_buffer_size - debug_buffer_size / 2;
+        // set debug count to have the peak shortly after the start of the range
+        debug_out_cnt = debug_buffer_size - debug_buffer_size / 4;
       }
 #else
       void DEBUG_ADD_VALUES ( const float, const float, const float, const float ) {}
