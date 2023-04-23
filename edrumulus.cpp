@@ -218,38 +218,15 @@ Serial.println ( serial_print );
         // special case: couple pad inputs for multiple head sensor capturing
         if ( i == 0 )
         {
-/*          
           // store the current input for pad 0
           for ( int j = 0; j < number_inputs[0]; j++ )
           {
             stored_sample[j]            = sample[j];
             stored_overload_detected[j] = overload_detected[j];
           }
-*/
 
           sample[2]            = sample[0];
           overload_detected[2] = overload_detected[0];
-
-
-// TEST introduce artificial clipping on channel 0
-if ( sample[2] >= new_clip_level )
-{
-  overload_LED_cnt     = overload_LED_on_time;
-  overload_detected[2] = 2;
-  sample[2]            = new_clip_level;
-}
-else if ( sample[2] <= -new_clip_level )
-{
-  overload_LED_cnt     = overload_LED_on_time;
-  overload_detected[2] = 1;
-  sample[2]            = -new_clip_level;
-}
-else
-{
-  overload_detected[2] = 0;
-}
-
-
 
           pad[0].process_sample ( sample, 1 + number_inputs[i], overload_detected,
                                   peak_found[0],  midi_velocity[0], midi_pos[0],
@@ -258,7 +235,6 @@ else
         }
         else
         {
-/*          
           // combine samples and process pad 0 which is the couple master per definition
           float sample_sum = 0.0f; // input 0 is the sum of the head sensor signal per definition
           for ( int j = number_inputs[i] - 1; j >= 0; j-- ) // count backwards to avoid overwriting
@@ -278,7 +254,6 @@ else
           pad[0].process_sample ( sample, 3 + number_inputs[i], overload_detected,
                                   peak_found[0],  midi_velocity[0], midi_pos[0],
                                   is_rim_shot[0], is_choke_on[0],   is_choke_off[0] );
-*/                                  
         }
       }
       else
@@ -542,7 +517,6 @@ void Edrumulus::Pad::initialize()
   {
     SSensor& s = sSensor[in];
     allocate_initialize ( &s.x_sq_hist,         x_sq_hist_len );       // memory for sqr(x) history
-    allocate_initialize ( &s.x_hist,         x_sq_hist_len );       // memory for x history
     allocate_initialize ( &s.bp_filt_hist_x,    bp_filt_len );         // band-pass filter x-signal history
     allocate_initialize ( &s.bp_filt_hist_y,    bp_filt_len - 1 );     // band-pass filter y-signal history
     allocate_initialize ( &s.x_low_hist,        x_low_hist_len );      // memory for low-pass filter result
@@ -661,17 +635,11 @@ float Edrumulus::Pad::process_sample ( const float* input,
 
   manage_delayed_initialization();
 
-
-// TEST
-float peak_storage[2];
-
-
   for ( int head_sensor_cnt = 0; head_sensor_cnt < number_head_sensors; head_sensor_cnt++ )
   {
     const int in               = head_sensor_cnt == 0 ? 0 : head_sensor_cnt + 1; // exclude rim input
     SSensor&  s                = sSensor[head_sensor_cnt];
     float*    s_x_sq_hist      = s.x_sq_hist; // shortcut for speed optimization
-    float*    s_x_hist      = s.x_hist; // shortcut for speed optimization
     int&      first_peak_delay = s.sResults.first_peak_delay; // use value in result struct
     bool      first_peak_found = false;
     int       peak_delay       = 0;
@@ -679,7 +647,6 @@ float peak_storage[2];
 
     // square input signal and store in FIFO buffer
     const float x_sq = input[in] * input[in];
-    update_fifo ( input[in],                  x_sq_hist_len,     s_x_hist );
     update_fifo ( x_sq,                  x_sq_hist_len,     s_x_sq_hist );
     update_fifo ( overload_detected[in], overload_hist_len, s.overload_hist );
 
@@ -863,13 +830,8 @@ const int peak_velocity_idx_in_x_sq_hist = x_sq_hist_len - scan_time + peak_velo
 bool corrected = false;
 bool neighbor_ok = true;
 float mean_neighbor = 0;
-float mean_neighbor_x = 0;
 float left_neighbor = 0;
 float right_neighbor = 0;
-float left_neighbor_x = 0;
-float right_neighbor_x = 0;
-float test_left_neighbor = 0;
-float test_right_neighbor = 0;
 float attenuation_compensation = 0;
 float amplification_compensation = 0;
 
@@ -890,8 +852,6 @@ int cur_idx_x_sq = peak_velocity_idx_in_x_sq_hist;
           if ( cur_idx_x_sq + 1 < x_sq_hist_len )
           {
             right_neighbor = s_x_sq_hist[cur_idx_x_sq + 1];
-            right_neighbor_x = s_x_hist[cur_idx_x_sq + 1];
-            test_right_neighbor = s_x_sq_hist[cur_idx_x_sq]; // just for testing -> must be 500
           }
           else
           {
@@ -900,7 +860,6 @@ int cur_idx_x_sq = peak_velocity_idx_in_x_sq_hist;
 
           // run to the left to find same overloads
           cur_idx = peak_velocity_idx_in_overload_history;
-cur_idx_x_sq = peak_velocity_idx_in_x_sq_hist;
           while ( ( cur_idx > 1 ) && ( static_cast<int> ( s.overload_hist[cur_idx] ) == static_cast<int> ( s.overload_hist[cur_idx - 1] ) ) )
           {
             cur_idx--;
@@ -910,8 +869,6 @@ cur_idx_x_sq = peak_velocity_idx_in_x_sq_hist;
           if ( cur_idx_x_sq - 1 >= 0 )
           {
             left_neighbor = s_x_sq_hist[cur_idx_x_sq - 1];
-            left_neighbor_x = s_x_hist[cur_idx_x_sq - 1];
-            test_left_neighbor = s_x_sq_hist[cur_idx_x_sq]; // just for testing -> must be 500
           }
           else
           {
@@ -920,22 +877,13 @@ cur_idx_x_sq = peak_velocity_idx_in_x_sq_hist;
 
           s.is_overloaded_state = ( number_overloaded_samples > max_num_overloads );
 
-if ( neighbor_ok && ( head_sensor_cnt == 1 ) )
+if ( neighbor_ok )
 {
 // TEST new clipping compensation
-//static const float attenuation_mapping[] = { 0.0f, 6.0f, 11.0f, 30.0f, 50.0f };
-corrected                       = true;
-right_neighbor                  = sqrt ( right_neighbor );
-left_neighbor                   = sqrt ( left_neighbor );
-//float attenuation_compensation1 = -attenuation_mapping[min ( 4, number_overloaded_samples )] - 20 * log10 ( new_clip_level );
-mean_neighbor                   = ( left_neighbor + right_neighbor ) / 2.0f;
-
-mean_neighbor_x = ( left_neighbor_x + right_neighbor_x ) / 2.0f;
-if ( s.overload_hist[peak_velocity_idx_in_overload_history] == 1 )
-{
-  mean_neighbor_x *= -1; // correct sign
-}
-
+corrected      = true;
+right_neighbor = sqrt ( right_neighbor );
+left_neighbor  = sqrt ( left_neighbor );
+mean_neighbor  = ( left_neighbor + right_neighbor ) / 2.0f;
 
 float ampmap_const_step;
 if ( pad_settings.pad_type == PD8 )
@@ -947,32 +895,19 @@ else
   ampmap_const_step = 0.053f; // PD80R
 }
 
-const int   length_ampmap = 20;
-float       amplification_mapping[length_ampmap];
+const int length_ampmap = 20;
+float     amplification_mapping[length_ampmap];
 for ( int i1 = 0; i1 < length_ampmap; i1++ )
 {
   // never to higher than 5
   amplification_mapping[i1] = min ( 5.0f, pow ( 10.0f, ( i1 * ampmap_const_step ) * ( i1 * ampmap_const_step ) ) );
 }
 
-amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor_x / new_clip_level;
+amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor / s.peak_val;
 s.peak_val *= amplification_compensation * amplification_compensation;
 
 }
         }
-
-peak_storage[head_sensor_cnt] = sqrt ( s.peak_val );
-
-if ( head_sensor_cnt == 1 )
-{
-  const bool is_overlaod = s.overload_hist[peak_velocity_idx_in_overload_history] > 0.0f;
-  const int  num_ov      = is_overlaod ? number_overloaded_samples : 0;
-
-  // check live performance: only two traces
-  Serial.println ( String ( peak_storage[0] ) + " " + String ( peak_storage[1] ) );
-}
-
-
 
         // calculate the MIDI velocity value with clipping to allowed MIDI value range
         s.stored_midi_velocity = velocity_factor * pow ( s.peak_val * ADC_noise_peak_velocity_scaling, velocity_exponent ) + velocity_offset;
