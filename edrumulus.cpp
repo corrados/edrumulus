@@ -860,14 +860,16 @@ float Edrumulus::Pad::process_sample ( const float* input,
 
           s.is_overloaded_state = ( number_overloaded_samples > max_num_overloads );
 
-// TEST new clipping compensation
-if ( neighbor_ok )
-{
-  const float mean_neighbor = ( sqrt ( left_neighbor ) + sqrt ( right_neighbor ) ) / 2.0f;
-  const float amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor / s.peak_val;
-  s.peak_val *= amplification_compensation * amplification_compensation;
-}
+          // clipping compensation (see tools/misc/clipping_compensation.m)
+          const float peak_val_sqrt = sqrt ( s.peak_val );
+          float       mean_neighbor = peak_val_sqrt; // if no neighbor can be calculated, use safest value, i.e., lowest resulting correction
+          if ( neighbor_ok )
+          {
+            mean_neighbor = ( sqrt ( left_neighbor ) + sqrt ( right_neighbor ) ) / 2.0f;
+          }
 
+          const float amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor / sqrt ( s.peak_val );
+          s.peak_val                            *= amplification_compensation * amplification_compensation;
         }
 
         // calculate the MIDI velocity value with clipping to allowed MIDI value range
@@ -1077,11 +1079,10 @@ if ( neighbor_ok )
     if ( s.was_peak_found && ( !pos_sense_is_used || s.was_pos_sense_ready ) && ( !rim_shot_is_used || s.was_rim_shot_ready ) )
     {
 
-// TODO in case of signal clipping, we cannot use the positional sensing and rim shot detection results
+// TODO in case of signal clipping, we cannot use the positional sensing results
 if ( s.is_overloaded_state )
 {
-  s.stored_is_rimshot = false; // as a quick hack, assume we do not have a rim shot
-  s.stored_midi_pos   = 0;     // overloads will only happen if the strike is located near the middle of the pad
+  s.stored_midi_pos = 0; // overloads will only happen if the strike is located near the middle of the pad
 }
 
 // TODO:
