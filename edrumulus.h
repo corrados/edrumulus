@@ -234,13 +234,15 @@ protected:
         bool       pos_invert;
         bool       rim_use_low_freq_bp;
         float      rim_shot_window_len_ms;
+        float      clip_comp_ampmap_step;
       };
 
       void apply_preset_pad_settings();
       void manage_delayed_initialization();
       void initialize(); // this function should not be called directly but use sched_init() instead
       void sched_init() { init_delay_cnt = init_delay_value; }; // schedule initialization function (for delayed initialization)
-      const float init_delay_value_s = 0.2; // init delay value in seconds
+      const float      init_delay_value_s = 0.2; // init delay value in seconds
+      static const int length_ampmap      = 20;  // maxmimum number of amplification mappings for clipping compensation
 
       // band-pass filter coefficients (they are constant and must not be changed)
       const int   bp_filt_len           = 5;
@@ -329,6 +331,7 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       int          overload_num_thresh_2db;
       int          overload_num_thresh_3db;
       int          overload_num_thresh_4db;
+      float        amplification_mapping[length_ampmap];
       int          scan_time;
       int          pre_scan_time;
       int          total_scan_time;

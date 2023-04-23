@@ -476,6 +476,14 @@ void Edrumulus::Pad::initialize()
   const int lp_half_len = ( lp_filt_len - 1 ) / 2;
   x_low_hist_len        = x_sq_hist_len + lp_filt_len;
 
+  // clipping compensation initialization
+  for ( int i = 0; i < length_ampmap; i++ )
+  {
+    // never to higher than 5
+    amplification_mapping[i] = min ( 5.0f, pow ( 10.0f, ( i * pad_settings.clip_comp_ampmap_step ) *
+                                                        ( i * pad_settings.clip_comp_ampmap_step ) ) );
+  }
+
   // pre-calculate equations needed for 3 sensor get position function
   get_pos_x0 =  0.433f; get_pos_y0 =  0.25f; // sensor 0 position
   get_pos_x1 =  0.0;    get_pos_y1 = -0.5f;  // sensor 1 position
@@ -855,32 +863,11 @@ float Edrumulus::Pad::process_sample ( const float* input,
 // TEST new clipping compensation
 if ( neighbor_ok )
 {
-right_neighbor            = sqrt ( right_neighbor );
-left_neighbor             = sqrt ( left_neighbor );
-const float mean_neighbor = ( left_neighbor + right_neighbor ) / 2.0f;
-
-float ampmap_const_step;
-if ( pad_settings.pad_type == PD8 )
-{
-  ampmap_const_step = 0.4; // NOTE use mean_neighbor_x for PD8
-}
-else
-{
-  ampmap_const_step = 0.053f; // PD80R
+  const float mean_neighbor = ( sqrt ( left_neighbor ) + sqrt ( right_neighbor ) ) / 2.0f;
+  const float amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor / s.peak_val;
+  s.peak_val *= amplification_compensation * amplification_compensation;
 }
 
-const int length_ampmap = 20;
-float     amplification_mapping[length_ampmap];
-for ( int i1 = 0; i1 < length_ampmap; i1++ )
-{
-  // never to higher than 5
-  amplification_mapping[i1] = min ( 5.0f, pow ( 10.0f, ( i1 * ampmap_const_step ) * ( i1 * ampmap_const_step ) ) );
-}
-
-const float amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor / s.peak_val;
-s.peak_val *= amplification_compensation * amplification_compensation;
-
-}
         }
 
         // calculate the MIDI velocity value with clipping to allowed MIDI value range

@@ -51,6 +51,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
   pad_settings.pos_invert                = false;  // pad specific parameter: invert the positional sensing metric
   pad_settings.rim_use_low_freq_bp       = true;   // pad specific parameter: use low frequency band-pass filter for rim shot detection
   pad_settings.rim_shot_window_len_ms    = 3.5f;   // pad specific parameter: window length for rim shot detection
+  pad_settings.clip_comp_ampmap_step     = 0.053f; // pad specific parameter: clipping compensation amplitude mapping step, conservative value from PD80R as default
 
   switch ( pad_settings.pad_type )
   {
@@ -80,18 +81,19 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case PD80R:
-      pad_settings.velocity_sensitivity = 2;
-      pad_settings.rim_shot_treshold    = 11;
-      pad_settings.pos_threshold        = 11;
-      pad_settings.pos_sensitivity      = 10;
-      pad_settings.scan_time_ms         = 3.0f;
-      pad_settings.decay_len2_ms        = 75.0f;
-      pad_settings.decay_grad_fact2     = 300.0f;
-      pad_settings.decay_len3_ms        = 300.0f;
-      pad_settings.decay_grad_fact3     = 100.0f;
-      pad_settings.rim_use_low_freq_bp  = false;
-      pad_settings.pos_sense_is_used    = true;
-      pad_settings.rim_shot_is_used     = true;
+      pad_settings.velocity_sensitivity  = 2;
+      pad_settings.rim_shot_treshold     = 11;
+      pad_settings.pos_threshold         = 11;
+      pad_settings.pos_sensitivity       = 10;
+      pad_settings.scan_time_ms          = 3.0f;
+      pad_settings.decay_len2_ms         = 75.0f;
+      pad_settings.decay_grad_fact2      = 300.0f;
+      pad_settings.decay_len3_ms         = 300.0f;
+      pad_settings.decay_grad_fact3      = 100.0f;
+      pad_settings.rim_use_low_freq_bp   = false;
+      pad_settings.pos_sense_is_used     = true;
+      pad_settings.rim_shot_is_used      = true;
+      pad_settings.clip_comp_ampmap_step = 0.053f;
       break;
 
     case PDX100:
@@ -134,21 +136,22 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case PD8:
-      pad_settings.is_rim_switch        = true;
-      pad_settings.velocity_sensitivity = 3;
-      pad_settings.pos_threshold        = 26;
-      pad_settings.pos_sensitivity      = 11;
-      pad_settings.rim_shot_treshold    = 16;
-      pad_settings.mask_time_ms         = 7;
-      pad_settings.scan_time_ms         = 1.3f;
-      pad_settings.decay_est_delay_ms   = 6.0f;
-      pad_settings.decay_fact_db        = 5.0f;
-      pad_settings.decay_len2_ms        = 30.0f;
-      pad_settings.decay_grad_fact2     = 600.0f;
-      pad_settings.decay_len3_ms        = 150.0f;
-      pad_settings.decay_grad_fact3     = 120.0f;
-      pad_settings.pos_sense_is_used    = true;
-      pad_settings.rim_shot_is_used     = true;
+      pad_settings.is_rim_switch         = true;
+      pad_settings.velocity_sensitivity  = 3;
+      pad_settings.pos_threshold         = 26;
+      pad_settings.pos_sensitivity       = 11;
+      pad_settings.rim_shot_treshold     = 16;
+      pad_settings.mask_time_ms          = 7;
+      pad_settings.scan_time_ms          = 1.3f;
+      pad_settings.decay_est_delay_ms    = 6.0f;
+      pad_settings.decay_fact_db         = 5.0f;
+      pad_settings.decay_len2_ms         = 30.0f;
+      pad_settings.decay_grad_fact2      = 600.0f;
+      pad_settings.decay_len3_ms         = 150.0f;
+      pad_settings.decay_grad_fact3      = 120.0f;
+      pad_settings.pos_sense_is_used     = true;
+      pad_settings.rim_shot_is_used      = true;
+      pad_settings.clip_comp_ampmap_step = 0.4f;
       break;
 
     case TP80:
