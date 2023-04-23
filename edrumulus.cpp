@@ -825,7 +825,6 @@ float Edrumulus::Pad::process_sample ( const float* input,
           // run to the right to find same overloads
           int cur_idx      = peak_velocity_idx_in_overload_history;
           int cur_idx_x_sq = peak_velocity_idx_in_x_sq_hist;
-
           while ( ( cur_idx < overload_hist_len - 1 ) && ( static_cast<int> ( s.overload_hist[cur_idx] ) == static_cast<int> ( s.overload_hist[cur_idx + 1] ) ) )
           {
             cur_idx++;
@@ -842,7 +841,8 @@ float Edrumulus::Pad::process_sample ( const float* input,
           }
 
           // run to the left to find same overloads
-          cur_idx = peak_velocity_idx_in_overload_history;
+          cur_idx      = peak_velocity_idx_in_overload_history;
+          cur_idx_x_sq = peak_velocity_idx_in_x_sq_hist;
           while ( ( cur_idx > 1 ) && ( static_cast<int> ( s.overload_hist[cur_idx] ) == static_cast<int> ( s.overload_hist[cur_idx - 1] ) ) )
           {
             cur_idx--;
