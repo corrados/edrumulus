@@ -420,7 +420,7 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
           {
             for ( int j = 0; j < number_debug_buffers; j++ )
             {
-              serial_print += String ( 10.0f * log10 ( debug_buffer[j][i % debug_buffer_size] ) ) + "\t";
+              serial_print += String ( 10.0f * log10 ( max ( 1e-3f, debug_buffer[j][i % debug_buffer_size] ) ) ) + "\t";
             }
             serial_print += "\n";
           }
