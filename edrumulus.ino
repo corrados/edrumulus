@@ -55,6 +55,9 @@ void setup()
                                                                  &number_pads,
                                                                  &status_LED_pin );
 
+#if defined ( USE_SERIAL_DEBUG_PLOTTING ) && defined ( ESP_PLATFORM )
+  number_pads = min ( number_pads, 7 ); // only max. 7 pads are supported for ESP32 serial debug plotting
+#endif
 #ifdef USE_MIDI
   MYMIDI.begin();
 #endif
