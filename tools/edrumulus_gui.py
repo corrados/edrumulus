@@ -208,11 +208,11 @@ def ncurses_input_loop():
       else:
         process_user_input(chr(ch))
 
+    time.sleep(0.01) # moving sleep up before ncurses_update_param_outputs() fixes timing issue on MacOS
     if do_update_midi_in or do_update_display:
       ncurses_update_param_outputs()
       do_update_display = False
       do_update_midi_in = False
-    time.sleep(0.01)
 
 
 ################################################################################
