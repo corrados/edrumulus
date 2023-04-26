@@ -4,18 +4,20 @@ The road map items are sorted by priority.
 
 - [ ] **Improve overload compensation algorithm**
 
-  A good overload compensation is crutial for the rim shot detection (see Improve rim shot detection item).
-
-- [ ] **Use rim switch theshold in dB**
-
-  Do not use a linear parameter as it is implemented right now.
+  The current overload compensation algorithms works on fix steps which leads to the fact that in the high velocity
+  MIDI ranges there can only be certain values achieved (quantized). It would be better to have a continuous increase
+  of MIDI velocity values even in case of an overload.
 
 - [ ] **Improve rim shot detection**
 
   Especially for pads like the PDA-120L where the piezos are located near the edge, the rim shot detection does perform poorly.
-  The rim shot detection for non-rim-switch pads is highly influenced on the overload of the ADC. This has to be investigated
-  (i.e., that loud strikes on the middle of the mesh head triggers a rim shot because the clipped head signal is lower than
-  the true peak and therefore we could get over the rim shot threshold since the rim trigger is not overloaded).
+
+  It seems that the previous assumption about overloaded signals influence the rim shot detection performance is not true.
+  Setting max_num_overloads=0 does still give false rim shot detections on the PD-80R in case of loud strikes in the middle
+  of the pad (I assume that hitting the piezo cone directly causes the problem).
+
+  A quick test showed that rim_use_low_freq_bp=true works better on the PD-80R and also if I do not disable rim shots
+  if is_overloaded_state than this does not change the rim shot detection behavior on, at least, the PD-80R.
 
 - [ ] **Support 3-zone pads like the Roland CY-15R**
 
@@ -51,6 +53,10 @@ The road map items are sorted by priority.
   This can be used to improve the positional sensing. E.g., if the reliability is low, we could
   use the position of the last detected peak if it is close to the current peak in time (e.g., if
   we have a fast roll situation).
+
+- [ ] **Use rim switch theshold in dB**
+
+  Do not use a linear parameter as it is implemented right now.
 
 - [ ] **For the ESP32 prototype, adjust the ADC_noise_peak_velocity_scaling in edrumulus.h correctly**
 
