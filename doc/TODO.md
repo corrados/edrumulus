@@ -19,6 +19,11 @@ The road map items are sorted by priority.
   A quick test showed that rim_use_low_freq_bp=true works better on the PD-80R and also if I do not disable rim shots
   if is_overloaded_state than this does not change the rim shot detection behavior on, at least, the PD-80R.
 
+  I just did a comparison with two PD-80R, where one was connected to Edrumulus and one to the Tom1 input
+  of the Roland TD-27. It showed that the rim shot detection performance of Edrumulus was at least as good
+  as the TD-27 module. Maybe the Tom1 input is not as good as the dedicated Snare input of the TD-27 but for
+  now I assume that this is not the case ;-).
+
 - [ ] **Support 3-zone pads like the Roland CY-15R**
 
   See [this discussion](https://github.com/corrados/edrumulus/discussions/73#discussioncomment-5623391).
