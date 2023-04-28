@@ -8,31 +8,19 @@ The road map items are sorted by priority.
   MIDI ranges there can only be certain values achieved (quantized). It would be better to have a continuous increase
   of MIDI velocity values even in case of an overload.
 
-- [ ] **Improve rim shot detection**
-
-  Especially for pads like the PDA-120L where the piezos are located near the edge, the rim shot detection does perform poorly.
-
-  It seems that the previous assumption about overloaded signals influence the rim shot detection performance is not true.
-  Setting max_num_overloads=0 does still give false rim shot detections on the PD-80R in case of loud strikes in the middle
-  of the pad (I assume that hitting the piezo cone directly causes the problem).
-
-  A quick test showed that rim_use_low_freq_bp=true works better on the PD-80R and also if I do not disable rim shots
-  if is_overloaded_state than this does not change the rim shot detection behavior on, at least, the PD-80R.
-
-  I just did a comparison with two PD-80R, where one was connected to Edrumulus and one to the Tom1 input
-  of the Roland TD-27. It showed that the rim shot detection performance of Edrumulus was at least as good
-  as the TD-27 module. Maybe the Tom1 input is not as good as the dedicated Snare input of the TD-27 but for
-  now I assume that this is not the case ;-).
-
-- [ ] **Support 3-zone pads like the Roland CY-15R**
-
-  See [this discussion](https://github.com/corrados/edrumulus/discussions/73#discussioncomment-5623391).
-
 - [ ] **Add support for USB OTG MIDI for the ESP32-S3**
 
   It seems we have to wait for the Github espressif/arduino-esp32 project to support the newest ESP-IDF
   so that #include "tinyusb.h" does not give a compiler error. See esp-idf/examples/peripherals/usb/device/tusb_midi
   for an example code.
+
+- [ ] **Support 3-zone pads like the Roland CY-15R**
+
+  See [this discussion](https://github.com/corrados/edrumulus/discussions/73#discussioncomment-5623391).
+
+- [ ] **Improve rim shot detection**
+
+  Especially for pads like the PDA-120L where the piezos are located near the edge, the rim shot detection does perform poorly.
 
 - [ ] **Testing support for ESP32-S3 with real front-end**
 
