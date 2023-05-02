@@ -2,14 +2,6 @@
 
 The road map items are sorted by priority.
 
-- [ ] **Rubber pad curve**
-
-  The curve type LINEAR was calibrated against the Roland module using a mesh head pad like the PD-80R.
-  Using a rubber pad like the PD-8, this seems to need a different curve type, the LOG2 curve to match
-  the MIDI notes at same strike velocity of the Roland module (where the reference pad is the Roland
-  digital snare).<br/>
-  The question is why we need a different curve for the rubber pads.
-
 - [ ] **Improve overload compensation algorithm**
 
   The current overload compensation algorithms works on fix steps which leads to the fact that in the high velocity
