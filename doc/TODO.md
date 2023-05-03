@@ -29,18 +29,6 @@ The road map items are sorted by priority.
   as expected. But to make sure it really works, it has to be tested with a real front-end circuit and
   edrum pads connected which is still outstanding.
 
-- [ ] **Improve dynamics for Drumgizmo**
-
-  Could be done for official drum kits as well as self-recorded kit.
-
-  To debug the dynamics:
-  - Use MIDI file 1:10:127 as a reference.
-  - Record audio.
-  - Use DGEdit to estimate the powers.
-  - Check the estimated powers.
-
-  Maybe Bent can help out here.
-
 - [ ] **Introduce a first peak detection reliability**
 
   This can be used to improve the positional sensing. E.g., if the reliability is low, we could
