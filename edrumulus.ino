@@ -379,6 +379,14 @@ void loop()
         edrumulus.write_setting          ( selected_pad, 13, value );
         confirm_setting                  ( controller,       value, false );
       }
+
+      // controller 118: mask time
+      if ( controller == 118 )
+      {
+        edrumulus.set_mask_time ( selected_pad,     value );
+        edrumulus.write_setting ( selected_pad, 14, value );
+        confirm_setting         ( controller,       value, false );
+      }
     }
   }
 #endif
@@ -407,6 +415,7 @@ void confirm_setting ( const int  controller,
     MYMIDI.sendNoteOff ( 112, edrumulus.get_midi_note_norm ( selected_pad ), 1 );
     MYMIDI.sendNoteOff ( 113, edrumulus.get_midi_note_rim ( selected_pad ), 1 );
     MYMIDI.sendNoteOff ( 114, edrumulus.get_cancellation ( selected_pad ), 1 );
+    MYMIDI.sendNoteOff ( 118, edrumulus.get_mask_time ( selected_pad ), 1 );
     MYMIDI.sendNoteOff ( 126, VERSION_MINOR, 1 );
     MYMIDI.sendNoteOff ( 127, VERSION_MAJOR, 1 );
   }
@@ -438,6 +447,7 @@ void read_settings()
     edrumulus.set_cancellation         ( i,                                      edrumulus.read_setting ( i, 11 ) );
     edrumulus.set_midi_note_open_norm  ( i,                                      edrumulus.read_setting ( i, 12 ) );
     edrumulus.set_midi_note_open_rim   ( i,                                      edrumulus.read_setting ( i, 13 ) );
+    edrumulus.set_mask_time            ( i,                                      edrumulus.read_setting ( i, 14 ) );
   }
   edrumulus.set_spike_cancel_level ( edrumulus.read_setting ( number_pads, 0 ) );
 }
@@ -461,6 +471,7 @@ void write_all_settings()
     edrumulus.write_setting ( i, 11, edrumulus.get_cancellation         ( i ) );
     edrumulus.write_setting ( i, 12, edrumulus.get_midi_note_open_norm  ( i ) );
     edrumulus.write_setting ( i, 13, edrumulus.get_midi_note_open_rim   ( i ) );
+    edrumulus.write_setting ( i, 14, edrumulus.get_mask_time            ( i ) );
   }
   edrumulus.write_setting ( number_pads, 0, edrumulus.get_spike_cancel_level() );
 }
