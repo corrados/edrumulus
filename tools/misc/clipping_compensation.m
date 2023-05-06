@@ -8,16 +8,25 @@ pkg load signal
 close all;
 
 pad = "pd120";
-pad = "pd80r";
+%pad = "pd80r";
 %pad = "pd8";
 %pad = "pd5";
+use_neighbors = false;%true;%
 
 if strcmp(pad, "pd120")
   test_files = {"../../algorithm/signals/pd120_single_hits.wav", {9917:9931, 14974:14985, 22525:22538, 35014:35025}};
-  ampmap_const_step = 0.09;
+  if use_neighbors
+    ampmap_const_step = 0.09;
+  else
+    ampmap_const_step = 0.08;
+  end
 elseif strcmp(pad, "pd80r")
   test_files = {"../../algorithm/signals/pd80r.wav", {48891:48900, 61075:61086, 202210:202222, 242341:242353}};
-  ampmap_const_step = 0.11;
+  if use_neighbors
+    ampmap_const_step = 0.11;
+  else
+    ampmap_const_step = 0.1;
+  end
 elseif strcmp(pad, "pd8")
   test_files = {"../../algorithm/signals/pd8.wav", {67140:67146, 70170:70175, 73359:73363, 246312:246317, 252036:252039, 296753:296757}};
   ampmap_const_step = 0.57;
@@ -30,6 +39,9 @@ clip_limit                 = 1900; % approx. for 12 bit ADC
 clip_factor_range          = 1 ./ (1:-0.01:0.04);
 length_ampmap              = 20;
 amplification_mapping      = 10 .^ ([0:ampmap_const_step:ampmap_const_step * length_ampmap] .^ 2);
+
+%amplification_mapping = 10 .^ ((0:20) / 20); % 1 dB per number of clipping samples -> current implementation in C++
+
 num_clipped_val            = [];
 amplification_compensation = [];
 cnt                        = 1;
@@ -87,8 +99,12 @@ for i = 1:size(test_files, 1)
           % y = x_max / l
           % a = x_max / x
           % -> y = a * x / l
-          amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt)) * neighbor / clip_limit;
-          correction_offset_applied            = true;
+          if use_neighbors
+            amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt)) * neighbor / clip_limit;
+          else
+            amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt));
+          end
+          correction_offset_applied = true;
 
 % TEST
 %amplification_compensation(idx, cnt) = min(amplification_compensation(idx, cnt), amplification_mapping(1 + num_clipped_val(idx, cnt) - 1));
