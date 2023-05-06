@@ -1,5 +1,21 @@
 # Edrumulus Project Log
 
+
+## 2023-04-28 Rim shot detection findings
+
+  It seems the assumption that overloaded signals influence the rim shot detection
+  performance is not true. Setting max_num_overloads=0 (i.e. rim shots are disabled if
+  any clipping is detected) does still give false rim shot detections on the PD-80R in
+  case of loud strikes in the middle of the pad. It is quite abvious that hitting the
+  piezo cone directly is the real cause of the problem.<br/>
+  A test showed that rim_use_low_freq_bp=true works better on the PD-80R. Also, if the
+  rim shot detection is not disabled if is_overloaded_state than this does not change
+  the rim shot detection behavior on, at least, the PD-80R.<br/>
+  I just did a comparison with two PD-80R, where one was connected to Edrumulus and one
+  to the Tom1 input of the Roland TD-27. It showed that the rim shot detection performance
+  of Edrumulus was at least as good as the TD-27 module. It might be the case that the
+  Tom1 input is not as good as the dedicated Snare input of the TD-27.
+
 ## 2023-04-18 Added initial support for ESP32-S3
 
   Initial support for the ESP32-S3 developer board was implemented. Edrumulus runs without crashing

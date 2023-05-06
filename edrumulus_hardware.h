@@ -37,21 +37,15 @@ enum Espikestate
 
 
 // -----------------------------------------------------------------------------
-// Teensy 4.0/4.1/3.6 ----------------------------------------------------------
+// Teensy 4.0/4.1 --------------------------------------------------------------
 // -----------------------------------------------------------------------------
 #ifdef TEENSYDUINO
 
 #include <ADC.h>
 
 #define BOARD_LED_PIN        13    // pin number of the LED on the Teensy 4.0 board
-
-#ifdef ARDUINO_TEENSY36
-# define ADC_MAX_RANGE       65536 // Teensy 3.6 ADC has 16 bits -> 0..65535
-# define ADC_MAX_NOISE_AMPL  20    // highest assumed ADC noise amplitude in the ADC input range unit (measured)
-#else
-# define ADC_MAX_RANGE       4096  // Teensy 4.0/4.1 ADC has 12 bits -> 0..4095
-# define ADC_MAX_NOISE_AMPL  8     // highest assumed ADC noise amplitude in the ADC input range unit (measured)
-#endif
+#define ADC_MAX_RANGE        4096  // Teensy 4.0/4.1 ADC has 12 bits -> 0..4095
+#define ADC_MAX_NOISE_AMPL   8     // highest assumed ADC noise amplitude in the ADC input range unit (measured)
 
 class Edrumulus_hardware
 {

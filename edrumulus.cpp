@@ -435,15 +435,14 @@ void Edrumulus::Pad::initialize()
   // and apply the MIDI curve:
   // ( 126 / ( pow ( curve_param, 126 ) - 1 ) ) * ( pow ( curve_param, i - 1 ) - 1 ) + 1.
   // After applying some calculations (see calc_midi_curve_parameters.pdf), we get the following parameters:
-  float curve_param;
-
+  float curve_param = 1.018f; // this curve parameter comes close to what Roland is doing for "linear"
   switch ( pad_settings.curve_type )
   {
-    case EXP1:            curve_param = 1.035f; break;
-    case EXP2:            curve_param = 1.04f;  break;
-    case LOG1:            curve_param = 1.018f; break;
-    case LOG2:            curve_param = 1.01f;  break;
-    default: /* LINEAR */ curve_param = 1.023f; break; // this curve parameter comes close to what Roland is doing for "linear"
+    case EXP1: curve_param *= 1.012f;    break;
+    case EXP2: curve_param *= 1.017f;    break;
+    case LOG1: curve_param *= 0.995f;    break;
+    case LOG2: curve_param *= 0.987f;    break;
+    default: /* LINEAR, nothing to do */ break;
   }
 
   velocity_factor = 126.0f / ( ( pow ( curve_param, 126.0f ) - 1 ) * curve_param *
