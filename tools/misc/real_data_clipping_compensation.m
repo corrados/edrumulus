@@ -375,7 +375,14 @@ a_low  = amplification_mapping(1 + y(:, 3));
 a_high = amplification_mapping(1 + y(:, 3) + 1);
 r      = y(:, 4) ./ clip_limit;
 a_diff = a_high - a_low;
-%amplification_compensation = amplification_mapping(1 + y(:, 3)) + r .* a_diff;
+amplification_compensation = amplification_mapping(1 + y(:, 3)) + r .* a_diff;
+
+
+% new test2
+ampmap_const_step     = 0.055; % PD80R
+amplification_mapping = transpose(10 .^ ([0:ampmap_const_step:ampmap_const_step * 20] .^ 2));
+%amplification_compensation = amplification_mapping(1 + y(:, 3)) + y(:, 4) / clip_limit - 1;
+
 
 
 %figure; plot(20 * log10(700:2000), 20 * log10(700:2000), 'k-.');

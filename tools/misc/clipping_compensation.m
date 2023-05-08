@@ -11,19 +11,28 @@ pad = "pd120";
 %pad = "pd80r";
 %pad = "pd8";
 %pad = "pd5";
-use_neighbors = false;%true;%
+use_neighbors     = true;%false;%true;%
+use_new_algorithm = true;%false;%true;
 
 if strcmp(pad, "pd120")
   test_files = {"../../algorithm/signals/pd120_single_hits.wav", {9917:9931, 14974:14985, 22525:22538, 35014:35025}};
   if use_neighbors
-    ampmap_const_step = 0.09;
+    if use_new_algorithm
+      ampmap_const_step = 0.083;
+    else
+      ampmap_const_step = 0.09;
+    end
   else
     ampmap_const_step = 0.08;
   end
 elseif strcmp(pad, "pd80r")
   test_files = {"../../algorithm/signals/pd80r.wav", {48891:48900, 61075:61086, 202210:202222, 242341:242353}};
   if use_neighbors
-    ampmap_const_step = 0.11;
+    if use_new_algorithm
+      ampmap_const_step = 0.1;
+    else
+      ampmap_const_step = 0.11;
+    end
   else
     ampmap_const_step = 0.1;
   end
@@ -100,7 +109,23 @@ for i = 1:size(test_files, 1)
           % a = x_max / x
           % -> y = a * x / l
           if use_neighbors
-            amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt)) * neighbor / clip_limit;
+            if use_new_algorithm
+
+% TEST
+%a_low  = amplification_mapping(1 + num_clipped_val(idx, cnt));
+%a_high = amplification_mapping(1 + num_clipped_val(idx, cnt) + 1);
+%a_diff = a_high - a_low;
+%r      = neighbor / clip_limit;
+%amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt)) + r .* a_diff;
+
+%amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt)) + neighbor / clip_limit - 1;
+
+amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt)) + neighbor / clip_limit - 1;
+
+            else
+              amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt)) * neighbor / clip_limit;
+            end
+
           else
             amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt));
           end
