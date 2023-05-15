@@ -18,7 +18,7 @@ if strcmp(pad, "pd120")
   test_files = {"../../algorithm/signals/pd120_single_hits.wav", {9917:9931, 14974:14985, 22525:22538, 35014:35025}};
   if use_neighbors
     if use_new_algorithm
-      ampmap_const_step = 0.083;
+      ampmap_const_step = 0.075;%83;
     else
       ampmap_const_step = 0.09;
     end
@@ -29,7 +29,7 @@ elseif strcmp(pad, "pd80r")
   test_files = {"../../algorithm/signals/pd80r.wav", {48891:48900, 61075:61086, 202210:202222, 242341:242353}};
   if use_neighbors
     if use_new_algorithm
-      ampmap_const_step = 0.1;
+      ampmap_const_step = 0.085;%0.1;
     else
       ampmap_const_step = 0.11;
     end
@@ -111,14 +111,19 @@ for i = 1:size(test_files, 1)
           if use_neighbors
             if use_new_algorithm
 
+
 % TEST
-a_low  = amplification_mapping(1 + num_clipped_val(idx, cnt));
-a_high = amplification_mapping(1 + num_clipped_val(idx, cnt) + 1);
-a_diff = a_high - a_low;
-r      = neighbor / clip_limit;
+a_low                 = amplification_mapping(1 + num_clipped_val(idx, cnt));
+a_high                = amplification_mapping(1 + num_clipped_val(idx, cnt) + 1);
+a_diff                = a_high - a_low;
+a_low_abs             = a_low * clip_limit;
+a_high_abs            = a_high * clip_limit;
+a_diff_abs            = a_high_abs - a_low_abs;
+neighbor_to_limit_abs = (neighbor - (clip_limit - a_diff_abs));
+neighbor_to_limit_abs = max(0, min(a_diff_abs, neighbor_to_limit_abs));
+r                     = neighbor_to_limit_abs / a_diff_abs;
 amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt)) + r .* a_diff;
 
-%amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt)) + neighbor / clip_limit - 1;
 
             else
               amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt)) * neighbor / clip_limit;
