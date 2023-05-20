@@ -1,7 +1,7 @@
 # Edrumulus Project Log
 
 
-## 2023-04-28 Rim shot detection findings
+## 2023-04-28 [[r0.6](https://github.com/corrados/edrumulus/releases/tag/r0_6)] Rim shot detection findings
 
   It seems the assumption that overloaded signals influence the rim shot detection
   performance is not true. Setting max_num_overloads=0 (i.e. rim shots are disabled if
