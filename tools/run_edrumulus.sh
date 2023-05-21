@@ -66,8 +66,8 @@ fi
 # check if the WebUI GUI mode shall be used
 if [[ "$1" == webui ]]; then
   echo "-> WebUI GUI mode enabled"
-  #is_raspi=true # WebUI GUI is only supported on Raspberry Pi
-  #is_uart=true
+  is_raspi=true # WebUI GUI is only supported on Raspberry Pi
+  is_uart=true
   gui_mode="webui"
 fi
 
