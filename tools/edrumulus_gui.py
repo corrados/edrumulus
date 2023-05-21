@@ -358,6 +358,9 @@ if use_webui:
           os.system("sudo shutdown -h now")
         else:
           process_user_input(key_value)
+          # quick hack fix for update problem: introduce delay on pad selection
+          if key_value == "s" or key_value == "S":
+            time.sleep(0.01)
 
       self.wfile.write(bytes("""
         <table style=\"font-size:60px;width:100%\">
