@@ -63,6 +63,14 @@ if [[ "$1" == lcdgui ]]; then
   gui_mode="lcd"
 fi
 
+# check if the WebUI GUI mode shall be used
+if [[ "$1" == webui ]]; then
+  echo "-> WebUI GUI mode enabled"
+  is_raspi=true # WebUI GUI is only supported on Raspberry Pi
+  is_uart=true
+  gui_mode="webui"
+fi
+
 
 # install required packages ----------------------------------------------------
 pkgs='git htop vim alsamixergui build-essential libasound2-dev jackd2 cmake libglib2.0-dev autoconf automake libtool lv2-dev xorg-dev libsndfile1-dev libjack-jackd2-dev libsmf-dev gettext a2jmidid libncurses5-dev ardour-lv2-plugins liblilv-dev'

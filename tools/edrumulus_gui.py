@@ -29,7 +29,8 @@ use_rtmidi  = "rtmidi"    in sys.argv # use rtmidi instead of jack audio
 no_gui      = "no_gui"    in sys.argv # no GUI but blocking (just settings management)
 non_block   = "non_block" in sys.argv # no GUI and non-blocking (just settings management)
 use_lcd     = "lcd"       in sys.argv # LCD GUI mode on Raspberry Pi
-use_ncurses = not no_gui and not non_block and not use_lcd  # normal console GUI mode (default)
+use_webui   = "webui"     in sys.argv # web UI GUI mode on Raspberry Pi
+use_ncurses = not no_gui and not non_block and not use_lcd and not use_webui # normal console GUI mode (default)
 if use_rtmidi:
   import rtmidi
   from rtmidi.midiutil import open_midiinput
@@ -41,6 +42,8 @@ if use_lcd:
   from RPLCD.gpio import CharLCD
 elif use_ncurses:
   import curses
+elif use_webui:
+  import http.server
 
 # tables
 max_num_pads = 9
@@ -92,10 +95,10 @@ def process_user_input(ch):
     sel_cmd += 1
   elif ch == "C" and sel_cmd > 0:
     sel_cmd -= 1
-  elif ch == chr(259) and database[sel_cmd] < cmd_val_rng[sel_cmd]: # 259: up key
+  elif (ch == chr(259) or ch == "U") and database[sel_cmd] < cmd_val_rng[sel_cmd]: # 259: up key
     database[sel_cmd] += 1
     send_value_to_edrumulus(cmd_val[sel_cmd], database[sel_cmd])
-  elif ch == chr(258) and database[sel_cmd] > 0: # 258: down key
+  elif (ch == chr(258) or ch == "D") and database[sel_cmd] > 0: # 258: down key
     database[sel_cmd] -= 1
     send_value_to_edrumulus(cmd_val[sel_cmd], database[sel_cmd])
   elif ch == "a" or ch == "A": # enable/disable auto pad selection
@@ -333,6 +336,46 @@ def lcd_init():
 
 
 ################################################################################
+# Web UI GUI implementation ####################################################
+################################################################################
+if use_webui:
+  class WebUI(http.server.BaseHTTPRequestHandler):
+    def log_message(self, format, *args):
+      pass # no logging
+    def do_GET(self):
+      self.send_response(200)
+      self.send_header("Content-type", "text/html")
+      self.end_headers()
+      self.wfile.write(bytes("<body><form action=\"button\">", "utf-8"))
+
+      if self.path.find("key=") != -1:
+        key_value = self.path.split("key=")[1]
+        if key_value == "askshutdown":
+          self.wfile.write(bytes("<button style=\"font-size: 60px;\" type='submit' name='key' value='shutdown'>SHUTDOWN NOW!</button><br><br>", "utf-8"))
+          self.wfile.write(bytes("<button style=\"font-size: 60px;\" type='submit' name='key' value=''>CANCEL</button><br>", "utf-8"))
+        elif key_value == "shutdown":
+          store_settings()
+          os.system("sudo shutdown -h now")
+        else:
+          process_user_input(key_value)
+          # quick hack fix for update problem: introduce delay on pad selection
+          if key_value == "s" or key_value == "S":
+            time.sleep(0.01)
+
+      self.wfile.write(bytes("""
+        <table style=\"font-size:60px;width:100%\">
+        <tr><td>Pad:<td/><td><button style=\"font-size: 60px;\" type='submit' name='key' value='s'>UP</button></td>
+                    <td/><button style=\"font-size: 60px;\" type='submit' name='key' value='S'>DOWN</button></td></tr>
+        <tr><td>Parameter:<td/><td><button style=\"font-size: 60px;\" type='submit' name='key' value='c'>UP</button></td>
+                          <td/><button style=\"font-size: 60px;\" type='submit' name='key' value='C'>DOWN</button></td></tr>
+        <tr><td>Value:<td/><td><button style=\"font-size: 60px;\" type='submit' name='key' value='U'>UP</button></td>
+                      <td/><button style=\"font-size: 60px;\" type='submit' name='key' value='D'>DOWN</button></td></tr><br>
+        </table><table style=\"font-size:60px;width:100%\"><tr><td>""", "utf-8"))
+      self.wfile.write(bytes("%s: %s: %s" % (pad_names[sel_pad], cmd_names[sel_cmd], parse_cmd_param(sel_cmd)), "utf-8"))
+      self.wfile.write(bytes("</td></tr></table><br><br><br><button style=\"font-size: 60px;\" type='submit' name='key' value='askshutdown'>SHUTDOWN</button></form></body>", "utf-8"))
+
+
+################################################################################
 # Settings handling ############################################################
 ################################################################################
 def store_settings():
@@ -522,6 +565,9 @@ if use_lcd:
   lcd_init()
 elif use_ncurses:
   ncurses_init()
+elif use_webui:
+  web_server = http.server.HTTPServer(("", 8080), WebUI)
+  web_server.timeout = 1
 
 # ctrl+c quits the application
 original_sigint_handler = signal.signal(signal.SIGINT, signal_handler)
@@ -567,6 +613,9 @@ elif use_lcd:
   lcd_loop()
 elif use_ncurses:
   ncurses_input_loop()
+elif use_webui:
+  while not SIGINT_received:
+    web_server.handle_request()
 
 # store settings in file
 if not no_gui and not non_block:
@@ -577,6 +626,8 @@ if use_lcd:
   lcd.close() # just this single call is needed
 elif use_ncurses:
   ncurses_cleanup()
+elif use_ncurses:
+  web_server.server_close()
 if use_rtmidi:
   midiin.delete()
   midiout.delete()

@@ -12,6 +12,14 @@ which runs on a micro processor. It shall fulfill the following specifications:
   parts possible.
 
 
+## Videos
+
+[<img src="https://img.youtube.com/vi/tBlKvivwAE4/0.jpg" width="150">](https://www.youtube.com/watch?v=tBlKvivwAE4)
+[<img src="https://img.youtube.com/vi/UKeuFm_DDTk/0.jpg" width="150">](https://www.youtube.com/watch?v=UKeuFm_DDTk)
+[<img src="https://img.youtube.com/vi/naP-ODXl9Y0/0.jpg" width="150">](https://www.youtube.com/watch?v=naP-ODXl9Y0)
+[<img src="https://img.youtube.com/vi/HZXtSe5p0rs/0.jpg" width="150">](https://www.youtube.com/watch?v=HZXtSe5p0rs)
+
+
 ## News
 
 Find all important updates of the Edrumulus project in the [change log file](doc/ChangeLog.md)
