@@ -364,12 +364,12 @@ if use_webui:
 
       self.wfile.write(bytes("""
         <table style=\"font-size:60px;width:100%\">
-        <tr><td>Pad:<td/><td><button style=\"font-size: 60px;\" type='submit' name='key' value='s'>UP</button></td>
-                    <td/><button style=\"font-size: 60px;\" type='submit' name='key' value='S'>DOWN</button></td></tr>
-        <tr><td>Parameter:<td/><td><button style=\"font-size: 60px;\" type='submit' name='key' value='c'>UP</button></td>
-                          <td/><button style=\"font-size: 60px;\" type='submit' name='key' value='C'>DOWN</button></td></tr>
-        <tr><td>Value:<td/><td><button style=\"font-size: 60px;\" type='submit' name='key' value='U'>UP</button></td>
-                      <td/><button style=\"font-size: 60px;\" type='submit' name='key' value='D'>DOWN</button></td></tr><br>
+        <tr><td>Pad:</td><td><button style=\"font-size: 60px;\" type='submit' name='key' value='S'>DOWN</button></td>
+                         <td><button style=\"font-size: 60px;\" type='submit' name='key' value='s'>UP</button></td></tr>
+        <tr><td>Parameter:</td><td><button style=\"font-size: 60px;\" type='submit' name='key' value='C'>DOWN</button></td>
+                               <td><button style=\"font-size: 60px;\" type='submit' name='key' value='c'>UP</button></td></tr>
+        <tr><td>Value:</td><td><button style=\"font-size: 60px;\" type='submit' name='key' value='D'>DOWN</button></td>
+                           <td><button style=\"font-size: 60px;\" type='submit' name='key' value='U'>UP</button></td></tr><br>
         </table><table style=\"font-size:60px;width:100%\"><tr><td>""", "utf-8"))
       self.wfile.write(bytes("%s: %s: %s" % (pad_names[sel_pad], cmd_names[sel_cmd], parse_cmd_param(sel_cmd)), "utf-8"))
       self.wfile.write(bytes("</td></tr></table><br><br><br><button style=\"font-size: 60px;\" type='submit' name='key' value='askshutdown'>SHUTDOWN</button></form></body>", "utf-8"))
