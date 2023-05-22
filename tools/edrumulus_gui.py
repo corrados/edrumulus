@@ -346,13 +346,13 @@ if use_webui:
       self.send_response(200)
       self.send_header("Content-type", "text/html")
       self.end_headers()
-      self.wfile.write(bytes("<body><form action=\"button\">", "utf-8"))
+      self.wfile.write(bytes("<body><form action='button'>", "utf-8"))
 
       if self.path.find("key=") != -1:
         key_value = self.path.split("key=")[1]
         if key_value == "askshutdown":
-          self.wfile.write(bytes("<button style=\"font-size: 60px;\" type='submit' name='key' value='shutdown'>SHUTDOWN NOW!</button><br><br>", "utf-8"))
-          self.wfile.write(bytes("<button style=\"font-size: 60px;\" type='submit' name='key' value=''>CANCEL</button><br>", "utf-8"))
+          self.wfile.write(bytes("<button style='font-size:60px;' type='submit' name='key' value='shutdown'>SHUTDOWN NOW!</button><br><br>", "utf-8"))
+          self.wfile.write(bytes("<button style='font-size:60px;' type='submit' name='key' value=''>CANCEL</button><br>", "utf-8"))
         elif key_value == "shutdown":
           store_settings()
           os.system("sudo shutdown -h now")
@@ -363,16 +363,16 @@ if use_webui:
             time.sleep(0.01)
 
       self.wfile.write(bytes("""
-        <table style=\"font-size:60px;width:100%\">
-        <tr><td>Pad:</td><td><button style=\"font-size: 60px;\" type='submit' name='key' value='S'>DOWN</button></td>
-                         <td><button style=\"font-size: 60px;\" type='submit' name='key' value='s'>UP</button></td></tr>
-        <tr><td>Parameter:</td><td><button style=\"font-size: 60px;\" type='submit' name='key' value='C'>DOWN</button></td>
-                               <td><button style=\"font-size: 60px;\" type='submit' name='key' value='c'>UP</button></td></tr>
-        <tr><td>Value:</td><td><button style=\"font-size: 60px;\" type='submit' name='key' value='D'>DOWN</button></td>
-                           <td><button style=\"font-size: 60px;\" type='submit' name='key' value='U'>UP</button></td></tr><br>
-        </table><table style=\"font-size:60px;width:100%\"><tr><td>""", "utf-8"))
+        <table style='font-size:60px;width:100%'>
+        <tr><td>Pad:</td><td><button style='font-size:60px;' type='submit' name='key' value='S'>DOWN</button></td>
+                         <td><button style='font-size:60px;' type='submit' name='key' value='s'>UP</button></td></tr>
+        <tr><td>Parameter:</td><td><button style='font-size:60px;' type='submit' name='key' value='C'>DOWN</button></td>
+                               <td><button style='font-size:60px;' type='submit' name='key' value='c'>UP</button></td></tr>
+        <tr><td>Value:</td><td><button style='font-size:60px;' type='submit' name='key' value='D'>DOWN</button></td>
+                           <td><button style='font-size:60px;' type='submit' name='key' value='U'>UP</button></td></tr><br>
+        </table><table style='font-size:60px;width:100%'><tr><td>""", "utf-8"))
       self.wfile.write(bytes("%s: %s: %s" % (pad_names[sel_pad], cmd_names[sel_cmd], parse_cmd_param(sel_cmd)), "utf-8"))
-      self.wfile.write(bytes("</td></tr></table><br><br><br><button style=\"font-size: 60px;\" type='submit' name='key' value='askshutdown'>SHUTDOWN</button></form></body>", "utf-8"))
+      self.wfile.write(bytes("</td></tr></table><br><br><br><button style='font-size:60px;' type='submit' name='key' value='askshutdown'>SHUTDOWN</button></form></body>", "utf-8"))
 
 
 ################################################################################
