@@ -124,6 +124,9 @@ neighbor_to_limit_abs = max(0, min(a_diff_abs, neighbor_to_limit_abs));
 r                     = neighbor_to_limit_abs / a_diff_abs;
 amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt)) + r .* a_diff;
 
+% TEST: derived formula but clipping of  neighbor is not yet considered...
+%amplification_compensation(idx, cnt) = ((a_high - 1) * clip_limit + neighbor) / clip_limit;
+
 
             else
               amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt)) * neighbor / clip_limit;
