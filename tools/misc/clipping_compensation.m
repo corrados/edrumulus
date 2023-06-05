@@ -127,6 +127,11 @@ amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val
 % TEST: derived formula but clipping of  neighbor is not yet considered...
 %amplification_compensation(idx, cnt) = ((a_high - 1) * clip_limit + neighbor) / clip_limit;
 
+% TEST: not working...
+%%amplification_compensation(idx, cnt) = a_high * neighbor / clip_limit;
+%%amplification_compensation(idx, cnt) = a_low;
+%amplification_compensation(idx, cnt) = max(a_low, min(a_high, a_high * neighbor / clip_limit));
+
 
             else
               amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt)) * neighbor / clip_limit;
