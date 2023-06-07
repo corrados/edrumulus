@@ -7,8 +7,8 @@ Edrumulus is a high quality open source e-drum trigger module software. To use E
 - The [Arduino](https://www.arduino.cc/en/software) or [PlatformIO](https://platformio.org/) IDE for flashing the micro controller firmware
 - Some other software tools like [Hairless MIDI](https://projectgus.github.io/hairless-midiserial) and
   [loopMIDI](https://www.tobias-erichsen.de/software/loopmidi.html), etc., for using the Edrumulus MIDI output signal
-- [Octave](https://www.gnu.org/software/octave) software to control Edrumulus trigger parameter in real-time
-
+- [Python](https://www.python.org) to control Edrumulus trigger parameters in real-time.
+  - Install the Python PIP packages python-rtmidi and windows-curses.
 
 ## Analog front end circuit
 
@@ -28,13 +28,12 @@ in normal mode again.
 
 Install the Arduino IDE and add the ESP32 Board Manager according to
 [this linked description](https://docs.espressif.com/projects/arduino-esp32/en/latest/installing.html).
-Now open the edrumulus.ino file in the Arduino IDE and customize the settings:
+Now open the edrumulus.ino file in the Arduino IDE and compile and upload.
 
-- `number_pads` defines the number of pad inputs you want to use.
-- `analog_pins` and `analog_pins_rimshot` define the GPIO ports you use for your pad inputs. If you have
-  a single piezo pad (mono pad), set the corresponding GPIO value to -1 to disable the second input
-  for that pad.
-
-Start the loopMIDI and Hairless MIDI tools. Configure the Hairless MIDI "MIDI Out" combo box to
-loopMIDI to be able to use Edrumulus with your DAW.
+### Use Edrumulus in your DAW under Windows
+- Start loopMIDI and create two loopback MIDI-ports:
+  - EdrumulusIn
+  - EdrumulusOut
+- Start Hairless MIDI and set MIDI Out to EdrumulusIn and MIDI In to EdrumulusOut.
+- Start Python and run `edrumulus/tools/edrumulus_gui.py rtmidi`
 
