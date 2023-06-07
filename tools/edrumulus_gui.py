@@ -575,8 +575,8 @@ original_sigint_handler = signal.signal(signal.SIGINT, signal_handler)
 # initialize MIDI
 if use_rtmidi: # initialize rtmidi (only Teensy board supported)
   try:
-    in_name  = "EdrumulusIn" if "EdrumulusIn" in rtmidi.MidiIn().get_ports() else "Edrumulus"
-    out_name = "EdrumulusOut" if "EdrumulusOut" in rtmidi.MidiIn().get_ports() else "Edrumulus"
+    in_name  = "EdrumulusIn" if [s for s in rtmidi.MidiIn().get_ports() if "EdrumulusIn" in s] else "Edrumulus"
+    out_name = "EdrumulusOut" if [s for s in rtmidi.MidiOut().get_ports() if "EdrumulusOut" in s] else "Edrumulus"
     midiin, port_name_in   = open_midiinput([s for s in rtmidi.MidiIn().get_ports() if in_name in s][0], client_name="EdrumulusGUI")
     midiout, port_name_out = open_midioutput([s for s in rtmidi.MidiOut().get_ports() if out_name in s][0], client_name="EdrumulusGUI")
     midiin.set_callback(MidiInputHandler(port_name_in))
