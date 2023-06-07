@@ -575,8 +575,10 @@ original_sigint_handler = signal.signal(signal.SIGINT, signal_handler)
 # initialize MIDI
 if use_rtmidi: # initialize rtmidi (only Teensy board supported)
   try:
-    midiin, port_name_in   = open_midiinput([s for s in rtmidi.MidiIn().get_ports() if "Edrumulus" in s][0], client_name="EdrumulusGUI")
-    midiout, port_name_out = open_midioutput([s for s in rtmidi.MidiOut().get_ports() if "Edrumulus" in s][0], client_name="EdrumulusGUI")
+    in_name  = "EdrumulusIn" if "EdrumulusIn" in rtmidi.MidiIn().get_ports() else "Edrumulus"
+    out_name = "EdrumulusOut" if "EdrumulusOut" in rtmidi.MidiIn().get_ports() else "Edrumulus"
+    midiin, port_name_in   = open_midiinput([s for s in rtmidi.MidiIn().get_ports() if in_name in s][0], client_name="EdrumulusGUI")
+    midiout, port_name_out = open_midioutput([s for s in rtmidi.MidiOut().get_ports() if out_name in s][0], client_name="EdrumulusGUI")
     midiin.set_callback(MidiInputHandler(port_name_in))
   except:
     raise Exception("No Teensy Edrumulus device found")
