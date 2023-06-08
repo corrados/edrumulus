@@ -29,7 +29,7 @@ elseif strcmp(pad, "pd80r")
   test_files = {"../../algorithm/signals/pd80r.wav", {48891:48900, 61075:61086, 202210:202222, 242341:242353}};
   if use_neighbors
     if use_new_algorithm
-      ampmap_const_step = 0.085;%0.1;
+      ampmap_const_step = 0.09;%0.1;
     else
       ampmap_const_step = 0.11;
     end
@@ -38,10 +38,18 @@ elseif strcmp(pad, "pd80r")
   end
 elseif strcmp(pad, "pd8")
   test_files = {"../../algorithm/signals/pd8.wav", {67140:67146, 70170:70175, 73359:73363, 246312:246317, 252036:252039, 296753:296757}};
-  ampmap_const_step = 0.57;
+  if use_new_algorithm
+    ampmap_const_step = 0.2;
+  else
+    ampmap_const_step = 0.57;
+  end
 elseif strcmp(pad, "pd5")
   test_files = {"../../algorithm/signals/pd5.wav", {599216:599220, 344800:344804, 765417:765421}};
-  ampmap_const_step = 0.9;
+  if use_new_algorithm
+    ampmap_const_step = 0.3;
+  else
+    ampmap_const_step = 0.9;
+  end
 end
 
 clip_limit                 = 1900; % approx. for 12 bit ADC
@@ -123,11 +131,11 @@ a_high                = amplification_mapping(1 + num_clipped_val(idx, cnt) + 1)
 a_diff                = a_high - a_low;
 a_low_abs             = a_low * clip_limit;
 a_high_abs            = a_high * clip_limit;
-a_diff_abs            = a_high_abs - a_low_abs;
+a_diff_abs            = (a_high_abs - a_low_abs) / a_low;
 neighbor_to_limit_abs = (neighbor - (clip_limit - a_diff_abs));
 neighbor_to_limit_abs = max(0, min(a_diff_abs, neighbor_to_limit_abs));
 r                     = neighbor_to_limit_abs / a_diff_abs;
-factor = a_low;%2; % TEST
+factor = 1;%a_low;%2; % TEST
 amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt)) + r .* a_diff * factor;
 
 % TEST: derived formula but clipping of  neighbor is not yet considered...
