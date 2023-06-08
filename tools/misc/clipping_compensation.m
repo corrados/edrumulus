@@ -113,6 +113,11 @@ for i = 1:size(test_files, 1)
 
 
 % TEST
+% a_delta = a_2 - a_1 -> A_delta = a_delta * C, where C is the clip limit
+% D = N - (C - A_delta), where N is the neighbor
+% r = D / A_delta
+% x = a_1 + r * a_delta = a_2 + (N / C - 1)
+% y = x * C = (a_2 - 1) * C + N
 a_low                 = amplification_mapping(1 + num_clipped_val(idx, cnt));
 a_high                = amplification_mapping(1 + num_clipped_val(idx, cnt) + 1);
 a_diff                = a_high - a_low;
