@@ -378,16 +378,16 @@ a_diff = a_high - a_low;
 
 
 % new test -> enable new test by enabling the last line of this block
-ampmap_const_step          = 0.05; % PD80R
+ampmap_const_step          = 0.05;%0.09;%0.05; % PD80R
 amplification_mapping      = transpose(10 .^ ([0:ampmap_const_step:ampmap_const_step * 20] .^ 2));
 amplification_mapping(amplification_mapping > 5) = 5; % never to higher than 5
 a_low                      = amplification_mapping(1 + y(:, 3));
 a_high                     = amplification_mapping(1 + y(:, 3) + 1);
 a_diff                     = a_high - a_low;
-a_diff_abs                 = a_diff * clip_limit / a_low;
+a_diff_abs                 = a_diff * clip_limit ./ a_low;
 neighbor_to_limit_abs      = (y(:, 4) - (clip_limit - a_diff_abs));
 neighbor_to_limit_abs      = max(0, min(a_diff_abs, neighbor_to_limit_abs));
-amplification_compensation = a_low + neighbor_to_limit_abs / a_diff_abs .* a_diff;
+amplification_compensation = a_low + neighbor_to_limit_abs ./ a_diff_abs .* a_diff;
 
 
 % new test2 -> enable new test by enabling the last line of this block
