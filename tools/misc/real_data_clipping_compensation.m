@@ -363,8 +363,7 @@ clip_limit            = 700;
 
 amplification_mapping = transpose(10 .^ ([0:ampmap_const_step:ampmap_const_step * 20] .^ 2));
 amplification_mapping(amplification_mapping > 5) = 5; % never to higher than 5
-
-amplification_compensation = amplification_mapping(1 + y(:, 3)) .* y(:, 4) ./ clip_limit;
+%amplification_compensation = amplification_mapping(1 + y(:, 3)) .* y(:, 4) ./ clip_limit;
 
 
 % new test -> enable new test by enabling the last line of this block
@@ -378,7 +377,20 @@ a_diff = a_high - a_low;
 %amplification_compensation = amplification_mapping(1 + y(:, 3)) + r .* a_diff;
 
 
-% new test2
+% new test -> enable new test by enabling the last line of this block
+ampmap_const_step          = 0.05; % PD80R
+amplification_mapping      = transpose(10 .^ ([0:ampmap_const_step:ampmap_const_step * 20] .^ 2));
+amplification_mapping(amplification_mapping > 5) = 5; % never to higher than 5
+a_low                      = amplification_mapping(1 + y(:, 3));
+a_high                     = amplification_mapping(1 + y(:, 3) + 1);
+a_diff                     = a_high - a_low;
+a_diff_abs                 = a_diff * clip_limit / a_low;
+neighbor_to_limit_abs      = (y(:, 4) - (clip_limit - a_diff_abs));
+neighbor_to_limit_abs      = max(0, min(a_diff_abs, neighbor_to_limit_abs));
+amplification_compensation = a_low + neighbor_to_limit_abs / a_diff_abs .* a_diff;
+
+
+% new test2 -> enable new test by enabling the last line of this block
 ampmap_const_step     = 0.055; % PD80R
 amplification_mapping = transpose(10 .^ ([0:ampmap_const_step:ampmap_const_step * 20] .^ 2));
 %amplification_compensation = amplification_mapping(1 + y(:, 3)) + y(:, 4) / clip_limit - 1;
@@ -389,7 +401,7 @@ amplification_mapping = transpose(10 .^ ([0:ampmap_const_step:ampmap_const_step 
 %xlabel('true'); ylabel('est'); grid on; hold on;
 %plot(20 * log10(y(:, 1)), 20 * log10(clip_limit * amplification_compensation));
 
-figure; plot(500:2000, 500:2000, 'k-.');% axis([500, 2000, 500, 2000]);
+figure; plot(500:2000, 500:2000, 'k-.');axis([500, 2000, 500, 2000]);
 xlabel('true'); ylabel('est'); grid on; hold on;
 plot(y(:, 1), clip_limit * amplification_compensation);
 

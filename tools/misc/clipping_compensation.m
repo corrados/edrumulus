@@ -107,44 +107,35 @@ for i = 1:size(test_files, 1)
           % - use squared x which is available in Edrumulus Arduino code right now
           neighbor = mean(abs([x_org_scaled(left_index), x_org_scaled(right_index)]));
 
-          % x: point just below the limit (neighbor)
-          % a: x / x_max, where x_may is the maximum of the peak
-          % l: clip limit (for ESP32 usually ~1800)
-          % y = x_max / l
-          % a = x_max / x
-          % -> y = a * x / l
           if use_neighbors
             if use_new_algorithm
 
+              % a_delta = a_2 - a_1 -> A_delta = a_delta * C, where C is the clip limit
+              % D = N - (C - A_delta), where N is the neighbor
+              % r = D / A_delta
+              % x = a_1 + r * a_delta = a_2 + (N / C - 1)
+              % y = x * C = (a_2 - 1) * C + N
+              a_low                                = amplification_mapping(1 + num_clipped_val(idx, cnt));
+              a_high                               = amplification_mapping(1 + num_clipped_val(idx, cnt) + 1);
+              a_diff                               = a_high - a_low;
+              a_diff_abs                           = a_diff * clip_limit / a_low;
+              neighbor_to_limit_abs                = (neighbor - (clip_limit - a_diff_abs));
+              neighbor_to_limit_abs                = max(0, min(a_diff_abs, neighbor_to_limit_abs));
+              amplification_compensation(idx, cnt) = a_low + neighbor_to_limit_abs / a_diff_abs .* a_diff;
 
-% TEST
-% a_delta = a_2 - a_1 -> A_delta = a_delta * C, where C is the clip limit
-% D = N - (C - A_delta), where N is the neighbor
-% r = D / A_delta
-% x = a_1 + r * a_delta = a_2 + (N / C - 1)
-% y = x * C = (a_2 - 1) * C + N
-a_low                 = amplification_mapping(1 + num_clipped_val(idx, cnt));
-a_high                = amplification_mapping(1 + num_clipped_val(idx, cnt) + 1);
-a_diff                = a_high - a_low;
-a_low_abs             = a_low * clip_limit;
-a_high_abs            = a_high * clip_limit;
-a_diff_abs            = (a_high_abs - a_low_abs) / a_low;
-neighbor_to_limit_abs = (neighbor - (clip_limit - a_diff_abs));
-neighbor_to_limit_abs = max(0, min(a_diff_abs, neighbor_to_limit_abs));
-r                     = neighbor_to_limit_abs / a_diff_abs;
-amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt)) + r .* a_diff;
-
-% TEST: derived formula but clipping of  neighbor is not yet considered...
+% TEST: derived formula but clipping of neighbor is not yet considered...
 %amplification_compensation(idx, cnt) = ((a_high - 1) * clip_limit + neighbor) / clip_limit;
 
-% TEST: not working...
-%%amplification_compensation(idx, cnt) = a_high * neighbor / clip_limit;
-%%amplification_compensation(idx, cnt) = a_low;
-%amplification_compensation(idx, cnt) = max(a_low, min(a_high, a_high * neighbor / clip_limit));
-
-
             else
+
+              % x: point just below the limit (neighbor)
+              % a: x / x_max, where x_may is the maximum of the peak
+              % l: clip limit (for ESP32 usually ~1800)
+              % y = x_max / l
+              % a = x_max / x
+              % -> y = a * x / l
               amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt)) * neighbor / clip_limit;
+
             end
 
           else
