@@ -11,14 +11,14 @@ pad = "pd120";
 %pad = "pd80r";
 %pad = "pd8";
 %pad = "pd5";
-use_neighbors     = true;%false;%true;%
-use_new_algorithm = true;%false;%true;
+use_neighbors     = true;
+use_new_algorithm = true;
 
 if strcmp(pad, "pd120")
   test_files = {"../../algorithm/signals/pd120_single_hits.wav", {9917:9931, 14974:14985, 22525:22538, 35014:35025}};
   if use_neighbors
     if use_new_algorithm
-      ampmap_const_step = 0.075;%83;
+      ampmap_const_step = 0.075;
     else
       ampmap_const_step = 0.09;
     end
@@ -29,7 +29,7 @@ elseif strcmp(pad, "pd80r")
   test_files = {"../../algorithm/signals/pd80r.wav", {48891:48900, 61075:61086, 202210:202222, 242341:242353}};
   if use_neighbors
     if use_new_algorithm
-      ampmap_const_step = 0.09;%0.1;
+      ampmap_const_step = 0.09;
     else
       ampmap_const_step = 0.11;
     end
@@ -56,9 +56,6 @@ clip_limit                 = 1900; % approx. for 12 bit ADC
 clip_factor_range          = 1 ./ (1:-0.01:0.04);
 length_ampmap              = 20;
 amplification_mapping      = 10 .^ ([0:ampmap_const_step:ampmap_const_step * length_ampmap] .^ 2);
-
-%amplification_mapping = 10 .^ ((0:20) / 20); % 1 dB per number of clipping samples -> current implementation in C++
-
 num_clipped_val            = [];
 amplification_compensation = [];
 cnt                        = 1;
@@ -135,8 +132,7 @@ a_diff_abs            = (a_high_abs - a_low_abs) / a_low;
 neighbor_to_limit_abs = (neighbor - (clip_limit - a_diff_abs));
 neighbor_to_limit_abs = max(0, min(a_diff_abs, neighbor_to_limit_abs));
 r                     = neighbor_to_limit_abs / a_diff_abs;
-factor = 1;%a_low;%2; % TEST
-amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt)) + r .* a_diff * factor;
+amplification_compensation(idx, cnt) = amplification_mapping(1 + num_clipped_val(idx, cnt)) + r .* a_diff;
 
 % TEST: derived formula but clipping of  neighbor is not yet considered...
 %amplification_compensation(idx, cnt) = ((a_high - 1) * clip_limit + neighbor) / clip_limit;
