@@ -55,6 +55,10 @@ void setup()
                                                                  &number_pads,
                                                                  &status_LED_pin );
 
+  // initialize GPIO port for status LED and set it to on during setup
+  pinMode ( status_LED_pin, OUTPUT );
+  digitalWrite ( status_LED_pin, HIGH );
+
 #if defined ( USE_SERIAL_DEBUG_PLOTTING ) && defined ( ESP_PLATFORM )
   number_pads = min ( number_pads, 7 ); // only max. 7 pads are supported for ESP32 serial debug plotting
 #endif
@@ -75,6 +79,7 @@ void setup()
 #endif
 
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
+  digitalWrite ( status_LED_pin, LOW ); // set board LED to low right after setup is done
 #ifdef ESP_PLATFORM
   preset_settings(); // for ESP32, the load/save of settings is not supported, preset instead
 #else
@@ -91,9 +96,6 @@ edrumulus.set_pos_threshold        ( 0, 3 );
 edrumulus.set_pos_sensitivity      ( 0, 12 );
 edrumulus.set_rim_shot_treshold    ( 0, 24 );
 */
-
-  // initialize GPIO port for status LED
-  pinMode ( status_LED_pin, OUTPUT );
 }
 
 
