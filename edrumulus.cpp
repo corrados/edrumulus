@@ -963,7 +963,7 @@ if ( pad_settings.pad_type == PD8 )
 }
 else
 {
-  ampmap_const_step = 0.053f; // PD80R
+  ampmap_const_step = 0.05f;//0.053f; // PD80R
 }
 
 const int   length_ampmap = 20;
@@ -974,8 +974,18 @@ for ( int i1 = 0; i1 < length_ampmap; i1++ )
   amplification_mapping[i1] = min ( 5.0f, pow ( 10.0f, ( i1 * ampmap_const_step ) * ( i1 * ampmap_const_step ) ) );
 }
 
+// new algorithm from clipping_compensation_testing (6/2023)
+const float a_low                 = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )];
+const float a_high                = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples + 1 )];
+const float a_diff                = a_high - a_low;
+const float a_diff_abs            = a_diff * new_clip_level / a_low;
+float       neighbor_to_limit_abs = mean_neighbor - ( new_clip_level - a_diff_abs );
+neighbor_to_limit_abs             = max ( 0.0f, min ( a_diff_abs, neighbor_to_limit_abs ) );
+amplification_compensation        = a_low + neighbor_to_limit_abs / a_diff_abs * a_diff;
+
+
 //amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor_x / new_clip_level;
-amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor / new_clip_level;
+//amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor / new_clip_level;
 //s.peak_val = new_clip_level * new_clip_level * amplification_compensation * amplification_compensation;
 s.peak_val *= amplification_compensation * amplification_compensation;
 
@@ -1069,7 +1079,7 @@ if ( head_sensor_cnt == 1 )
 //  Serial.println ( String ( 20 * log10 ( peak_storage[0] ) ) + " " + String ( 20 * log10 ( peak_storage[1] ) ) );
 
   // check live performance: only two traces
-  Serial.println ( String ( peak_storage[0] ) + " " + String ( peak_storage[1] ) );
+  Serial.println ( String ( peak_storage[0] ) + " " + String ( peak_storage[1] ) + " " + String ( new_clip_level ) );
 }
 
 /*

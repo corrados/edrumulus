@@ -81,7 +81,7 @@ void setup()
 
 // TEST use the ride input for 2nd/3rd head sensor input for the snare
 edrumulus.set_coupled_pad_idx      ( 6 );
-edrumulus.set_pad_type             ( 0, Edrumulus::PD8 );
+edrumulus.set_pad_type             ( 0, Edrumulus::PD80R );
 /*
 edrumulus.set_pad_type             ( 0, Edrumulus::PDA120LS );
 edrumulus.set_velocity_threshold   ( 0, 4 );
