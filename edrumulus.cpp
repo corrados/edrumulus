@@ -867,7 +867,13 @@ float Edrumulus::Pad::process_sample ( const float* input,
             mean_neighbor = ( sqrt ( left_neighbor ) + sqrt ( right_neighbor ) ) / 2.0f;
           }
 
-          const float amplification_compensation = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )] * mean_neighbor / sqrt ( s.peak_val );
+          const float a_low                      = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )];
+          const float a_high                     = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples + 1 )];
+          const float a_diff                     = a_high - a_low;
+          const float a_diff_abs                 = a_diff * peak_val_sqrt / a_low;
+          float       neighbor_to_limit_abs      = mean_neighbor - ( peak_val_sqrt - a_diff_abs );
+          neighbor_to_limit_abs                  = max ( 0.0f, min ( a_diff_abs, neighbor_to_limit_abs ) );
+          const float amplification_compensation = a_low + neighbor_to_limit_abs / a_diff_abs * a_diff;
           s.peak_val                            *= amplification_compensation * amplification_compensation;
         }
 
