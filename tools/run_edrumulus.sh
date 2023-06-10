@@ -225,16 +225,23 @@ jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
 ./edrumulus_gui.py ${gui_mode}
 
 if [[ -v is_jamulus ]]; then
-  jack_disconnect $KITJACKPORTLEFT system:playback_1
-  jack_disconnect $KITJACKPORTRIGHT system:playback_2
   if [ -z "$2" ]; then
     ./../../jamulus/Jamulus -n -i ../../jamulus/Jamulus.ini -c anygenre1.jamulus.io &
   else
     ./../../jamulus/Jamulus -n -i ../../jamulus/Jamulus.ini -c $2 &
   fi
   sleep 5
-  jack_connect $KITJACKPORTLEFT "Jamulus:input left"
-  jack_connect $KITJACKPORTRIGHT "Jamulus:input right"
+  if [[ -v use_ecasound ]]; then
+    jack_disconnect ecasound:out_1 system:playback_1
+    jack_disconnect ecasound:out_2 system:playback_2
+    jack_connect ecasound:out_1 "Jamulus:input left"
+    jack_connect ecasound:out_2 "Jamulus:input right"
+  else
+    jack_disconnect $KITJACKPORTLEFT system:playback_1
+    jack_disconnect $KITJACKPORTRIGHT system:playback_2
+    jack_connect $KITJACKPORTLEFT "Jamulus:input left"
+    jack_connect $KITJACKPORTRIGHT "Jamulus:input right"
+  fi
   echo "###---------- PRESS ANY KEY TO TERMINATE THE EDRUMULUS/JAMULUS SESSION ---------###"
   read -n 1 -s -r -p ""
 fi
