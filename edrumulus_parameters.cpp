@@ -51,7 +51,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
   pad_settings.pos_invert                = false;  // pad specific parameter: invert the positional sensing metric
   pad_settings.rim_use_low_freq_bp       = true;   // pad specific parameter: use low frequency band-pass filter for rim shot detection
   pad_settings.rim_shot_window_len_ms    = 3.5f;   // pad specific parameter: window length for rim shot detection
-  pad_settings.clip_comp_ampmap_step     = 0.05f;  // pad specific parameter: clipping compensation amplitude mapping step, conservative value from PD80R as default
+  pad_settings.clip_comp_ampmap_step     = 0.08f;  // pad specific parameter: clipping compensation amplitude mapping step, conservative value from PD80R as default
 
   switch ( pad_settings.pad_type )
   {
@@ -81,19 +81,18 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case PD80R:
-      pad_settings.velocity_sensitivity  = 2;
-      pad_settings.rim_shot_treshold     = 11;
-      pad_settings.pos_threshold         = 11;
-      pad_settings.pos_sensitivity       = 10;
-      pad_settings.scan_time_ms          = 3.0f;
-      pad_settings.decay_len2_ms         = 75.0f;
-      pad_settings.decay_grad_fact2      = 300.0f;
-      pad_settings.decay_len3_ms         = 300.0f;
-      pad_settings.decay_grad_fact3      = 100.0f;
-      pad_settings.rim_use_low_freq_bp   = false;
-      pad_settings.pos_sense_is_used     = true;
-      pad_settings.rim_shot_is_used      = true;
-      pad_settings.clip_comp_ampmap_step = 0.05f;
+      pad_settings.velocity_sensitivity = 2;
+      pad_settings.rim_shot_treshold    = 11;
+      pad_settings.pos_threshold        = 11;
+      pad_settings.pos_sensitivity      = 10;
+      pad_settings.scan_time_ms         = 3.0f;
+      pad_settings.decay_len2_ms        = 75.0f;
+      pad_settings.decay_grad_fact2     = 300.0f;
+      pad_settings.decay_len3_ms        = 300.0f;
+      pad_settings.decay_grad_fact3     = 100.0f;
+      pad_settings.rim_use_low_freq_bp  = false;
+      pad_settings.pos_sense_is_used    = true;
+      pad_settings.rim_shot_is_used     = true;
       break;
 
     case PDX100:
