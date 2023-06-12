@@ -475,6 +475,14 @@ void Edrumulus::Pad::initialize()
   const int lp_half_len = ( lp_filt_len - 1 ) / 2;
   x_low_hist_len        = x_sq_hist_len + lp_filt_len;
 
+  // clipping compensation initialization
+  for ( int i = 0; i < length_ampmap; i++ )
+  {
+    // never to higher than 5
+    amplification_mapping[i] = min ( 5.0f, pow ( 10.0f, ( i * pad_settings.clip_comp_ampmap_step ) *
+                                                        ( i * pad_settings.clip_comp_ampmap_step ) ) );
+  }
+
   // pre-calculate equations needed for 3 sensor get position function
   get_pos_x0 =  0.433f; get_pos_y0 =  0.25f; // sensor 0 position
   get_pos_x1 =  0.0;    get_pos_y1 = -0.5f;  // sensor 1 position
@@ -804,57 +812,69 @@ float Edrumulus::Pad::process_sample ( const float* input,
         s.was_peak_found = true;
 
         // check overload status and correct the peak if necessary
+        float     right_neighbor, left_neighbor;
         const int peak_velocity_idx_in_overload_history = overload_hist_len - scan_time + peak_velocity_idx;
-        int       number_overloaded_samples = 1; // we check for overload history at peak position is > 0 below -> start with one
+        const int peak_velocity_idx_in_x_sq_hist        = x_sq_hist_len - scan_time + peak_velocity_idx;
+        int       number_overloaded_samples             = 1; // we check for overload history at peak position is > 0 below -> start with one
+        bool      neighbor_ok                           = true; // initialize with ok
 
         if ( s.overload_hist[peak_velocity_idx_in_overload_history] > 0.0f )
         {
           // NOTE: the static_cast<int> is a workaround for the ESP32 compiler issue: "unknown opcode or format name 'lsiu'"
           // run to the right to find same overloads
-          int cur_idx = peak_velocity_idx_in_overload_history;
+          int cur_idx      = peak_velocity_idx_in_overload_history;
+          int cur_idx_x_sq = peak_velocity_idx_in_x_sq_hist;
           while ( ( cur_idx < overload_hist_len - 1 ) && ( static_cast<int> ( s.overload_hist[cur_idx] ) == static_cast<int> ( s.overload_hist[cur_idx + 1] ) ) )
           {
             cur_idx++;
+            cur_idx_x_sq++;
             number_overloaded_samples++;
+          }
+          if ( cur_idx_x_sq + 1 < x_sq_hist_len )
+          {
+            right_neighbor = s_x_sq_hist[cur_idx_x_sq + 1];
+          }
+          else
+          {
+            neighbor_ok = false;
           }
 
           // run to the left to find same overloads
-          cur_idx = peak_velocity_idx_in_overload_history;
+          cur_idx      = peak_velocity_idx_in_overload_history;
+          cur_idx_x_sq = peak_velocity_idx_in_x_sq_hist;
           while ( ( cur_idx > 1 ) && ( static_cast<int> ( s.overload_hist[cur_idx] ) == static_cast<int> ( s.overload_hist[cur_idx - 1] ) ) )
           {
             cur_idx--;
+            cur_idx_x_sq--;
             number_overloaded_samples++;
+          }
+          if ( cur_idx_x_sq - 1 >= 0 )
+          {
+            left_neighbor = s_x_sq_hist[cur_idx_x_sq - 1];
+          }
+          else
+          {
+            neighbor_ok = false;
           }
 
           s.is_overloaded_state = ( number_overloaded_samples > max_num_overloads );
 
-          // overload correctdion: correct the peak value according to the number of clipped samples
-          if ( number_overloaded_samples > overload_num_thresh_4db )
+          // clipping compensation (see tools/misc/clipping_compensation.m)
+          const float peak_val_sqrt = sqrt ( s.peak_val );
+          float       mean_neighbor = peak_val_sqrt; // if no neighbor can be calculated, use safest value, i.e., lowest resulting correction
+          if ( neighbor_ok )
           {
-            s.peak_val *= 2.5119; // 4 dB
+            mean_neighbor = ( sqrt ( left_neighbor ) + sqrt ( right_neighbor ) ) / 2.0f;
           }
-          else if ( number_overloaded_samples > overload_num_thresh_3db )
-          {
-            s.peak_val *= 2; // 3 dB
-          }
-          else if ( number_overloaded_samples > overload_num_thresh_2db )
-          {
-            s.peak_val *= 1.5849; // 2 dB
-          }
-          else if ( number_overloaded_samples > overload_num_thresh_1db )
-          {
-            s.peak_val *= 1.2589; // 1 dB
-          }
-/*
-// TEST for debugging the overload correction algorithm
-String serial_print;
-for ( int j1 = 0; j1 < overload_hist_len; j1++ )
-{
-  serial_print += String ( j1 ) + ":" + String ( s.overload_hist[j1] ) + ",";
-}
-Serial.println ( serial_print );
-Serial.println ( "idx: " + String ( peak_velocity_idx_in_overload_history ) + ", num: " + String ( number_overloaded_samples ) );
-*/
+
+          const float a_low                      = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )];
+          const float a_high                     = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples + 1 )];
+          const float a_diff                     = a_high - a_low;
+          const float a_diff_abs                 = a_diff * peak_val_sqrt / a_low;
+          float       neighbor_to_limit_abs      = mean_neighbor - ( peak_val_sqrt - a_diff_abs );
+          neighbor_to_limit_abs                  = max ( 0.0f, min ( a_diff_abs, neighbor_to_limit_abs ) );
+          const float amplification_compensation = a_low + neighbor_to_limit_abs / a_diff_abs * a_diff;
+          s.peak_val                            *= amplification_compensation * amplification_compensation;
         }
 
         // calculate the MIDI velocity value with clipping to allowed MIDI value range
@@ -1077,11 +1097,10 @@ Serial.println ( "idx: " + String ( peak_velocity_idx_in_overload_history ) + ",
     if ( s.was_peak_found && ( !pos_sense_is_used || s.was_pos_sense_ready ) && ( !rim_shot_is_used || s.was_rim_shot_ready ) )
     {
 
-// TODO in case of signal clipping, we cannot use the positional sensing and rim shot detection results
+// TODO in case of signal clipping, we cannot use the positional sensing results
 if ( s.is_overloaded_state )
 {
-  s.stored_is_rimshot = false; // as a quick hack, assume we do not have a rim shot
-  s.stored_midi_pos   = 0;     // overloads will only happen if the strike is located near the middle of the pad
+  s.stored_midi_pos = 0; // overloads will only happen if the strike is located near the middle of the pad
 }
 
 // TODO:
