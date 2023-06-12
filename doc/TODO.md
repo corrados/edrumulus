@@ -2,11 +2,9 @@
 
 The road map items are sorted by priority.
 
-- [ ] **Improve overload compensation algorithm**
+- [ ] **Support 3-zone pads like the Roland CY-15R**
 
-  The current overload compensation algorithms works on fix steps which leads to the fact that in the high velocity
-  MIDI ranges there can only be certain values achieved (quantized). It would be better to have a continuous increase
-  of MIDI velocity values even in case of an overload.
+  See [this discussion](https://github.com/corrados/edrumulus/discussions/73#discussioncomment-5623391).
 
 - [ ] **Add support for USB OTG MIDI for the ESP32-S3**
 
@@ -14,9 +12,11 @@ The road map items are sorted by priority.
   so that #include "tinyusb.h" does not give a compiler error. See esp-idf/examples/peripherals/usb/device/tusb_midi
   for an example code.
 
-- [ ] **Support 3-zone pads like the Roland CY-15R**
+- [ ] **Introduce a first peak detection reliability**
 
-  See [this discussion](https://github.com/corrados/edrumulus/discussions/73#discussioncomment-5623391).
+  This can be used to improve the positional sensing. E.g., if the reliability is low, we could
+  use the position of the last detected peak if it is close to the current peak in time (e.g., if
+  we have a fast roll situation).
 
 - [ ] **Improve rim shot detection**
 
@@ -28,12 +28,6 @@ The road map items are sorted by priority.
   ESP32-S3 developer board gives a lot of MIDI note outputs which makes me believe that everything works
   as expected. But to make sure it really works, it has to be tested with a real front-end circuit and
   edrum pads connected which is still outstanding.
-
-- [ ] **Introduce a first peak detection reliability**
-
-  This can be used to improve the positional sensing. E.g., if the reliability is low, we could
-  use the position of the last detected peak if it is close to the current peak in time (e.g., if
-  we have a fast roll situation).
 
 - [ ] **Use rim switch theshold in dB**
 

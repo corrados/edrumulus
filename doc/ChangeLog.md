@@ -1,6 +1,12 @@
 # Edrumulus Project Log
 
 
+## 2023-06-12 [[r0.7](https://github.com/corrados/edrumulus/releases/tag/r0_7)] New clipping compensation
+
+  I finished the new clipping compensation algorithm which is based on the number of clipped
+  samples and the average value of the two neighbor samples. Therefore, it supports a continuous
+  increase of MIDI velocity values even in case of an overload.
+
 ## 2023-04-28 [[r0.6](https://github.com/corrados/edrumulus/releases/tag/r0_6)] Rim shot detection findings
 
   It seems the assumption that overloaded signals influence the rim shot detection
