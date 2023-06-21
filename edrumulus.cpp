@@ -816,7 +816,8 @@ float Edrumulus::Pad::process_sample ( const float* input,
         const int peak_velocity_idx_in_overload_history = overload_hist_len - scan_time + peak_velocity_idx;
         const int peak_velocity_idx_in_x_sq_hist        = x_sq_hist_len - scan_time + peak_velocity_idx;
         int       number_overloaded_samples             = 1; // we check for overload history at peak position is > 0 below -> start with one
-        bool      neighbor_ok                           = true; // initialize with ok
+        bool      left_neighbor_ok                      = true; // initialize with ok
+        bool      right_neighbor_ok                     = true; // initialize with ok
 
         if ( s.overload_hist[peak_velocity_idx_in_overload_history] > 0.0f )
         {
@@ -836,7 +837,7 @@ float Edrumulus::Pad::process_sample ( const float* input,
           }
           else
           {
-            neighbor_ok = false;
+            right_neighbor_ok = false;
           }
 
           // run to the left to find same overloads
@@ -854,17 +855,26 @@ float Edrumulus::Pad::process_sample ( const float* input,
           }
           else
           {
-            neighbor_ok = false;
+            left_neighbor_ok = false;
           }
 
           s.is_overloaded_state = ( number_overloaded_samples > max_num_overloads );
 
           // clipping compensation (see tools/misc/clipping_compensation.m)
           const float peak_val_sqrt = sqrt ( s.peak_val );
-          float       mean_neighbor = peak_val_sqrt; // if no neighbor can be calculated, use safest value, i.e., lowest resulting correction
-          if ( neighbor_ok )
+          float       mean_neighbor = peak_val_sqrt; // if no neighbor can be calculated, use safest value, i.e., lowest resulting correction            
+
+          if ( left_neighbor_ok && right_neighbor_ok )
           {
             mean_neighbor = ( sqrt ( left_neighbor ) + sqrt ( right_neighbor ) ) / 2.0f;
+          }
+          else if ( left_neighbor_ok )
+          {
+            mean_neighbor = sqrt ( left_neighbor ); // only left neighbor available
+          }
+          else if ( right_neighbor_ok )
+          {
+            mean_neighbor = sqrt ( right_neighbor ); // only right neighbor available
           }
 
           const float a_low                      = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )];
@@ -875,6 +885,21 @@ float Edrumulus::Pad::process_sample ( const float* input,
           neighbor_to_limit_abs                  = max ( 0.0f, min ( a_diff_abs, neighbor_to_limit_abs ) );
           const float amplification_compensation = a_low + neighbor_to_limit_abs / a_diff_abs * a_diff;
           s.peak_val                            *= amplification_compensation * amplification_compensation;
+/*
+String overload_string = "";
+for ( int ov_cnt = 0; ov_cnt < overload_hist_len; ov_cnt++ )
+{
+  overload_string += String ( s.overload_hist[ov_cnt] ) + " ";
+}
+Serial.println ( overload_string );
+Serial.println ( String ( peak_velocity_idx_in_x_sq_hist ) + " " +
+                 String ( x_sq_hist_len ) + " " + String ( peak_velocity_idx_in_overload_history ) + " " +
+                 String ( overload_hist_len ) + " " + String ( first_peak_idx ) );
+Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right_neighbor ) ) + " " +
+                 String ( number_overloaded_samples ) + " " + String ( mean_neighbor ) + " " +
+                 String ( mean_neighbor - ( peak_val_sqrt - a_diff_abs ) ) + " " + String ( neighbor_to_limit_abs ) + " " +
+                 String ( amplification_compensation ) + " " + String ( sqrt ( s.peak_val ) ) );
+*/
         }
 
         // calculate the MIDI velocity value with clipping to allowed MIDI value range
