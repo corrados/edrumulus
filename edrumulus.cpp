@@ -793,15 +793,27 @@ float Edrumulus::Pad::process_sample ( const float* input,
           }
         }
 
-        // get the maximum velocity in the scan time using the unfiltered signal
-        s.peak_val            = 0.0f;
-        int peak_velocity_idx = 0;
-        for ( int i = 0; i < scan_time; i++ )
+        // if the first peak is overloaded, use this position as the maximum peak
+        int        peak_velocity_idx = 0;
+        const int  first_peak_velocity_idx_in_overload_history = overload_hist_len - total_scan_time + first_peak_idx;
+        const bool is_first_peak_overload = s.overload_hist[first_peak_velocity_idx_in_overload_history] > 0.0f;
+
+        if ( is_first_peak_overload )
         {
-          if ( s_x_sq_hist[x_sq_hist_len - scan_time + i] > s.peak_val )
+          s.peak_val        = s_x_sq_hist[x_sq_hist_len - total_scan_time + first_peak_idx];
+          peak_velocity_idx = scan_time - x_sq_hist_len + first_peak_idx;
+        }
+        else
+        {
+          // get the maximum velocity in the scan time using the unfiltered signal
+          s.peak_val = 0.0f;
+          for ( int i = 0; i < scan_time; i++ )
           {
-            s.peak_val        = s_x_sq_hist[x_sq_hist_len - scan_time + i];
-            peak_velocity_idx = i;
+            if ( s_x_sq_hist[x_sq_hist_len - scan_time + i] > s.peak_val )
+            {
+              s.peak_val        = s_x_sq_hist[x_sq_hist_len - scan_time + i];
+              peak_velocity_idx = i;
+            }
           }
         }
 
