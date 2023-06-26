@@ -793,12 +793,16 @@ float Edrumulus::Pad::process_sample ( const float* input,
           }
         }
 
-        // if the first peak is overloaded, use this position as the maximum peak
-        int        peak_velocity_idx = 0;
-        const int  first_peak_velocity_idx_in_overload_history = overload_hist_len - total_scan_time + first_peak_idx;
-        const bool is_first_peak_overload = s.overload_hist[first_peak_velocity_idx_in_overload_history] > 0.0f;
+        // If the first peak is overloaded, use this position as the maximum peak. But only do
+        // this, if the first peak is within the current overload history length. Note that we do
+        // not want to enlarge the overload history since this would mean more processing time for
+        // each pad which we want to avoid. Usually, the pre-scan time peaks are only present in
+        // case of a fast roll which usually is not clipped but played with lower volume.
+        int       peak_velocity_idx = 0;
+        const int first_peak_velocity_idx_in_overload_history = overload_hist_len - total_scan_time + first_peak_idx;
 
-        if ( is_first_peak_overload )
+        if ( ( first_peak_velocity_idx_in_overload_history >= 0 ) && // note: short cut -> first check for valid index
+             ( s.overload_hist[first_peak_velocity_idx_in_overload_history] > 0.0f ) )
         {
           s.peak_val        = s_x_sq_hist[x_sq_hist_len - total_scan_time + first_peak_idx];
           peak_velocity_idx = scan_time - x_sq_hist_len + first_peak_idx;
