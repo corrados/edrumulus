@@ -86,8 +86,6 @@ void setup()
   read_settings();
 #endif
 
-//edrumulus.set_pad_type             ( 0, Edrumulus::PD80R );
-
 /*
 // TEST use the ride input for 2nd/3rd head sensor input for the snare
 edrumulus.set_coupled_pad_idx      ( 6 );
