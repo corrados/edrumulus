@@ -98,5 +98,6 @@ The algorithms are described in [this document](doc/algorithm.md).
 - Forum threads with technical data
 
   [E-Drum Technik-Thread (für Elektrotechnik- und Informatik-Interessierte)](https://www.drummerforum.de/forum/71415-e-drum-technik-thread-f%C3%BCr-elektrotechnik-und-informatik-interessierte.html)
+
   [How to solve a system of hyperbola equations](https://math.stackexchange.com/questions/3373011/how-to-solve-this-system-of-hyperbola-equations)
   
