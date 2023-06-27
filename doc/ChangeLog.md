@@ -1,6 +1,15 @@
 # Edrumulus Project Log
 
 
+## 2023-06-27 New case for prototype 5
+
+  I bought a new case for my prototype 5 using a Raspberry Pi 3B+. The case was designed
+  to use an audio header for the Raspberry Pi but the Edrumulus header fitted well with
+  only minor modifications. It works headless, i.e., without any display and buttons. It
+  is controlled with a browser on a phone instead. This feature is available with the
+  run_edrumulus.sh script using the webui argument.
+  <br/>![Edrumulus prototype 5 with new case](images/prototype5_new_case.jpg)
+
 ## 2023-06-12 [[r0.7](https://github.com/corrados/edrumulus/releases/tag/r0_7)] New clipping compensation
 
   I finished the new clipping compensation algorithm which is based on the number of clipped
