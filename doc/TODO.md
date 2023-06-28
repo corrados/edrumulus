@@ -2,6 +2,12 @@
 
 The road map items are sorted by priority.
 
+- [ ] **Speed optimization**
+
+  It has shown that prototype 5 with configured mesh had pads is running on red LED all the
+  time which indicates that the sampling rate dropped caused by an overloaded CPU. To solve
+  this issue, the source code must be speed optimized.
+
 - [ ] **Support 3-zone pads like the Roland CY-15R**
 
   See [this discussion](https://github.com/corrados/edrumulus/discussions/73#discussioncomment-5623391).
