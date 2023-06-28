@@ -18,7 +18,7 @@
 #pragma once
 
 #define VERSION_MAJOR   0
-#define VERSION_MINOR   8
+#define VERSION_MINOR   9
 
 //#define USE_SERIAL_DEBUG_PLOTTING
 
