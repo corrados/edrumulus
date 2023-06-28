@@ -1,7 +1,7 @@
 # Edrumulus Project Log
 
 
-## 2023-06-27 New case for prototype 5
+## 2023-06-27 [[r0.8](https://github.com/corrados/edrumulus/releases/tag/r0_8)] New case for prototype 5
 
   I bought a new case for my prototype 5 using a Raspberry Pi 3B+. The case was designed
   to use an audio header for the Raspberry Pi but the Edrumulus header fitted well with
