@@ -25,6 +25,70 @@
 #include "Arduino.h"
 #include "edrumulus_hardware.h"
 
+
+// Utility functions -----------------------------------------------------------------
+
+inline void update_fifo ( const float input,
+                          const int   fifo_length,
+                          float*      fifo_memory )
+{
+  // move all values in the history one step back and put new value on the top
+  for ( int i = 0; i < fifo_length - 1; i++ )
+  {
+    fifo_memory[i] = fifo_memory[i + 1];
+  }
+  fifo_memory[fifo_length - 1] = input;
+}
+
+inline void allocate_initialize ( float**   array_memory,
+                                  const int array_length )
+{
+  // (delete and) allocate memory
+  if ( *array_memory != nullptr )
+  {
+    delete[] *array_memory;
+  }
+
+  *array_memory = new float[array_length];
+
+  // initialization values
+  for ( int i = 0; i < array_length; i++ )
+  {
+    ( *array_memory )[i] = 0.0f;
+  }
+}
+
+class FastWriteFIFO
+{
+public:
+  void initialize ( const int len )
+  {
+    pointer     = 0;
+    fifo_length = len;
+    allocate_initialize ( &fifo_memory, len );
+  }
+
+  void add ( const float input )
+  {
+    // write new value and increment data pointer with wrap around
+    fifo_memory[pointer] = input;
+    pointer              = ( pointer + 1 ) % fifo_length;
+  }
+
+  const float operator[] ( const int index )
+  {
+    return fifo_memory[( pointer + index ) % fifo_length];
+  }
+
+protected:
+  float* fifo_memory = nullptr;
+  int    pointer;
+  int    fifo_length;
+};
+
+
+// Edrumulus -------------------------------------------------------------------------
+
 class Edrumulus
 {
 public:
@@ -289,7 +353,7 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
         float* rim_bp_hist_y     = nullptr;
         float* x_rim_hist        = nullptr;
         float* x_rim_switch_hist = nullptr;
-        float* overload_hist     = nullptr;
+        FastWriteFIFO overload_hist;
 
         int      mask_back_cnt;
         int      decay_back_cnt;
@@ -493,36 +557,3 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
   int                cancel_MIDI_velocity;
   int                cancel_pad_index;
 };
-
-
-// Utility functions -----------------------------------------------------------------
-
-inline void update_fifo ( const float input,
-                          const int   fifo_length,
-                          float*      fifo_memory )
-{
-  // move all values in the history one step back and put new value on the top
-  for ( int i = 0; i < fifo_length - 1; i++ )
-  {
-    fifo_memory[i] = fifo_memory[i + 1];
-  }
-  fifo_memory[fifo_length - 1] = input;
-}
-
-inline void allocate_initialize ( float**   array_memory,
-                                  const int array_length )
-{
-  // (delete and) allocate memory
-  if ( *array_memory != nullptr )
-  {
-    delete[] *array_memory;
-  }
-
-  *array_memory = new float[array_length];
-
-  // initialization values
-  for ( int i = 0; i < array_length; i++ )
-  {
-    ( *array_memory )[i] = 0.0f;
-  }
-}

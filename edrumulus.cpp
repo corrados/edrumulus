@@ -517,7 +517,7 @@ void Edrumulus::Pad::initialize()
     allocate_initialize ( &s.rim_bp_hist_y,     bp_filt_len - 1 );     // rim band-pass filter y-signal history
     allocate_initialize ( &s.x_rim_hist,        x_rim_hist_len );      // memory for rim shot detection
     allocate_initialize ( &s.x_rim_switch_hist, rim_shot_window_len ); // memory for rim switch detection
-    allocate_initialize ( &s.overload_hist,     overload_hist_len );   // memory for overload detection status
+    s.overload_hist.initialize ( overload_hist_len );                  // memory for overload detection status
 
     s.was_above_threshold     = false;
     s.is_overloaded_state     = false;
@@ -639,8 +639,8 @@ float Edrumulus::Pad::process_sample ( const float* input,
 
     // square input signal and store in FIFO buffer
     const float x_sq = input[in] * input[in];
-    update_fifo ( x_sq,                  x_sq_hist_len,     s_x_sq_hist );
-    update_fifo ( overload_detected[in], overload_hist_len, s.overload_hist );
+    update_fifo ( x_sq, x_sq_hist_len, s_x_sq_hist );
+    s.overload_hist.add ( overload_detected[in] );
 
 
     // Calculate peak detection ---------------------------------------------------
