@@ -169,6 +169,8 @@ public:
   int  get_mask_time            ( const int pad_idx )                                 { return pad[pad_idx].get_mask_time(); }
   void set_rim_shot_treshold    ( const int pad_idx, const int        new_threshold ) { pad[pad_idx].set_rim_shot_treshold ( new_threshold ); }
   int  get_rim_shot_treshold    ( const int pad_idx )                                 { return pad[pad_idx].get_rim_shot_treshold(); }
+  void set_rim_shot_boost       ( const int pad_idx, const int        new_boost )     { pad[pad_idx].set_rim_shot_boost ( new_boost ); }
+  int  get_rim_shot_boost       ( const int pad_idx )                                 { return pad[pad_idx].get_rim_shot_boost(); }
   void set_curve                ( const int pad_idx, const Ecurvetype new_curve )     { pad[pad_idx].set_curve ( new_curve ); }
   Ecurvetype get_curve          ( const int pad_idx )                                 { return pad[pad_idx].get_curve(); }
   void set_cancellation         ( const int pad_idx, const int        new_cancel )    { pad[pad_idx].set_cancellation ( new_cancel ); }
@@ -252,6 +254,8 @@ protected:
       int  get_mask_time            ()                                 { return pad_settings.mask_time_ms; }
       void set_rim_shot_treshold    ( const int        new_threshold ) { pad_settings.rim_shot_treshold = new_threshold; sched_init(); }
       int  get_rim_shot_treshold    ()                                 { return pad_settings.rim_shot_treshold; }
+      void set_rim_shot_boost       ( const int        new_boost )     { pad_settings.rim_shot_boost = new_boost; sched_init(); }
+      int  get_rim_shot_boost       ()                                 { return pad_settings.rim_shot_boost; }
       void set_curve                ( const Ecurvetype new_curve )     { pad_settings.curve_type = new_curve; sched_init(); }
       Ecurvetype get_curve          ()                                 { return pad_settings.curve_type; }
       void set_cancellation         ( const int        new_cancel )    { pad_settings.cancellation = new_cancel; sched_init(); }
@@ -278,6 +282,7 @@ protected:
         int        pos_threshold;        // 0..31
         int        pos_sensitivity;      // 0..31, high values give higher sensitivity
         int        rim_shot_treshold;    // 0..31
+        int        rim_shot_boost;       // 0..31
         int        cancellation;         // 0..31
         bool       is_control;           // whether it is a normal pad or a hi-hat control pedal
         bool       is_rim_switch;        // whether the pad supports rim/egde sensor based on a physical switch (i.e. no piezo)
@@ -377,7 +382,6 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
         int      rim_switch_on_cnt;
         int      rim_shot_cnt;
         bool     stored_is_rimshot;
-        int      stored_midi_velocity;
         int      stored_midi_pos;
         SResults sResults;
       };
@@ -419,6 +423,7 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       int          x_rim_hist_len;
       int          rim_shot_window_len;
       float        rim_shot_treshold_dB;
+      float        rim_shot_boost;
       float        rim_switch_treshold;
       int          rim_switch_on_cnt_thresh;
       int          lp_filt_len;

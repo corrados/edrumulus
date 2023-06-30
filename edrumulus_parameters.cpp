@@ -27,6 +27,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
   pad_settings.pos_threshold             = 9;  // 0..31
   pad_settings.pos_sensitivity           = 14; // 0..31
   pad_settings.rim_shot_treshold         = 12; // 0..31
+  pad_settings.rim_shot_boost            = 15; // 0..31
   pad_settings.cancellation              = 0;  // 0..31
   pad_settings.curve_type                = LINEAR;
   pad_settings.is_control                = false;  // default is a normal pad

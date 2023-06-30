@@ -405,10 +405,11 @@ void Edrumulus::Pad::initialize()
   decay_est_delay          = round ( pad_settings.decay_est_delay_ms * 1e-3f * Fs );
   decay_est_len            = round ( pad_settings.decay_est_len_ms   * 1e-3f * Fs );
   decay_est_fact           = pow ( 10.0f, pad_settings.decay_est_fact_db / 10 );
-  rim_shot_window_len      = round ( pad_settings.rim_shot_window_len_ms * 1e-3f * Fs );        // window length (e.g. 5 ms)
-  rim_shot_treshold_dB     = static_cast<float> ( pad_settings.rim_shot_treshold ) - 44;        // rim shot threshold
-  rim_switch_treshold      = -ADC_MAX_NOISE_AMPL + 9 * ( pad_settings.rim_shot_treshold - 31 ); // rim switch linear threshold
-  rim_switch_on_cnt_thresh = round ( 10.0f * 1e-3f * Fs );                                      // number of on samples until we detect a choke
+  rim_shot_window_len      = round ( pad_settings.rim_shot_window_len_ms * 1e-3f * Fs );             // window length (e.g. 5 ms)
+  rim_shot_treshold_dB     = static_cast<float> ( pad_settings.rim_shot_treshold ) - 44;             // rim shot threshold
+  rim_shot_boost           = pow ( 10.0f, static_cast<float> ( pad_settings.rim_shot_boost ) / 40 ); // boost / 4 -> dB value
+  rim_switch_treshold      = -ADC_MAX_NOISE_AMPL + 9 * ( pad_settings.rim_shot_treshold - 31 );      // rim switch linear threshold
+  rim_switch_on_cnt_thresh = round ( 10.0f * 1e-3f * Fs );                                           // number of on samples until we detect a choke
   rim_max_power_low_limit  = ADC_MAX_NOISE_AMPL * ADC_MAX_NOISE_AMPL / 31.0f; // lower limit on detected rim power, 15 dB below max noise amplitude
   x_rim_hist_len           = x_sq_hist_len + rim_shot_window_len;
   cancellation_factor      = static_cast<float> ( pad_settings.cancellation ) / 31.0f; // cancellation factor: range of 0.0..1.0
@@ -913,10 +914,6 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
                  String ( amplification_compensation ) + " " + String ( sqrt ( s.peak_val ) ) );
 */
         }
-
-        // calculate the MIDI velocity value with clipping to allowed MIDI value range
-        s.stored_midi_velocity = velocity_factor * pow ( s.peak_val * ADC_noise_peak_velocity_scaling, velocity_exponent ) + velocity_offset;
-        s.stored_midi_velocity = max ( 1, min ( 127, s.stored_midi_velocity ) );
       }
 
       // end condition of mask time
@@ -1150,17 +1147,28 @@ if ( s.stored_is_rimshot )
   s.stored_midi_pos = 0; // as a quick hack, disable positional sensing if a rim shot is detected
 }
 
+      // apply rim shot velocity boost
+// TODO rim shot boost is only supported for single head sensors pads -> support multiple head sensor pads, too
+      if ( s.stored_is_rimshot && ( number_head_sensors == 1 ) )
+      {
+        s.peak_val *= rim_shot_boost;
+      }
+
+      // calculate the MIDI velocity value with clipping to allowed MIDI value range
+      int current_midi_velocity = velocity_factor * pow ( s.peak_val * ADC_noise_peak_velocity_scaling, velocity_exponent ) + velocity_offset;
+      current_midi_velocity     = max ( 1, min ( 127, current_midi_velocity ) );
+
       if ( number_head_sensors == 1 )
       {
         // normal case: only one head sensor -> use detection results directly
-        midi_velocity = s.stored_midi_velocity;
+        midi_velocity = current_midi_velocity;
         midi_pos      = s.stored_midi_pos;
         peak_found    = true;
         is_rim_shot   = s.stored_is_rimshot;
       }
       else
       {
-        s.sResults.midi_velocity = s.stored_midi_velocity;
+        s.sResults.midi_velocity = current_midi_velocity;
         s.sResults.midi_pos      = s.stored_midi_pos;
         s.sResults.is_rim_shot   = s.stored_is_rimshot;
 
