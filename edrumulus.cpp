@@ -401,6 +401,7 @@ void Edrumulus::Pad::initialize()
   const float decay_grad2  = pad_settings.decay_grad_fact2 / Fs; // decay gradient factor 2
   const float decay_grad3  = pad_settings.decay_grad_fact3 / Fs; // decay gradient factor 3
   x_sq_hist_len            = total_scan_time;
+  overload_hist_len        = x_sq_hist_len;
   decay_est_delay          = round ( pad_settings.decay_est_delay_ms * 1e-3f * Fs );
   decay_est_len            = round ( pad_settings.decay_est_len_ms   * 1e-3f * Fs );
   decay_est_fact           = pow ( 10.0f, pad_settings.decay_est_fact_db / 10 );
@@ -414,7 +415,6 @@ void Edrumulus::Pad::initialize()
   ctrl_history_len         = 10;   // (MUST BE AN EVEN VALUE) control history length, use a fixed value
   ctrl_velocity_range_fact = 4.0f; // use a fixed value (TODO make it adjustable)
   ctrl_velocity_threshold  = 5.0f; // use a fixed value (TODO make it adjustable)
-  overload_hist_len        = scan_time + x_filt_delay;
   max_num_overloads        = 3; // maximum allowed number of overloaded samples until the overload special case is activated
   overload_num_thresh_1db  = 1;
   overload_num_thresh_2db  = 2;
@@ -793,31 +793,15 @@ float Edrumulus::Pad::process_sample ( const float* input,
           }
         }
 
-        // If the first peak is overloaded, use this position as the maximum peak. But only do
-        // this, if the first peak is within the current overload history length. Note that we do
-        // not want to enlarge the overload history since this would mean more processing time for
-        // each pad which we want to avoid. Usually, the pre-scan time peaks are only present in
-        // case of a fast roll which usually is not clipped but played with lower volume.
-        int       peak_velocity_idx = 0;
-        const int first_peak_velocity_idx_in_overload_history = overload_hist_len - total_scan_time + first_peak_idx;
-
-        if ( ( first_peak_velocity_idx_in_overload_history >= 0 ) && // note: short cut -> first check for valid index
-             ( s.overload_hist[first_peak_velocity_idx_in_overload_history] > 0.0f ) )
+        // get the maximum velocity in the scan time using the unfiltered signal
+        s.peak_val            = 0.0f;
+        int peak_velocity_idx = 0;
+        for ( int i = 0; i < scan_time; i++ )
         {
-          s.peak_val        = s_x_sq_hist[x_sq_hist_len - total_scan_time + first_peak_idx];
-          peak_velocity_idx = scan_time - x_sq_hist_len + first_peak_idx;
-        }
-        else
-        {
-          // get the maximum velocity in the scan time using the unfiltered signal
-          s.peak_val = 0.0f;
-          for ( int i = 0; i < scan_time; i++ )
+          if ( s_x_sq_hist[x_sq_hist_len - scan_time + i] > s.peak_val )
           {
-            if ( s_x_sq_hist[x_sq_hist_len - scan_time + i] > s.peak_val )
-            {
-              s.peak_val        = s_x_sq_hist[x_sq_hist_len - scan_time + i];
-              peak_velocity_idx = i;
-            }
+            s.peak_val        = s_x_sq_hist[x_sq_hist_len - scan_time + i];
+            peak_velocity_idx = i;
           }
         }
 
@@ -827,14 +811,26 @@ float Edrumulus::Pad::process_sample ( const float* input,
         first_peak_found = true; // for special case signal only increments, the peak found would be false -> correct this
         s.was_peak_found = true;
 
-        // check overload status and correct the peak if necessary
+        // Overload correction ----------------------------------------------------
+        // if the first peak is overloaded, use this position as the maximum peak
+        int       peak_velocity_idx_ovhist                    = peak_velocity_idx;
+        const int first_peak_velocity_idx_in_overload_history = overload_hist_len - total_scan_time + first_peak_idx;
+
+        if ( s.overload_hist[first_peak_velocity_idx_in_overload_history] > 0.0f )
+        {
+          // overwrite peak value and index in history
+          s.peak_val               = s_x_sq_hist[x_sq_hist_len - total_scan_time + first_peak_idx];
+          peak_velocity_idx_ovhist = scan_time - x_sq_hist_len + first_peak_idx;
+        }
+
         float     right_neighbor, left_neighbor;
-        const int peak_velocity_idx_in_overload_history = overload_hist_len - scan_time + peak_velocity_idx;
-        const int peak_velocity_idx_in_x_sq_hist        = x_sq_hist_len - scan_time + peak_velocity_idx;
+        const int peak_velocity_idx_in_overload_history = overload_hist_len - scan_time + peak_velocity_idx_ovhist;
+        const int peak_velocity_idx_in_x_sq_hist        = x_sq_hist_len - scan_time + peak_velocity_idx_ovhist;
         int       number_overloaded_samples             = 1; // we check for overload history at peak position is > 0 below -> start with one
         bool      left_neighbor_ok                      = true; // initialize with ok
         bool      right_neighbor_ok                     = true; // initialize with ok
 
+        // check overload status and correct the peak if necessary
         if ( s.overload_hist[peak_velocity_idx_in_overload_history] > 0.0f )
         {
           // NOTE: the static_cast<int> is a workaround for the ESP32 compiler issue: "unknown opcode or format name 'lsiu'"
