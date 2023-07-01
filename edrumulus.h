@@ -422,7 +422,7 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       float        decay_mask_fact;
       int          x_rim_hist_len;
       int          rim_shot_window_len;
-      float        rim_shot_treshold_dB;
+      float        rim_shot_treshold;
       float        rim_shot_boost;
       float        rim_switch_treshold;
       int          rim_switch_on_cnt_thresh;

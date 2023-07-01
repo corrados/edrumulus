@@ -405,8 +405,8 @@ void Edrumulus::Pad::initialize()
   decay_est_delay          = round ( pad_settings.decay_est_delay_ms * 1e-3f * Fs );
   decay_est_len            = round ( pad_settings.decay_est_len_ms   * 1e-3f * Fs );
   decay_est_fact           = pow ( 10.0f, pad_settings.decay_est_fact_db / 10 );
+  rim_shot_treshold        = pow ( 10.0f, ( static_cast<float> ( pad_settings.rim_shot_treshold ) - 44 ) / 10 ); // linear rim shot threshold
   rim_shot_window_len      = round ( pad_settings.rim_shot_window_len_ms * 1e-3f * Fs );             // window length (e.g. 5 ms)
-  rim_shot_treshold_dB     = static_cast<float> ( pad_settings.rim_shot_treshold ) - 44;             // rim shot threshold
   rim_shot_boost           = pow ( 10.0f, static_cast<float> ( pad_settings.rim_shot_boost ) / 40 ); // boost / 4 -> dB value
   rim_switch_treshold      = -ADC_MAX_NOISE_AMPL + 9 * ( pad_settings.rim_shot_treshold - 31 );      // rim switch linear threshold
   rim_switch_on_cnt_thresh = round ( 10.0f * 1e-3f * Fs );                                           // number of on samples until we detect a choke
@@ -1117,10 +1117,10 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
               rim_max_pow = max ( rim_max_pow, s.x_rim_hist[s.x_rim_hist_idx + i] );
             }
 
-            const float rim_metric_db = 10 * log10 ( rim_max_pow / s.peak_val );
-            s.stored_is_rimshot       = ( rim_metric_db > rim_shot_treshold_dB ) && ( rim_max_pow > rim_max_power_low_limit );
-            s.rim_shot_cnt            = 0;
-            s.was_rim_shot_ready      = true;
+            const float rim_metric = rim_max_pow / s.peak_val;
+            s.stored_is_rimshot    = ( rim_metric > rim_shot_treshold ) && ( rim_max_pow > rim_max_power_low_limit );
+            s.rim_shot_cnt         = 0;
+            s.was_rim_shot_ready   = true;
           }
         }
       }
