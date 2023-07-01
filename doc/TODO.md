@@ -2,11 +2,7 @@
 
 The road map items are sorted by priority.
 
-- [ ] **Speed optimization**
-
-  It has shown that prototype 5 with configured mesh had pads is running on red LED all the
-  time which indicates that the sampling rate dropped caused by an overloaded CPU. To solve
-  this issue, the source code must be speed optimized.
+- [ ] **Support direct rim strike**
 
 - [ ] **Support 3-zone pads like the Roland CY-15R**
 
@@ -24,9 +20,15 @@ The road map items are sorted by priority.
   use the position of the last detected peak if it is close to the current peak in time (e.g., if
   we have a fast roll situation).
 
+- [ ] **Support positional sensing for rim shots**
+
 - [ ] **Improve rim shot detection**
 
   Especially for pads like the PDA-120L where the piezos are located near the edge, the rim shot detection does perform poorly.
+
+- [ ] **Add support for rim boost setting for multiple head sensor pads**
+
+  The rim boost setting is only supported for pads with just one head sensor.
 
 - [ ] **Testing support for ESP32-S3 with real front-end**
 
@@ -40,8 +42,6 @@ The road map items are sorted by priority.
   Do not use a linear parameter as it is implemented right now.
 
 - [ ] **For the ESP32 prototype, adjust the ADC_noise_peak_velocity_scaling in edrumulus.h correctly**
-
-- [ ] **Support positional sensing for rim shots**
 
 - [ ] **Should we consider pre-scan time high peaks for velocity estimation?**
 
