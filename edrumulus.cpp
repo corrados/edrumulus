@@ -417,10 +417,6 @@ void Edrumulus::Pad::initialize()
   ctrl_velocity_range_fact = 4.0f; // use a fixed value (TODO make it adjustable)
   ctrl_velocity_threshold  = 5.0f; // use a fixed value (TODO make it adjustable)
   max_num_overloads        = 3; // maximum allowed number of overloaded samples until the overload special case is activated
-  overload_num_thresh_1db  = 1;
-  overload_num_thresh_2db  = 2;
-  overload_num_thresh_3db  = 3;
-  overload_num_thresh_4db  = 4;
 
   // The ESP32 ADC has 12 bits resulting in a range of 20*log10(2048)=66.2 dB.
   // The sensitivity parameter shall be in the range of 0..31. This range should then be mapped to the
