@@ -127,6 +127,14 @@ public:
     LOG2   = 4
   };
 
+  enum Erimstate
+  {
+    NO_RIM,
+    RIM_SHOT,
+    RIM_ONLY,
+    RIM_SIDE_STICK
+  };
+
   Edrumulus();
 
   // call this function during the Setup function of the main program
@@ -144,10 +152,10 @@ public:
   bool get_control_found       ( const int pad_idx ) { return pad[pad_idx].get_is_control() && control_found[pad_idx]; }
   int  get_midi_velocity       ( const int pad_idx ) { return midi_velocity[pad_idx]; }
   int  get_midi_pos            ( const int pad_idx ) { return midi_pos[pad_idx]; }
-  int  get_midi_note           ( const int pad_idx ) { return is_rim_shot[pad_idx] ? pad[pad_idx].get_midi_note_rim() : pad[pad_idx].get_midi_note(); }
+  int  get_midi_note           ( const int pad_idx ) { return rim_state[pad_idx] == RIM_SHOT ? pad[pad_idx].get_midi_note_rim() : pad[pad_idx].get_midi_note(); }
   int  get_midi_note_norm      ( const int pad_idx ) { return pad[pad_idx].get_midi_note(); }
   int  get_midi_note_rim       ( const int pad_idx ) { return pad[pad_idx].get_midi_note_rim(); }
-  int  get_midi_note_open      ( const int pad_idx ) { return is_rim_shot[pad_idx] ? pad[pad_idx].get_midi_note_open_rim() : pad[pad_idx].get_midi_note_open(); }
+  int  get_midi_note_open      ( const int pad_idx ) { return rim_state[pad_idx] == RIM_SHOT ? pad[pad_idx].get_midi_note_open_rim() : pad[pad_idx].get_midi_note_open(); }
   int  get_midi_note_open_norm ( const int pad_idx ) { return pad[pad_idx].get_midi_note_open(); }
   int  get_midi_note_open_rim  ( const int pad_idx ) { return pad[pad_idx].get_midi_note_open_rim(); }
   int  get_midi_ctrl_ch        ( const int pad_idx ) { return pad[pad_idx].get_midi_ctrl_ch(); }
@@ -213,7 +221,7 @@ protected:
                              bool&        peak_found,
                              int&         midi_velocity,
                              int&         midi_pos,
-                             bool&        is_rim_shot,
+                             Erimstate&   rim_state,
                              bool&        is_choke_on,
                              bool&        is_choke_off );
 
@@ -340,11 +348,11 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
 
       struct SResults
       {
-        int   midi_velocity;
-        int   midi_pos;
-        int   first_peak_delay;
-        float first_peak_sub_sample;
-        bool  is_rim_shot;
+        int       midi_velocity;
+        int       midi_pos;
+        int       first_peak_delay;
+        float     first_peak_sub_sample;
+        Erimstate rim_state;
       };
 
       struct SSensor
@@ -360,30 +368,30 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
         float* x_rim_switch_hist = nullptr;
         FastWriteFIFO overload_hist;
 
-        int      mask_back_cnt;
-        int      decay_back_cnt;
-        int      scan_time_cnt;
-        float    max_x_filt_val;
-        float    max_mask_x_filt_val;
-        float    first_peak_val;
-        float    peak_val;
-        bool     was_above_threshold;
-        bool     was_peak_found;
-        bool     was_pos_sense_ready;
-        bool     was_rim_shot_ready;
-        bool     is_overloaded_state;
-        float    decay_scaling;
-        int      decay_pow_est_start_cnt;
-        int      decay_pow_est_cnt;
-        float    decay_pow_est_sum;
-        int      pos_sense_cnt;
-        int      x_low_hist_idx;
-        int      x_rim_hist_idx;
-        int      rim_switch_on_cnt;
-        int      rim_shot_cnt;
-        bool     stored_is_rimshot;
-        float    pos_sense_value;
-        SResults sResults;
+        int       mask_back_cnt;
+        int       decay_back_cnt;
+        int       scan_time_cnt;
+        float     max_x_filt_val;
+        float     max_mask_x_filt_val;
+        float     first_peak_val;
+        float     peak_val;
+        bool      was_above_threshold;
+        bool      was_peak_found;
+        bool      was_pos_sense_ready;
+        bool      was_rim_shot_ready;
+        bool      is_overloaded_state;
+        float     decay_scaling;
+        int       decay_pow_est_start_cnt;
+        int       decay_pow_est_cnt;
+        float     decay_pow_est_sum;
+        int       pos_sense_cnt;
+        int       x_low_hist_idx;
+        int       x_rim_hist_idx;
+        int       rim_switch_on_cnt;
+        int       rim_shot_cnt;
+        Erimstate rim_state;
+        float     pos_sense_value;
+        SResults  sResults;
       };
 
       SSensor      sSensor[MAX_NUM_PAD_INPUTS];
@@ -550,7 +558,7 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
   int                midi_velocity[MAX_NUM_PADS];
   int                midi_pos[MAX_NUM_PADS];
   int                midi_ctrl_value[MAX_NUM_PADS];
-  bool               is_rim_shot[MAX_NUM_PADS];
+  Erimstate          rim_state[MAX_NUM_PADS];
   bool               is_choke_on[MAX_NUM_PADS];
   bool               is_choke_off[MAX_NUM_PADS];
   int                cancel_num_samples;

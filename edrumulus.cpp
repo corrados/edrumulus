@@ -237,16 +237,16 @@ Serial.println ( serial_print );
           sample[0]            = sample_sum / ( 1 + number_inputs[i] ); // per definition: sum is on channel 0
 
           pad[0].process_sample ( sample, 3 + number_inputs[i], overload_detected,
-                                  peak_found[0],  midi_velocity[0], midi_pos[0],
-                                  is_rim_shot[0], is_choke_on[0],   is_choke_off[0] );
+                                  peak_found[0], midi_velocity[0], midi_pos[0],
+                                  rim_state[0],  is_choke_on[0],   is_choke_off[0] );
         }
       }
       else
       {
         // normal case: process samples directly
-        pad[i].process_sample ( sample,         number_inputs[i], overload_detected,
-                                peak_found[i],  midi_velocity[i], midi_pos[i],
-                                is_rim_shot[i], is_choke_on[i],   is_choke_off[i] );
+        pad[i].process_sample ( sample,        number_inputs[i], overload_detected,
+                                peak_found[i], midi_velocity[i], midi_pos[i],
+                                rim_state[i],  is_choke_on[i],   is_choke_off[i] );
       }
     }
   }
@@ -536,7 +536,7 @@ void Edrumulus::Pad::initialize()
     s.was_peak_found          = false;
     s.was_pos_sense_ready     = false;
     s.was_rim_shot_ready      = false;
-    s.stored_is_rimshot       = false;
+    s.rim_state               = NO_RIM;
   }
 
   // calculate positional sensing low-pass filter coefficients
@@ -604,7 +604,7 @@ float Edrumulus::Pad::process_sample ( const float* input,
                                        bool&        peak_found,
                                        int&         midi_velocity,
                                        int&         midi_pos,
-                                       bool&        is_rim_shot,
+                                       Erimstate&   rim_state,
                                        bool&        is_choke_on,
                                        bool&        is_choke_off )
 {
@@ -612,7 +612,7 @@ float Edrumulus::Pad::process_sample ( const float* input,
   peak_found                     = false;
   midi_velocity                  = 0;
   midi_pos                       = 0;
-  is_rim_shot                    = false;
+  rim_state                      = NO_RIM;
   is_choke_on                    = false;
   is_choke_off                   = false;
   const bool pos_sense_is_used   = pad_settings.pos_sense_is_used && ( number_head_sensors == 1 ); // can be applied directly without calling initialize()
@@ -1015,7 +1015,7 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
         // at the end of the scan time search the history buffer for any switch on
         if ( s.was_peak_found )
         {
-          s.stored_is_rimshot        = false;
+          s.rim_state                = NO_RIM;
           int num_neighbor_switch_on = 0;
 
           for ( int i = 0; i < rim_shot_window_len; i++ )
@@ -1029,7 +1029,7 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
               // above the rim threshold (the switch keeps on longer than the piezo signal)
               if ( num_neighbor_switch_on >= 2 )
               {
-                s.stored_is_rimshot = true;
+                s.rim_state = RIM_SHOT;
               }
             }
             else
@@ -1107,10 +1107,11 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
               rim_max_pow = max ( rim_max_pow, s.x_rim_hist[s.x_rim_hist_idx + i] );
             }
 
-            const float rim_metric = rim_max_pow / s.peak_val;
-            s.stored_is_rimshot    = ( rim_metric > rim_shot_treshold ) && ( rim_max_pow > rim_max_power_low_limit );
-            s.rim_shot_cnt         = 0;
-            s.was_rim_shot_ready   = true;
+            const float rim_metric  = rim_max_pow / s.peak_val;
+            const bool  is_rim_shot = ( rim_metric > rim_shot_treshold ) && ( rim_max_pow > rim_max_power_low_limit );
+            s.rim_state             = is_rim_shot ? RIM_SHOT : NO_RIM;
+            s.rim_shot_cnt          = 0;
+            s.was_rim_shot_ready    = true;
           }
         }
       }
@@ -1122,7 +1123,7 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
     {
       // apply rim shot velocity boost
 // TODO rim shot boost is only supported for single head sensors pads -> support multiple head sensor pads, too
-      if ( s.stored_is_rimshot && ( number_head_sensors == 1 ) )
+      if ( ( s.rim_state == RIM_SHOT ) && ( number_head_sensors == 1 ) )
       {
         s.peak_val *= rim_shot_boost;
       }
@@ -1142,7 +1143,7 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
 // - only use one counter instead of rim_shot_cnt and pos_sense_cnt
 // - as long as counter is not finished, do check "hil_filt_new > threshold" again to see if we have a higher peak in that
 //   time window -> if yes, restart everything using the new detected peak
-if ( s.is_overloaded_state || s.stored_is_rimshot )
+if ( s.is_overloaded_state || ( s.rim_state != NO_RIM ) )
 {
   current_midi_pos = 0; // as a quick hack, disable positional sensing if a rim shot is detected
 }
@@ -1153,13 +1154,13 @@ if ( s.is_overloaded_state || s.stored_is_rimshot )
         midi_velocity = current_midi_velocity;
         midi_pos      = current_midi_pos;
         peak_found    = true;
-        is_rim_shot   = s.stored_is_rimshot;
+        rim_state     = s.rim_state;
       }
       else
       {
         s.sResults.midi_velocity = current_midi_velocity;
         s.sResults.midi_pos      = current_midi_pos;
-        s.sResults.is_rim_shot   = s.stored_is_rimshot;
+        s.sResults.rim_state     = s.rim_state;
 
         if ( head_sensor_cnt == 0 )
         {
@@ -1279,39 +1280,39 @@ for ( int head_sensor_cnt = 1; head_sensor_cnt < number_head_sensors; head_senso
           // use average MIDI velocity
           midi_velocity = velocity_sum / number_sensors_with_results;
 
-//is_rim_shot   = sSensor[head_sensor_idx_highest_velocity].sResults.is_rim_shot;
+//rim_state = sSensor[head_sensor_idx_highest_velocity].sResults.rim_state;
 // TEST use second highest velocity sensor for rim shot detection
 if ( head_sensor_idx_highest_velocity == 1 )
 {
   if ( sSensor[2].sResults.midi_velocity > sSensor[3].sResults.midi_velocity )
   {
-    is_rim_shot = sSensor[2].sResults.is_rim_shot;
+    rim_state = sSensor[2].sResults.rim_state;
   }
   else
   {
-    is_rim_shot = sSensor[3].sResults.is_rim_shot;
+    rim_state = sSensor[3].sResults.rim_state;
   }
 }
 else if ( head_sensor_idx_highest_velocity == 2 )
 {
   if ( sSensor[1].sResults.midi_velocity > sSensor[3].sResults.midi_velocity )
   {
-    is_rim_shot = sSensor[1].sResults.is_rim_shot;
+    rim_state = sSensor[1].sResults.rim_state;
   }
   else
   {
-    is_rim_shot = sSensor[3].sResults.is_rim_shot;
+    rim_state = sSensor[3].sResults.rim_state;
   }
 }
 else
 {
   if ( sSensor[1].sResults.midi_velocity > sSensor[2].sResults.midi_velocity )
   {
-    is_rim_shot = sSensor[1].sResults.is_rim_shot;
+    rim_state = sSensor[1].sResults.rim_state;
   }
   else
   {
-    is_rim_shot = sSensor[2].sResults.is_rim_shot;
+    rim_state = sSensor[2].sResults.rim_state;
   }
 }
 
@@ -1324,7 +1325,7 @@ midi_pos = 0;
 
 // TEST use average MIDI velocity
 midi_velocity = velocity_sum / number_sensors_with_results;
-is_rim_shot   = sSensor[head_sensor_idx_highest_velocity].sResults.is_rim_shot;
+rim_state     = sSensor[head_sensor_idx_highest_velocity].sResults.rim_state;
 
 }
 else
@@ -1335,7 +1336,7 @@ midi_pos = 0;
 
 // TEST
 midi_velocity = sSensor[0].sResults.midi_velocity;
-is_rim_shot   = sSensor[0].sResults.is_rim_shot;
+rim_state     = sSensor[0].sResults.rim_state;
 
 }
 peak_found = true;
