@@ -1002,11 +1002,8 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
             pos_sense_metric = s.first_peak_val / peak_energy_low;
           }
 
+          s.pos_sense_value     = pos_sense_metric / pos_threshold;
           s.was_pos_sense_ready = true;
-
-          // positional sensing MIDI mapping with clipping to allowed MIDI value range
-          s.stored_midi_pos = static_cast<int> ( ( 10 * log10 ( pos_sense_metric / pos_threshold ) / pos_range_db ) * 127 );
-          s.stored_midi_pos = max ( 1, min ( 127, s.stored_midi_pos ) );
         }
       }
     }
@@ -1130,23 +1127,6 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
     // return all results
     if ( s.was_peak_found && ( !pos_sense_is_used || s.was_pos_sense_ready ) && ( !rim_shot_is_used || s.was_rim_shot_ready ) )
     {
-
-// TODO in case of signal clipping, we cannot use the positional sensing results
-if ( s.is_overloaded_state )
-{
-  s.stored_midi_pos = 0; // overloads will only happen if the strike is located near the middle of the pad
-}
-
-// TODO:
-// - positional sensing must be adjusted if a rim shot is detected (note that this must be done BEFORE the MIDI clipping!)
-// - only use one counter instead of rim_shot_cnt and pos_sense_cnt
-// - as long as counter is not finished, do check "hil_filt_new > threshold" again to see if we have a higher peak in that
-//   time window -> if yes, restart everything using the new detected peak
-if ( s.stored_is_rimshot )
-{
-  s.stored_midi_pos = 0; // as a quick hack, disable positional sensing if a rim shot is detected
-}
-
       // apply rim shot velocity boost
 // TODO rim shot boost is only supported for single head sensors pads -> support multiple head sensor pads, too
       if ( s.stored_is_rimshot && ( number_head_sensors == 1 ) )
@@ -1158,18 +1138,34 @@ if ( s.stored_is_rimshot )
       int current_midi_velocity = velocity_factor * pow ( s.peak_val * ADC_noise_peak_velocity_scaling, velocity_exponent ) + velocity_offset;
       current_midi_velocity     = max ( 1, min ( 127, current_midi_velocity ) );
 
+      // positional sensing MIDI mapping with clipping to allowed MIDI value range
+      int current_midi_pos = static_cast<int> ( ( 10 * log10 ( s.pos_sense_value ) / pos_range_db ) * 127 );
+      current_midi_pos     = max ( 1, min ( 127, current_midi_pos ) );
+
+// TODO:
+// - in case of signal clipping, we cannot use the positional sensing results (overloads will
+//   only happen if the strike is located near the middle of the pad)
+// - positional sensing must be adjusted if a rim shot is detected (note that this must be done BEFORE the MIDI clipping!)
+// - only use one counter instead of rim_shot_cnt and pos_sense_cnt
+// - as long as counter is not finished, do check "hil_filt_new > threshold" again to see if we have a higher peak in that
+//   time window -> if yes, restart everything using the new detected peak
+if ( s.is_overloaded_state || s.stored_is_rimshot )
+{
+  current_midi_pos = 0; // as a quick hack, disable positional sensing if a rim shot is detected
+}
+
       if ( number_head_sensors == 1 )
       {
         // normal case: only one head sensor -> use detection results directly
         midi_velocity = current_midi_velocity;
-        midi_pos      = s.stored_midi_pos;
+        midi_pos      = current_midi_pos;
         peak_found    = true;
         is_rim_shot   = s.stored_is_rimshot;
       }
       else
       {
         s.sResults.midi_velocity = current_midi_velocity;
-        s.sResults.midi_pos      = s.stored_midi_pos;
+        s.sResults.midi_pos      = current_midi_pos;
         s.sResults.is_rim_shot   = s.stored_is_rimshot;
 
         if ( head_sensor_cnt == 0 )
