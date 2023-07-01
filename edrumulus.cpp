@@ -990,19 +990,16 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
             peak_energy_low = max ( peak_energy_low, s.x_low_hist[s.x_low_hist_idx + i] );
           }
 
-          float pos_sense_metric;
-
           if ( pos_sense_inverted )
           {
             // add offset (dB) to get to similar range as non-inverted metric
-            pos_sense_metric = peak_energy_low / s.first_peak_val * 10000.0f;
+            s.pos_sense_value = peak_energy_low / s.first_peak_val * 10000.0f / pos_threshold;
           }
           else
           {
-            pos_sense_metric = s.first_peak_val / peak_energy_low;
+            s.pos_sense_value = s.first_peak_val / peak_energy_low / pos_threshold;
           }
 
-          s.pos_sense_value     = pos_sense_metric / pos_threshold;
           s.was_pos_sense_ready = true;
         }
       }
