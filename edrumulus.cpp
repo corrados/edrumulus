@@ -1110,6 +1110,14 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
             const float rim_metric  = rim_max_pow / s.peak_val;
             const bool  is_rim_shot = ( rim_metric > rim_shot_treshold ) && ( rim_max_pow > rim_max_power_low_limit );
             s.rim_state             = is_rim_shot ? RIM_SHOT : NO_RIM;
+
+// TEST rim_shot_boost
+const float rim_click_treshold = pow ( 10.0f, ( static_cast<float> ( pad_settings.rim_shot_boost ) - 44 ) / 10 ); // linear rim shot threshold
+if ( ( rim_metric > rim_click_treshold ) && ( rim_max_pow > rim_max_power_low_limit ) )
+{
+  s.rim_state = RIM_ONLY;
+}
+
             s.rim_shot_cnt          = 0;
             s.was_rim_shot_ready    = true;
           }

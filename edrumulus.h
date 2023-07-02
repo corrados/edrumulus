@@ -152,7 +152,8 @@ public:
   bool get_control_found       ( const int pad_idx ) { return pad[pad_idx].get_is_control() && control_found[pad_idx]; }
   int  get_midi_velocity       ( const int pad_idx ) { return midi_velocity[pad_idx]; }
   int  get_midi_pos            ( const int pad_idx ) { return midi_pos[pad_idx]; }
-  int  get_midi_note           ( const int pad_idx ) { return rim_state[pad_idx] == RIM_SHOT ? pad[pad_idx].get_midi_note_rim() : pad[pad_idx].get_midi_note(); }
+  int  get_midi_note           ( const int pad_idx ) { return rim_state[pad_idx] == RIM_SHOT ? pad[pad_idx].get_midi_note_rim() :
+    rim_state[pad_idx] == RIM_ONLY ? pad[pad_idx].get_midi_note_open_rim() : pad[pad_idx].get_midi_note(); }
   int  get_midi_note_norm      ( const int pad_idx ) { return pad[pad_idx].get_midi_note(); }
   int  get_midi_note_rim       ( const int pad_idx ) { return pad[pad_idx].get_midi_note_rim(); }
   int  get_midi_note_open      ( const int pad_idx ) { return rim_state[pad_idx] == RIM_SHOT ? pad[pad_idx].get_midi_note_open_rim() : pad[pad_idx].get_midi_note_open(); }
