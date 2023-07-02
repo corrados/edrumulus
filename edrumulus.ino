@@ -425,6 +425,8 @@ void confirm_setting ( const int  controller,
     MYMIDI.sendNoteOff ( 112, edrumulus.get_midi_note_norm ( selected_pad ), 1 );
     MYMIDI.sendNoteOff ( 113, edrumulus.get_midi_note_rim ( selected_pad ), 1 );
     MYMIDI.sendNoteOff ( 114, edrumulus.get_cancellation ( selected_pad ), 1 );
+    MYMIDI.sendNoteOff ( 116, edrumulus.get_midi_note_open_norm ( selected_pad ), 1 );
+    MYMIDI.sendNoteOff ( 117, edrumulus.get_midi_note_open_rim ( selected_pad ), 1 );
     MYMIDI.sendNoteOff ( 118, edrumulus.get_mask_time ( selected_pad ), 1 );
     MYMIDI.sendNoteOff ( 119, edrumulus.get_rim_shot_boost ( selected_pad ), 1 );
     MYMIDI.sendNoteOff ( 126, VERSION_MINOR, 1 );
