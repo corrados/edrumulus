@@ -390,7 +390,7 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
         int       rim_switch_on_cnt;
         int       rim_shot_cnt;
         Erimstate rim_state;
-        float     pos_sense_value;
+        float     pos_sense_metric;
         SResults  sResults;
       };
 

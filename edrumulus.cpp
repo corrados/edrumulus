@@ -989,11 +989,11 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
           if ( pos_sense_inverted )
           {
             // add offset (dB) to get to similar range as non-inverted metric
-            s.pos_sense_value = peak_energy_low / s.first_peak_val * 10000.0f / pos_threshold;
+            s.pos_sense_metric = peak_energy_low / s.first_peak_val * 10000.0f;
           }
           else
           {
-            s.pos_sense_value = s.first_peak_val / peak_energy_low / pos_threshold;
+            s.pos_sense_metric = s.first_peak_val / peak_energy_low;
           }
 
           s.was_pos_sense_ready = true;
@@ -1133,8 +1133,8 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
       current_midi_velocity     = max ( 1, min ( 127, current_midi_velocity ) );
 
       // positional sensing MIDI mapping with clipping to allowed MIDI value range
-      int current_midi_pos = static_cast<int> ( ( 10 * log10 ( s.pos_sense_value ) / pos_range_db ) * 127 );
-      current_midi_pos     = max ( 1, min ( 127, current_midi_pos ) );
+      int current_midi_pos = static_cast<int> ( ( 10 * log10 ( s.pos_sense_metric / pos_threshold ) / pos_range_db ) * 127 );
+      current_midi_pos     = max ( 0, min ( 127, current_midi_pos ) );
 
 // TODO:
 // - in case of signal clipping, we cannot use the positional sensing results (overloads will
