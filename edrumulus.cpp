@@ -808,6 +808,7 @@ float Edrumulus::Pad::process_sample ( const float* input,
         first_peak_found = true; // for special case signal only increments, the peak found would be false -> correct this
         s.was_peak_found = true;
 
+
         // Overload correction ----------------------------------------------------
         // if the first peak is overloaded, use this position as the maximum peak
         int       peak_velocity_idx_ovhist                    = peak_velocity_idx;
@@ -1129,7 +1130,7 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
       }
 
       // calculate the MIDI velocity value with clipping to allowed MIDI value range
-      int current_midi_velocity = velocity_factor * pow ( s.peak_val * ADC_noise_peak_velocity_scaling, velocity_exponent ) + velocity_offset;
+      int current_midi_velocity = static_cast<int> ( velocity_factor * pow ( s.peak_val * ADC_noise_peak_velocity_scaling, velocity_exponent ) + velocity_offset );
       current_midi_velocity     = max ( 1, min ( 127, current_midi_velocity ) );
 
       // positional sensing MIDI mapping with clipping to allowed MIDI value range
