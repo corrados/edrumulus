@@ -55,22 +55,7 @@ of the Edrumulus project can be found in the [TODO file](doc/TODO.md).
   at your own risk.
 
 
-## Algorithm
-
-The algorithms are developed using a regular audio card. The drum pad output signal is captured and
-the signal processing and algorithm development is done in Octave. The development runs in three steps:
-
-1. Create the algorithms using a captured test signal and analyze it as a whole. This is the
-   easiest and fastest way to create and improve the algorithms (this is the "playground"). The
-   corresponding source file is algorithm/drumtrigger.m.
-
-2. If the algorithm works ok, it is ported to a sample-based processing. The goal is to make the
-   Octave code as similar to the C++ micro controller implementation as possible. The corresponding
-   source file is algorithm/edrumulus.m.
-
-3. Port the sample-based processing code to C++ and test it in real-time on the hardware. To make
-   sure the port was successful, we send test data to the micro controller, query the processed
-   signal and compare it in Octave to the reference code.
+## Documentation
 
 The algorithms are described in [this document](doc/algorithm.md).
 
