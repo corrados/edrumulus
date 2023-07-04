@@ -8,23 +8,6 @@ at the edge of the pad). This is called __positional sensing__. Another step is 
 of a second piezo sensor to detect if we have a rim shot which leads to a __rim shot detection__. In
 this step we can also detect if we have a cross stick situation.
 
-## Algorithm development
-
-The algorithms are developed using a regular audio card. The drum pad output signal is captured and
-the signal processing and algorithm development is done in Octave. The development runs in three steps:
-
-1. Create the algorithms using a captured test signal and analyze it as a whole. This is the
-   easiest and fastest way to create and improve the algorithms (this is the "playground"). The
-   corresponding source file is algorithm/drumtrigger.m.
-
-2. If the algorithm works ok, it is ported to a sample-based processing. The goal is to make the
-   Octave code as similar to the C++ micro controller implementation as possible. The corresponding
-   source file is algorithm/edrumulus.m.
-
-3. Port the sample-based processing code to C++ and test it in real-time on the hardware. To make
-   sure the port was successful, we send test data to the micro controller, query the processed
-   signal and compare it in Octave to the reference code.
-
 
 ## Peak detection
 
@@ -51,6 +34,7 @@ band-pass filtered signal no matter what the original peak looks like:
 
 This effect is amplified if the upper cut-off frequency of the band-pass filter is lowered.
 It has shown that a good compromise is to use a pass-band range of 40 Hz to 400 Hz.
+
 
 #### Pre-scan time
 
@@ -134,6 +118,7 @@ Further testing showed that it is important to use the very first peak in time f
 a later peak is used, the positional sensing based on the low-pass filtered signal does not yield
 good results.
 
+
 ### Positional sensing if a rim-shot is played
 
 It has shown that the positional sensing metric must be adjusted if a rim shot is used. Therefore, the
@@ -154,11 +139,30 @@ figured out that even this professional module has its problems with rim shot de
 detection results were not perfect either.
 
 
+# Algorithm development
+
+The algorithms are developed using a regular audio card. The drum pad output signal is captured and
+the signal processing and algorithm development is done in Octave. The development runs in three steps:
+
+1. Create the algorithms using a captured test signal and analyze it as a whole. This is the
+   easiest and fastest way to create and improve the algorithms (this is the "playground"). The
+   corresponding source file is algorithm/drumtrigger.m.
+
+2. If the algorithm works ok, it is ported to a sample-based processing. The goal is to make the
+   Octave code as similar to the C++ micro controller implementation as possible. The corresponding
+   source file is algorithm/edrumulus.m.
+
+3. Port the sample-based processing code to C++ and test it in real-time on the hardware. To make
+   sure the port was successful, we send test data to the micro controller, query the processed
+   signal and compare it in Octave to the reference code.
+
+
 # Test signals
 
 To support a new pad type, test data should be recorded. If a second trigger is supported, a
 stereo signal sampled at 8 kHz shall be used, otherwise use a monophonic recording. Make sure
 that the signal is never clipped, even for the highest velocity hits.
+
 
 ## Normal test data capture
 
@@ -181,6 +185,7 @@ The following hit sequence shall be recorded:
 - press roll varying velocity from high to low and back to high near the middle of the pad
 - press roll varying velocity from high to low and back to high near the edge of the pad
   - the press rolls are for optimizing the parameters for the retrigger cancellation
+
 
 ## Rim shot test data capture
 
