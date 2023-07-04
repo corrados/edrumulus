@@ -74,11 +74,7 @@ The algorithms are described in [this document](doc/algorithm.md).
 
 - [aDrums](https://github.com/josuelopezv/aDrums)
 
-- [ArduinoMidiDrums](https://github.com/evankale/ArduinoMidiDrums)
-
 - [Drum Master](https://github.com/thebiguno/microcontroller-projects/tree/master/projects/drummaster/rev2/src)
-
-- [Homemade Electronic Drum Kit With Arduino Mega2560](https://www.instructables.com/Homemade-Electronic-Drum-Kit-With-Arduino-Mega2560) ([Source code](https://github.com/Victor2805/Homemade-electronic-drum-kit-with-arduino))
 
 - Forum threads with technical data
 
