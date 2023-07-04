@@ -2,8 +2,6 @@
 
 The road map items are sorted by priority.
 
-- [ ] **Support direct rim strike**
-
 - [ ] **Support 3-zone pads like the Roland CY-15R**
 
   See [this discussion](https://github.com/corrados/edrumulus/discussions/73#discussioncomment-5623391).
@@ -21,6 +19,8 @@ The road map items are sorted by priority.
   we have a fast roll situation).
 
 - [ ] **Support positional sensing for rim shots**
+
+- [ ] **Support direct rim strike**
 
 - [ ] **Improve rim shot detection**
 
