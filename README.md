@@ -4,8 +4,9 @@
 
 [![PlatformIO CI](https://github.com/corrados/edrumulus/actions/workflows/main.yml/badge.svg)](https://github.com/corrados/edrumulus/actions/workflows/main.yml)
 
-The aim of the **Edrumulus** project is to create a high quality Open Source e-drum trigger module software
-which runs on a micro processor. It shall fulfill the following specifications:
+**Edrumulus** is a high quality Open Source e-drum trigger module software which runs on a micro processor.
+
+It shall fulfill the following specifications:
 - The trigger performance shall be similar to the Roland TD-27.
 - Overall latency should be as small as possible. The goal is to achieve a latency < 10 ms.
 - The required analog front end design shall be as simple as possible using the fewest number of
@@ -64,21 +65,19 @@ The algorithms are described in [this document](doc/algorithm.md).
 
 - [eXaDrums](https://exadrums.com) ([Hackaday](https://hackaday.io/project/9350-exadrums), [Source code](https://github.com/SpintroniK/libeXaDrums))
 
-- [Drumidy](https://hackaday.io/project/176712-drumidy-electronic-midi-drum-controller) ([Source code](https://github.com/EvgenyD/Drumidy)). Uses a STM32 processor with 18 inputs and supports re-trigger cancellation.
+- [Drumidy](https://hackaday.io/project/176712-drumidy-electronic-midi-drum-controller) ([Source code](https://github.com/EvgenyD/Drumidy)): Uses a STM32 processor with 18 inputs and supports re-trigger cancellation.
 
 - [open e-drums](https://open-e-drums.com) ([Source code](https://github.com/RyoKosaka/HelloDrum-arduino-Library))
 
-- [Arduino Leanordo Midi Drum Kit](https://hoeser-medien.de/2016/11/arduino-leanordo-midi-drum-kit). Uses some re-trigger cancellation. The source code can be found embedded in the web page.
+- [Arduino Leanordo Midi Drum Kit](https://hoeser-medien.de/2016/11/arduino-leanordo-midi-drum-kit): Uses some re-trigger cancellation. The source code can be found embedded in the web page.
 
-- [An Arduino based standalone drum kit Hackaday](https://hackaday.io/project/171929-an-arduino-based-standalone-drum-kit) ([Source code](https://hackaday.io/project/171929-an-arduino-based-standalone-drum-kit#menu-files)). Generates audio, too.
+- [An Arduino based standalone drum kit Hackaday](https://hackaday.io/project/171929-an-arduino-based-standalone-drum-kit) ([Source code](https://hackaday.io/project/171929-an-arduino-based-standalone-drum-kit#menu-files)): Generates audio, too.
 
 - [aDrums](https://github.com/josuelopezv/aDrums)
 
 - [Drum Master](https://github.com/thebiguno/microcontroller-projects/tree/master/projects/drummaster/rev2/src)
 
-- Forum threads with technical data
+- [Forum: How to solve a system of hyperbola equations](https://math.stackexchange.com/questions/3373011/how-to-solve-this-system-of-hyperbola-equations)
 
-  [E-Drum Technik-Thread (für Elektrotechnik- und Informatik-Interessierte)](https://www.drummerforum.de/forum/71415-e-drum-technik-thread-f%C3%BCr-elektrotechnik-und-informatik-interessierte.html)
+- [Forum: E-Drum Technik-Thread (für Elektrotechnik- und Informatik-Interessierte)](https://www.drummerforum.de/forum/71415-e-drum-technik-thread-f%C3%BCr-elektrotechnik-und-informatik-interessierte.html)
 
-  [How to solve a system of hyperbola equations](https://math.stackexchange.com/questions/3373011/how-to-solve-this-system-of-hyperbola-equations)
-  
