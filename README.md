@@ -6,7 +6,7 @@
 
 **Edrumulus** is a high quality Open Source e-drum trigger module software which runs on a micro processor.
 
-It shall fulfill the following specifications:
+Project requirements:
 - The trigger performance shall be similar to the Roland TD-27.
 - Overall latency should be as small as possible. The goal is to achieve a latency < 10 ms.
 - The required analog front end design shall be as simple as possible using the fewest number of
