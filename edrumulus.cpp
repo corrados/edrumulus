@@ -107,11 +107,6 @@ void Edrumulus::setup ( const int  conf_num_pads,
 
 void Edrumulus::process()
 {
-  float sample[MAX_NUM_PAD_INPUTS];
-  float stored_sample[MAX_NUM_PAD_INPUTS];
-  int   overload_detected[MAX_NUM_PAD_INPUTS];
-  int   stored_overload_detected[MAX_NUM_PAD_INPUTS];
-
 /*
 // TEST for debugging: take samples from Octave, process and return result to Octave
 if ( Serial.available() > 0 )

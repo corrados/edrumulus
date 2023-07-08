@@ -544,6 +544,10 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
   int                coupled_pad_idx;
   int                number_inputs[MAX_NUM_PADS];
   int                analog_pin[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  float              sample[MAX_NUM_PAD_INPUTS];
+  float              stored_sample[MAX_NUM_PAD_INPUTS];
+  int                overload_detected[MAX_NUM_PAD_INPUTS];
+  int                stored_overload_detected[MAX_NUM_PAD_INPUTS];
   double             dc_offset[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS]; // must be double type for IIR filter
   int                sample_org[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   float              dc_offset_iir_gamma;
