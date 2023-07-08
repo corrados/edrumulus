@@ -360,7 +360,8 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
 
       struct SSensor
       {
-        float* x_sq_hist         = nullptr;
+        FastWriteFIFO x_sq_hist;
+        FastWriteFIFO overload_hist;
         float* bp_filt_hist_x    = nullptr;
         float* bp_filt_hist_y    = nullptr;
         float* x_low_hist        = nullptr;
@@ -369,7 +370,6 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
         float* rim_bp_hist_y     = nullptr;
         float* x_rim_hist        = nullptr;
         float* x_rim_switch_hist = nullptr;
-        FastWriteFIFO overload_hist;
 
         int       mask_back_cnt;
         int       decay_back_cnt;

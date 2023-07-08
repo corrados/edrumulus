@@ -500,7 +500,8 @@ void Edrumulus::Pad::initialize()
   for ( int in = 0; in < number_head_sensors; in++ )
   {
     SSensor& s = sSensor[in];
-    allocate_initialize ( &s.x_sq_hist,         x_sq_hist_len );       // memory for sqr(x) history
+    s.x_sq_hist.initialize     ( x_sq_hist_len );                      // memory for sqr(x) history
+    s.overload_hist.initialize ( overload_hist_len );                  // memory for overload detection status
     allocate_initialize ( &s.bp_filt_hist_x,    bp_filt_len );         // band-pass filter x-signal history
     allocate_initialize ( &s.bp_filt_hist_y,    bp_filt_len - 1 );     // band-pass filter y-signal history
     allocate_initialize ( &s.x_low_hist,        x_low_hist_len );      // memory for low-pass filter result
@@ -509,7 +510,6 @@ void Edrumulus::Pad::initialize()
     allocate_initialize ( &s.rim_bp_hist_y,     bp_filt_len - 1 );     // rim band-pass filter y-signal history
     allocate_initialize ( &s.x_rim_hist,        x_rim_hist_len );      // memory for rim shot detection
     allocate_initialize ( &s.x_rim_switch_hist, rim_shot_window_len ); // memory for rim switch detection
-    s.overload_hist.initialize ( overload_hist_len );                  // memory for overload detection status
 
     s.was_above_threshold     = false;
     s.is_overloaded_state     = false;
@@ -623,15 +623,14 @@ float Edrumulus::Pad::process_sample ( const float* input,
   {
     const int in               = head_sensor_cnt == 0 ? 0 : head_sensor_cnt + 1; // exclude rim input
     SSensor&  s                = sSensor[head_sensor_cnt];
-    float*    s_x_sq_hist      = s.x_sq_hist; // shortcut for speed optimization
+    FastWriteFIFO& s_x_sq_hist = s.x_sq_hist; // shortcut for speed optimization
     int&      first_peak_delay = s.sResults.first_peak_delay; // use value in result struct
     bool      first_peak_found = false;
     int       peak_delay       = 0;
     first_peak_delay++; // increment first peak delay for each new sample (wraps only after some hours which is uncritical)
 
     // square input signal and store in FIFO buffer
-    const float x_sq = input[in] * input[in];
-    update_fifo ( x_sq, x_sq_hist_len, s_x_sq_hist );
+    s_x_sq_hist.add     ( input[in] * input[in] );
     s.overload_hist.add ( overload_detected[in] );
 
 
