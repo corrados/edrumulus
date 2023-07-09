@@ -344,6 +344,7 @@ void Edrumulus::Pad::setup ( const int conf_Fs )
   midi_note_open_rim = 26;
   midi_ctrl_ch       = 4; // CC4, usually used for hi-hat
   use_coupling       = false;
+  use_second_rim     = false;
   init_delay_cnt     = 0; // note that it resets value of set_pad_type above
   initialize(); // do very first initialization without delay
 }
@@ -500,16 +501,17 @@ void Edrumulus::Pad::initialize()
   for ( int in = 0; in < number_head_sensors; in++ )
   {
     SSensor& s = sSensor[in];
-    s.x_sq_hist.initialize     ( x_sq_hist_len );                      // memory for sqr(x) history
-    s.overload_hist.initialize ( overload_hist_len );                  // memory for overload detection status
-    allocate_initialize ( &s.bp_filt_hist_x,    bp_filt_len );         // band-pass filter x-signal history
-    allocate_initialize ( &s.bp_filt_hist_y,    bp_filt_len - 1 );     // band-pass filter y-signal history
-    allocate_initialize ( &s.x_low_hist,        x_low_hist_len );      // memory for low-pass filter result
-    allocate_initialize ( &s.lp_filt_hist,      lp_filt_len );         // memory for low-pass filter input
-    allocate_initialize ( &s.rim_bp_hist_x,     bp_filt_len );         // rim band-pass filter x-signal history
-    allocate_initialize ( &s.rim_bp_hist_y,     bp_filt_len - 1 );     // rim band-pass filter y-signal history
-    allocate_initialize ( &s.x_rim_hist,        x_rim_hist_len );      // memory for rim shot detection
-    allocate_initialize ( &s.x_rim_switch_hist, rim_shot_window_len ); // memory for rim switch detection
+    s.x_sq_hist.initialize     ( x_sq_hist_len );                          // memory for sqr(x) history
+    s.overload_hist.initialize ( overload_hist_len );                      // memory for overload detection status
+    allocate_initialize ( &s.bp_filt_hist_x,        bp_filt_len );         // band-pass filter x-signal history
+    allocate_initialize ( &s.bp_filt_hist_y,        bp_filt_len - 1 );     // band-pass filter y-signal history
+    allocate_initialize ( &s.x_low_hist,            x_low_hist_len );      // memory for low-pass filter result
+    allocate_initialize ( &s.lp_filt_hist,          lp_filt_len );         // memory for low-pass filter input
+    allocate_initialize ( &s.rim_bp_hist_x,         bp_filt_len );         // rim band-pass filter x-signal history
+    allocate_initialize ( &s.rim_bp_hist_y,         bp_filt_len - 1 );     // rim band-pass filter y-signal history
+    allocate_initialize ( &s.x_rim_hist,            x_rim_hist_len );      // memory for rim shot detection
+    allocate_initialize ( &s.x_rim_switch_hist,     rim_shot_window_len ); // memory for rim switch detection
+    allocate_initialize ( &s.x_sec_rim_switch_hist, rim_shot_window_len ); // memory for second rim switch detection
 
     s.was_above_threshold     = false;
     s.is_overloaded_state     = false;
@@ -1002,10 +1004,15 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
     {
       if ( get_is_rim_switch() )
       {
-        const bool rim_switch_on = ( input[1] < rim_switch_treshold );
-
         // as a quick hack we re-use the length parameter for the switch on detection
+        const bool rim_switch_on = ( input[1] < rim_switch_treshold );
         update_fifo ( rim_switch_on, rim_shot_window_len, s.x_rim_switch_hist );
+
+        if ( use_second_rim )
+        {
+          // we assume a third input signal is present which has the second rim signal
+          update_fifo ( input[2] < rim_switch_treshold, rim_shot_window_len, s.x_sec_rim_switch_hist );
+        }
 
         // at the end of the scan time search the history buffer for any switch on
         if ( s.was_peak_found )
@@ -1030,6 +1037,33 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
             else
             {
               num_neighbor_switch_on = 0;
+            }
+          }
+
+          // support second rim switch (usually the bell on a ride cymbal)
+          if ( use_second_rim )
+          {
+            int num_neighbor_second_switch_on = 0;
+
+            for ( int i = 0; i < rim_shot_window_len; i++ )
+            {
+              if ( s.x_sec_rim_switch_hist[i] > 0 )
+              {
+                num_neighbor_second_switch_on++;
+
+                // On the ESP32, we had seen crosstalk between head/rim inputs. To avoid that the interference
+                // signal from the head triggers the rim, we check that we have at least two neighbor samples
+                // above the rim threshold (the switch keeps on longer than the piezo signal)
+                if ( num_neighbor_second_switch_on >= 2 )
+                {
+                  // re-use rim-only enum for second rim switch, overwrites RIM_SHOT state
+                  s.rim_state = RIM_ONLY;
+                }
+              }
+              else
+              {
+                num_neighbor_second_switch_on = 0;
+              }
             }
           }
 

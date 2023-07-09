@@ -272,7 +272,9 @@ protected:
       void set_cancellation         ( const int        new_cancel )    { pad_settings.cancellation = new_cancel; sched_init(); }
       int  get_cancellation         ()                                 { return pad_settings.cancellation; }
       void set_use_coupling         ( const bool       new_coupling )  { use_coupling = new_coupling; sched_init(); }
-      int  get_use_coupling         ()                                 { return use_coupling; }
+      bool get_use_coupling         ()                                 { return use_coupling; }
+      void set_use_second_rim       ( const bool       new_sec_rim )   { use_second_rim = new_sec_rim; sched_init(); }
+      bool get_use_second_rim       ()                                 { return use_second_rim; }
 
       float get_cancellation_factor() { return cancellation_factor; }
       bool  get_is_control()          { return pad_settings.is_control; }
@@ -362,14 +364,15 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       {
         FastWriteFIFO x_sq_hist;
         FastWriteFIFO overload_hist;
-        float* bp_filt_hist_x    = nullptr;
-        float* bp_filt_hist_y    = nullptr;
-        float* x_low_hist        = nullptr;
-        float* lp_filt_hist      = nullptr;
-        float* rim_bp_hist_x     = nullptr;
-        float* rim_bp_hist_y     = nullptr;
-        float* x_rim_hist        = nullptr;
-        float* x_rim_switch_hist = nullptr;
+        float* bp_filt_hist_x        = nullptr;
+        float* bp_filt_hist_y        = nullptr;
+        float* x_low_hist            = nullptr;
+        float* lp_filt_hist          = nullptr;
+        float* rim_bp_hist_x         = nullptr;
+        float* rim_bp_hist_y         = nullptr;
+        float* x_rim_hist            = nullptr;
+        float* x_rim_switch_hist     = nullptr;
+        float* x_sec_rim_switch_hist = nullptr;
 
         int       mask_back_cnt;
         int       decay_back_cnt;
@@ -399,6 +402,7 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
 
       SSensor      sSensor[MAX_NUM_PAD_INPUTS];
       bool         use_coupling;
+      bool         use_second_rim;
       int          Fs;
       int          number_inputs;
       int          number_head_sensors;
