@@ -1051,9 +1051,7 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
               {
                 num_neighbor_second_switch_on++;
 
-                // On the ESP32, we had seen crosstalk between head/rim inputs. To avoid that the interference
-                // signal from the head triggers the rim, we check that we have at least two neighbor samples
-                // above the rim threshold (the switch keeps on longer than the piezo signal)
+                // (see comment above for normal rim switch regarding this condition)
                 if ( num_neighbor_second_switch_on >= 2 )
                 {
                   // re-use rim-only enum for second rim switch, overwrites RIM_SHOT state
