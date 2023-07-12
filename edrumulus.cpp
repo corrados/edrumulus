@@ -37,7 +37,8 @@ Edrumulus::Edrumulus() :
   cancel_cnt                 = 0;
   cancel_MIDI_velocity       = 1;
   cancel_pad_index           = 0;
-  coupled_pad_idx            = 0; // disable coupling
+  coupled_pad_idx_secondary  = 0; // disable coupling
+  coupled_pad_idx_primary    = 0; // fix value of 0 for now, i.e., only the first input "snare" has coupling support right now
 
   // calculate DC offset IIR1 low pass filter parameters, see
   // http://www.tsdconseil.fr/tutos/tuto-iir1-en.pdf: gamma = exp(-Ts/tau)
@@ -201,13 +202,13 @@ Serial.println ( serial_print );
       }
 
       // process sample
-      if ( ( coupled_pad_idx > 0 ) && ( ( i == coupled_pad_idx ) || ( i == 0 ) ) )
+      if ( ( coupled_pad_idx_secondary > 0 ) && ( ( i == coupled_pad_idx_secondary ) || ( i == coupled_pad_idx_primary ) ) )
       {
         // special case: couple pad inputs for multiple head sensor capturing
-        if ( i == 0 )
+        if ( i == coupled_pad_idx_primary )
         {
-          // store the current input for pad 0
-          for ( int j = 0; j < number_inputs[0]; j++ )
+          // store the current input for pad "coupled_pad_idx_primary"
+          for ( int j = 0; j < number_inputs[coupled_pad_idx_primary]; j++ )
           {
             stored_sample[j]            = sample[j];
             stored_overload_detected[j] = overload_detected[j];
@@ -215,7 +216,7 @@ Serial.println ( serial_print );
         }
         else
         {
-          // combine samples and process pad 0 which is the couple master per definition
+          // combine samples and process pad coupled_pad_idx_primary which is the primary coupled pad
           float sample_sum = 0.0f; // input 0 is the sum of the head sensor signal per definition
           for ( int j = number_inputs[i] - 1; j >= 0; j-- ) // count backwards to avoid overwriting
           {
@@ -231,9 +232,10 @@ Serial.println ( serial_print );
           sample_sum          += stored_sample[0]; // only use head sensor and not the rim sensor for the sum
           sample[0]            = sample_sum / ( 1 + number_inputs[i] ); // per definition: sum is on channel 0
 
-          pad[0].process_sample ( sample, 3 + number_inputs[i], overload_detected,
-                                  peak_found[0], midi_velocity[0], midi_pos[0],
-                                  rim_state[0],  is_choke_on[0],   is_choke_off[0] );
+          pad[coupled_pad_idx_primary].process_sample ( sample, 3 + number_inputs[i],         overload_detected,
+                                                        peak_found[coupled_pad_idx_primary],  midi_velocity[coupled_pad_idx_primary],
+                                                        midi_pos[coupled_pad_idx_primary],    rim_state[coupled_pad_idx_primary],
+                                                        is_choke_on[coupled_pad_idx_primary], is_choke_off[coupled_pad_idx_primary] );
         }
       }
       else
@@ -333,8 +335,8 @@ void Edrumulus::set_coupled_pad_idx ( const int new_idx )
 // TODO implement setting of coupled head trigger and coupled rim trigger here...
 
 // old code which was in the header file:
-  coupled_pad_idx = new_idx;
-  pad[0].set_use_coupling ( new_idx > 0 );
+  coupled_pad_idx_secondary = new_idx;
+  pad[coupled_pad_idx_primary].set_use_coupling ( new_idx > 0 ); // TODO condition "> 0" is no longer meaningful...
 }
 
 

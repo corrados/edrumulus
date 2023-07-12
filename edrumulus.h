@@ -203,7 +203,7 @@ public:
   int  get_spike_cancel_level ()                      { return spike_cancel_level; }
 
   void set_coupled_pad_idx ( const int new_idx );
-  int  get_coupled_pad_idx () { return coupled_pad_idx; }
+  int  get_coupled_pad_idx () { return coupled_pad_idx_secondary; }
 
   // overload and error handling
   bool get_status_is_overload() { return status_is_overload; }
@@ -546,7 +546,8 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
   int                Fs;
   Edrumulus_hardware edrumulus_hardware;
   int                number_pads;
-  int                coupled_pad_idx;
+  int                coupled_pad_idx_primary;
+  int                coupled_pad_idx_secondary;
   int                number_inputs[MAX_NUM_PADS];
   int                analog_pin[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   float              sample[MAX_NUM_PAD_INPUTS];
