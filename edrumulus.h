@@ -201,8 +201,9 @@ public:
 
   void set_spike_cancel_level ( const int new_level ) { spike_cancel_level = new_level; }
   int  get_spike_cancel_level ()                      { return spike_cancel_level; }
-  void set_coupled_pad_idx    ( const int new_idx )   { coupled_pad_idx = new_idx; pad[0].set_use_coupling ( new_idx > 0 ); }
-  int  get_coupled_pad_idx    ()                      { return coupled_pad_idx; }
+
+  void set_coupled_pad_idx ( const int new_idx );
+  int  get_coupled_pad_idx () { return coupled_pad_idx; }
 
   // overload and error handling
   bool get_status_is_overload() { return status_is_overload; }

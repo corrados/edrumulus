@@ -327,6 +327,17 @@ Serial.println ( serial_print2 );
 }
 
 
+void Edrumulus::set_coupled_pad_idx ( const int new_idx )
+{
+
+// TODO implement setting of coupled head trigger and coupled rim trigger here...
+
+// old code which was in the header file:
+  coupled_pad_idx = new_idx;
+  pad[0].set_use_coupling ( new_idx > 0 );
+}
+
+
 // -----------------------------------------------------------------------------
 // Pad -------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
