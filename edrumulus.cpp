@@ -29,16 +29,18 @@ Edrumulus::Edrumulus() :
   samplerate_prev_micros     = micros();
   status_is_error            = false;
 #ifdef ESP_PLATFORM
-  spike_cancel_level         = 4; // use max. spike cancellation on the ESP32 per default (note that it increases the latency)
+  spike_cancel_level = 4; // use max. spike cancellation on the ESP32 per default (note that it increases the latency)
 #else
-  spike_cancel_level         = 0; // default
+  spike_cancel_level = 0; // default
 #endif
-  cancel_num_samples         = ( cancel_time_ms * Fs ) / 1000;
-  cancel_cnt                 = 0;
-  cancel_MIDI_velocity       = 1;
-  cancel_pad_index           = 0;
-  coupled_pad_idx_secondary  = 0; // disable coupling
-  coupled_pad_idx_primary    = 0; // fix value of 0 for now, i.e., only the first input "snare" has coupling support right now
+  cancel_num_samples            = ( cancel_time_ms * Fs ) / 1000;
+  cancel_cnt                    = 0;
+  cancel_MIDI_velocity          = 1;
+  cancel_pad_index              = 0;
+  coupled_pad_idx_primary       = -1; // disable coupling
+  coupled_pad_idx_rim_primary   = -1; // disable coupling
+  coupled_pad_idx_secondary     = 0;  // disable coupling
+  coupled_pad_idx_rim_secondary = 0;  // disable coupling
 
   // calculate DC offset IIR1 low pass filter parameters, see
   // http://www.tsdconseil.fr/tutos/tuto-iir1-en.pdf: gamma = exp(-Ts/tau)
@@ -329,8 +331,24 @@ Serial.println ( serial_print2 );
 }
 
 
-void Edrumulus::set_coupled_pad_idx ( const int new_idx )
+void Edrumulus::set_coupled_pad_idx ( const int pad_idx, const int new_idx )
 {
+  // There are two modes supported:
+  // 1. coupled head sensor mode, i.e., we have three head piezo sensors and one rim sensor
+  // 2. coupled rim sensor mode, i.e., we have a ride pad with bell/edge support so wie have on head sensor and two rim switch sensors
+  // Only special pad types support coupling:
+  // Case 1.: PDA120LS
+  // Case 2.: CY6, CY8, CY5 (note that we should introduce a CY12R type but in the meantime we re-use the existing cymbal pad types)
+  // Case 1. requires two dual-pad inputs and Case 2. requires one dual-pad and one single pad input
+
+
+// TODO make use of these variables:
+/*
+coupled_pad_idx_primary       = -1;
+coupled_pad_idx_rim_primary   = -1;
+coupled_pad_idx_secondary     = 0;
+coupled_pad_idx_rim_secondary = 0;
+*/
 
 // TODO implement setting of coupled head trigger and coupled rim trigger here...
 
