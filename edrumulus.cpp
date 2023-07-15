@@ -373,7 +373,7 @@ void Edrumulus::set_coupled_pad_idx ( const int pad_idx, const int new_idx )
         pad[pad_idx].set_coupled_pad_idx ( new_idx );
         coupled_pad_idx_rim_primary   = new_idx > 0 ? pad_idx : -1; // primary set to -1 switches coupling OFF
         coupled_pad_idx_rim_secondary = new_idx;
-        pad[pad_idx].set_head_sensor_coupling ( false ); // for second rim, no head sensor coupling needed
+        pad[pad_idx].set_use_second_rim ( new_idx > 0 );
       }
     }
   }
