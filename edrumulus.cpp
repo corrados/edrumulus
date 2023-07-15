@@ -342,10 +342,6 @@ void Edrumulus::set_coupled_pad_idx ( const int pad_idx, const int new_idx )
   // Case 1. requires two dual-pad inputs and Case 2. requires one dual-pad and one single pad input.
   // NOTE that coupling is only enabled if the pad type match and coupling is either OFF or this
   //      is the pad which is currently using coupling.
-
-// TODO issue with new_idx might not be assigned -> should work if GUI lets select all values and does not update
-//      everytime from current value in Edrumulus since then we could not jump over an invalid value
-
   if ( new_idx < MAX_NUM_PADS )
   {
     if ( pad[pad_idx].get_pad_type() == PDA120LS )
@@ -353,14 +349,15 @@ void Edrumulus::set_coupled_pad_idx ( const int pad_idx, const int new_idx )
       // Case 1. ---------------------------------------------------------------
       if ( ( coupled_pad_idx_primary < 0 ) || ( pad_idx == coupled_pad_idx_primary ) )
       {
+        // special case: always set coupled pad index parameter regardless if it is valid
+        // or not to avoid issues in the GUI but if the index is invalid (i.e., no two inputs
+        // available), do not enable the coupling
         pad[pad_idx].set_coupled_pad_idx ( new_idx );
 
-        if ( ( number_inputs[new_idx] > 1 ) || ( new_idx == 0 /* special case for disabling coupling */ ) )
-        {
-          coupled_pad_idx_primary   = new_idx > 0 ? pad_idx : -1; // primary set to -1 switches coupling OFF
-          coupled_pad_idx_secondary = new_idx;
-          pad[pad_idx].set_head_sensor_coupling ( new_idx > 0 );
-        }
+        const int cur_idx         = number_inputs[new_idx] > 1 ? new_idx : 0 /* 0 disables coupling */;
+        coupled_pad_idx_primary   = cur_idx > 0 ? pad_idx : -1; // primary set to -1 switches coupling OFF
+        coupled_pad_idx_secondary = cur_idx;
+        pad[pad_idx].set_head_sensor_coupling ( cur_idx > 0 );
       }
     }
     else if ( ( pad[pad_idx].get_pad_type() == CY6 ) ||
