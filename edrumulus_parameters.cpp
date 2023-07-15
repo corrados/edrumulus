@@ -29,6 +29,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
   pad_settings.rim_shot_treshold         = 12; // 0..31
   pad_settings.rim_shot_boost            = 15; // 0..31
   pad_settings.cancellation              = 0;  // 0..31
+  pad_settings.coupled_pad_idx           = 0;  // 0..[number of pads - 1] (0 means disabled)
   pad_settings.curve_type                = LINEAR;
   pad_settings.is_control                = false;  // default is a normal pad
   pad_settings.is_rim_switch             = false;  // default is a piezo for the rim sensor

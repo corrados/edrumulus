@@ -334,27 +334,49 @@ Serial.println ( serial_print2 );
 void Edrumulus::set_coupled_pad_idx ( const int pad_idx, const int new_idx )
 {
   // There are two modes supported:
-  // 1. coupled head sensor mode, i.e., we have three head piezo sensors and one rim sensor
-  // 2. coupled rim sensor mode, i.e., we have a ride pad with bell/edge support so wie have on head sensor and two rim switch sensors
+  // 1. Coupled head sensor mode, i.e., we have three head piezo sensors and one rim sensor.
+  // 2. Coupled rim sensor mode, i.e., we have a ride pad with bell/edge support so wie have on head sensor and two rim switch sensors.
   // Only special pad types support coupling:
   // Case 1.: PDA120LS
   // Case 2.: CY6, CY8, CY5 (note that we should introduce a CY12R type but in the meantime we re-use the existing cymbal pad types)
-  // Case 1. requires two dual-pad inputs and Case 2. requires one dual-pad and one single pad input
+  // Case 1. requires two dual-pad inputs and Case 2. requires one dual-pad and one single pad input.
+  // NOTE that coupling is only enabled if the pad type match and coupling is either OFF or this
+  //      is the pad which is currently using coupling.
 
+// TODO issue with new_idx might not be assigned -> should work if GUI lets select all values and does not update
+//      everytime from current value in Edrumulus since then we could not jump over an invalid value
 
-// TODO make use of these variables:
-/*
-coupled_pad_idx_primary       = -1;
-coupled_pad_idx_rim_primary   = -1;
-coupled_pad_idx_secondary     = 0;
-coupled_pad_idx_rim_secondary = 0;
-*/
+  if ( new_idx < MAX_NUM_PADS )
+  {
+    if ( pad[pad_idx].get_pad_type() == PDA120LS )
+    {
+      // Case 1. ---------------------------------------------------------------
+      if ( ( coupled_pad_idx_primary < 0 ) || ( pad_idx == coupled_pad_idx_primary ) )
+      {
+        pad[pad_idx].set_coupled_pad_idx ( new_idx );
 
-// TODO implement setting of coupled head trigger and coupled rim trigger here...
-
-// old code which was in the header file:
-  coupled_pad_idx_secondary = new_idx;
-  pad[coupled_pad_idx_primary].set_use_coupling ( new_idx > 0 ); // TODO condition "> 0" is no longer meaningful...
+        if ( ( number_inputs[new_idx] > 1 ) || ( new_idx == 0 /* special case for disabling coupling */ ) )
+        {
+          coupled_pad_idx_primary   = new_idx > 0 ? pad_idx : -1; // primary set to -1 switches coupling OFF
+          coupled_pad_idx_secondary = new_idx;
+          pad[pad_idx].set_head_sensor_coupling ( new_idx > 0 );
+        }
+      }
+    }
+    else if ( ( pad[pad_idx].get_pad_type() == CY6 ) ||
+              ( pad[pad_idx].get_pad_type() == CY8 ) ||
+              ( pad[pad_idx].get_pad_type() == CY5 ) )
+    {
+      // Case 2. ---------------------------------------------------------------
+      if ( ( coupled_pad_idx_rim_primary < 0 ) || ( pad_idx == coupled_pad_idx_rim_primary ) )
+      {
+        pad[pad_idx].set_coupled_pad_idx ( new_idx );
+        coupled_pad_idx_rim_primary   = new_idx > 0 ? pad_idx : -1; // primary set to -1 switches coupling OFF
+        coupled_pad_idx_rim_secondary = new_idx;
+        pad[pad_idx].set_head_sensor_coupling ( false ); // for second rim, no head sensor coupling needed
+      }
+    }
+  }
 }
 
 
@@ -369,14 +391,14 @@ void Edrumulus::Pad::setup ( const int conf_Fs )
 
   // initialize with default pad type and other defaults
   set_pad_type ( PD6 );
-  midi_note          = 38;
-  midi_note_rim      = 40;
-  midi_note_open     = 46;
-  midi_note_open_rim = 26;
-  midi_ctrl_ch       = 4; // CC4, usually used for hi-hat
-  use_coupling       = false;
-  use_second_rim     = false;
-  init_delay_cnt     = 0; // note that it resets value of set_pad_type above
+  midi_note                = 38;
+  midi_note_rim            = 40;
+  midi_note_open           = 46;
+  midi_note_open_rim       = 26;
+  midi_ctrl_ch             = 4; // CC4, usually used for hi-hat
+  use_head_sensor_coupling = false;
+  use_second_rim           = false;
+  init_delay_cnt           = 0; // note that it resets value of set_pad_type above
   initialize(); // do very first initialization without delay
 }
 
@@ -408,7 +430,7 @@ void Edrumulus::Pad::manage_delayed_initialization()
 void Edrumulus::Pad::initialize()
 {
   // in case we have a coupled sensor pad, the number of head sensors is 4, where 3 sensor signals and one sum
-  number_head_sensors = use_coupling ? 4 : 1; // 1 or 4 head sensor inputs
+  number_head_sensors = use_head_sensor_coupling ? 4 : 1; // 1 or 4 head sensor inputs
 
   // set algorithm parameters
   const float threshold_db = 20 * log10 ( ADC_MAX_NOISE_AMPL ) - 16.0f + pad_settings.velocity_threshold; // threshold range considering the maximum ADC noise level

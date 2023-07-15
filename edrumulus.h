@@ -166,7 +166,7 @@ public:
   bool get_midi_ctrl_is_open   ( const int pad_idx ) { return midi_ctrl_value[pad_idx] < Pad::hi_hat_is_open_MIDI_threshold; }
 
   // configure the pads
-  void set_pad_type             ( const int pad_idx, const Epadtype   new_pad_type )  { pad[pad_idx].set_pad_type ( new_pad_type ); }
+  void set_pad_type             ( const int pad_idx, const Epadtype   new_pad_type )  { set_coupled_pad_idx ( pad_idx, 0 /* disable possible previous coupling first */ ); pad[pad_idx].set_pad_type ( new_pad_type ); }
   Epadtype get_pad_type         ( const int pad_idx )                                 { return pad[pad_idx].get_pad_type(); }
   void set_velocity_threshold   ( const int pad_idx, const int        new_threshold ) { pad[pad_idx].set_velocity_threshold ( new_threshold ); }
   int  get_velocity_threshold   ( const int pad_idx )                                 { return pad[pad_idx].get_velocity_threshold(); }
@@ -273,11 +273,8 @@ protected:
       int  get_cancellation         ()                                 { return pad_settings.cancellation; }
       void set_coupled_pad_idx      ( const int        new_idx )       { pad_settings.coupled_pad_idx = new_idx; sched_init(); }
       int  get_coupled_pad_idx      ()                                 { return pad_settings.coupled_pad_idx; }
-
-// TODO
-void set_use_coupling         ( const bool       new_coupling )  { use_coupling = new_coupling; sched_init(); }
-bool get_use_coupling         ()                                 { return use_coupling; }
-
+      void set_head_sensor_coupling ( const bool       new_coupling )  { use_head_sensor_coupling = new_coupling; sched_init(); }
+      bool get_head_sensor_coupling ()                                 { return use_head_sensor_coupling; }
       void set_use_second_rim       ( const bool       new_sec_rim )   { use_second_rim = new_sec_rim; sched_init(); }
       bool get_use_second_rim       ()                                 { return use_second_rim; }
 
@@ -407,7 +404,7 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       };
 
       SSensor      sSensor[MAX_NUM_PAD_INPUTS];
-      bool         use_coupling;
+      bool         use_head_sensor_coupling;
       bool         use_second_rim;
       int          Fs;
       int          number_inputs;
