@@ -166,7 +166,7 @@ public:
   bool get_midi_ctrl_is_open   ( const int pad_idx ) { return midi_ctrl_value[pad_idx] < Pad::hi_hat_is_open_MIDI_threshold; }
 
   // configure the pads
-  void set_pad_type             ( const int pad_idx, const Epadtype   new_pad_type )  { pad[pad_idx].set_pad_type ( new_pad_type ); }
+  void set_pad_type             ( const int pad_idx, const Epadtype   new_pad_type )  { set_coupled_pad_idx ( pad_idx, 0 /* disable possible previous coupling first */ ); pad[pad_idx].set_pad_type ( new_pad_type ); }
   Epadtype get_pad_type         ( const int pad_idx )                                 { return pad[pad_idx].get_pad_type(); }
   void set_velocity_threshold   ( const int pad_idx, const int        new_threshold ) { pad[pad_idx].set_velocity_threshold ( new_threshold ); }
   int  get_velocity_threshold   ( const int pad_idx )                                 { return pad[pad_idx].get_velocity_threshold(); }
@@ -186,6 +186,8 @@ public:
   Ecurvetype get_curve          ( const int pad_idx )                                 { return pad[pad_idx].get_curve(); }
   void set_cancellation         ( const int pad_idx, const int        new_cancel )    { pad[pad_idx].set_cancellation ( new_cancel ); }
   int  get_cancellation         ( const int pad_idx )                                 { return pad[pad_idx].get_cancellation(); }
+  void set_coupled_pad_idx      ( const int pad_idx, const int new_idx );
+  int  get_coupled_pad_idx      ( const int pad_idx )                                 { return pad[pad_idx].get_coupled_pad_idx(); }
 
   void set_midi_notes          ( const int pad_idx, const int new_midi_note, const int new_midi_note_rim ) { pad[pad_idx].set_midi_notes ( new_midi_note, new_midi_note_rim ); }
   void set_midi_note_norm      ( const int pad_idx, const int new_midi_note )                              { pad[pad_idx].set_midi_note ( new_midi_note ); }
@@ -201,8 +203,6 @@ public:
 
   void set_spike_cancel_level ( const int new_level ) { spike_cancel_level = new_level; }
   int  get_spike_cancel_level ()                      { return spike_cancel_level; }
-  void set_coupled_pad_idx    ( const int new_idx )   { coupled_pad_idx = new_idx; pad[0].set_use_coupling ( new_idx > 0 ); }
-  int  get_coupled_pad_idx    ()                      { return coupled_pad_idx; }
 
   // overload and error handling
   bool get_status_is_overload() { return status_is_overload; }
@@ -271,8 +271,10 @@ protected:
       Ecurvetype get_curve          ()                                 { return pad_settings.curve_type; }
       void set_cancellation         ( const int        new_cancel )    { pad_settings.cancellation = new_cancel; sched_init(); }
       int  get_cancellation         ()                                 { return pad_settings.cancellation; }
-      void set_use_coupling         ( const bool       new_coupling )  { use_coupling = new_coupling; sched_init(); }
-      int  get_use_coupling         ()                                 { return use_coupling; }
+      void set_coupled_pad_idx      ( const int        new_idx )       { pad_settings.coupled_pad_idx = new_idx; sched_init(); }
+      int  get_coupled_pad_idx      ()                                 { return pad_settings.coupled_pad_idx; }
+      void set_head_sensor_coupling ( const bool       new_coupling )  { use_head_sensor_coupling = new_coupling; sched_init(); }
+      void set_use_second_rim       ( const bool       new_sec_rim )   { use_second_rim = new_sec_rim; sched_init(); }
 
       float get_cancellation_factor() { return cancellation_factor; }
       bool  get_is_control()          { return pad_settings.is_control; }
@@ -295,6 +297,7 @@ protected:
         int        rim_shot_treshold;    // 0..31
         int        rim_shot_boost;       // 0..31
         int        cancellation;         // 0..31
+        int        coupled_pad_idx;      // 0..[number of pads - 1]
         bool       is_control;           // whether it is a normal pad or a hi-hat control pedal
         bool       is_rim_switch;        // whether the pad supports rim/egde sensor based on a physical switch (i.e. no piezo)
         bool       pos_sense_is_used;    // switches positional sensing support on or off
@@ -362,14 +365,15 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       {
         FastWriteFIFO x_sq_hist;
         FastWriteFIFO overload_hist;
-        float* bp_filt_hist_x    = nullptr;
-        float* bp_filt_hist_y    = nullptr;
-        float* x_low_hist        = nullptr;
-        float* lp_filt_hist      = nullptr;
-        float* rim_bp_hist_x     = nullptr;
-        float* rim_bp_hist_y     = nullptr;
-        float* x_rim_hist        = nullptr;
-        float* x_rim_switch_hist = nullptr;
+        float* bp_filt_hist_x        = nullptr;
+        float* bp_filt_hist_y        = nullptr;
+        float* x_low_hist            = nullptr;
+        float* lp_filt_hist          = nullptr;
+        float* rim_bp_hist_x         = nullptr;
+        float* rim_bp_hist_y         = nullptr;
+        float* x_rim_hist            = nullptr;
+        float* x_rim_switch_hist     = nullptr;
+        float* x_sec_rim_switch_hist = nullptr;
 
         int       mask_back_cnt;
         int       decay_back_cnt;
@@ -398,7 +402,8 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       };
 
       SSensor      sSensor[MAX_NUM_PAD_INPUTS];
-      bool         use_coupling;
+      bool         use_head_sensor_coupling;
+      bool         use_second_rim;
       int          Fs;
       int          number_inputs;
       int          number_head_sensors;
@@ -541,13 +546,19 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
   int                Fs;
   Edrumulus_hardware edrumulus_hardware;
   int                number_pads;
-  int                coupled_pad_idx;
+  bool               any_coupling_used;
+  int                coupled_pad_idx_primary;
+  int                coupled_pad_idx_secondary;
+  int                coupled_pad_idx_rim_primary;
+  int                coupled_pad_idx_rim_secondary;
   int                number_inputs[MAX_NUM_PADS];
   int                analog_pin[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   float              sample[MAX_NUM_PAD_INPUTS];
-  float              stored_sample[MAX_NUM_PAD_INPUTS];
+  float              stored_sample_coupled_head[MAX_NUM_PAD_INPUTS];
+  float              stored_sample_coupled_rim[MAX_NUM_PAD_INPUTS];
   int                overload_detected[MAX_NUM_PAD_INPUTS];
-  int                stored_overload_detected[MAX_NUM_PAD_INPUTS];
+  int                stored_overload_detected_coupled_head[MAX_NUM_PAD_INPUTS];
+  int                stored_overload_detected_coupled_rim[MAX_NUM_PAD_INPUTS];
   double             dc_offset[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS]; // must be double type for IIR filter
   int                sample_org[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   float              dc_offset_iir_gamma;

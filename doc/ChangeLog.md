@@ -1,6 +1,14 @@
 # Edrumulus Project Log
 
 
+## 2023-07-16 Initial support for 3-zone pads like the Roland CY-12R
+
+  There is an initial support for 3-zone pads like the Roland CY-12R implemented now. With a
+  new coupling setting, the second input jack for the pad can be selected. The coupling is only
+  supported for cymbal pad types CY5/6/8.<br/>
+  The trigger performance is not yet optimal and still needs some tweaking, i.e., some
+  modifications in the code are needed to finish up the support for 3-zone pads.
+
 ## 2023-06-27 [[r0.8](https://github.com/corrados/edrumulus/releases/tag/r0_8)] New case for prototype 5
 
   I bought a new case for my prototype 5 using a Raspberry Pi 3B+. The case was designed
