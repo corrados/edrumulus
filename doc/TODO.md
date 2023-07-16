@@ -2,10 +2,6 @@
 
 The road map items are sorted by priority.
 
-- [ ] **Support 3-zone pads like the Roland CY-15R**
-
-  See [this discussion](https://github.com/corrados/edrumulus/discussions/73#discussioncomment-5623391).
-
 - [ ] **Add support for USB OTG MIDI for the ESP32-S3**
 
   It seems we have to wait for the Github espressif/arduino-esp32 project to support the newest ESP-IDF
