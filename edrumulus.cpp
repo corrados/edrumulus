@@ -37,6 +37,7 @@ Edrumulus::Edrumulus() :
   cancel_cnt                    = 0;
   cancel_MIDI_velocity          = 1;
   cancel_pad_index              = 0;
+  any_coupling_used             = false;
   coupled_pad_idx_primary       = -1; // disable coupling
   coupled_pad_idx_rim_primary   = -1; // disable coupling
   coupled_pad_idx_secondary     = 0;  // disable coupling
@@ -204,40 +205,60 @@ Serial.println ( serial_print );
       }
 
       // process sample
-      if ( ( coupled_pad_idx_secondary > 0 ) && ( ( i == coupled_pad_idx_secondary ) || ( i == coupled_pad_idx_primary ) ) )
+      if ( any_coupling_used && // note: short-cut for speed optimization of normal non-coupling mode
+           ( ( coupled_pad_idx_primary >= 0 ) &&     ( ( i == coupled_pad_idx_secondary )     || ( i == coupled_pad_idx_primary ) ) ) ||
+           ( ( coupled_pad_idx_rim_primary >= 0 ) && ( ( i == coupled_pad_idx_rim_secondary ) || ( i == coupled_pad_idx_rim_primary ) ) ) )
       {
-        // special case: couple pad inputs for multiple head sensor capturing
-        if ( i == coupled_pad_idx_primary )
+        // special case: couple pad inputs for multiple head sensor capturing (assume that both pads have dual-inputs)
+        if ( ( i == coupled_pad_idx_primary ) || ( i == coupled_pad_idx_secondary ) )
         {
-          // store the current input for pad "coupled_pad_idx_primary"
-          for ( int j = 0; j < number_inputs[coupled_pad_idx_primary]; j++ )
+          if ( ( ( coupled_pad_idx_primary   < coupled_pad_idx_secondary ) && ( i == coupled_pad_idx_primary ) ) ||
+               ( ( coupled_pad_idx_secondary < coupled_pad_idx_primary )   && ( i == coupled_pad_idx_secondary ) ) )
           {
-            stored_sample[j]            = sample[j];
-            stored_overload_detected[j] = overload_detected[j];
+            // store the current inputs
+            stored_sample_coupled_head[0]            = sample[0];
+            stored_sample_coupled_head[1]            = sample[1];
+            stored_overload_detected_coupled_head[0] = overload_detected[0];
+            stored_overload_detected_coupled_head[1] = overload_detected[1];
+          }
+          else
+          {
+            // combine samples and process pad coupled_pad_idx_primary which is the primary coupled pad,
+            // new "sample" layout: sum, rim, 1st head, 2nd head, 3rd head
+            if ( coupled_pad_idx_primary < coupled_pad_idx_secondary )
+            {
+              sample[2]            = sample[0];                     // 1st head (note that rim is already at correct place)
+              overload_detected[2] = overload_detected[0];
+              sample[3]            = stored_sample_coupled_head[0]; // 2nd head
+              overload_detected[3] = stored_overload_detected_coupled_head[0];
+              sample[4]            = stored_sample_coupled_head[1]; // 3rd head
+              overload_detected[4] = stored_overload_detected_coupled_head[1];
+            }
+            else
+            {
+              sample[3]            = sample[0];                     // 2nd head
+              overload_detected[3] = overload_detected[0];
+              sample[4]            = sample[1];                     // 3rd head
+              overload_detected[4] = overload_detected[1];
+              sample[1]            = stored_sample_coupled_head[1]; // rim (no overload_detected used for rim)
+              sample[2]            = stored_sample_coupled_head[0]; // 1st head
+              overload_detected[2] = stored_overload_detected_coupled_head[0];
+            }
+            sample[0] = ( sample[2] + sample[3] + sample[4] ) / 3; // sum is on channel 0
+
+            pad[coupled_pad_idx_primary].process_sample ( sample, 5,                            overload_detected,
+                                                          peak_found[coupled_pad_idx_primary],  midi_velocity[coupled_pad_idx_primary],
+                                                          midi_pos[coupled_pad_idx_primary],    rim_state[coupled_pad_idx_primary],
+                                                          is_choke_on[coupled_pad_idx_primary], is_choke_off[coupled_pad_idx_primary] );
           }
         }
-        else
-        {
-          // combine samples and process pad coupled_pad_idx_primary which is the primary coupled pad
-          float sample_sum = 0.0f; // input 0 is the sum of the head sensor signal per definition
-          for ( int j = number_inputs[i] - 1; j >= 0; j-- ) // count backwards to avoid overwriting
-          {
-            // "+ 3" because channel: sum, rim, 1st head
-            sample_sum              += sample[j];
-            sample[j + 3]            = sample[j];
-            overload_detected[j + 3] = overload_detected[j];
-          }
-          sample[1]            = stored_sample[1]; // copy rim signal on second input channel
-          overload_detected[1] = stored_overload_detected[1];
-          sample[2]            = stored_sample[0]; // copy head sensor signal of first channel after rim signal
-          overload_detected[2] = stored_overload_detected[0];
-          sample_sum          += stored_sample[0]; // only use head sensor and not the rim sensor for the sum
-          sample[0]            = sample_sum / ( 1 + number_inputs[i] ); // per definition: sum is on channel 0
 
-          pad[coupled_pad_idx_primary].process_sample ( sample, 3 + number_inputs[i],         overload_detected,
-                                                        peak_found[coupled_pad_idx_primary],  midi_velocity[coupled_pad_idx_primary],
-                                                        midi_pos[coupled_pad_idx_primary],    rim_state[coupled_pad_idx_primary],
-                                                        is_choke_on[coupled_pad_idx_primary], is_choke_off[coupled_pad_idx_primary] );
+        // special case: couple pad inputs for two-rim sensor capturing
+        if ( ( i == coupled_pad_idx_rim_primary ) || ( i == coupled_pad_idx_rim_secondary ) )
+        {
+
+// TODO
+
         }
       }
       else
@@ -373,6 +394,8 @@ void Edrumulus::set_coupled_pad_idx ( const int pad_idx, const int new_idx )
         pad[pad_idx].set_use_second_rim ( new_idx > 0 );
       }
     }
+
+    any_coupling_used = ( coupled_pad_idx_primary >= 0 ) || ( coupled_pad_idx_rim_primary >= 0 );
   }
 }
 
