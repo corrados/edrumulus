@@ -274,9 +274,7 @@ protected:
       void set_coupled_pad_idx      ( const int        new_idx )       { pad_settings.coupled_pad_idx = new_idx; sched_init(); }
       int  get_coupled_pad_idx      ()                                 { return pad_settings.coupled_pad_idx; }
       void set_head_sensor_coupling ( const bool       new_coupling )  { use_head_sensor_coupling = new_coupling; sched_init(); }
-      bool get_head_sensor_coupling ()                                 { return use_head_sensor_coupling; }
       void set_use_second_rim       ( const bool       new_sec_rim )   { use_second_rim = new_sec_rim; sched_init(); }
-      bool get_use_second_rim       ()                                 { return use_second_rim; }
 
       float get_cancellation_factor() { return cancellation_factor; }
       bool  get_is_control()          { return pad_settings.is_control; }
