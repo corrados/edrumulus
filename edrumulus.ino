@@ -85,17 +85,6 @@ void setup()
 #else
   read_settings();
 #endif
-
-/*
-// TEST use the ride input for 2nd/3rd head sensor input for the snare
-edrumulus.set_coupled_pad_idx      ( 6 );
-edrumulus.set_pad_type             ( 0, Edrumulus::PDA120LS );
-edrumulus.set_velocity_threshold   ( 0, 4 );
-edrumulus.set_velocity_sensitivity ( 0, 7 );
-edrumulus.set_pos_threshold        ( 0, 3 );
-edrumulus.set_pos_sensitivity      ( 0, 12 );
-edrumulus.set_rim_shot_treshold    ( 0, 24 );
-*/
 }
 
 
@@ -397,6 +386,14 @@ void loop()
         edrumulus.write_setting      ( selected_pad, 15, value );
         confirm_setting              ( controller,       value, false );
       }
+
+      // controller 120: pad coupling
+      if ( controller == 120 )
+      {
+        edrumulus.set_coupled_pad_idx ( selected_pad,     value );
+        edrumulus.write_setting       ( selected_pad, 16, value );
+        confirm_setting               ( controller,       value, false );
+      }
     }
   }
 #endif
@@ -429,6 +426,7 @@ void confirm_setting ( const int  controller,
     MYMIDI.sendNoteOff ( 117, edrumulus.get_midi_note_open_rim ( selected_pad ), 1 );
     MYMIDI.sendNoteOff ( 118, edrumulus.get_mask_time ( selected_pad ), 1 );
     MYMIDI.sendNoteOff ( 119, edrumulus.get_rim_shot_boost ( selected_pad ), 1 );
+    MYMIDI.sendNoteOff ( 120, edrumulus.get_coupled_pad_idx ( selected_pad ), 1 );
     MYMIDI.sendNoteOff ( 126, VERSION_MINOR, 1 );
     MYMIDI.sendNoteOff ( 127, VERSION_MAJOR, 1 );
   }
@@ -462,6 +460,7 @@ void read_settings()
     edrumulus.set_midi_note_open_rim   ( i,                                      edrumulus.read_setting ( i, 13 ) );
     edrumulus.set_mask_time            ( i,                                      edrumulus.read_setting ( i, 14 ) );
     edrumulus.set_rim_shot_boost       ( i,                                      edrumulus.read_setting ( i, 15 ) );
+    edrumulus.set_coupled_pad_idx      ( i,                                      edrumulus.read_setting ( i, 16 ) );
   }
   edrumulus.set_spike_cancel_level ( edrumulus.read_setting ( number_pads, 0 ) );
 }
@@ -487,6 +486,7 @@ void write_all_settings()
     edrumulus.write_setting ( i, 13, edrumulus.get_midi_note_open_rim   ( i ) );
     edrumulus.write_setting ( i, 14, edrumulus.get_mask_time            ( i ) );
     edrumulus.write_setting ( i, 15, edrumulus.get_rim_shot_boost       ( i ) );
+    edrumulus.write_setting ( i, 16, edrumulus.get_coupled_pad_idx      ( i ) );
   }
   edrumulus.write_setting ( number_pads, 0, edrumulus.get_spike_cancel_level() );
 }
