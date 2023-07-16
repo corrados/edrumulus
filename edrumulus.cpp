@@ -215,17 +215,16 @@ Serial.println ( serial_print );
           if ( ( ( coupled_pad_idx_primary   < coupled_pad_idx_secondary ) && ( i == coupled_pad_idx_primary ) ) ||
                ( ( coupled_pad_idx_secondary < coupled_pad_idx_primary )   && ( i == coupled_pad_idx_secondary ) ) )
           {
-            // store the current inputs
-            stored_sample_coupled_head[0]            = sample[0];
+            stored_sample_coupled_head[0]            = sample[0];            // store 1st input
             stored_sample_coupled_head[1]            = sample[1];
-            stored_overload_detected_coupled_head[0] = overload_detected[0];
+            stored_overload_detected_coupled_head[0] = overload_detected[0]; // store 2nd input
             stored_overload_detected_coupled_head[1] = overload_detected[1];
           }
           else
           {
             // combine samples and process pad coupled_pad_idx_primary which is the primary coupled pad,
             // new "sample" layout: sum, rim, 1st head, 2nd head, 3rd head
-            if ( coupled_pad_idx_primary < coupled_pad_idx_secondary )
+            if ( coupled_pad_idx_primary > coupled_pad_idx_secondary )
             {
               sample[2]            = sample[0];                     // 1st head (note that rim is already at correct place)
               overload_detected[2] = overload_detected[0];
@@ -256,9 +255,35 @@ Serial.println ( serial_print );
         // special case: couple pad inputs for two-rim sensor capturing
         if ( ( i == coupled_pad_idx_rim_primary ) || ( i == coupled_pad_idx_rim_secondary ) )
         {
+          if ( ( ( coupled_pad_idx_rim_primary   < coupled_pad_idx_rim_secondary ) && ( i == coupled_pad_idx_rim_primary ) ) ||
+               ( ( coupled_pad_idx_rim_secondary < coupled_pad_idx_rim_primary )   && ( i == coupled_pad_idx_rim_secondary ) ) )
+          {
+            stored_sample_coupled_rim[0]            = sample[0];            // store 1st input
+            stored_sample_coupled_rim[1]            = sample[1];
+            stored_overload_detected_coupled_rim[0] = overload_detected[0]; // store 2nd input
+            stored_overload_detected_coupled_rim[1] = overload_detected[1];
+          }
+          else
+          {
+            // combine samples and process pad coupled_pad_idx_rim_primary which is the primary coupled pad,
+            // new "sample" layout: 1st head, 1st rim, 2nd rim
+            if ( coupled_pad_idx_rim_primary > coupled_pad_idx_rim_secondary )
+            {
+              sample[2] = stored_sample_coupled_rim[0]; // 1st head/rim are at correct place, copy 2nd rim
+            }
+            else
+            {
+              sample[2]            = sample[0];                    // 2nd rim
+              sample[0]            = stored_sample_coupled_rim[0]; // 1st head
+              sample[1]            = stored_sample_coupled_rim[1]; // 1st rim
+              overload_detected[0] = stored_overload_detected_coupled_rim[0];
+            }
 
-// TODO
-
+            pad[coupled_pad_idx_rim_primary].process_sample ( sample, 3,                                overload_detected,
+                                                              peak_found[coupled_pad_idx_rim_primary],  midi_velocity[coupled_pad_idx_rim_primary],
+                                                              midi_pos[coupled_pad_idx_rim_primary],    rim_state[coupled_pad_idx_rim_primary],
+                                                              is_choke_on[coupled_pad_idx_rim_primary], is_choke_off[coupled_pad_idx_rim_primary] );
+          }
         }
       }
       else

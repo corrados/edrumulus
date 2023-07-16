@@ -560,6 +560,7 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
   float              stored_sample_coupled_rim[MAX_NUM_PAD_INPUTS];
   int                overload_detected[MAX_NUM_PAD_INPUTS];
   int                stored_overload_detected_coupled_head[MAX_NUM_PAD_INPUTS];
+  int                stored_overload_detected_coupled_rim[MAX_NUM_PAD_INPUTS];
   double             dc_offset[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS]; // must be double type for IIR filter
   int                sample_org[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   float              dc_offset_iir_gamma;
