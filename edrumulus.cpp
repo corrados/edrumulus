@@ -599,17 +599,17 @@ void Edrumulus::Pad::initialize()
   for ( int in = 0; in < number_head_sensors; in++ )
   {
     SSensor& s = sSensor[in];
-    s.x_sq_hist.initialize     ( x_sq_hist_len );                          // memory for sqr(x) history
-    s.overload_hist.initialize ( overload_hist_len );                      // memory for overload detection status
-    allocate_initialize ( &s.bp_filt_hist_x,        bp_filt_len );         // band-pass filter x-signal history
-    allocate_initialize ( &s.bp_filt_hist_y,        bp_filt_len - 1 );     // band-pass filter y-signal history
-    allocate_initialize ( &s.x_low_hist,            x_low_hist_len );      // memory for low-pass filter result
-    allocate_initialize ( &s.lp_filt_hist,          lp_filt_len );         // memory for low-pass filter input
-    allocate_initialize ( &s.rim_bp_hist_x,         bp_filt_len );         // rim band-pass filter x-signal history
-    allocate_initialize ( &s.rim_bp_hist_y,         bp_filt_len - 1 );     // rim band-pass filter y-signal history
-    allocate_initialize ( &s.x_rim_hist,            x_rim_hist_len );      // memory for rim shot detection
-    allocate_initialize ( &s.x_rim_switch_hist,     rim_shot_window_len ); // memory for rim switch detection
-    allocate_initialize ( &s.x_sec_rim_switch_hist, rim_shot_window_len ); // memory for second rim switch detection
+    s.x_sq_hist.initialize             ( x_sq_hist_len );       // memory for sqr(x) history
+    s.overload_hist.initialize         ( overload_hist_len );   // memory for overload detection status
+    s.x_low_hist.initialize            ( x_low_hist_len );      // memory for low-pass filter result
+    s.x_rim_switch_hist.initialize     ( rim_shot_window_len ); // memory for rim switch detection
+    s.x_sec_rim_switch_hist.initialize ( rim_shot_window_len ); // memory for second rim switch detection
+    allocate_initialize ( &s.bp_filt_hist_x, bp_filt_len );     // band-pass filter x-signal history
+    allocate_initialize ( &s.bp_filt_hist_y, bp_filt_len - 1 ); // band-pass filter y-signal history
+    allocate_initialize ( &s.lp_filt_hist,   lp_filt_len );     // memory for low-pass filter input
+    allocate_initialize ( &s.rim_bp_hist_x,  bp_filt_len );     // rim band-pass filter x-signal history
+    allocate_initialize ( &s.rim_bp_hist_y,  bp_filt_len - 1 ); // rim band-pass filter y-signal history
+    allocate_initialize ( &s.x_rim_hist,     x_rim_hist_len );  // memory for rim shot detection
 
     s.was_above_threshold     = false;
     s.is_overloaded_state     = false;
@@ -1056,7 +1056,7 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
         x_low += ( s.lp_filt_hist[i] * lp_filt_b[i] );
       }
 
-      update_fifo ( x_low * x_low, x_low_hist_len, s.x_low_hist );
+      s.x_low_hist.add ( x_low * x_low );
 
       // start condition of delay process to fill up the required buffers
       if ( first_peak_found && ( !s.was_pos_sense_ready ) && ( s.pos_sense_cnt == 0 ) )
@@ -1104,12 +1104,12 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
       {
         // as a quick hack we re-use the length parameter for the switch on detection
         const bool rim_switch_on = ( input[1] < rim_switch_treshold );
-        update_fifo ( rim_switch_on, rim_shot_window_len, s.x_rim_switch_hist );
+        s.x_rim_switch_hist.add ( rim_switch_on );
 
         if ( use_second_rim )
         {
           // we assume a third input signal is present which has the second rim signal
-          update_fifo ( input[2] < rim_switch_treshold, rim_shot_window_len, s.x_sec_rim_switch_hist );
+          s.x_sec_rim_switch_hist.add ( input[2] < rim_switch_treshold );
         }
 
         // at the end of the scan time search the history buffer for any switch on

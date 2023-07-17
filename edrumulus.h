@@ -365,15 +365,15 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       {
         FastWriteFIFO x_sq_hist;
         FastWriteFIFO overload_hist;
-        float* bp_filt_hist_x        = nullptr;
-        float* bp_filt_hist_y        = nullptr;
-        float* x_low_hist            = nullptr;
-        float* lp_filt_hist          = nullptr;
-        float* rim_bp_hist_x         = nullptr;
-        float* rim_bp_hist_y         = nullptr;
-        float* x_rim_hist            = nullptr;
-        float* x_rim_switch_hist     = nullptr;
-        float* x_sec_rim_switch_hist = nullptr;
+        FastWriteFIFO x_low_hist;
+        FastWriteFIFO x_rim_switch_hist;
+        FastWriteFIFO x_sec_rim_switch_hist;
+        float* bp_filt_hist_x = nullptr;
+        float* bp_filt_hist_y = nullptr;
+        float* lp_filt_hist   = nullptr;
+        float* rim_bp_hist_x  = nullptr;
+        float* rim_bp_hist_y  = nullptr;
+        float* x_rim_hist     = nullptr;
 
         int       mask_back_cnt;
         int       decay_back_cnt;
