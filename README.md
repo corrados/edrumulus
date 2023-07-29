@@ -23,6 +23,9 @@ Project requirements:
 
 ## News
 
+⚠️ **WARNING: You have to use Ardunio board manager "ESP32 by Espressif Systems" VERSION 2.0.9 (i.e., do not use the
+latest releases 2.0.10 and 2.0.11) to get edrumulus working as expected because of issues with the MIDI transfer.**
+
 Find all important updates of the Edrumulus project in the [change log file](doc/ChangeLog.md)
 and in the [discussion forums](https://github.com/corrados/edrumulus/discussions). A road map
 of the Edrumulus project can be found in the [TODO file](doc/TODO.md).
