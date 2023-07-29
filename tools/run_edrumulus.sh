@@ -13,7 +13,7 @@ echo "Edrumulus Linux start script for using Drumgizmo (including setup/installa
 
 # get environment --------------------------------------------------------------
 NCORES=$(nproc)
-gui_mode="no_gui" # no GUI is the default
+gui_mode="" # GUI is the default (empty mode means that GUI is used)
 
 # check of Teensy USB MIDI
 if aconnect -l|grep -q Edrumulus; then
@@ -41,10 +41,10 @@ if [[ "$1" == uartjamulus ]]; then
   gui_mode="non_block"
 fi
 
-# check if the GUI mode shall be used
-if [[ "$1" == gui ]]; then
-  echo "-> GUI mode enabled"
-  gui_mode="" # empty mode means GUI is used
+# check if the no GUI mode shall be used
+if [[ "$1" == no_gui ]]; then
+  echo "-> no GUI mode enabled"
+  gui_mode="no_gui"
 fi
 
 # special mode: UART connection with console GUI
