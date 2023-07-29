@@ -1106,9 +1106,8 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
         const bool rim_switch_on = ( input[1] < rim_switch_treshold );
         s.x_rim_switch_hist.add ( rim_switch_on );
 
-        if ( use_second_rim )
+        if ( use_second_rim && ( input_len > 2 ) )
         {
-          // we assume a third input signal is present which has the second rim signal
           s.x_sec_rim_switch_hist.add ( input[2] < rim_switch_treshold );
         }
 
