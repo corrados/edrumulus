@@ -117,6 +117,9 @@ void preset_settings()
 
 void loop()
 {
+
+Serial.printf("Available Heap: %d\n",ESP.getFreeHeap());
+
   // this function is blocking at the system sampling rate
   edrumulus.process();
 
@@ -139,6 +142,7 @@ void loop()
   }
 
 #ifdef USE_MIDI
+/*
   // send MIDI note to drum synthesizer
   for ( int pad_idx = 0; pad_idx < number_pads; pad_idx++ )
   {
@@ -206,12 +210,16 @@ void loop()
       }
     }
   }
+*/
 
   // receiving MIDI messages to change the pad settings: edrumuluscontrol.m -> loopMIDI -> Hairless MIDI
   if ( MYMIDI.read ( midi_channel ) )
   {
     if ( MYMIDI.getType() == MIDI_CONTROL_CHANGE_TYPE )
     {
+
+Serial.printf("Available Heap: %d\n",ESP.getFreeHeap());
+
       const int controller = MYMIDI.getData1();
       const int value      = MYMIDI.getData2();
 
@@ -406,6 +414,7 @@ void confirm_setting ( const int  controller,
                        const int  value,
                        const bool send_all )
 {
+/*
   if ( send_all )
   {
     // return all parameters of the selected pad
@@ -435,6 +444,7 @@ void confirm_setting ( const int  controller,
     // return only the given parameter
     MYMIDI.sendNoteOff ( controller, value, 1 ); // can be checked, e.g., in the log file
   }
+*/
 }
 #endif
 
