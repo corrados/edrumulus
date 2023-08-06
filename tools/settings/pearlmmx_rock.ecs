@@ -39,6 +39,7 @@
 -a:OHRight -chcopy:1,2 -eadb:0 -epp:100
 
 -a:all -f:,2, -o loop,master
+-a Master -elv2:urn:ardour:a-reverb,0.2,0.5,1
 -a:Master -eadb:0 -i loop,master
 
 -a:Master -o jack,system
