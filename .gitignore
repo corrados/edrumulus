@@ -72,3 +72,6 @@ hardware/prototype6/output/
 *.exe
 *.out
 *.app
+
+# platformio
+.pio
