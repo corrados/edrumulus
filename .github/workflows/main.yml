@@ -33,9 +33,5 @@ jobs:
         python -m pip install --upgrade pip
         pip install --upgrade platformio setuptools wheel
 
-    - name: Teensy - PlatformIO
-      run: pio ci -c platformio.ini --board=teensy36 --board=teensy40 --board=teensy41 .
-
-    - name: ESP32 - PlatformIO
-      run: |
-        pio ci -c platformio.ini --board=esp32doit-devkit-v1 --board=az-delivery-devkit-v4 --board=esp32-s3-devkitc-1 .
+    - name: Build
+      run: pio ci -c platformio.ini .
