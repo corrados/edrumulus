@@ -2,6 +2,10 @@
 
 The road map items are sorted by priority.
 
+- [ ] **NoteOn instead of aftertrouch**
+
+  See https://github.com/corrados/edrumulus/discussions/85.
+
 - [ ] **Add support for USB OTG MIDI for the ESP32-S3**
 
   It seems we have to wait for the Github espressif/arduino-esp32 project to support the newest ESP-IDF
@@ -17,6 +21,8 @@ The road map items are sorted by priority.
 - [ ] **Support positional sensing for rim shots**
 
 - [ ] **Support direct rim strike**
+
+  See https://github.com/corrados/edrumulus/discussions/84.
 
 - [ ] **Improve rim shot detection**
 
