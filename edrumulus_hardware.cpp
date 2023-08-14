@@ -221,7 +221,10 @@ int Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
     }
   }
 
-  // if no GPIO prototype identification is available, we assume it is Prototype 4
+  // if no GPIO prototype identification is available, we assume it is Prototype 4,
+  // for older prototypes or custom implementations, simply change the GPIO numbers in the
+  // table below to match your hardware (note that the GPIO assignment of Prototype 2 is the
+  // same as Prototype 4)
   // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3  
   static int analog_pins4[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    15 };
   static int analog_pins_rimshot4[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1 };
