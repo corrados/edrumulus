@@ -74,6 +74,10 @@ void Edrumulus::setup ( const int  conf_num_pads,
                              number_inputs,
                              analog_pin );
 
+  #ifdef SDCARD_OUT
+    SDCard::setup( Fs, number_pads, number_inputs );
+  #endif
+
   // estimate the DC offset for all inputs
   float dc_offset_sum[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
 
@@ -132,6 +136,14 @@ return;
                                        number_inputs,
                                        analog_pin,
                                        sample_org );
+
+  // write samples to SD card --------------------------------------------------
+#ifdef SDCARD_OUT
+  SDCard::process (  number_pads,
+                     number_inputs,
+                     analog_pin,
+                     sample_org );
+#endif
 
 /*
 // TEST for plotting all captures samples in the serial plotter (but with low sampling rate)
@@ -1544,3 +1556,257 @@ void Edrumulus::Pad::process_control_sample ( const int* input,
     prev_ctrl_value = midi_ctrl_value;
   }
 }
+
+#ifdef SDCARD_OUT
+int SDCard::sample_rate = 0;
+bool SDCard::initialized = false;
+bool SDCard::running = false;
+long SDCard::started_s = 0;
+File** SDCard::files = 0;
+uint32_t** SDCard::files_size = 0;
+int*** SDCard::buffers = 0;
+int SDCard::buf_idx = 0;
+
+void SDCard::setup(  const int Fs,
+                     const int number_pads,
+                     const int number_inputs[] )
+{
+  sample_rate = Fs;
+  SPI.setMOSI(SDCARD_MOSI_PIN);
+  SPI.setSCK(SDCARD_SCK_PIN);
+  if (!(SD.begin(SDCARD_CS_PIN))) {
+    //try again, sometimes it fails randomly
+    delay(100);
+    if (!(SD.begin(SDCARD_CS_PIN))) {
+      Serial.println("Failed to access the SD card. No card inserted? Continuing...");
+      initialized = true;
+    }
+  } else {
+    initialized = true;
+  }
+
+  if (initialized) {
+    // allocate memory for files & buffers
+    // we never deallocate these as we just continue to use them until poweroff
+    files = new File*[number_pads];
+    files_size = new uint32_t*[number_pads];
+    buffers = new int**[number_pads];
+    for ( int i = 0; i < number_pads; i++ ) {
+      files[i] = new File[MAX_NUM_PAD_INPUTS];
+      files_size[i] = new uint32_t[MAX_NUM_PAD_INPUTS];
+      buffers[i] = new int*[MAX_NUM_PAD_INPUTS];
+      assertNotNull(files[i]);
+      assertNotNull(files_size[i]);
+      assertNotNull(buffers[i]);
+      for ( int j = 0; j < number_inputs[i]; j++ ) {
+        buffers[i][j] = new int[SDCARD_BUF_SIZE];
+        assertNotNull(buffers[i][j]);
+      }
+    }
+  }
+}
+
+void SDCard::process(  const int number_pads,
+                       const int number_inputs[],
+                       int       analog_pin[][MAX_NUM_PAD_INPUTS],
+                       int       sample_org[][MAX_NUM_PAD_INPUTS] )
+{
+  if (initialized) {
+    long cur = millis() / 1000 - started_s;
+
+    if (cur > SDCARD_MAX_SECONDS) {
+      stopRecording(number_pads, number_inputs, analog_pin, sample_org);
+      startRecording(number_pads, number_inputs, analog_pin, sample_org);
+    }
+    if (running) {
+      continueRecording(number_pads, number_inputs, analog_pin, sample_org);
+    } else {
+      //we just started
+      startRecording(number_pads, number_inputs, analog_pin, sample_org);
+      running = true;
+    }
+  }
+}
+
+inline void SDCard::assertNotNull(const void* ptr) {
+  if (!ptr) {
+    Serial.println("SDCard: Null pointer found. Dynamic allocation failed. Not enough memory?!");
+    initialized = false;
+  }
+}
+
+void SDCard::startRecording( const int number_pads,
+                             const int number_inputs[],
+                             int       analog_pin[][MAX_NUM_PAD_INPUTS],
+                             int       sample_org[][MAX_NUM_PAD_INPUTS] )
+{
+  //find an unused path
+  std::string path;
+  int errors = 0;
+  for (int i = 0;; i++) {
+    path = "edrumulus/record-" + std::to_string(i) + "/";
+    if (!SD.exists(path.c_str())) break;
+  }
+  if (!SD.mkdir(path.c_str())) {
+    Serial.print("SDCard: Failed to create ");
+    Serial.println(path.c_str());
+    ++errors;
+  }
+
+  //open files
+  buf_idx = 0;
+  for ( int i = 0; i < number_pads; i++ ) {
+    for ( int j = 0; j < number_inputs[i]; j++ ) {
+      std::string fname = path + "A" + std::to_string(analog_pin[i][j]) + ".wav";
+      File file = SD.open(fname.c_str(), FILE_WRITE);
+      files[i][j] = file;
+      if (file) {
+        writeWavHeader(file);
+        files_size[i][j] = 0;
+      } else {
+        Serial.print("SDCard: Failed to open ");
+        Serial.println(fname.c_str());
+        ++errors;
+      }
+    }
+  }
+
+  started_s = millis() / 1000;
+  Serial.print("SDCard: Started recording. Path: ");
+  Serial.print(path.c_str());
+  Serial.print(" Errors: ");
+  Serial.println(errors);
+}
+
+void SDCard::continueRecording ( const int  number_pads,
+                                 const int  number_inputs[],
+                                 int        analog_pin[][MAX_NUM_PAD_INPUTS],
+                                 int        sample_org[][MAX_NUM_PAD_INPUTS],
+                                 const bool force_write )
+{
+  for ( int i = 0; i < number_pads; i++ ) {
+    for ( int j = 0; j < number_inputs[i]; j++ ) {
+      buffers[i][j][buf_idx] = sample_org[i][j];
+    }
+  }
+
+  ++buf_idx;
+  if ((force_write) || (buf_idx >= SDCARD_BUF_SIZE)) writeBuffer(number_pads, number_inputs);
+}
+
+void force16(int* buffer, const int buf_size) {
+  uint16_t* buf16 = (uint16_t*) buffer;
+  for (int i=0; i < buf_size; ++i) {
+    uint32_t val = buffer[i];
+    if ( val > UINT16_MAX ) Serial.println("Found values > 16 bit. Programming error?!");
+    buf16[i] = (uint16_t) val;
+  }
+}
+
+void SDCard::writeBuffer(  const int number_pads,
+                           const int number_inputs[] )
+{
+  #if SDCARD_FORCE_16 == true
+  int buf_size = buf_idx * 2;
+  #else
+  int buf_size = buf_idx * sizeof(int);
+  #endif
+
+  for ( int i = 0; i < number_pads; i++ ) {
+    for ( int j = 0; j < number_inputs[i]; j++ ) {
+      int* buffer_int = buffers[i][j];
+      File file = files[i][j];
+
+      #if SDCARD_FORCE_16 == true
+      if (sizeof(int) == 4) force16(buffer_int, buf_idx);
+      #endif
+      byte* buffer = (byte*) buffer_int;
+
+      // The Arduino SD library is most efficient when full 512 byte sector size writes are used.
+      for (int k = 0; k < buf_size/512; k++) {
+        size_t written = file.write(buffer + k*512, 512);
+        files_size[i][j] += written;
+        if (written != 512) {
+          Serial.println("SDCard: Write error.");
+        }
+      }
+
+      unsigned int rem = buf_size % 512;
+      if (rem != 0) {
+        size_t written = file.write(buffer + buf_size - rem, rem);
+        files_size[i][j] += written;
+        if (written != rem) {
+          Serial.println("SDCard: Write error.");
+        }
+      }
+    }
+  }
+
+  buf_idx = 0;
+}
+
+void SDCard::stopRecording ( const int number_pads,
+                             const int number_inputs[],
+                             int       analog_pin[][MAX_NUM_PAD_INPUTS],
+                             int       sample_org[][MAX_NUM_PAD_INPUTS] )
+{
+  //write last sample
+  continueRecording(number_pads, number_inputs, analog_pin, sample_org, true);
+
+  for ( int i = 0; i < number_pads; i++ ) {
+    for ( int j = 0; j < number_inputs[i]; j++ ) {
+      File file = files[i][j];
+      if (file) {
+        finishWavHeader(file, files_size[i][j]);
+      }
+    }
+  }
+}
+
+void SDCard::writeWavHeader(File& file) {
+  const char chunkID[4] = { 'R', 'I', 'F', 'F' };
+  const uint32_t chunkSize = 36;  // byte size of overall file - 8 bytes (empty file = 36)
+  const char format[4] = { 'W', 'A', 'V', 'E' };
+  const char subChunk1ID[4] = { 'f', 'm', 't', ' ' };
+  const uint32_t subChunk1Size = 16; //16 = PCM
+  const uint16_t audioFormat = 1; //uncompressed
+  const uint16_t numChannels = 1; //mono
+  uint32_t sampleRate = sample_rate;
+  #if SDCARD_FORCE_16 == true
+  uint16_t bitsPerSample = 16;
+  #else
+  uint16_t bitsPerSample = sizeof(int)*8;
+  #endif
+  uint32_t byteRate = sampleRate * numChannels * bitsPerSample/8;
+  uint16_t blockAlign = numChannels * bitsPerSample/8;
+  const char subChunk2ID[4] = { 'd', 'a', 't', 'a' };
+  const uint32_t subChunk2Size = 0; // size of data section
+
+  file.seek(0);
+  file.write(chunkID, 4);
+  file.write((byte*)&chunkSize, 4);
+  file.write(format, 4);
+  file.write(subChunk1ID, 4);
+  file.write((byte*)&subChunk1Size, 4);
+  file.write((byte*)&audioFormat, 2);
+  file.write((byte*)&numChannels, 2);
+  file.write((byte*)&sampleRate, 4);
+  file.write((byte*)&byteRate, 4);
+  file.write((byte*)&blockAlign, 2);
+  file.write((byte*)&bitsPerSample, 2);
+  file.write(subChunk2ID, 4);
+  file.write((byte*)&subChunk2Size, 4);
+}
+
+void SDCard::finishWavHeader(File& file, const uint32_t file_size) {
+  uint32_t chunkSize = 36 + file_size;  // byte size of overall file - 8 bytes (empty file = 36)
+  uint32_t subChunk2Size = file_size;
+
+  file.seek(4);
+  file.write((byte*)&chunkSize, 4);
+  file.seek(40);
+  file.write((byte*)&subChunk2Size, 4);
+  file.close();
+}
+
+#endif //SDCARD_OUT

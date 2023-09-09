@@ -25,6 +25,91 @@
 #include "Arduino.h"
 #include "edrumulus_hardware.h"
 
+// SDCARD_OUT ----------------------------------------------------------------------------
+// This compile flag enables writing the raw signal to an attached SD card (if available). It is intended for troubleshooting and debugging purposes.
+// SD cards should be formatted using a FAT file system, ideally with the formatter from sdcard.org.
+//
+// Known issues:
+//  - the Teensy ADC and others sample a maximum of 12 bit, but the result is stored as 16 bit PCM --> the signal will only be visible at minus 20-30db as the first 4 bits are all zeroes
+//  - files that weren't recorded to their end due to a power cycle may have 0 bytes
+//  - waiting for too long (days) may cause a long overflow and overwrite previous files
+
+#ifdef SDCARD_OUT
+
+#include <string>
+#include <SPI.h>
+#include <SD.h>
+
+#ifndef SDCARD_MAX_SECONDS
+  #define SDCARD_MAX_SECONDS 60 * 1 // time in s after which to start a new record
+#endif
+
+#ifndef SDCARD_BUF_SIZE
+  #define SDCARD_BUF_SIZE 256 // buffer size in sizeof(int) bytes allocated per GPIO port
+#endif
+
+#ifndef SDCARD_FORCE_16
+  #define SDCARD_FORCE_16 true // whether or not to enforce 16 bit PCM output
+#endif
+
+#ifdef TEENSYDUINO
+  // Use these with the Teensy 3.5 & 3.6 & 4.1 SD card
+  #ifndef SDCARD_CS_PIN
+    #define SDCARD_CS_PIN    BUILTIN_SDCARD
+    #define SDCARD_MOSI_PIN  11  // not actually used
+    #define SDCARD_SCK_PIN   13  // not actually used
+  #endif
+  //otherwise the user must set all of these variables at compile time
+#endif
+
+class SDCard
+{
+public:
+  static void setup( const int Fs,
+                     const int number_pads,
+                     const int number_inputs[] );
+
+  static void process( const int number_pads,
+                       const int number_inputs[],
+                       int       analog_pin[][MAX_NUM_PAD_INPUTS],
+                       int       sample_org[][MAX_NUM_PAD_INPUTS] );
+
+protected:
+  static int sample_rate;
+  static bool initialized;
+  static bool running;
+  static long started_s;
+  static File** files; // 2D array of output files
+  static uint32_t** files_size; // 2D array of written byte counts (excl. header)
+  static int*** buffers; // 3D array of output buffers
+  static int buf_idx; // index in the buffer
+
+  static void startRecording ( const int number_pads,
+                               const int number_inputs[],
+                               int       analog_pin[][MAX_NUM_PAD_INPUTS],
+                               int       sample_org[][MAX_NUM_PAD_INPUTS] );
+
+  static void continueRecording (  const int  number_pads,
+                                   const int  number_inputs[],
+                                   int        analog_pin[][MAX_NUM_PAD_INPUTS],
+                                   int        sample_org[][MAX_NUM_PAD_INPUTS],
+                                   const bool force_write = false );
+
+  static void writeBuffer ( const int number_pads,
+                            const int number_inputs[] );
+
+  static void stopRecording ( const int number_pads,
+                              const int number_inputs[],
+                              int       analog_pin[][MAX_NUM_PAD_INPUTS],
+                              int       sample_org[][MAX_NUM_PAD_INPUTS] );
+
+  static void writeWavHeader(File& file);
+  static void finishWavHeader(File& file, const uint32_t file_size);
+
+  static inline void assertNotNull(const void* ptr);
+};
+
+#endif //SDCARD_OUT
 
 // Utility functions -----------------------------------------------------------------
 
