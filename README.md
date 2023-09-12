@@ -57,7 +57,7 @@ of the Edrumulus project can be found in the [TODO file](doc/TODO.md).
   The full circuit diagram of Prototype2 is given in [this PDF file](hardware/prototype2/edrumulus.pdf).
 
   *DISCLAIMER* All these circuit diagrams are used for my first prototypes and work fine for me. Use them
-  at your own risk.
+  at your own risk. In particular the circuits may not work for currently unsupported pieces of hardware.
 
 
 ## Documentation
