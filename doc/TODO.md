@@ -6,6 +6,10 @@ The road map items are sorted by priority.
 
   See https://github.com/corrados/edrumulus/discussions/85.
 
+- [ ] **Create a super simple default drum kit in the git repo so that run_edrumulus.sh runs successfully without any other dependencies**
+
+  See https://github.com/corrados/edrumulus/discussions/94#discussioncomment-6994715.
+
 - [ ] **Add support for USB OTG MIDI for the ESP32-S3**
 
   It seems we have to wait for the Github espressif/arduino-esp32 project to support the newest ESP-IDF
