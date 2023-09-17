@@ -247,7 +247,7 @@ protected:
       void set_midi_note_open_rim ( const int new_midi_note_rim )                          { midi_note_open_rim = new_midi_note_rim; }
       int  get_midi_note_open_rim ()                                                       { return midi_note_open_rim; }
       void set_midi_ctrl_ch       ( const int new_midi_ctrl_ch )                           { midi_ctrl_ch = new_midi_ctrl_ch; }
-      int  get_midi_ctrl_ch()                                                              { return midi_ctrl_ch; }
+      int  get_midi_ctrl_ch       ()                                                       { return midi_ctrl_ch; }
       void set_rim_shot_is_used   ( const bool new_is_used ) { pad_settings.rim_shot_is_used = new_is_used; }
       bool get_rim_shot_is_used   ()                         { return pad_settings.rim_shot_is_used; }
       void set_pos_sense_is_used  ( const bool new_is_used ) { pad_settings.pos_sense_is_used = new_is_used; }
