@@ -183,8 +183,8 @@ void loop()
 
     if ( edrumulus.get_choke_on_found ( pad_idx ) )
     {
-      // special case: if MIDI not open rim is set to zero, we use NoteOn instead of aftertouch
-      // for cymbol choke (#85), where the MIDI not for NoteOn is defined by MIDI note open norm
+      // special case: if MIDI note open rim is set to zero, we use NoteOn instead of aftertouch
+      // for cymbal choke (#85), where the MIDI note for NoteOn is defined by MIDI note open norm
       if ( edrumulus.get_midi_note_open_rim  ( pad_idx ) == 0 )
       {
         // special case: if grabbed edge found, we send a MIDI NoteOn
