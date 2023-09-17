@@ -183,14 +183,26 @@ void loop()
 
     if ( edrumulus.get_choke_on_found ( pad_idx ) )
     {
-      // if grabbed edge found, polyphonic aftertouch at 127 is transmitted for all notes of the pad
-      MYMIDI.MIDI_SEND_AFTER_TOUCH ( edrumulus.get_midi_note_norm ( pad_idx ), 127, midi_channel );
-      MYMIDI.MIDI_SEND_AFTER_TOUCH ( edrumulus.get_midi_note_rim  ( pad_idx ), 127, midi_channel );
-
-      if ( pad_idx == hihat_pad_idx )
+      // special case: if MIDI not open rim is set to zero, we use NoteOn instead of aftertouch
+      // for cymbol choke (#85), where the MIDI not for NoteOn is defined by MIDI note open norm
+      if ( edrumulus.get_midi_note_open_rim  ( pad_idx ) == 0 )
       {
-        MYMIDI.MIDI_SEND_AFTER_TOUCH ( edrumulus.get_midi_note_open_norm ( pad_idx ), 127, midi_channel );
-        MYMIDI.MIDI_SEND_AFTER_TOUCH ( edrumulus.get_midi_note_open_rim  ( pad_idx ), 127, midi_channel );
+        // special case: if grabbed edge found, we send a MIDI NoteOn
+        const int midi_choke_noteon = edrumulus.get_midi_note_open_norm ( pad_idx );
+        MYMIDI.sendNoteOn  ( midi_choke_noteon, 127, midi_channel );
+        MYMIDI.sendNoteOff ( midi_choke_noteon, 0,   midi_channel ); // we need a note off
+      }
+      else
+      {
+        // if grabbed edge found, polyphonic aftertouch at 127 is transmitted for all notes of the pad
+        MYMIDI.MIDI_SEND_AFTER_TOUCH ( edrumulus.get_midi_note_norm ( pad_idx ), 127, midi_channel );
+        MYMIDI.MIDI_SEND_AFTER_TOUCH ( edrumulus.get_midi_note_rim  ( pad_idx ), 127, midi_channel );
+
+        if ( pad_idx == hihat_pad_idx )
+        {
+          MYMIDI.MIDI_SEND_AFTER_TOUCH ( edrumulus.get_midi_note_open_norm ( pad_idx ), 127, midi_channel );
+          MYMIDI.MIDI_SEND_AFTER_TOUCH ( edrumulus.get_midi_note_open_rim  ( pad_idx ), 127, midi_channel );
+        }
       }
     }
     else if ( edrumulus.get_choke_off_found ( pad_idx ) )
