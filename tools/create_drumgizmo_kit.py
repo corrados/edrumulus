@@ -27,6 +27,12 @@ import xml.etree.ElementTree as ET
 from scipy.io import wavfile
 
 
+# conversion settings
+disable_positional_sensing_support  = False#True#
+only_master_channels_per_instrument = False#True#
+raspi_optimized_drumkit             = False#True#
+
+
 ################################################################################
 # CONFIGURATION AND INITIALIZATIONS ############################################
 ################################################################################
@@ -67,11 +73,21 @@ use_log_power_in_xml      = True # whether Drumgizmo should treat the powers in 
 
 # TEST for optimizing the algorithms, only use one instrument
 #instruments = [instruments[7]]
-disable_positional_sensing_support  = False#True#
-only_master_channels_per_instrument = False#True#
-#for instrument in instruments: # remove some instruments for lowest possible memory requirement
-#  if "tom2" in instrument or "ride_side" in instrument or "crash_top" in instrument or "hihat_opentop" in instrument:
-#    instruments.remove(instrument)
+
+# settings for optimized drum kit for Raspberry Pi (with limited RAM)
+if raspi_optimized_drumkit:
+  disable_positional_sensing_support  = True
+  only_master_channels_per_instrument = True
+  for instrument in instruments: # remove some instruments for lowest possible memory requirement
+    if "tom2" in instrument or "ride_side" in instrument or "crash_top" in instrument or "hihat_opentop" in instrument:
+      instruments.remove(instrument)
+  for instrument in instruments: # assign now missing MIDI notes to remaining instruments
+    if "ride" in instrument:
+      instrument[2].append(59)
+    if "crash" in instrument:
+      instrument[2].append(49)
+    if "hihat_open" in instrument:
+      instrument[2].append(46)
 
 
 for instrument in instruments:
