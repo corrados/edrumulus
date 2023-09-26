@@ -47,10 +47,10 @@ channel_names   = ["KDrum", "Snare", "Hihat", "Tom1", "Tom2", "Tom3", "OHLeft", 
 instruments = [["kick",            ["KDrum", "OHLeft", "OHRight"], [36],     "",      0.1,  15], \
                ["snare",           ["Snare", "OHLeft", "OHRight"], [38],     "",      0.08, 16], \
                ["snare_rimshot",   ["Snare", "OHLeft", "OHRight"], [40],     "",      0.3,  15], \
-               ["hihat_closed",    ["Hihat", "OHLeft", "OHRight"], [42],     "hihat", 0.18, 20], \
-               ["hihat_closedtop", ["Hihat", "OHLeft", "OHRight"], [22],     "hihat", 0.2,  20], \
-               ["hihat_open",      ["Hihat", "OHLeft", "OHRight"], [46],     "hihat", 0.7,  23], \
-               ["hihat_opentop",   ["Hihat", "OHLeft", "OHRight"], [26],     "hihat", 0.7,  24], \
+               ["hihat_closed",    ["Hihat", "OHLeft", "OHRight"], [22],     "hihat", 0.18, 20], \
+               ["hihat_closedtop", ["Hihat", "OHLeft", "OHRight"], [42],     "hihat", 0.2,  20], \
+               ["hihat_open",      ["Hihat", "OHLeft", "OHRight"], [26],     "hihat", 0.7,  23], \
+               ["hihat_opentop",   ["Hihat", "OHLeft", "OHRight"], [46],     "hihat", 0.7,  24], \
                ["hihat_foot",      ["Hihat", "OHLeft", "OHRight"], [44],     "hihat", 0.1,  23], \
                ["tom1",            ["Tom1", "OHLeft", "OHRight"],  [48, 50], "",      0.2,  15], \
                ["tom2",            ["Tom2", "OHLeft", "OHRight"],  [45, 47], "",      0.2,  15], \
