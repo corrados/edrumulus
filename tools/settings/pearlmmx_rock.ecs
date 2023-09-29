@@ -7,7 +7,7 @@
 #-a:KDrum -elv2:urn:ardour:a-comp,22,70,0,7,-27,4.3,0,1
 #-a:KDrum -eca:69,0.07,0.25,0.5
 -a:KDrum -elv2:urn:ardour:a-eq,80,6,65,10.9,1.230,6147,12.6,1.2,256,-15.7,0.766,909,-9.3,0.622,8088,-7.4,2.5,1,1,1,1,1,1,1
--a:KDrum -chcopy:1,2 -eadb:5 -epp:50
+-a:KDrum -chcopy:1,2 -eadb:3 -epp:50
 
 -a:Snare -f:,1, -i jack,DrumGizmo:1-Snare,1-Snare
 -a:Snare -elv2:urn:ardour:a-eq,28,-20,86,3.1,1,194,-4.9,0.38,2500,0,1,660,-3.5,0.32,1947,1.9,1.5,1,1,1,1,1,1,1
@@ -39,7 +39,7 @@
 -a:OHRight -chcopy:1,2 -eadb:0 -epp:100
 
 -a:all -f:,2, -o loop,master
--a Master -elv2:urn:ardour:a-reverb,0.2,0.5,1
+#-a Master -elv2:urn:ardour:a-reverb,0.2,0.5,1
 -a:Master -eadb:0 -i loop,master
 
 -a:Master -o jack,system
