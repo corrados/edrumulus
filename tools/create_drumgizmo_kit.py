@@ -69,7 +69,6 @@ fade_out_percent          = 10   # % of sample at the end is faded out
 thresh_from_max_for_start = 20   # dB
 add_samples_at_start      = 20   # additional samples considered at strike start
 min_time_next_strike_s    = 0.5  # minimum time in seconds between two different strikes
-use_log_power_in_xml      = True # whether Drumgizmo should treat the powers in the XML as logarithmic values
 
 # TEST for optimizing the algorithms, only use one instrument
 #instruments = [instruments[7]]
@@ -261,10 +260,8 @@ for instrument in instruments:
       if len(positions) > 1:
         sample_xml.set("position", str(p))
       sample_xml.set("name", instrument_name + "-" + str(i + 1))
-      if use_log_power_in_xml: # make sure result is positive by adding 100 dB (max. assumed dynamic)
-        sample_xml.set("power", "{:.19f}".format(10 * np.log10(sample_powers[p][strike_index]) + 100))
-      else:
-        sample_xml.set("power", "{:.19f}".format(sample_powers[p][strike_index]))
+      # make sure result is positive by adding 100 dB (max. assumed dynamic)
+      sample_xml.set("power", "{:.19f}".format(10 * np.log10(sample_powers[p][strike_index]) + 100))
       for j, channel_name in enumerate(channel_names):
         if only_master_channels_per_instrument:
           if channel_name in instrument[1]:
@@ -291,8 +288,7 @@ drumkit_xml = ET.Element("drumkit")
 drumkit_xml.set("name", kit_name)
 drumkit_xml.set("description", kit_description)
 drumkit_xml.set("samplerate", str(sample_rate))
-if use_log_power_in_xml:
-  drumkit_xml.set("islogpower", "true")
+drumkit_xml.set("islogpower", "true")
 channels_xml = ET.SubElement(drumkit_xml, "channels")
 for channel_name in channel_names:
   channel_xml = ET.SubElement(channels_xml, "channel")

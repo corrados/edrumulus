@@ -21,12 +21,11 @@ pkg load signal
 sampling_rate = 44100;
 
 % base paths
-out_kit_name         = 'edrumuluskit';
-out_kit_path         = [out_kit_name '/'];
-samples_path         = 'samples/';
-mixed_prefix         = 'mixed_';
-midi_map_name        = [out_kit_name '_midimap'];
-use_log_power_in_xml = true;
+out_kit_name  = 'edrumuluskit';
+out_kit_path  = [out_kit_name '/'];
+samples_path  = 'samples/';
+mixed_prefix  = 'mixed_';
+midi_map_name = [out_kit_name '_midimap'];
 
 % kit select or optional instrument select
 kit_select        = 3; % if [], the instrument_select is used otherwise the entire selected kit number
@@ -230,13 +229,9 @@ end
 mkdir(out_kit_path);
 
 % create kit XML file (only use instruments which are defined in the MIDI map)
-is_log_power_string = '';
-if use_log_power_in_xml
-  is_log_power_string = ' islogpower="true"';
-end
 file_id = fopen([out_kit_path out_kit_name '.xml'], 'w');
 fwrite(file_id, ['<?xml version="1.0" encoding="UTF-8"?>' char(10)]);
-fwrite(file_id, ['<drumkit name="' out_kit_name '" description="Mixed Drumgizmo drum kit"' is_log_power_string '>' char(10)]);
+fwrite(file_id, ['<drumkit name="' out_kit_name '" description="Mixed Drumgizmo drum kit" islogpower="true">' char(10)]);
 fwrite(file_id, ['  <channels>' char(10)]);
 fwrite(file_id, ['      <channel name="left_channel"/>' char(10)]);
 fwrite(file_id, ['      <channel name="right_channel"/>' char(10)]);
@@ -332,16 +327,14 @@ for instrument_index = 1:length(midi_map)
         xml_file{cnt}   = [xml_file{cnt}(1:insert_position) mixed_prefix xml_file{cnt}(insert_position + 1:end)];
       end
 
-      % optionally, convert the power to log-power
-      if use_log_power_in_xml
-        if strfind(xml_file{cnt}, '<sample ')
-          start_position = strfind(xml_file{cnt}, ' power="') + length(' power="') - 1;
-          end_position   = start_position + strfind(xml_file{cnt}(1 + start_position:end), '"');
-          end_position   = end_position(1); % in case other " followed
-          power = str2double(xml_file{cnt}(start_position + 1:end_position - 1));
-          logpower = 10 * log10(power) + 100; % make sure result is positive by adding 100 dB (max. assumed dynamic)
-          xml_file{cnt}  = [xml_file{cnt}(1:start_position) num2str(logpower) xml_file{cnt}(end_position:end)];
-        end
+      % convert the power to log-power
+      if strfind(xml_file{cnt}, '<sample ')
+        start_position = strfind(xml_file{cnt}, ' power="') + length(' power="') - 1;
+        end_position   = start_position + strfind(xml_file{cnt}(1 + start_position:end), '"');
+        end_position   = end_position(1); % in case other " followed
+        power = str2double(xml_file{cnt}(start_position + 1:end_position - 1));
+        logpower = 10 * log10(power) + 100; % make sure result is positive by adding 100 dB (max. assumed dynamic)
+        xml_file{cnt}  = [xml_file{cnt}(1:start_position) num2str(logpower) xml_file{cnt}(end_position:end)];
       end
 
       % exchange names of first two channels (left/right channel)
