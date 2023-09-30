@@ -17,6 +17,15 @@
 
 #define USE_MIDI
 
+// ESP32 default pin definition:
+// For older prototypes or custom implementations, simply change the GPIO numbers in the table below
+// to match your hardware (note that the GPIO assignment of Prototype 2 is the same as Prototype 4).
+// analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
+static int analog_pins4[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    15 };
+static int analog_pins_rimshot4[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1 };
+const int  number_pads4           = sizeof ( analog_pins4 ) / sizeof ( int );
+
+
 #include "edrumulus.h"
 
 #ifdef USE_MIDI
@@ -35,21 +44,21 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 # endif
 #endif
 
+// local variables and defines
 Edrumulus edrumulus;
-const int midi_channel      = 10;    // default for edrums is 10
-const int hihat_pad_idx     = 2;
-const int hihatctrl_pad_idx = 3;
-int       number_pads       = 0;     // initialization value, will be set in setup()
-int       status_LED_pin    = 0;     // initialization value, will be set in setup()
-bool      is_status_LED_on  = false; // initialization value
-int       selected_pad      = 0;     // initialization value
-
+const int midi_channel      = 10;           // default for edrums is 10
+const int hihat_pad_idx     = 2;            // this definition should not be changed
+const int hihatctrl_pad_idx = 3;            // this definition should not be changed
+int       number_pads       = number_pads4; // initialization value, may be overwritten by get_prototype_pins()
+int       status_LED_pin    = 0;            // initialization value, will be set in get_prototype_pins()
+bool      is_status_LED_on  = false;        // initialization value
+int       selected_pad      = 0;            // initialization value
 
 void setup()
 {
   // get the pin-to-pad assignments
-  int* analog_pins         = nullptr;
-  int* analog_pins_rimshot = nullptr;
+  int* analog_pins         = analog_pins4;         // initialize with the default setup
+  int* analog_pins_rimshot = analog_pins_rimshot4; // initialize with the default setup
   const int prototype = Edrumulus_hardware::get_prototype_pins ( &analog_pins,
                                                                  &analog_pins_rimshot,
                                                                  &number_pads,

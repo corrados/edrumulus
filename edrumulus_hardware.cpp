@@ -36,7 +36,6 @@ int Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
                                              int*  number_pins,
                                              int*  status_LED_pin )
 {
-
   // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
   static int analog_pins1[]         = { 10,    11,    12,        13,          1,      6,     4,     5 };
   static int analog_pins_rimshot1[] = {  9,    -1,     0,        -1,          3,      8,     2,     7 };
@@ -221,17 +220,8 @@ int Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
     }
   }
 
-  // if no GPIO prototype identification is available, we assume it is Prototype 4,
-  // for older prototypes or custom implementations, simply change the GPIO numbers in the
-  // table below to match your hardware (note that the GPIO assignment of Prototype 2 is the
-  // same as Prototype 4)
-  // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3  
-  static int analog_pins4[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    15 };
-  static int analog_pins_rimshot4[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1 };
-  *analog_pins         = analog_pins4;
-  *analog_pins_rimshot = analog_pins_rimshot4;
-  *number_pins         = sizeof ( analog_pins4 ) / sizeof ( int );
-  *status_LED_pin      = BOARD_LED_PIN;
+  // default: assume that analog pins are set outside this function, only update board LED pin
+  *status_LED_pin = BOARD_LED_PIN;
   return 4;
 #else // CONFIG_IDF_TARGET_ESP32S3
   // analog pins setup:                 snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3  
