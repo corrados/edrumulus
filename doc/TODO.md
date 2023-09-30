@@ -2,10 +2,6 @@
 
 The road map items are sorted by priority.
 
-- [ ] **NoteOn instead of aftertrouch**
-
-  See https://github.com/corrados/edrumulus/discussions/85.
-
 - [ ] **Create a super simple default drum kit in the git repo so that run_edrumulus.sh runs successfully without any other dependencies**
 
   See https://github.com/corrados/edrumulus/discussions/94#discussioncomment-6994715.
