@@ -57,7 +57,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
 
   switch ( pad_settings.pad_type )
   {
-    case PD120:
+    case PD120: // dual trigger
       pad_settings.velocity_threshold   = 6;
       pad_settings.velocity_sensitivity = 6;
       pad_settings.pos_threshold        = 7;
@@ -67,7 +67,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.rim_shot_is_used     = true;
       break;
 
-    case PDA120LS:
+    case PDA120LS: // dual trigger
       pad_settings.velocity_threshold        = 11;
       pad_settings.velocity_sensitivity      = 7;
       pad_settings.pos_threshold             = 31;
@@ -82,9 +82,9 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.rim_shot_is_used          = true;
       break;
 
-    case PD80R:
-      pad_settings.velocity_sensitivity = 2;
-      pad_settings.rim_shot_treshold    = 11;
+    case PD80R: // dual trigger
+      pad_settings.velocity_sensitivity = 1;
+      pad_settings.rim_shot_treshold    = 10;
       pad_settings.pos_threshold        = 11;
       pad_settings.pos_sensitivity      = 10;
       pad_settings.scan_time_ms         = 3.0f;
@@ -123,25 +123,24 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.rim_shot_is_used     = true;
       break;
 
-    case PD5:
+    case PD5: // single trigger
       pad_settings.scan_time_ms     = 4.0f;
       pad_settings.mask_time_ms     = 9.0f;
       pad_settings.decay_grad_fact2 = 400.0f;
       break;
 
-    case PD6:
-      pad_settings.is_rim_switch        = true;
+    case PD6: // single trigger
       pad_settings.velocity_sensitivity = 4;
       pad_settings.scan_time_ms         = 1.5f;
       pad_settings.decay_grad_fact2     = 400.0f;
       break;
 
-    case PD8:
+    case PD8: // dual trigger
       pad_settings.is_rim_switch         = true;
       pad_settings.velocity_sensitivity  = 3;
       pad_settings.pos_threshold         = 26;
       pad_settings.pos_sensitivity       = 11;
-      pad_settings.rim_shot_treshold     = 15;
+      pad_settings.rim_shot_treshold     = 22;
       pad_settings.mask_time_ms          = 7;
       pad_settings.scan_time_ms          = 1.3f;
       pad_settings.decay_est_delay_ms    = 6.0f;
@@ -155,8 +154,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.clip_comp_ampmap_step = 0.4f;
       break;
 
-    case TP80:
-      pad_settings.is_rim_switch        = true;
+    case TP80: // single trigger
       pad_settings.velocity_sensitivity = 8;
       pad_settings.pos_threshold        = 27;
       pad_settings.pos_sensitivity      = 19;
@@ -168,7 +166,6 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.decay_grad_fact3     = 60.0f;
       pad_settings.pos_invert           = true;
       pad_settings.pos_sense_is_used    = true;
-      pad_settings.rim_shot_is_used     = true;
       break;
 
     case FD8:
@@ -177,10 +174,11 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.velocity_sensitivity = 0;
       break;
 
-    case VH12:
+    case VH12: // dual trigger
 // TODO if the Hi-Hat is open just a little bit, we get double triggers
       pad_settings.is_rim_switch        = true;
       pad_settings.velocity_sensitivity = 5;
+      pad_settings.rim_shot_treshold    = 23;
       pad_settings.scan_time_ms         = 4.0f;
       pad_settings.decay_est_delay_ms   = 9.0f;
       pad_settings.decay_fact_db        = 5.0f;
@@ -196,7 +194,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.velocity_sensitivity = 28;
       break;
 
-    case KD7:
+    case KD7: // single trigger
       pad_settings.velocity_threshold   = 11;
       pad_settings.velocity_sensitivity = 6;
       pad_settings.curve_type           = LOG2; // less dynamic on kick (similar to other drum modules)
@@ -211,7 +209,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.decay_grad_fact3     = 45.0f;
       break;
 
-    case KD8:
+    case KD8: // single trigger
       pad_settings.velocity_sensitivity    = 2;
       pad_settings.curve_type              = LOG2; // less dynamic on kick (similar to other drum modules)
       pad_settings.scan_time_ms            = 3.0f;
@@ -221,7 +219,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.decay_grad_fact3        = 45.0f;
       break;
 
-    case KT10:
+    case KT10: // single trigger
       pad_settings.velocity_sensitivity = 6;
       pad_settings.scan_time_ms         = 2.0f;
       pad_settings.decay_est_delay_ms   = 8.0f;
@@ -234,25 +232,27 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.decay_grad_fact3     = 100.0f;
       break;
 
-    case KD120:
+    case KD120: // single trigger
       pad_settings.scan_time_ms      = 6.0f;
       pad_settings.decay_fact_db     = 12.0f;
       pad_settings.decay_est_fact_db = 20.0f;
       break;
 
-    case CY5:
+    case CY5: // dual trigger
       pad_settings.is_rim_switch        = true;
       pad_settings.velocity_threshold   = 6;
       pad_settings.velocity_sensitivity = 4;
+      pad_settings.rim_shot_treshold    = 12;
       pad_settings.scan_time_ms         = 3.0f;
       pad_settings.mask_time_ms         = 8.0f;
       pad_settings.decay_fact_db        = 3.0f;
       pad_settings.rim_shot_is_used     = true;
       break;
 
-    case CY6:
+    case CY6: // dual trigger
       pad_settings.is_rim_switch        = true;
       pad_settings.velocity_sensitivity = 6;
+      pad_settings.rim_shot_treshold    = 12;
       pad_settings.scan_time_ms         = 6.0f;
       pad_settings.decay_len2_ms        = 150.0f;
       pad_settings.decay_grad_fact2     = 120.0f;
@@ -261,11 +261,11 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.rim_shot_is_used     = true;
       break;
 
-    case CY8:
+    case CY8: // dual trigger
       pad_settings.is_rim_switch        = true;
       pad_settings.velocity_threshold   = 13;
       pad_settings.velocity_sensitivity = 8;
-      pad_settings.rim_shot_treshold    = 30;
+      pad_settings.rim_shot_treshold    = 12;
       pad_settings.curve_type           = LOG2;
       pad_settings.scan_time_ms         = 6.0f;
       pad_settings.decay_len1_ms        = 10.0f;
@@ -290,7 +290,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.rim_shot_is_used          = true;
       break;
 
-    case HD1TOM:
+    case HD1TOM: // single trigger
       pad_settings.velocity_threshold   = 8;
       pad_settings.velocity_sensitivity = 5;
       pad_settings.curve_type           = LOG1;

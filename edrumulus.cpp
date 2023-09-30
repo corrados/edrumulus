@@ -502,7 +502,7 @@ void Edrumulus::Pad::initialize()
   rim_shot_treshold        = pow ( 10.0f, ( static_cast<float> ( pad_settings.rim_shot_treshold ) - 44 ) / 10 ); // linear rim shot threshold
   rim_shot_window_len      = round ( pad_settings.rim_shot_window_len_ms * 1e-3f * Fs );             // window length (e.g. 5 ms)
   rim_shot_boost           = pow ( 10.0f, static_cast<float> ( pad_settings.rim_shot_boost ) / 40 ); // boost / 4 -> dB value
-  rim_switch_treshold      = -ADC_MAX_NOISE_AMPL + 9 * ( pad_settings.rim_shot_treshold - 31 );      // rim switch linear threshold
+  rim_switch_treshold      = -pow ( 10.0f, pad_settings.rim_shot_treshold / 10.0f ); // rim switch linear threshold, where 10^(31/10)=1259 which is approx 4096/3 (10 bit ADC)
   rim_switch_on_cnt_thresh = round ( 10.0f * 1e-3f * Fs );                                           // number of on samples until we detect a choke
   rim_max_power_low_limit  = ADC_MAX_NOISE_AMPL * ADC_MAX_NOISE_AMPL / 31.0f; // lower limit on detected rim power, 15 dB below max noise amplitude
   x_rim_hist_len           = x_sq_hist_len + rim_shot_window_len;
