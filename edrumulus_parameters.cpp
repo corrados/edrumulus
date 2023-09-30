@@ -141,7 +141,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.velocity_sensitivity  = 3;
       pad_settings.pos_threshold         = 26;
       pad_settings.pos_sensitivity       = 11;
-      pad_settings.rim_shot_treshold     = 16;
+      pad_settings.rim_shot_treshold     = 15;
       pad_settings.mask_time_ms          = 7;
       pad_settings.scan_time_ms          = 1.3f;
       pad_settings.decay_est_delay_ms    = 6.0f;
@@ -158,8 +158,8 @@ void Edrumulus::Pad::apply_preset_pad_settings()
     case TP80:
       pad_settings.is_rim_switch        = true;
       pad_settings.velocity_sensitivity = 8;
-      pad_settings.pos_threshold        = 22;
-      pad_settings.pos_sensitivity      = 23;
+      pad_settings.pos_threshold        = 27;
+      pad_settings.pos_sensitivity      = 19;
       pad_settings.scan_time_ms         = 2.75f;
       pad_settings.decay_est_delay_ms   = 11.0f;
       pad_settings.decay_len2_ms        = 60.0f;
