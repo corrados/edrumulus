@@ -50,6 +50,8 @@ instruments = [["kick",            ["KDrum", "OHLeft", "OHRight"], [36],     "",
                ["hihat_closed",    ["Hihat", "OHLeft", "OHRight"], [22],     "hihat", 0.18, 20], \
                ["hihat_closedtop", ["Hihat", "OHLeft", "OHRight"], [42],     "hihat", 0.2,  20], \
                ["hihat_open",      ["Hihat", "OHLeft", "OHRight"], [26],     "hihat", 0.7,  23], \
+               ["hihat_open1",     ["Hihat", "OHLeft", "OHRight"], [27],     "hihat", 0.7,  23], \
+               ["hihat_open2",     ["Hihat", "OHLeft", "OHRight"], [28],     "hihat", 0.7,  23], \
                ["hihat_opentop",   ["Hihat", "OHLeft", "OHRight"], [46],     "hihat", 0.7,  24], \
                ["hihat_foot",      ["Hihat", "OHLeft", "OHRight"], [44],     "hihat", 0.1,  23], \
                ["tom1",            ["Tom1", "OHLeft", "OHRight"],  [48, 50], "",      0.2,  15], \
