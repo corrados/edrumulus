@@ -43,25 +43,27 @@ kit_name        = "PearlMMX" # avoid spaces
 kit_description = "Pearl MMX drum set with positional sensing support"
 channel_names   = ["KDrum", "Snare", "Hihat", "Tom1", "Tom2", "Tom3", "OHLeft", "OHRight"]
 
-# instruments: [instrument_name, master_channel(s), MIDI_note(s), group, min_strike_len, threshold]
-instruments = [["kick",            ["KDrum", "OHLeft", "OHRight"], [36],     "",      0.1,  15], \
-               ["snare",           ["Snare", "OHLeft", "OHRight"], [38],     "",      0.08, 16], \
-               ["snare_rimshot",   ["Snare", "OHLeft", "OHRight"], [40],     "",      0.3,  15], \
-               ["hihat_closed",    ["Hihat", "OHLeft", "OHRight"], [22],     "hihat", 0.18, 20], \
-               ["hihat_closedtop", ["Hihat", "OHLeft", "OHRight"], [42],     "hihat", 0.2,  20], \
-               ["hihat_open",      ["Hihat", "OHLeft", "OHRight"], [26],     "hihat", 0.7,  23], \
-               ["hihat_open1",     ["Hihat", "OHLeft", "OHRight"], [27],     "hihat", 0.7,  23], \
-               ["hihat_open2",     ["Hihat", "OHLeft", "OHRight"], [28],     "hihat", 0.7,  23], \
-               ["hihat_opentop",   ["Hihat", "OHLeft", "OHRight"], [46],     "hihat", 0.7,  24], \
-               ["hihat_foot",      ["Hihat", "OHLeft", "OHRight"], [44],     "hihat", 0.1,  23], \
-               ["tom1",            ["Tom1", "OHLeft", "OHRight"],  [48, 50], "",      0.2,  15], \
-               ["tom2",            ["Tom2", "OHLeft", "OHRight"],  [45, 47], "",      0.2,  15], \
-               ["tom3",            ["Tom3", "OHLeft", "OHRight"],  [43, 58], "",      0.4,  15], \
-               ["crash",           ["OHLeft", "OHRight"],          [55],     "",      0.5,  15], \
-               ["crash_top",       ["OHLeft", "OHRight"],          [49],     "",      0.4,  15], \
-               ["ride",            ["OHRight", "OHLeft"],          [51],     "",      1.0,  15], \
-               ["ride_bell",       ["OHRight", "OHLeft"],          [53],     "",      1.0,  16], \
-               ["ride_side",       ["OHRight", "OHLeft"],          [59],     "",      1.0,  15]]
+# instruments: [instrument_name, master_channel(s), MIDI_note(s), group, hi-hat threshold, min_strike_len, threshold]
+instruments = [["kick",            ["KDrum", "OHLeft", "OHRight"], [36],     "",      "",   0.1,  15], \
+               ["snare",           ["Snare", "OHLeft", "OHRight"], [38],     "",      "",   0.08, 16], \
+               ["snare_rimshot",   ["Snare", "OHLeft", "OHRight"], [40],     "",      "",   0.3,  15], \
+               ["hihat_closed",    ["Hihat", "OHLeft", "OHRight"], [22, 26], "hihat", "80", 0.18, 20], \
+               ["hihat_closedtop", ["Hihat", "OHLeft", "OHRight"], [42, 46], "hihat", "80", 0.2,  20], \
+               ["hihat_open",      ["Hihat", "OHLeft", "OHRight"], [26],     "hihat", "0",  0.7,  23], \
+               ["hihat_open1",     ["Hihat", "OHLeft", "OHRight"], [26],     "hihat", "55", 0.7,  23], \
+               ["hihat_open2",     ["Hihat", "OHLeft", "OHRight"], [26],     "hihat", "20", 0.7,  23], \
+               ["hihat_opentop",   ["Hihat", "OHLeft", "OHRight"], [46],     "hihat", "0",  0.7,  24], \
+               ["hihat_open1top",  ["Hihat", "OHLeft", "OHRight"], [46],     "hihat", "55", 0.7,  21], \
+               ["hihat_open2top",  ["Hihat", "OHLeft", "OHRight"], [46],     "hihat", "20", 0.7,  23], \
+               ["hihat_foot",      ["Hihat", "OHLeft", "OHRight"], [44],     "hihat", "",   0.1,  23], \
+               ["tom1",            ["Tom1", "OHLeft", "OHRight"],  [48, 50], "",      "",   0.2,  15], \
+               ["tom2",            ["Tom2", "OHLeft", "OHRight"],  [45, 47], "",      "",   0.2,  15], \
+               ["tom3",            ["Tom3", "OHLeft", "OHRight"],  [43, 58], "",      "",   0.4,  15], \
+               ["crash",           ["OHLeft", "OHRight"],          [55],     "",      "",   0.5,  15], \
+               ["crash_top",       ["OHLeft", "OHRight"],          [49],     "",      "",   0.4,  15], \
+               ["ride",            ["OHRight", "OHLeft"],          [51],     "",      "",   1.0,  15], \
+               ["ride_bell",       ["OHRight", "OHLeft"],          [53],     "",      "",   1.0,  16], \
+               ["ride_side",       ["OHRight", "OHLeft"],          [59],     "",      "",   1.0,  15]]
 
 #channel_names = ["SnareL"] # for calibrating dynamic in Drumgizmo
 #instruments   = [["rolandsnare", ["SnareL"], [38], "", 0.03, 23]]
@@ -140,12 +142,12 @@ for instrument in instruments:
     # WAVE FORM ANALYSIS #########################################################
     ##############################################################################
     master_channel       = channel_names.index(instrument[1][0]) # first main channel is master
-    min_strike_len       = int(instrument[4] * sample_rate) # calculate minimum strike length in samples
+    min_strike_len       = int(instrument[5] * sample_rate) # calculate minimum strike length in samples
     min_time_next_strike = int(min_time_next_strike_s * sample_rate)
 
     # find samples which are above the threshold
     x            = np.square(sample[master_channel].astype(float))
-    threshold    = np.power(10, instrument[5] / 10)
+    threshold    = np.power(10, instrument[6] / 10)
     above_thresh = x > threshold
 
     # remove oscillating by filling short gaps
@@ -323,6 +325,8 @@ for instrument in instruments:
     map_xml = ET.SubElement(midimap_xml, "map")
     map_xml.set("note", str(midi_note))
     map_xml.set("instr", instrument[0])
+    if instrument[4]:
+      map_xml.set("controlthresh", instrument[4])
 tree_xml = ET.ElementTree(midimap_xml)
 ET.indent(midimap_xml, space="\t", level=0)
 tree_xml.write(kit_name + "/Midimap.xml", encoding="utf-8", xml_declaration="True")
