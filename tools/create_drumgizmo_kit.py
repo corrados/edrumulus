@@ -71,11 +71,11 @@ instruments = [["kick",            ["KDrum", "OHLeft", "OHRight"], [36],     "",
 source_samples_dir_name   = "source_samples" # root directory of recorded source samples
 fade_out_percent          = 10   # % of sample at the end is faded out
 thresh_from_max_for_start = 20   # dB
-add_samples_at_start      = 20   # additional samples considered at strike start
+add_samples_at_start      = 20   # additional samples considered at strike start (also defines the fade-in time period)
 min_time_next_strike_s    = 0.5  # minimum time in seconds between two different strikes
 
 # TEST for optimizing the algorithms, only use one instrument
-#instruments = [instruments[7]]
+#instruments = [instruments[9]]
 
 # settings for optimized drum kit for Raspberry Pi (with limited RAM)
 if raspi_optimized_drumkit:
@@ -206,6 +206,9 @@ for instrument in instruments:
       for c in range(0, num_channels):
         strike_cut_pos[strike_start[i][0]:strike_end[i][0] + 1].fill(True) # for debugging
         sample_strikes[p][i][:, c] = sample[c][strike_start[i][0]:strike_end[i][0] + 1]
+
+        # audio fade-in at the beginning
+        sample_strikes[p][i][:add_samples_at_start, c] = np.int16(sample_strikes[p][i][:add_samples_at_start, c].astype(float) * np.arange(1, add_samples_at_start + 1, 1) / add_samples_at_start)
 
         # audio fade-out at the end
         sample_len = len(sample_strikes[p][i][:, c])
