@@ -51,16 +51,16 @@ instruments = [["kick",            ["KDrum", "OHLeft", "OHRight"], [36],     "",
                ["hihat_closedtop", ["Hihat", "OHLeft", "OHRight"], [42, 46], "hihat", "80", 0.2,  20], \
                ["hihat_open",      ["Hihat", "OHLeft", "OHRight"], [26],     "hihat", "0",  0.7,  23], \
                ["hihat_open1",     ["Hihat", "OHLeft", "OHRight"], [26],     "hihat", "55", 0.7,  23], \
-               ["hihat_open2",     ["Hihat", "OHLeft", "OHRight"], [26],     "hihat", "20", 0.7,  23], \
+               ["hihat_open2",     ["Hihat", "OHLeft", "OHRight"], [26],     "hihat", "27", 0.7,  23], \
                ["hihat_opentop",   ["Hihat", "OHLeft", "OHRight"], [46],     "hihat", "0",  0.7,  24], \
                ["hihat_open1top",  ["Hihat", "OHLeft", "OHRight"], [46],     "hihat", "55", 0.7,  21], \
-               ["hihat_open2top",  ["Hihat", "OHLeft", "OHRight"], [46],     "hihat", "20", 0.7,  23], \
+               ["hihat_open2top",  ["Hihat", "OHLeft", "OHRight"], [46],     "hihat", "27", 0.7,  23], \
                ["hihat_foot",      ["Hihat", "OHLeft", "OHRight"], [44],     "hihat", "",   0.1,  23], \
                ["tom1",            ["Tom1", "OHLeft", "OHRight"],  [48, 50], "",      "",   0.2,  15], \
                ["tom2",            ["Tom2", "OHLeft", "OHRight"],  [45, 47], "",      "",   0.2,  15], \
                ["tom3",            ["Tom3", "OHLeft", "OHRight"],  [43, 58], "",      "",   0.4,  15], \
-               ["crash",           ["OHLeft", "OHRight"],          [55],     "",      "",   0.5,  15], \
-               ["crash_top",       ["OHLeft", "OHRight"],          [49],     "",      "",   0.4,  15], \
+               ["crash",           ["OHLeft", "OHRight"],          [55, 52], "",      "",   0.5,  15], \
+               ["crash_top",       ["OHLeft", "OHRight"],          [49, 57], "",      "",   0.4,  15], \
                ["ride",            ["OHRight", "OHLeft"],          [51],     "",      "",   1.0,  15], \
                ["ride_bell",       ["OHRight", "OHLeft"],          [53],     "",      "",   1.0,  16], \
                ["ride_side",       ["OHRight", "OHLeft"],          [59],     "",      "",   1.0,  15]]
@@ -82,7 +82,8 @@ if raspi_optimized_drumkit:
   disable_positional_sensing_support  = True
   only_master_channels_per_instrument = True
   for instrument in instruments: # remove some instruments for lowest possible memory requirement
-    if "tom2" in instrument or "ride_side" in instrument or "crash_top" in instrument or "hihat_opentop" in instrument:
+    if ("tom2" in instrument or "ride_side" in instrument or "crash_top" in instrument or "hihat_opentop" in instrument or
+        "hihat_open1top" in instrument or "hihat_open2top" in instrument or "hihat_closedtop" in instrument):
       instruments.remove(instrument)
   for instrument in instruments: # assign now missing MIDI notes to remaining instruments
     if "ride" in instrument:
@@ -90,6 +91,13 @@ if raspi_optimized_drumkit:
     if "crash" in instrument:
       instrument[2].append(49)
     if "hihat_open" in instrument:
+      instrument[2].append(46)
+    if "hihat_closed" in instrument:
+      instrument[2].append(42)
+      instrument[2].append(46)
+    if "hihat_open1" in instrument:
+      instrument[2].append(46)
+    if "hihat_open2" in instrument:
       instrument[2].append(46)
 
 
@@ -202,10 +210,19 @@ for instrument in instruments:
       sample_powers[p][i] = strike_max / 32768 / 32768 # assuming 16 bit
 
       # extract sample data of current strike
-      sample_strikes[p][i] = np.zeros((strike_end[i][0] - strike_start[i][0] + 1, num_channels), np.int16)
+      if raspi_optimized_drumkit:
+        x_cur_strike_master = x[strike_start[i][0]:strike_end[i][0] + 1]
+        strike_max          = np.max(x_cur_strike_master)
+        last_index = np.max(np.argwhere(x_cur_strike_master > strike_max / np.power(10, 40 / 10))) # 40 dB below max
+        mod_strike_end = strike_start[i][0] + last_index;
+      else:
+        mod_strike_end = strike_end[i][0]
+
+      sample_strikes[p][i] = np.zeros((mod_strike_end - strike_start[i][0] + 1, num_channels), np.int16)
       for c in range(0, num_channels):
-        strike_cut_pos[strike_start[i][0]:strike_end[i][0] + 1].fill(True) # for debugging
-        sample_strikes[p][i][:, c] = sample[c][strike_start[i][0]:strike_end[i][0] + 1]
+        strike_cut_pos[strike_start[i][0]:mod_strike_end + 1].fill(True) # for debugging
+        sample_strikes[p][i][:, c] = sample[c][strike_start[i][0]:mod_strike_end + 1]
+
 
         # audio fade-in at the beginning
         sample_strikes[p][i][:add_samples_at_start, c] = np.int16(sample_strikes[p][i][:add_samples_at_start, c].astype(float) * np.arange(1, add_samples_at_start + 1, 1) / add_samples_at_start)
@@ -215,6 +232,9 @@ for instrument in instruments:
         fade_start = int(sample_len * (1 - fade_out_percent / 100))
         fade_len   = sample_len - fade_start
         sample_strikes[p][i][fade_start:, c] = np.int16(sample_strikes[p][i][fade_start:, c].astype(float) * np.arange(fade_len + 1, 1, -1) / fade_len)
+        # TEST -> new logarithmic fade-out (instead of linear)
+        #fade_gain  = np.power(10, (np.arange(fade_len + 1, 1, -1) / fade_len - np.ones(fade_len)) * 10 / 10) # 10 dB fade-out
+        #sample_strikes[p][i][fade_start:, c] = np.int16(sample_strikes[p][i][fade_start:, c].astype(float) * fade_gain)
 
       #print(sample_powers[p][i])
       #plt.plot(sample_strikes[p][i][:, master_channel])
