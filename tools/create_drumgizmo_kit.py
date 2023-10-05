@@ -28,9 +28,10 @@ from scipy.io import wavfile
 
 
 # conversion settings
+raspi_optimized_drumkit             = False#True#
 disable_positional_sensing_support  = False#True#
 only_master_channels_per_instrument = False#True#
-raspi_optimized_drumkit             = False#True#
+do_shorten_samples                  = False#True#
 
 
 ################################################################################
@@ -69,7 +70,7 @@ instruments = [["kick",            ["KDrum", "OHLeft", "OHRight"], [36],     "",
 #instruments   = [["rolandsnare", ["SnareL"], [38], "", 0.03, 23]]
 
 source_samples_dir_name   = "source_samples" # root directory of recorded source samples
-fade_out_percent          = 10   # % of sample at the end is faded out
+fade_out_percent          = 30   # % of sample at the end is faded out
 thresh_from_max_for_start = 20   # dB
 add_samples_at_start      = 20   # additional samples considered at strike start (also defines the fade-in time period)
 min_time_next_strike_s    = 0.5  # minimum time in seconds between two different strikes
@@ -80,6 +81,7 @@ min_time_next_strike_s    = 0.5  # minimum time in seconds between two different
 # settings for optimized drum kit for Raspberry Pi (with limited RAM)
 if raspi_optimized_drumkit:
   disable_positional_sensing_support  = True
+  do_shorten_samples                  = True
   only_master_channels_per_instrument = True
   for instrument in instruments: # remove some instruments for lowest possible memory requirement
     if ("tom2" in instrument or "ride_side" in instrument or "crash_top" in instrument or "hihat_opentop" in instrument or
@@ -164,8 +166,8 @@ for instrument in instruments:
       if not above_thresh[i] and above_thresh[i - 1]:
         first_below_idx = i
       if above_thresh[i] and not above_thresh[i - 1]:
-        if i - first_below_idx < min_time_next_strike:
-          above_thresh[range(first_below_idx, i)] = True
+        if i - first_below_idx + 1 < min_time_next_strike:
+          above_thresh[first_below_idx:i + 1] = True
 
     # remove very short on periods
     first_above_idx = -100 * sample_rate
@@ -174,7 +176,7 @@ for instrument in instruments:
         first_above_idx = i
       if not above_thresh[i] and above_thresh[i - 1]:
         if i - first_above_idx < min_strike_len:
-          above_thresh[range(first_above_idx, i)] = False
+          above_thresh[first_above_idx:i + 1] = False
 
     strike_start = np.argwhere(np.diff(above_thresh.astype(float)) > 0)
     strike_end   = np.argwhere(np.diff(above_thresh.astype(float)) < 0)
@@ -187,7 +189,7 @@ for instrument in instruments:
 
       # fix start of strike: find first sample going left of the maximum peak which
       # is below a threshold which is defined 20 dB below the maximum
-      x_cur_strike_master = x[range(strike_start[i][0], strike_end[i][0])]
+      x_cur_strike_master = x[strike_start[i][0]:strike_end[i][0] + 1]
       strike_mean         = np.mean(x_cur_strike_master)
       strike_max          = np.max(x_cur_strike_master)
       below_max_thresh    = np.power(10, -thresh_from_max_for_start / 10) # -[20] dB from maximum peak
@@ -210,7 +212,7 @@ for instrument in instruments:
       sample_powers[p][i] = strike_max / 32768 / 32768 # assuming 16 bit
 
       # extract sample data of current strike
-      if raspi_optimized_drumkit:
+      if do_shorten_samples:
         x_cur_strike_master = x[strike_start[i][0]:strike_end[i][0] + 1]
         strike_max          = np.max(x_cur_strike_master)
         last_index = np.max(np.argwhere(x_cur_strike_master > strike_max / np.power(10, 40 / 10))) # 40 dB below max
@@ -232,9 +234,6 @@ for instrument in instruments:
         fade_start = int(sample_len * (1 - fade_out_percent / 100))
         fade_len   = sample_len - fade_start
         sample_strikes[p][i][fade_start:, c] = np.int16(sample_strikes[p][i][fade_start:, c].astype(float) * np.arange(fade_len + 1, 1, -1) / fade_len)
-        # TEST -> new logarithmic fade-out (instead of linear)
-        #fade_gain  = np.power(10, (np.arange(fade_len + 1, 1, -1) / fade_len - np.ones(fade_len)) * 10 / 10) # 10 dB fade-out
-        #sample_strikes[p][i][fade_start:, c] = np.int16(sample_strikes[p][i][fade_start:, c].astype(float) * fade_gain)
 
       #print(sample_powers[p][i])
       #plt.plot(sample_strikes[p][i][:, master_channel])
