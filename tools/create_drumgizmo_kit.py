@@ -70,10 +70,10 @@ instruments = [["kick",            ["KDrum", "OHLeft", "OHRight"], [36],     "",
 #instruments   = [["rolandsnare", ["SnareL"], [38], "", 0.03, 23]]
 
 source_samples_dir_name   = "source_samples" # root directory of recorded source samples
-fade_out_percent          = 30   # % of sample at the end is faded out
-thresh_from_max_for_start = 20   # dB
-add_samples_at_start      = 20   # additional samples considered at strike start (also defines the fade-in time period)
-min_time_next_strike_s    = 0.5  # minimum time in seconds between two different strikes
+fade_out_percent          = 30  # % of sample at the end is faded out
+thresh_from_max_for_start = 20  # dB
+add_samples_at_start      = 20  # additional samples considered at strike start (also defines the fade-in time period)
+min_time_next_strike_s    = 0.5 # minimum time in seconds between two different strikes
 
 # TEST for optimizing the algorithms, only use one instrument
 #instruments = [instruments[9]]
@@ -126,7 +126,7 @@ for instrument in instruments:
   positions = sorted(list(dict.fromkeys(positions))) # remove duplicates and sort
   positions = [-1] if not positions else positions # if no positions, use -1 (i.e. no positional support)
 
-  # TEST for development purpose, remove later
+  # optionally, disable positional sensing support
   if disable_positional_sensing_support and len(positions) > 1:
     positions = [0]
 
@@ -211,7 +211,7 @@ for instrument in instruments:
       # estimate power from master channel using the maximum value
       sample_powers[p][i] = strike_max / 32768 / 32768 # assuming 16 bit
 
-      # extract sample data of current strike
+      # optionally, shorten the samples to save some memory, i.e., modify strike_end
       if do_shorten_samples:
         x_cur_strike_master = x[strike_start[i][0]:strike_end[i][0] + 1]
         strike_max          = np.max(x_cur_strike_master)
@@ -220,11 +220,11 @@ for instrument in instruments:
       else:
         mod_strike_end = strike_end[i][0]
 
+      # extract sample data of current strike
       sample_strikes[p][i] = np.zeros((mod_strike_end - strike_start[i][0] + 1, num_channels), np.int16)
       for c in range(0, num_channels):
         strike_cut_pos[strike_start[i][0]:mod_strike_end + 1].fill(True) # for debugging
         sample_strikes[p][i][:, c] = sample[c][strike_start[i][0]:mod_strike_end + 1]
-
 
         # audio fade-in at the beginning
         sample_strikes[p][i][:add_samples_at_start, c] = np.int16(sample_strikes[p][i][:add_samples_at_start, c].astype(float) * np.arange(1, add_samples_at_start + 1, 1) / add_samples_at_start)
@@ -352,6 +352,4 @@ for instrument in instruments:
 tree_xml = ET.ElementTree(midimap_xml)
 ET.indent(midimap_xml, space="\t", level=0)
 tree_xml.write(kit_name + "/Midimap.xml", encoding="utf-8", xml_declaration="True")
-
-
 
