@@ -179,6 +179,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.is_rim_switch        = true;
       pad_settings.velocity_sensitivity = 5;
       pad_settings.rim_shot_treshold    = 23;
+      pad_settings.rim_shot_boost       = 0;
       pad_settings.scan_time_ms         = 4.0f;
       pad_settings.decay_est_delay_ms   = 9.0f;
       pad_settings.decay_fact_db        = 5.0f;
@@ -243,6 +244,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.velocity_threshold   = 6;
       pad_settings.velocity_sensitivity = 4;
       pad_settings.rim_shot_treshold    = 12;
+      pad_settings.rim_shot_boost       = 0;
       pad_settings.scan_time_ms         = 3.0f;
       pad_settings.mask_time_ms         = 8.0f;
       pad_settings.decay_fact_db        = 3.0f;
@@ -253,6 +255,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.is_rim_switch        = true;
       pad_settings.velocity_sensitivity = 6;
       pad_settings.rim_shot_treshold    = 12;
+      pad_settings.rim_shot_boost       = 0;
       pad_settings.scan_time_ms         = 6.0f;
       pad_settings.decay_len2_ms        = 150.0f;
       pad_settings.decay_grad_fact2     = 120.0f;
@@ -263,9 +266,10 @@ void Edrumulus::Pad::apply_preset_pad_settings()
 
     case CY8: // dual trigger
       pad_settings.is_rim_switch        = true;
-      pad_settings.velocity_threshold   = 13;
+      pad_settings.velocity_threshold   = 7;
       pad_settings.velocity_sensitivity = 8;
-      pad_settings.rim_shot_treshold    = 12;
+      pad_settings.rim_shot_treshold    = 10;
+      pad_settings.rim_shot_boost       = 0;
       pad_settings.curve_type           = LOG2;
       pad_settings.scan_time_ms         = 6.0f;
       pad_settings.decay_len1_ms        = 10.0f;
