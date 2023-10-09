@@ -266,8 +266,8 @@ void Edrumulus::Pad::apply_preset_pad_settings()
 
     case CY8: // dual trigger
       pad_settings.is_rim_switch        = true;
-      pad_settings.velocity_threshold   = 7;
-      pad_settings.velocity_sensitivity = 8;
+      pad_settings.velocity_threshold   = 10;
+      pad_settings.velocity_sensitivity = 5;
       pad_settings.rim_shot_treshold    = 10;
       pad_settings.rim_shot_boost       = 0;
       pad_settings.curve_type           = LOG2;
