@@ -46,6 +46,18 @@ int Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
   return 0;
 }
 
+inline int pin_analog2real(const int analog_pin) {
+  //analogRead() works with analog pin numbers until pin 14 and needs absolute pin numbers afterwards
+  #ifdef ARDUINO_TEENSY41 // Teensy 4.1 specific code
+   switch (analog_pin) {
+      case 14: return 38;
+      case 15: return 39;
+      case 16: return 40;
+      case 17: return 41;
+    }
+  #endif
+  return analog_pin;
+}
 
 void Edrumulus_hardware::setup ( const int conf_Fs,
                                  const int number_pads,
@@ -64,6 +76,7 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
     {
       // store pin number in vector
       input_pin[total_number_inputs] = analog_pin[i][j];
+      input_pin_real[total_number_inputs] = pin_analog2real(analog_pin[i][j]); //used for analogRead()
       total_number_inputs++;
     }
   }
@@ -81,20 +94,27 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
 
 #if defined(ARDUINO_TEENSY40) || defined(ARDUINO_TEENSY41) // Teensy 4.0/4.1 specific code
   // disable MIMXRT1062DVL6A "keeper" on all possible Teensy 4.0/4.1 ADC input pins
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_02 &= ~( 1 << 12 ); // A0
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_03 &= ~( 1 << 12 ); // A1
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_07 &= ~( 1 << 12 ); // A2
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_06 &= ~( 1 << 12 ); // A3
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_01 &= ~( 1 << 12 ); // A4
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_00 &= ~( 1 << 12 ); // A5
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_10 &= ~( 1 << 12 ); // A6
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_11 &= ~( 1 << 12 ); // A7
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_08 &= ~( 1 << 12 ); // A8
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_09 &= ~( 1 << 12 ); // A9
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_12 &= ~( 1 << 12 ); // A10
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_13 &= ~( 1 << 12 ); // A11
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_14 &= ~( 1 << 12 ); // A12
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_15 &= ~( 1 << 12 ); // A13
+  // NOTE: pinMode() needs absolute pin numbers, analog_pin[i][j] won't work
+  pinMode ( A0,  INPUT_DISABLE );
+  pinMode ( A1,  INPUT_DISABLE );
+  pinMode ( A2,  INPUT_DISABLE );
+  pinMode ( A3,  INPUT_DISABLE );
+  pinMode ( A4,  INPUT_DISABLE );
+  pinMode ( A5,  INPUT_DISABLE );
+  pinMode ( A6,  INPUT_DISABLE );
+  pinMode ( A7,  INPUT_DISABLE );
+  pinMode ( A8,  INPUT_DISABLE );
+  pinMode ( A9,  INPUT_DISABLE );
+  pinMode ( A10, INPUT_DISABLE );
+  pinMode ( A11, INPUT_DISABLE );
+  pinMode ( A12, INPUT_DISABLE );
+  pinMode ( A13, INPUT_DISABLE );
+#endif
+#ifdef ARDUINO_TEENSY41 // Teensy 4.1 specific code
+  pinMode ( A14, INPUT_DISABLE );
+  pinMode ( A15, INPUT_DISABLE );
+  pinMode ( A16, INPUT_DISABLE );
+  pinMode ( A17, INPUT_DISABLE );
 #endif
 
   // initialize timer flag (semaphore)
@@ -139,16 +159,7 @@ void Edrumulus_hardware::capture_samples ( const int number_pads,
   // read the ADC samples
   for ( int i = 0; i < total_number_inputs; i++ )
   {
-    // pins 12 and 13 (and 22 for Teensy 3.6) are ADC1 only, pins 10 and 11 are ADC0 only
-    // note that pin 8 gave large spikes on ADC0 but seems to work ok with ADC1
-    if ( ( input_pin[i] == 8 ) || ( input_pin[i] == 12 ) || ( input_pin[i] == 13 ) || ( input_pin[i] == 22 ) )
-    {
-      input_sample[i] = adc_obj.adc1->analogRead ( input_pin[i] );
-    }
-    else
-    {
-      input_sample[i] = adc_obj.adc0->analogRead ( input_pin[i] );
-    }
+    input_sample[i] = adc_obj.analogRead ( input_pin_real[i] );
   }
 
   // copy captured samples in pad buffer
