@@ -85,7 +85,6 @@ protected:
 
   int      total_number_inputs;
   int      input_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
-  int      input_pin_real[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
   uint16_t input_sample[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
 
   Espikestate prev1_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
