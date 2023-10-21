@@ -75,6 +75,7 @@ public:
 
   void write_setting ( const int pad_index, const int address, const byte value );
   byte read_setting  ( const int pad_index, const int address );
+  void abort ();
 
 protected:
   int           Fs;
@@ -150,6 +151,7 @@ public:
 
   void write_setting ( const int, const int, const byte ) {}; // not supported
   byte read_setting  ( const int, const int ) { return 0; };  // not supported
+  void abort ();
 
 protected:
   int                        Fs;

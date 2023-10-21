@@ -106,6 +106,36 @@ void Edrumulus::setup ( const int  conf_num_pads,
       }
     }
   }
+
+  #ifndef UNSAFE
+    // safety check: make sure the DC offset is in expected ranges
+    // (i.e. around 1.65V for the voltage divider circuits)
+    bool safety_check_passed = true;
+    int offset;
+    for ( int i = 0; i < number_pads; i++ )
+    {
+      if (i == 3) continue; //Hihat Control (NOTE: the pad may not yet be configured as control, i.e. we cannot use the pad settings here)
+
+      for ( int j = 0; j < number_inputs[i]; j++ )
+      {
+        offset = dc_offset[i][j];
+          if (( offset > dc_offset_max ) || ( offset < dc_offset_min ))
+          {
+            safety_check_passed = false;
+            Serial.print("Safety check: Bad DC offset ");
+            Serial.print(offset);
+            Serial.print(" on pin ");
+            Serial.println(analog_pin[i][j]);
+          }
+      }
+    }
+
+    if (!safety_check_passed)
+    {
+      Serial.println("Safety checks didn't pass. Maybe your circuit is bad?");
+      edrumulus_hardware.abort();
+    }
+  #endif
 }
 
 

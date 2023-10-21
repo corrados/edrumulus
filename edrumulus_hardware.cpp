@@ -120,6 +120,17 @@ byte Edrumulus_hardware::read_setting ( const int pad_index,
 }
 
 
+void Edrumulus_hardware::abort ()
+{
+  Serial.println("Aborting...");
+  while (true)
+  {
+    digitalWriteFast(LED_BUILTIN, !digitalReadFast(LED_BUILTIN));
+    delay(50);
+  }
+}
+
+
 void Edrumulus_hardware::on_timer()
 {
   // tell the main loop that a sample can be read by setting the flag (semaphore)
@@ -379,6 +390,16 @@ void IRAM_ATTR Edrumulus_hardware::on_timer()
   if ( xHigherPriorityTaskWoken == pdTRUE )
   {
     portYIELD_FROM_ISR();
+  }
+}
+
+
+void Edrumulus_hardware::abort ()
+{
+  Serial.println("Aborting...");
+  while (true)
+  {
+    delay(100000);
   }
 }
 

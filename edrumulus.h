@@ -530,6 +530,8 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
 
   // constant definitions
   const int dc_offset_est_len       = 10000; // samples (about a second at 8 kHz sampling rate)
+  const int dc_offset_min           = 1200; // minimum allowed DC offset (should be around 1.65V = 2^11)
+  const int dc_offset_max           = 2300; // maximum allowed DC offset (should be around 1.65V = 2^11)
   const int samplerate_max_cnt      = 10000; // samples
   const int samplerate_max_error_Hz = 100;   // tolerate a sample rate deviation of 100 Hz
   const int cancel_time_ms          = 30;    // on same stand approx. 10 ms + some margin (20 ms)
