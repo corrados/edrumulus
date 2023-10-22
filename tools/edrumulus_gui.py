@@ -379,7 +379,7 @@ if use_webui:
 ################################################################################
 def store_settings():
   global database
-  with open("settings/trigger_settings.txt", "w") as f:
+  with open("settings/trigger_settings_current.txt", "w") as f:
     for (pad_index, pad) in enumerate(pad_names):
       database = [-1] * len(cmd_val) # set database to invalid values
       send_value_to_edrumulus(108, pad_index)
@@ -387,6 +387,7 @@ def store_settings():
         time.sleep(0.001)
       for (idx, midi_id) in enumerate(cmd_val):
         f.write("%d,%d,%d\n" % (pad_index, midi_id, database[idx]))
+  os.rename("settings/trigger_settings_current.txt", "settings/trigger_settings.txt") # fixes Issue #108 (settings file empty)
 
 def load_settings():
   global database, is_load_settings
