@@ -52,6 +52,8 @@ figure
 plot(10 * log10([mask_region, scan_region, pre_scan_region, decay_est_rng]), 'LineWidth', 20);
 grid on; hold on; set(gca, 'ColorOrderIndex', 1); % reset color order so that x trace is blue and so on
 plot(10 * log10([x(:, 1) .^ 2, x_filt, decay_all, x_filt_decay]));
+% TEST indicate sign of x signal with different color
+x_sign = nan(size(x)); x_sign(x > 0) = x(x > 0); plot(10 * log10(x_sign(:, 1) .^ 2), 'y-.');
 plot(all_first_peaks, 10 * log10(x(all_first_peaks, 1) .^ 2), 'b*');
 %plot(all_hot_spots, 10 * log10(x(all_hot_spots, 1) .^ 2) - pad.hot_spot_attenuation_db, 'c*', "markersize", 15);
 plot(all_peaks, 10 * log10(x(all_peaks, 1) .^ 2), 'g*');
@@ -61,8 +63,6 @@ plot(all_peaks, rim_metric_db + 40, '*-');
 plot(all_peaks(is_rim_shot), rim_metric_db(is_rim_shot) + 40, '*');
 plot(all_peaks(~is_rim_shot), rim_metric_db(~is_rim_shot) + 40, '*');
 plot([1, length(x_filt)], [pad.threshold_db, pad.threshold_db], '--');
-% TEST indicate sign of x signal with different color
-x_sign = nan(size(x)); x_sign(x > 0) = x(x > 0); plot(10 * log10(x_sign(:, 1) .^ 2), 'y-.');
 title('Green marker: level; Black marker: position; Blue marker: first peak'); xlabel('samples'); ylabel('dB');
 ylim([-10, 90]);
 
