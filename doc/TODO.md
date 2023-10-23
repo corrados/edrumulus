@@ -2,6 +2,27 @@
 
 The road map items are sorted by priority.
 
+
+- [ ] **Support positional sensing for rim shots**
+
+  A test signal *pd85rimshotpossense.wav* is available in the signal directory. Unfortunately, the
+  current positional sensing algorithm does not work correctly. A deeper inspection of the first
+  peaks of a strike should be done to find the source of the issue.
+
+- [ ] **Cross talk cancellation doesn't work reliably (Github Issue [#109](https://github.com/corrados/edrumulus/issues/109))**
+
+  User 3hhh observed that cross talk spikes may actually arrive before the spike of the pad he actually hit.
+
+- [ ] **Introduce a first peak detection reliability**
+
+  This can be used to improve the positional sensing. E.g., if the reliability is low, we could
+  use the position of the last detected peak if it is close to the current peak in time (e.g., if
+  we have a fast roll situation).
+
+- [ ] **Support direct rim strike**
+
+  See https://github.com/corrados/edrumulus/discussions/84.
+
 - [ ] **Create a super simple default drum kit in the git repo so that run_edrumulus.sh runs successfully without any other dependencies**
 
   See https://github.com/corrados/edrumulus/discussions/94#discussioncomment-6994715.
@@ -11,18 +32,6 @@ The road map items are sorted by priority.
   It seems we have to wait for the Github espressif/arduino-esp32 project to support the newest ESP-IDF
   so that #include "tinyusb.h" does not give a compiler error. See esp-idf/examples/peripherals/usb/device/tusb_midi
   for an example code.
-
-- [ ] **Introduce a first peak detection reliability**
-
-  This can be used to improve the positional sensing. E.g., if the reliability is low, we could
-  use the position of the last detected peak if it is close to the current peak in time (e.g., if
-  we have a fast roll situation).
-
-- [ ] **Support positional sensing for rim shots**
-
-- [ ] **Support direct rim strike**
-
-  See https://github.com/corrados/edrumulus/discussions/84.
 
 - [ ] **Improve rim shot detection**
 
