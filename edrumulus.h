@@ -206,7 +206,7 @@ public:
 
   // overload and error handling
   bool get_status_is_overload() { return status_is_overload; }
-  bool get_status_is_error()    { return status_is_error; }
+  bool get_status_is_error()    { return status_is_error && ( ( error_LED_cnt % error_LED_blink_time ) < ( error_LED_blink_time / 2 ) ); }
 
   // persistent settings storage
   void write_setting ( const int pad_index, const int address, const byte value ) { edrumulus_hardware.write_setting ( pad_index, address, value ); }
@@ -566,6 +566,8 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
   int                spike_cancel_level;
   int                overload_LED_cnt;
   int                overload_LED_on_time;
+  int                error_LED_cnt;
+  int                error_LED_blink_time;
   bool               status_is_overload;
   bool               status_is_error;
   int                samplerate_prev_micros_cnt;

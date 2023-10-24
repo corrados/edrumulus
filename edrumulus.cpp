@@ -23,10 +23,12 @@ Edrumulus::Edrumulus() :
 {
   // initializations
   overload_LED_on_time       = round ( 0.25f * Fs ); // minimum overload LED on time (e.g., 250 ms)
+  error_LED_blink_time       = round ( 0.25f * Fs ); // LED blink time on error (e.g., 250 ms)
   overload_LED_cnt           = 0;
+  error_LED_cnt              = 0;
   status_is_overload         = false;
   samplerate_prev_micros_cnt = 0;
-  samplerate_prev_micros     = micros();
+  samplerate_prev_micros     = 0;
   status_is_error            = false;
 #ifdef ESP_PLATFORM
   spike_cancel_level = 4; // use max. spike cancellation on the ESP32 per default (note that it increases the latency)
@@ -206,8 +208,8 @@ Serial.println ( serial_print );
 
       // process sample
       if ( any_coupling_used && // note: short-cut for speed optimization of normal non-coupling mode
-           ( ( coupled_pad_idx_primary >= 0 ) &&     ( ( i == coupled_pad_idx_secondary )     || ( i == coupled_pad_idx_primary ) ) ) ||
-           ( ( coupled_pad_idx_rim_primary >= 0 ) && ( ( i == coupled_pad_idx_rim_secondary ) || ( i == coupled_pad_idx_rim_primary ) ) ) )
+           ( ( ( coupled_pad_idx_primary >= 0 ) &&     ( ( i == coupled_pad_idx_secondary )     || ( i == coupled_pad_idx_primary ) ) ) ||
+             ( ( coupled_pad_idx_rim_primary >= 0 ) && ( ( i == coupled_pad_idx_rim_secondary ) || ( i == coupled_pad_idx_rim_primary ) ) ) ) )
       {
         // special case: couple pad inputs for multiple head sensor capturing (assume that both pads have dual-inputs)
         if ( ( i == coupled_pad_idx_primary ) || ( i == coupled_pad_idx_secondary ) )
@@ -343,8 +345,9 @@ Serial.println ( serial_print );
 // TEST check the measured sampling rate
 //Serial.println ( 1.0f / ( samplerate_cur_micros - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f, 7 );
 
-    // do not update status if micros() has wrapped around (at about 70 minutes)
-    if ( samplerate_cur_micros - samplerate_prev_micros > 0 )
+    // do not update status if micros() has wrapped around (at about 70 minutes) and if
+    // we have the very first measurement after start (previous micros set to 0)
+    if ( ( samplerate_prev_micros != 0 ) && ( samplerate_cur_micros - samplerate_prev_micros > 0 ) )
     {
       // set error flag if sample rate deviation is too large
       status_is_error = ( abs ( 1.0f / ( samplerate_cur_micros - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f - Fs ) > samplerate_max_error_Hz );
@@ -374,6 +377,7 @@ Serial.println ( serial_print2 );
 
   }
   samplerate_prev_micros_cnt++;
+  error_LED_cnt++;
 }
 
 
