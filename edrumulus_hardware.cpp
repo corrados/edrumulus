@@ -38,7 +38,7 @@ int Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
 {
   // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
   static int analog_pins1[]         = { A10,   A11,   A12,        A13,       A1,     A6,    A4,    A5 };
-  static int analog_pins_rimshot1[] = {  A9,    -1,     0,         -1,       A3,     A8,    A2,    A7 };
+  static int analog_pins_rimshot1[] = {  A9,    -1,    A0,         -1,       A3,     A8,    A2,    A7 };
   *analog_pins         = analog_pins1;
   *analog_pins_rimshot = analog_pins_rimshot1;
   *number_pins         = sizeof ( analog_pins1 ) / sizeof ( int );
@@ -66,11 +66,11 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
       input_pin[total_number_inputs] = analog_pin[i][j];
       total_number_inputs++;
 
-      #if defined(ARDUINO_TEENSY40) || defined(ARDUINO_TEENSY41) // Teensy 4.0/4.1 specific code
+#if defined(ARDUINO_TEENSY40) || defined(ARDUINO_TEENSY41) // Teensy 4.0/4.1 specific code
       // disable MIMXRT1062DVL6A "keeper" on all Teensy 4.0/4.1 ADC input pins
-      // NOTE: pinMode() needs absolute pin numbers, e.g. 0 for A0 won't work
+      // NOTE: pinMode() needs absolute pin numbers, e.g. 0 for A0 will not work
       pinMode ( analog_pin[i][j], INPUT_DISABLE );
-      #endif
+#endif
     }
   }
 
