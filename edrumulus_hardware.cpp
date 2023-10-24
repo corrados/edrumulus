@@ -37,8 +37,8 @@ int Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
                                              int*  status_LED_pin )
 {
   // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
-  static int analog_pins1[]         = { 10,    11,    12,        13,          1,      6,     4,     5 };
-  static int analog_pins_rimshot1[] = {  9,    -1,     0,        -1,          3,      8,     2,     7 };
+  static int analog_pins1[]         = { A10,   A11,   A12,        A13,       A1,     A6,    A4,    A5 };
+  static int analog_pins_rimshot1[] = {  A9,    -1,     0,         -1,       A3,     A8,    A2,    A7 };
   *analog_pins         = analog_pins1;
   *analog_pins_rimshot = analog_pins_rimshot1;
   *number_pins         = sizeof ( analog_pins1 ) / sizeof ( int );
@@ -65,6 +65,12 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
       // store pin number in vector
       input_pin[total_number_inputs] = analog_pin[i][j];
       total_number_inputs++;
+
+      #if defined(ARDUINO_TEENSY40) || defined(ARDUINO_TEENSY41) // Teensy 4.0/4.1 specific code
+      // disable MIMXRT1062DVL6A "keeper" on all Teensy 4.0/4.1 ADC input pins
+      // NOTE: pinMode() needs absolute pin numbers, e.g. 0 for A0 won't work
+      pinMode ( analog_pin[i][j], INPUT_DISABLE );
+      #endif
     }
   }
 
@@ -79,23 +85,9 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
   adc_obj.adc1->setConversionSpeed ( ADC_CONVERSION_SPEED::HIGH_SPEED );
   adc_obj.adc1->setSamplingSpeed   ( ADC_SAMPLING_SPEED::HIGH_SPEED );
 
-#if defined(ARDUINO_TEENSY40) || defined(ARDUINO_TEENSY41) // Teensy 4.0/4.1 specific code
-  // disable MIMXRT1062DVL6A "keeper" on all possible Teensy 4.0/4.1 ADC input pins
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_02 &= ~( 1 << 12 ); // A0
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_03 &= ~( 1 << 12 ); // A1
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_07 &= ~( 1 << 12 ); // A2
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_06 &= ~( 1 << 12 ); // A3
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_01 &= ~( 1 << 12 ); // A4
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_00 &= ~( 1 << 12 ); // A5
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_10 &= ~( 1 << 12 ); // A6
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_11 &= ~( 1 << 12 ); // A7
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_08 &= ~( 1 << 12 ); // A8
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_09 &= ~( 1 << 12 ); // A9
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_12 &= ~( 1 << 12 ); // A10
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B0_13 &= ~( 1 << 12 ); // A11
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_14 &= ~( 1 << 12 ); // A12
-  IOMUXC_SW_PAD_CTL_PAD_GPIO_AD_B1_15 &= ~( 1 << 12 ); // A13
-#endif
+  // wait for ADC calibration to complete
+  adc_obj.adc0->wait_for_cal();
+  adc_obj.adc1->wait_for_cal();
 
   // initialize timer flag (semaphore)
   timer_ready = false;
@@ -139,16 +131,7 @@ void Edrumulus_hardware::capture_samples ( const int number_pads,
   // read the ADC samples
   for ( int i = 0; i < total_number_inputs; i++ )
   {
-    // pins 12 and 13 (and 22 for Teensy 3.6) are ADC1 only, pins 10 and 11 are ADC0 only
-    // note that pin 8 gave large spikes on ADC0 but seems to work ok with ADC1
-    if ( ( input_pin[i] == 8 ) || ( input_pin[i] == 12 ) || ( input_pin[i] == 13 ) || ( input_pin[i] == 22 ) )
-    {
-      input_sample[i] = adc_obj.adc1->analogRead ( input_pin[i] );
-    }
-    else
-    {
-      input_sample[i] = adc_obj.adc0->analogRead ( input_pin[i] );
-    }
+    input_sample[i] = adc_obj.analogRead ( input_pin[i] );
   }
 
   // copy captured samples in pad buffer
