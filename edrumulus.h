@@ -204,9 +204,9 @@ public:
   void set_spike_cancel_level ( const int new_level ) { spike_cancel_level = new_level; }
   int  get_spike_cancel_level ()                      { return spike_cancel_level; }
 
-  // overload and error handling
-  bool get_status_is_overload() { return status_is_overload; }
+  // error and overload handling (implement blinking LED for error using error_LED_blink_time)
   bool get_status_is_error()    { return status_is_error && ( ( error_LED_cnt % error_LED_blink_time ) < ( error_LED_blink_time / 2 ) ); }
+  bool get_status_is_overload() { return status_is_overload; }
 
   // persistent settings storage
   void write_setting ( const int pad_index, const int address, const byte value ) { edrumulus_hardware.write_setting ( pad_index, address, value ); }
@@ -529,10 +529,12 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
   };
 
   // constant definitions
-  const int dc_offset_est_len       = 10000; // samples (about a second at 8 kHz sampling rate)
-  const int samplerate_max_cnt      = 10000; // samples
-  const int samplerate_max_error_Hz = 100;   // tolerate a sample rate deviation of 100 Hz
-  const int cancel_time_ms          = 30;    // on same stand approx. 10 ms + some margin (20 ms)
+  const int   dc_offset_est_len       = 10000; // samples (about a second at 8 kHz sampling rate)
+  const int   samplerate_max_cnt      = 10000; // samples
+  const int   samplerate_max_error_Hz = 200;   // tolerate a sample rate deviation of 200 Hz
+  const int   cancel_time_ms          = 30;    // on same stand approx. 10 ms + some margin (20 ms)
+  const float overload_LED_on_time_s  = 0.25f; // minimum overload LED on time (e.g., 250 ms)
+  const float error_LED_blink_time_s  = 0.25f; // LED blink time on error (e.g., 250 ms)
 
 #ifdef ESP_PLATFORM
   // for ESP we have a coupling of ADC inputs so that a hi-hat control pedal movement may

@@ -22,8 +22,8 @@ Edrumulus::Edrumulus() :
   Fs ( 8000 ) // this is the most fundamental system parameter: system sampling rate
 {
   // initializations
-  overload_LED_on_time       = round ( 0.25f * Fs ); // minimum overload LED on time (e.g., 250 ms)
-  error_LED_blink_time       = round ( 0.25f * Fs ); // LED blink time on error (e.g., 250 ms)
+  overload_LED_on_time       = round ( overload_LED_on_time_s * Fs );
+  error_LED_blink_time       = round ( error_LED_blink_time_s * Fs );
   overload_LED_cnt           = 0;
   error_LED_cnt              = 0;
   status_is_overload         = false;
