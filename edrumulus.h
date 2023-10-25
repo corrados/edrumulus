@@ -529,6 +529,7 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
   };
 
   // constant definitions
+  const int   Fs                      = 8000;  // this is the most fundamental system parameter: system sampling rate
   const int   dc_offset_est_len       = 10000; // samples (about a second at 8 kHz sampling rate)
   const int   samplerate_max_cnt      = 10000; // samples
   const int   samplerate_max_error_Hz = 200;   // tolerate a sample rate deviation of 200 Hz
@@ -545,7 +546,6 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
   const int dc_offset_iir_tau_seconds = 30; // DC offset update IIR filter tau in seconds
 #endif
 
-  int                Fs;
   Edrumulus_hardware edrumulus_hardware;
   int                number_pads;
   bool               any_coupling_used;

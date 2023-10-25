@@ -18,8 +18,7 @@
 #include "edrumulus.h"
 
 
-Edrumulus::Edrumulus() :
-  Fs ( 8000 ) // this is the most fundamental system parameter: system sampling rate
+Edrumulus::Edrumulus()
 {
   // initializations
   overload_LED_on_time       = round ( overload_LED_on_time_s * Fs );
