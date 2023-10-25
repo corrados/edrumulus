@@ -23,6 +23,8 @@ Edrumulus::Edrumulus()
   // initializations
   overload_LED_on_time       = round ( overload_LED_on_time_s * Fs );
   error_LED_blink_time       = round ( error_LED_blink_time_s * Fs );
+  dc_offset_est_len          = round ( dc_offset_est_len_s * Fs );
+  samplerate_max_cnt         = round ( samplerate_max_cnt_len_s * Fs );
   overload_LED_cnt           = 0;
   error_LED_cnt              = 0;
   status_is_overload         = false;
