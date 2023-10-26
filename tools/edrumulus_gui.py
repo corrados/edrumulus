@@ -46,20 +46,19 @@ elif use_webui:
   import http.server
 
 # tables
-max_num_pads = 9
-midi_map     = {38: "snare", 40: "snare", 36: "kick", 22: "hi-hat", 26: "hi-hat", 44: "pedal", \
-                49: "crash", 55: "crash", 51: "ride", 48: "tom1",   50: "tom1", \
-                45: "tom2",  47: "tom2",  43: "tom3", 58: "tom3"}
-curve_types  = ["LINEAR", "EXP1", "EXP2", "LOG1", "LOG2"]
-pad_names    = ["snare", "kick", "hi-hat", "ctrl", "crash", "tom1", "ride", "tom2", "tom3"]
 pad_types    = ["PD120", "PD80R",  "PD8", "FD8", "VH12", "VH12CTRL", "KD7", "TP80",     "CY6",    "CY8", "DIABOLO12", \
                 "CY5",   "HD1TOM", "PD6", "KD8", "PDX8", "KD120",    "PD5", "PDA120LS", "PDX100", "KT10"]
+pad_names    = ["snare", "kick", "hi-hat", "ctrl", "crash", "tom1", "ride", "tom2", "tom3"]
+curve_types  = ["LINEAR", "EXP1", "EXP2", "LOG1", "LOG2"]
 cmd_names    = [            "type", "thresh", "sens", "pos thres", "pos sens", "rim thres", "mask",              "curve"]
 cmd_val      = [               102,      103,    104,         105,        106,         107,    118,                  109]
 cmd_val_rng  = [len(pad_types) - 1,       31,     31,          31,         31,          31,     63, len(curve_types) - 1]
-cmd_names   += ["spike (GLOBAL)", "rim/pos", "rim boost", "cross", "note", "note rim", "note2", "note2 rim",       "coupling"]
-cmd_val     += [             110,       111,         119,     114,    112,        113,     116,         117,              120]
-cmd_val_rng += [               4,         3,          31,      31,    127,        127,     127,         127, max_num_pads - 1]
+cmd_names   += ["rim/pos", "rim boost", "cross", "note", "note rim", "note2", "note2 rim",         "coupling", "spike (GLOBAL)"]
+cmd_val     += [      111,         119,     114,    112,        113,     116,         117,                120,              110]
+cmd_val_rng += [        3,          31,      31,    127,        127,     127,         127, len(pad_names) - 1,                4]
+midi_map     = {38: "snare", 40: "snare", 36: "kick", 22: "hi-hat", 26: "hi-hat", 44: "pedal", \
+                49: "crash", 55: "crash", 51: "ride", 48: "tom1",   50: "tom1", \
+                45: "tom2",  47: "tom2",  43: "tom3", 58: "tom3"}
 database     = [0] * len(cmd_val)
 hi_hat_ctrl  = 0  # current hi-hat control value
 sel_pad                 = 0
@@ -90,7 +89,7 @@ if not use_rtmidi:
 ################################################################################
 def process_user_input(ch):
   global sel_pad, sel_cmd, database, auto_pad_sel
-  if ch == "s" and sel_pad < max_num_pads - 1:
+  if ch == "s" and sel_pad < len(pad_names) - 1:
     send_value_to_edrumulus(108, sel_pad := sel_pad + 1)
   elif ch == "S" and sel_pad > 0:
     send_value_to_edrumulus(108, sel_pad := sel_pad - 1)
