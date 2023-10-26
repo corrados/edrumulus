@@ -533,6 +533,7 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
   const float dc_offset_est_len_s      = 1.25f; // length of initial DC offset estimation in seconds
   const int   samplerate_max_cnt_len_s = 1.25f; // time interval for sampling rate estimation in seconds
   const int   samplerate_max_error_Hz  = 200;   // tolerate a sample rate deviation of 200 Hz
+  const float dc_offset_max_rel_error  = 0.25f; // DC offset limit from ADC middle position, where offset is defined relative to ADC maximum value
   const int   cancel_time_ms           = 30;    // on same stand approx. 10 ms + some margin (20 ms)
   const float overload_LED_on_time_s   = 0.25f; // minimum overload LED on time (e.g., 250 ms)
   const float error_LED_blink_time_s   = 0.25f; // LED blink time on error (e.g., 250 ms)
@@ -576,6 +577,8 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
   int                samplerate_max_cnt;
   int                samplerate_prev_micros_cnt;
   unsigned long      samplerate_prev_micros;
+  int                dc_offset_min_limit;
+  int                dc_offset_max_limit;
   Pad                pad[MAX_NUM_PADS];
   bool               peak_found[MAX_NUM_PADS];
   bool               control_found[MAX_NUM_PADS];

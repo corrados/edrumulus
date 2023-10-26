@@ -25,6 +25,8 @@ Edrumulus::Edrumulus()
   error_LED_blink_time       = round ( error_LED_blink_time_s * Fs );
   dc_offset_est_len          = round ( dc_offset_est_len_s * Fs );
   samplerate_max_cnt         = round ( samplerate_max_cnt_len_s * Fs );
+  dc_offset_min_limit        = round(ADC_MAX_RANGE / 2 - ADC_MAX_RANGE * dc_offset_max_rel_error);
+  dc_offset_max_limit        = round(ADC_MAX_RANGE / 2 + ADC_MAX_RANGE * dc_offset_max_rel_error);
   overload_LED_cnt           = 0;
   error_LED_cnt              = 0;
   status_is_overload         = false;
@@ -337,7 +339,7 @@ Serial.println ( serial_print );
   }
 
 
-  // Sampling rate check -------------------------------------------------------
+  // Sampling rate and DC offset check -----------------------------------------
   // (i.e. if CPU is overloaded, the sample rate will drop which is bad)
   if ( samplerate_prev_micros_cnt >= samplerate_max_cnt )
   {
@@ -357,25 +359,22 @@ Serial.println ( serial_print );
     samplerate_prev_micros_cnt = 0;
     samplerate_prev_micros     = samplerate_cur_micros;
 
-/*
-// TEST check DC offset values
-String serial_print;
-String serial_print2;
-for ( int i = 0; i < number_pads; i++ )
-{
-  if ( !pad[i].get_is_control() )
-  {
-    for ( int j = 0; j < number_inputs[i]; j++ )
+    // DC offset check
+    for ( int i = 0; i < number_pads; i++ )
     {
-      serial_print += String ( sample_org[i][j] ) + "\t" + String ( dc_offset[i][j] ) + "\t";
-      serial_print2 += String ( sample_org[i][j] - dc_offset[i][j] ) + "\t";
+      if ( !pad[i].get_is_control() )
+      {
+        for ( int j = 0; j < number_inputs[i]; j++ )
+        {
+          const float& cur_dc_offset = dc_offset[i][j];
+//Serial.println ( cur_dc_offset ); // TEST for plotting all DC offsets
+          if ( ( cur_dc_offset < dc_offset_min_limit ) || ( cur_dc_offset > dc_offset_max_limit ) )
+          {
+            status_is_error = true;
+          }
+        }
+      }
     }
-  }
-}
-//Serial.println ( serial_print );
-Serial.println ( serial_print2 );
-*/
-
   }
   samplerate_prev_micros_cnt++;
   error_LED_cnt++;
