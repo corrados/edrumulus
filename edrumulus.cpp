@@ -25,8 +25,8 @@ Edrumulus::Edrumulus()
   error_LED_blink_time       = round ( error_LED_blink_time_s * Fs );
   dc_offset_est_len          = round ( dc_offset_est_len_s * Fs );
   samplerate_max_cnt         = round ( samplerate_max_cnt_len_s * Fs );
-  dc_offset_min_limit        = round(ADC_MAX_RANGE / 2 - ADC_MAX_RANGE * dc_offset_max_rel_error);
-  dc_offset_max_limit        = round(ADC_MAX_RANGE / 2 + ADC_MAX_RANGE * dc_offset_max_rel_error);
+  dc_offset_min_limit        = round ( ADC_MAX_RANGE / 2 - ADC_MAX_RANGE * dc_offset_max_rel_error );
+  dc_offset_max_limit        = round ( ADC_MAX_RANGE / 2 + ADC_MAX_RANGE * dc_offset_max_rel_error );
   overload_LED_cnt           = 0;
   error_LED_cnt              = 0;
   status_is_overload         = false;
