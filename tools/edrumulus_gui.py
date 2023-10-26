@@ -54,9 +54,12 @@ curve_types  = ["LINEAR", "EXP1", "EXP2", "LOG1", "LOG2"]
 pad_names    = ["snare", "kick", "hi-hat", "ctrl", "crash", "tom1", "ride", "tom2", "tom3"]
 pad_types    = ["PD120", "PD80R",  "PD8", "FD8", "VH12", "VH12CTRL", "KD7", "TP80",     "CY6",    "CY8", "DIABOLO12", \
                 "CY5",   "HD1TOM", "PD6", "KD8", "PDX8", "KD120",    "PD5", "PDA120LS", "PDX100", "KT10"]
-cmd_names    = ["type", "thresh", "sens", "pos thres", "pos sens", "rim thres", "mask", "curve", "spike", "rim/pos", "rim boost", "cross", "note", "note rim", "note2", "note2 rim",       "coupling"]
-cmd_val      = [   102,      103,    104,         105,        106,         107,    118,     109,     110,       111,         119,     114,    112,        113,     116,         117,              120]
-cmd_val_rng  = [    20,       31,     31,          31,         31,          31,     63,       4,       4,         3,          31,      31,    127,        127,     127,         127, max_num_pads - 1]
+cmd_names    = [            "type", "thresh", "sens", "pos thres", "pos sens", "rim thres", "mask",              "curve"]
+cmd_val      = [               102,      103,    104,         105,        106,         107,    118,                  109]
+cmd_val_rng  = [len(pad_types) - 1,       31,     31,          31,         31,          31,     63, len(curve_types) - 1]
+cmd_names   += ["spike (GLOBAL)", "rim/pos", "rim boost", "cross", "note", "note rim", "note2", "note2 rim",       "coupling"]
+cmd_val     += [             110,       111,         119,     114,    112,        113,     116,         117,              120]
+cmd_val_rng += [               4,         3,          31,      31,    127,        127,     127,         127, max_num_pads - 1]
 database     = [0] * len(cmd_val)
 hi_hat_ctrl  = 0  # current hi-hat control value
 sel_pad                 = 0
@@ -152,10 +155,10 @@ def ncurses_update_param_outputs():
     mainwin.addstr(row_start - 1, col_start + 30, selected_kit + ", Kit-Vol: " + kit_vol_str if kit_vol_str else selected_kit)
   mainwin.addstr(row_start, col_start, "Press a key (q:quit; s,S:sel pad; c,C:sel command; a,A: auto pad sel; up,down: change param; r: reset)")
   if auto_pad_sel:
-    mainwin.addstr(row_start + 2, col_start, "Selected pad (auto):  {:2d} ({:s})      ".format(sel_pad, pad_names[sel_pad]))
+    mainwin.addstr(row_start + 2, col_start, "Selected pad (auto):       {:2d} ({:s})      ".format(sel_pad, pad_names[sel_pad]))
   else:
-    mainwin.addstr(row_start + 2, col_start, "Selected pad:         {:2d} ({:s})      ".format(sel_pad, pad_names[sel_pad]))
-  mainwin.addstr(row_start + 3, col_start, "Parameter: {:>10s}: {:s}             ".format(cmd_names[sel_cmd], parse_cmd_param(sel_cmd)))
+    mainwin.addstr(row_start + 2, col_start, "Selected pad:              {:2d} ({:s})      ".format(sel_pad, pad_names[sel_pad]))
+  mainwin.addstr(row_start + 3, col_start, "Parameter: {:>15s}: {:s}             ".format(cmd_names[sel_cmd], parse_cmd_param(sel_cmd)))
   mainwin.refresh()
   midiwin.box() # in this box the received note-on MIDI notes are shown
   midiwin.addstr(0, 8, "MIDI-IN")
