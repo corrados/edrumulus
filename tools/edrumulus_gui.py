@@ -628,7 +628,7 @@ if use_lcd:
   lcd.close() # just this single call is needed
 elif use_ncurses:
   ncurses_cleanup()
-elif use_ncurses:
+elif use_webui:
   web_server.server_close()
 if use_rtmidi:
   midiin.delete()
