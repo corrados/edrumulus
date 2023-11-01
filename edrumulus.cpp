@@ -367,7 +367,7 @@ Serial.println ( serial_print );
         for ( int j = 0; j < number_inputs[i]; j++ )
         {
           const float& cur_dc_offset = dc_offset[i][j];
-//Serial.println ( cur_dc_offset ); // TEST for plotting all DC offsets
+//Serial.println ( String ( i ) + ", " + String ( cur_dc_offset ) ); // TEST for plotting all DC offsets
           if ( ( cur_dc_offset < dc_offset_min_limit ) || ( cur_dc_offset > dc_offset_max_limit ) )
           {
             status_is_error = true;
