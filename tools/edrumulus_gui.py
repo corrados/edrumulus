@@ -74,6 +74,7 @@ midi_previous_send_cmd  = -1
 midi_send_val           = -1
 auto_pad_sel            = False; # no auto pad selection per default
 is_load_settings        = False
+is_error_state          = False
 selected_kit            = ""
 kit_vol_str             = ""
 
@@ -148,6 +149,10 @@ def ncurses_cleanup():
 def ncurses_update_param_outputs():
   mainwin.move(row_start - 1, col_start) # clear first line
   mainwin.clrtoeol()                     # clear first line
+  if is_error_state:
+    mainwin.addstr(row_start + 4, col_start, "ERROR STATE")
+  else:
+    mainwin.addstr(row_start + 4, col_start, "           ")
   if version_major >= 0 and version_minor >= 0:
     mainwin.addstr(row_start - 1, col_start, "Edrumulus v{0}.{1}".format(version_major, version_minor))
   if selected_kit:
@@ -472,15 +477,18 @@ def ecasound_kit_volume(do_increment):
 ################################################################################
 def act_on_midi_in(status, key, value):
   global database, midi_send_val, midi_send_cmd, midi_previous_send_cmd, do_update_midi_in, \
-         version_major, version_minor, hi_hat_ctrl, sel_pad, do_update_display
+         version_major, version_minor, hi_hat_ctrl, sel_pad, do_update_display, is_error_state
 
-  if status == 0x80: # act on control messages
+  if status == 0x80: # act on control messages (0x80: Note Off)
     if key in cmd_val:
       cur_cmd = cmd_val.index(key)
       # do not update command which was just changed to avoid the value jumps back to old value
       if (midi_previous_send_cmd != key) or is_load_settings:
         database[cur_cmd] = max(0, min(cmd_val_rng[cur_cmd], value));
         do_update_midi_in = True;
+    if key == 125: # check for error state
+      is_error_state    = (value > 0)
+      do_update_display = True
     if key == 127: # check for major version number
       version_major = value
     if key == 126: # check for minor version number

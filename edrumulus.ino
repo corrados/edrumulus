@@ -139,6 +139,12 @@ void loop()
     {
       digitalWrite ( status_LED_pin, HIGH );
       is_status_LED_on = true;
+#ifdef USE_MIDI
+      if ( edrumulus.get_status_is_error() )
+      {
+        MYMIDI.sendNoteOff ( 125, 1, 1 ); // 1 means to set error state
+      }
+#endif
     }
   }
   else
@@ -147,6 +153,9 @@ void loop()
     {
       digitalWrite ( status_LED_pin, LOW );
       is_status_LED_on = false;
+#ifdef USE_MIDI
+      MYMIDI.sendNoteOff ( 125, 0, 1 ); // 0 means that all errors are cleared
+#endif
     }
   }
 
@@ -451,6 +460,7 @@ void confirm_setting ( const int  controller,
     MYMIDI.sendNoteOff ( 118, edrumulus.get_mask_time ( selected_pad ), 1 );
     MYMIDI.sendNoteOff ( 119, edrumulus.get_rim_shot_boost ( selected_pad ), 1 );
     MYMIDI.sendNoteOff ( 120, edrumulus.get_coupled_pad_idx ( selected_pad ), 1 );
+    // NOTE: 125 reserved for error message
     MYMIDI.sendNoteOff ( 126, VERSION_MINOR, 1 );
     MYMIDI.sendNoteOff ( 127, VERSION_MAJOR, 1 );
   }
