@@ -142,7 +142,15 @@ void loop()
 #ifdef USE_MIDI
       if ( edrumulus.get_status_is_error() )
       {
-        MYMIDI.sendNoteOff ( 125, 1, 1 ); // 1 means to set error state
+        const int dc_offset_error_channel = edrumulus.get_status_dc_offset_error_channel();
+        if ( dc_offset_error_channel >= 0 )
+        {
+          MYMIDI.sendNoteOff ( 125, 64 + dc_offset_error_channel, 1 ); // > 63 means DC offset error and pad/input index is coded in one value
+        }
+        else
+        {
+          MYMIDI.sendNoteOff ( 125, 1, 1 ); // 1 means to set error state
+        }
       }
 #endif
     }

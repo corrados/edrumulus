@@ -33,6 +33,7 @@ Edrumulus::Edrumulus()
   samplerate_prev_micros_cnt = 0;
   samplerate_prev_micros     = 0;
   status_is_error            = false;
+  dc_offset_error_channel    = -1;
 #ifdef ESP_PLATFORM
   spike_cancel_level = 4; // use max. spike cancellation on the ESP32 per default (note that it increases the latency)
 #else
@@ -360,6 +361,7 @@ Serial.println ( serial_print );
     samplerate_prev_micros     = samplerate_cur_micros;
 
     // DC offset check
+    dc_offset_error_channel = -1; // invalidate for "no DC offset error" case
     for ( int i = 0; i < number_pads; i++ )
     {
       if ( !pad[i].get_is_control() )
@@ -370,7 +372,8 @@ Serial.println ( serial_print );
 //Serial.println ( String ( i ) + ", " + String ( cur_dc_offset ) ); // TEST for plotting all DC offsets
           if ( ( cur_dc_offset < dc_offset_min_limit ) || ( cur_dc_offset > dc_offset_max_limit ) )
           {
-            status_is_error = true;
+            status_is_error         = true;
+            dc_offset_error_channel = i + 32 * j; // 0 to 31: input 0, 32 to 63: input 1
           }
         }
       }

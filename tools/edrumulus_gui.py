@@ -25,6 +25,7 @@ import signal
 import socket
 import time
 import threading
+import math
 use_rtmidi  = "rtmidi"    in sys.argv # use rtmidi instead of jack audio
 no_gui      = "no_gui"    in sys.argv # no GUI but blocking (just settings management)
 non_block   = "non_block" in sys.argv # no GUI and non-blocking (just settings management)
@@ -74,7 +75,7 @@ midi_previous_send_cmd  = -1
 midi_send_val           = -1
 auto_pad_sel            = False; # no auto pad selection per default
 is_load_settings        = False
-is_error_state          = False
+error_value             = 0
 selected_kit            = ""
 kit_vol_str             = ""
 
@@ -149,10 +150,12 @@ def ncurses_cleanup():
 def ncurses_update_param_outputs():
   mainwin.move(row_start - 1, col_start) # clear first line
   mainwin.clrtoeol()                     # clear first line
-  if is_error_state:
-    mainwin.addstr(row_start + 4, col_start, "ERROR STATE")
+  if error_value > 63:
+    mainwin.addstr(row_start + 4, col_start, "DC OFFSET ERROR ON PAD {:2d}/{:1d}".format((error_value % 64), math.floor((error_value - 64) / 64)))
+  elif error_value > 0:
+    mainwin.addstr(row_start + 4, col_start, "SAMPLING RATE TOO LOW ERROR")
   else:
-    mainwin.addstr(row_start + 4, col_start, "           ")
+    mainwin.addstr(row_start + 4, col_start, "                           ")
   if version_major >= 0 and version_minor >= 0:
     mainwin.addstr(row_start - 1, col_start, "Edrumulus v{0}.{1}".format(version_major, version_minor))
   if selected_kit:
@@ -477,7 +480,7 @@ def ecasound_kit_volume(do_increment):
 ################################################################################
 def act_on_midi_in(status, key, value):
   global database, midi_send_val, midi_send_cmd, midi_previous_send_cmd, do_update_midi_in, \
-         version_major, version_minor, hi_hat_ctrl, sel_pad, do_update_display, is_error_state
+         version_major, version_minor, hi_hat_ctrl, sel_pad, do_update_display, error_value
 
   if status == 0x80: # act on control messages (0x80: Note Off)
     if key in cmd_val:
@@ -487,7 +490,7 @@ def act_on_midi_in(status, key, value):
         database[cur_cmd] = max(0, min(cmd_val_rng[cur_cmd], value));
         do_update_midi_in = True;
     if key == 125: # check for error state
-      is_error_state    = (value > 0)
+      error_value       = value
       do_update_display = True
     if key == 127: # check for major version number
       version_major = value
