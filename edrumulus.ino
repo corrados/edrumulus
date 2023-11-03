@@ -17,7 +17,7 @@
 
 #define USE_MIDI
 
-// ESP32 default pin definition:
+// ESP32 default pin definition ("-1" means that this channel is unused):
 // For older prototypes or custom implementations, simply change the GPIO numbers in the table below
 // to match your hardware (note that the GPIO assignment of Prototype 2 is the same as Prototype 4).
 // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
@@ -25,8 +25,9 @@ static int analog_pins4[]         = { 36,    33,     32,       25,         34,  
 static int analog_pins_rimshot4[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1 };
 
 // if you want to use less number of pads, simply adjust number_pads4 value
-//const int number_pads4 = sizeof ( analog_pins4 ) / sizeof ( int ); // use all inputs defined in analog_pins4
-const int number_pads4 = 8; // e.g., do not use tom3 and shrink number of pads from 9 to 8 in this example
+//const int number_pads4 = sizeof ( analog_pins4 ) / sizeof ( int ); // example: use all inputs defined in analog_pins4
+const int number_pads4 = 8; // example: do not use tom3 and shrink number of pads from 9 to 8
+//const int number_pads4 = 1; // example: just one single pad
 
 
 #include "edrumulus.h"
