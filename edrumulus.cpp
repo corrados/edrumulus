@@ -507,7 +507,7 @@ void Edrumulus::Pad::initialize()
   rim_max_power_low_limit  = ADC_MAX_NOISE_AMPL * ADC_MAX_NOISE_AMPL / 31.0f; // lower limit on detected rim power, 15 dB below max noise amplitude
   x_rim_hist_len           = x_sq_hist_len + rim_shot_window_len;
   cancellation_factor      = static_cast<float> ( pad_settings.cancellation ) / 31.0f; // cancellation factor: range of 0.0..1.0
-  ctrl_history_len         = 10;   // (MUST BE AN EVEN VALUE) control history length, use a fixed value
+  ctrl_history_len         = 50;   // (MUST BE AN EVEN VALUE) control history length, use a fixed value
   ctrl_velocity_range_fact = 4.0f; // use a fixed value (TODO make it adjustable)
   ctrl_velocity_threshold  = 5.0f; // use a fixed value (TODO make it adjustable)
   max_num_overloads        = 3; // maximum allowed number of overloaded samples until the overload special case is activated
