@@ -37,7 +37,7 @@ of the Edrumulus project can be found in the [TODO file](doc/TODO.md).
 - Clipping compensation
 - Supported micro processor developer boards:
   - **ESP32 (dual core) DEVKIT V1 or similar**
-  - **Teensy 4.0**
+  - **Teensy 4.0/4.1**
 
 
 ## Prototype hardware
