@@ -509,7 +509,6 @@ void Edrumulus::Pad::initialize()
   cancellation_factor      = static_cast<float> ( pad_settings.cancellation ) / 31.0f; // cancellation factor: range of 0.0..1.0
   ctrl_history_len         = 50;   // (MUST BE AN EVEN VALUE) control history length, use a fixed value
   ctrl_velocity_range_fact = 4.0f; // use a fixed value (TODO make it adjustable)
-  ctrl_velocity_threshold  = 5.0f; // use a fixed value (TODO make it adjustable)
   max_num_overloads        = 3; // maximum allowed number of overloaded samples until the overload special case is activated
 
   // The ESP32 ADC has 12 bits resulting in a range of 20*log10(2048)=66.2 dB.
@@ -1506,11 +1505,10 @@ void Edrumulus::Pad::process_control_sample ( const int* input,
   cur_ctrl_average  /= ctrl_history_len / 2;
 
   if ( ( prev_ctrl_average < hi_hat_is_open_MIDI_threshold ) &&
-       ( cur_ctrl_average >= hi_hat_is_open_MIDI_threshold ) &&
-       ( cur_ctrl_average - prev_ctrl_average > ctrl_velocity_threshold ) )
+       ( cur_ctrl_average >= hi_hat_is_open_MIDI_threshold ) )
   {
     // map curve difference (gradient) to velocity
-    midi_velocity = min ( 127, static_cast<int> ( ( cur_ctrl_average - prev_ctrl_average - ctrl_velocity_threshold ) * ctrl_velocity_range_fact ) );
+    midi_velocity = min ( 127, static_cast<int> ( ( cur_ctrl_average - prev_ctrl_average ) * ctrl_velocity_range_fact ) );
     peak_found    = true;
 
     // reset the history after a detection to suppress multiple detections
