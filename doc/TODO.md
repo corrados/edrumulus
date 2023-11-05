@@ -17,8 +17,7 @@ The road map items are sorted by priority.
 
   This will be a little break of compatibility since now the fundamental pedal parameters are controlled with the
   "positional" GUI parameters. But this makes sense since we control how the position of the pedal is converted to
-  MIDI signals. The velocity threshold/sensitivity now configures the pedal stomp sound which makes sense to total
-  sense to me.
+  MIDI signals. The velocity threshold/sensitivity now configures the pedal stomp sound which also makes sense.
 
   The remaining parameter ctrl_history_len may be coupled with the GUI cancellation setting. I would like to re-use
   existing parameters since I want to avoid adding an additional GUI setting for this.
