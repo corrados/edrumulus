@@ -514,9 +514,10 @@ void Edrumulus::Pad::initialize()
   rim_max_power_low_limit  = ADC_MAX_NOISE_AMPL * ADC_MAX_NOISE_AMPL / 31.0f; // lower limit on detected rim power, 15 dB below max noise amplitude
   x_rim_hist_len           = x_sq_hist_len + rim_shot_window_len;
   cancellation_factor      = static_cast<float> ( pad_settings.cancellation ) / 31.0f; // cancellation factor: range of 0.0..1.0
-  ctrl_history_len         = 10;   // (MUST BE AN EVEN VALUE) control history length, use a fixed value
-  ctrl_velocity_range_fact = 4.0f; // use a fixed value (TODO make it adjustable)
-  ctrl_velocity_threshold  = 5.0f; // use a fixed value (TODO make it adjustable)
+  ctrl_history_len         = 10; // (MUST BE AN EVEN VALUE) control history length, use a fixed value
+  ctrl_history_len_half    = ctrl_history_len / 2;
+  ctrl_velocity_range_fact = 20.0f; // use a fixed value (TODO make it adjustable)
+  ctrl_velocity_threshold  = 1.0f;  // use a fixed value (TODO make it adjustable)
   max_num_overloads        = 3; // maximum allowed number of overloaded samples until the overload special case is activated
 
   // The ESP32 ADC has 12 bits resulting in a range of 20*log10(2048)=66.2 dB.
@@ -1502,22 +1503,24 @@ void Edrumulus::Pad::process_control_sample ( const int* input,
   // detect pedal hit
   update_fifo ( cur_midi_ctrl_value, ctrl_history_len, ctrl_hist );
 
-  float prev_ctrl_average = 0;
-  float cur_ctrl_average  = 0;
-  for ( int i = 0; i < ctrl_history_len / 2; i++ )
+  float prev_ctrl_average = 0.0f;
+  float cur_ctrl_average  = 0.0f;
+  for ( int i = 0; i < ctrl_history_len_half; i++ )
   {
-    prev_ctrl_average += ctrl_hist[i];                        // use first half for previous value
-    cur_ctrl_average  += ctrl_hist[i + ctrl_history_len / 2]; // use second half for current value
+    prev_ctrl_average += ctrl_hist[i];                         // use first half for previous value
+    cur_ctrl_average  += ctrl_hist[i + ctrl_history_len_half]; // use second half for current value
   }
-  prev_ctrl_average /= ctrl_history_len / 2;
-  cur_ctrl_average  /= ctrl_history_len / 2;
+  prev_ctrl_average /= ctrl_history_len_half;
+  cur_ctrl_average  /= ctrl_history_len_half;
+
+  const float ctrl_gradient = ( cur_ctrl_average - prev_ctrl_average ) / ctrl_history_len_half;
 
   if ( ( prev_ctrl_average < hi_hat_is_open_MIDI_threshold ) &&
        ( cur_ctrl_average >= hi_hat_is_open_MIDI_threshold ) &&
-       ( cur_ctrl_average - prev_ctrl_average > ctrl_velocity_threshold ) )
+       ( ctrl_gradient > ctrl_velocity_threshold ) )
   {
     // map curve difference (gradient) to velocity
-    midi_velocity = min ( 127, static_cast<int> ( ( cur_ctrl_average - prev_ctrl_average - ctrl_velocity_threshold ) * ctrl_velocity_range_fact ) );
+    midi_velocity = min ( 127, max ( 1, static_cast<int> ( ( ctrl_gradient - ctrl_velocity_threshold ) * ctrl_velocity_range_fact ) ) );
     peak_found    = true;
 
     // reset the history after a detection to suppress multiple detections
