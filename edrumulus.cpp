@@ -1500,7 +1500,8 @@ void Edrumulus::Pad::process_control_sample ( const int* input,
   int cur_midi_ctrl_value = ( ( ADC_MAX_RANGE - input[0] - control_threshold ) / control_range * 127 );
   cur_midi_ctrl_value     = max ( 0, min ( 127, cur_midi_ctrl_value ) );
 
-  // detect pedal hit
+
+  // Detect pedal stomp --------------------------------------------------------
   update_fifo ( cur_midi_ctrl_value, ctrl_history_len, ctrl_hist );
 
   float prev_ctrl_average = 0.0f;
@@ -1513,24 +1514,30 @@ void Edrumulus::Pad::process_control_sample ( const int* input,
   prev_ctrl_average /= ctrl_history_len_half;
   cur_ctrl_average  /= ctrl_history_len_half;
 
-  const float ctrl_gradient = ( cur_ctrl_average - prev_ctrl_average ) / ctrl_history_len_half;
-
+  // check if we just crossed the transition from open to close
   if ( ( prev_ctrl_average < hi_hat_is_open_MIDI_threshold ) &&
-       ( cur_ctrl_average >= hi_hat_is_open_MIDI_threshold ) &&
-       ( ctrl_gradient > ctrl_velocity_threshold ) )
+       ( cur_ctrl_average >= hi_hat_is_open_MIDI_threshold ) )
   {
-    // map curve difference (gradient) to velocity
-    midi_velocity = min ( 127, max ( 1, static_cast<int> ( ( ctrl_gradient - ctrl_velocity_threshold ) * ctrl_velocity_range_fact ) ) );
-    peak_found    = true;
+    // calculate the gradient which is the measure for the pedal stomp velocity
+    const float ctrl_gradient = ( cur_ctrl_average - prev_ctrl_average ) / ctrl_history_len_half;
 
-    // reset the history after a detection to suppress multiple detections
-    for ( int i = 0; i < ctrl_history_len; i++ )
+    // only send MIDI note for pedal stomp if we are above the given threshold
+    if ( ctrl_gradient > ctrl_velocity_threshold )
     {
-      ctrl_hist[i] = hi_hat_is_open_MIDI_threshold;
+      // map curve difference (gradient) to velocity
+      midi_velocity = min ( 127, max ( 1, static_cast<int> ( ( ctrl_gradient - ctrl_velocity_threshold ) * ctrl_velocity_range_fact ) ) );
+      peak_found    = true;
+
+      // reset the history after a detection to suppress multiple detections
+      for ( int i = 0; i < ctrl_history_len; i++ )
+      {
+        ctrl_hist[i] = hi_hat_is_open_MIDI_threshold;
+      }
     }
   }
 
-  // introduce hysteresis to avoid sending too many MIDI control messages
+
+  // Introduce hysteresis to avoid sending too many MIDI control messages ------
   change_found = false;
 
   if ( ( cur_midi_ctrl_value > ( prev_ctrl_value + control_midi_hysteresis ) ) ||
