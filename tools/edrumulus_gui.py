@@ -153,9 +153,9 @@ def ncurses_update_param_outputs():
   if error_value > 63:
     mainwin.addstr(row_start + 4, col_start, "DC OFFSET ERROR ON PAD {:2d}/{:1d}".format((error_value % 64), math.floor((error_value - 64) / 64)))
   elif error_value > 0:
-    mainwin.addstr(row_start + 4, col_start, "SAMPLING RATE TOO LOW ERROR")
+    mainwin.addstr(row_start + 4, col_start, "SAMPLING RATE TOO LOW WARNING")
   else:
-    mainwin.addstr(row_start + 4, col_start, "                           ")
+    mainwin.addstr(row_start + 4, col_start, "                             ")
   if version_major >= 0 and version_minor >= 0:
     mainwin.addstr(row_start - 1, col_start, "Edrumulus v{0}.{1}".format(version_major, version_minor))
   if selected_kit:
