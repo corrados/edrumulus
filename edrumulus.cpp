@@ -514,10 +514,7 @@ void Edrumulus::Pad::initialize()
   rim_max_power_low_limit  = ADC_MAX_NOISE_AMPL * ADC_MAX_NOISE_AMPL / 31.0f; // lower limit on detected rim power, 15 dB below max noise amplitude
   x_rim_hist_len           = x_sq_hist_len + rim_shot_window_len;
   cancellation_factor      = static_cast<float> ( pad_settings.cancellation ) / 31.0f; // cancellation factor: range of 0.0..1.0
-  ctrl_history_len         = 10; // (MUST BE AN EVEN VALUE) control history length, use a fixed value
   ctrl_history_len_half    = ctrl_history_len / 2;
-  ctrl_velocity_range_fact = 20.0f; // use a fixed value (TODO make it adjustable)
-  ctrl_velocity_threshold  = 1.0f;  // use a fixed value (TODO make it adjustable)
   max_num_overloads        = 3; // maximum allowed number of overloaded samples until the overload special case is activated
 
   // The ESP32 ADC has 12 bits resulting in a range of 20*log10(2048)=66.2 dB.
@@ -561,6 +558,10 @@ void Edrumulus::Pad::initialize()
   // control MIDI assignment gives us a range of 410-2867 (FD-8: 3300-0, VH-12: 2200-1900 (press: 1770))
   control_threshold = pad_settings.pos_threshold / 31.0f * ( 0.6f * ADC_MAX_RANGE ) + ( 0.1f * ADC_MAX_RANGE );
   control_range     = ( ADC_MAX_RANGE - control_threshold ) * ( 32 - pad_settings.pos_sensitivity ) / 32;
+
+  // hi-hat pedal stomp action parameters
+  ctrl_velocity_range_fact = pow ( 10.0f, pad_settings.velocity_sensitivity / 1.8f / 10.0f );   // linear range of 1..53
+  ctrl_velocity_threshold  = pow ( 10.0f, pad_settings.velocity_threshold / 3.0f / 10.0f ) - 1; // linear range of 0..10
 
   // positional sensing low-pass filter properties
   // moving average cut off frequency approximation according to:

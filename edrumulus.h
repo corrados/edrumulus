@@ -327,6 +327,7 @@ protected:
       void sched_init() { init_delay_cnt = init_delay_value; }; // schedule initialization function (for delayed initialization)
       const float      init_delay_value_s = 0.2; // init delay value in seconds
       static const int length_ampmap      = 20;  // maxmimum number of amplification mappings for clipping compensation
+      static const int ctrl_history_len   = 10;  // (MUST BE AN EVEN VALUE) control history length, use a fixed value
 
       // band-pass filter coefficients (they are constant and must not be changed)
       const int   bp_filt_len           = 5;
@@ -447,7 +448,6 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       int          midi_note_open;
       int          midi_note_open_rim;
       int          midi_ctrl_ch;
-      int          ctrl_history_len;
       int          ctrl_history_len_half;
       float        ctrl_velocity_threshold;
       float        ctrl_velocity_range_fact;
