@@ -1505,6 +1505,7 @@ void Edrumulus::Pad::process_control_sample ( const int* input,
   // Detect pedal stomp --------------------------------------------------------
   update_fifo ( cur_midi_ctrl_value, ctrl_history_len, ctrl_hist );
 
+  // to cope with ADC noise, we use a moving average filter for noise reduction
   float prev_ctrl_average = 0.0f;
   float cur_ctrl_average  = 0.0f;
   for ( int i = 0; i < ctrl_history_len_half; i++ )

@@ -327,7 +327,7 @@ protected:
       void sched_init() { init_delay_cnt = init_delay_value; }; // schedule initialization function (for delayed initialization)
       const float      init_delay_value_s = 0.2; // init delay value in seconds
       static const int length_ampmap      = 20;  // maxmimum number of amplification mappings for clipping compensation
-      static const int ctrl_history_len   = 10;  // (MUST BE AN EVEN VALUE) control history length, use a fixed value
+      static const int ctrl_history_len   = 10;  // (MUST BE AN EVEN VALUE) control history length; the longer, the more noise reduction but more delay
 
       // band-pass filter coefficients (they are constant and must not be changed)
       const int   bp_filt_len           = 5;
