@@ -2,26 +2,6 @@
 
 The road map items are sorted by priority.
 
-
-- [ ] **Support more control pedal settings in the GUI**
-
-  Right now, the control_threshold is coupled with pad_settings.velocity_threshold and control_range is coupled with
-  pad_settings.velocity_sensitivity. We have three parameters which are not yet controllable with the GUI: ctrl_history_len,
-  ctrl_velocity_range_fact, ctrl_velocity_threshold.
-
-  Since positional sensing does not make sense for the pedal, I'll soon implement the following:
-  - couple control_threshold with pad_settings.pos_threshold
-  - couple control_range with pad_settings.pos_sensitivity
-  - couple ctrl_velocity_threshold with pad_settings.velocity_threshold
-  - couple ctrl_velocity_range_fact with pad_settings.velocity_sensitivity
-
-  This will be a little break of compatibility since now the fundamental pedal parameters are controlled with the
-  "positional" GUI parameters. But this makes sense since we control how the position of the pedal is converted to
-  MIDI signals. The velocity threshold/sensitivity now configures the pedal stomp sound which also makes sense.
-
-  The remaining parameter ctrl_history_len may be coupled with the GUI cancellation setting. I would like to re-use
-  existing parameters since I want to avoid adding an additional GUI setting for this.
-
 - [ ] **Support positional sensing for rim shots**
 
   A test signal *pd85rimshotpossense.wav* is available in the signal directory. Unfortunately, the
