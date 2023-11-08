@@ -1,5 +1,5 @@
 %*******************************************************************************
-% Copyright (c) 2020-2022
+% Copyright (c) 2020-2023
 % Author(s): Volker Fischer
 %*******************************************************************************
 % This program is free software; you can redistribute it and/or modify it under
@@ -46,7 +46,13 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd80r_hot_spot.wav");padtype='pd80r';%x = x(191700:192400, :);%
 %x = audioread("signals/pd80r_no_hot_spot.wav");padtype='pd80r';
 %x = audioread("signals/pd80r_rimshot_issue.wav");padtype='pd80r';
-x = audioread("signals/pda120ls.wav");x=x(:,1);padtype='pda120ls';x = x(1:630000, :);%x = x(1.06e6:end, :);%x = x(840000:930000, :);%
+x = audioread("signals/pd85rimshotpossense.wav");padtype='pd80r';
+%x = audioread("signals/pda120ls.wav");x=x(:,1);padtype='pda120ls';x = x(1:630000, :);%x = x(1.06e6:end, :);%x = x(840000:930000, :);%
+%x = audioread("signals/pda120ls_2.wav");x=x(:,1);padtype='pda120ls';x = x(1:210000, :);
+%x = audioread("signals/pda120ls_multpiezotest.wav");padtype='pda120ls';
+%x = audioread("signals/pda120ls_multpiezotest2.wav");padtype='pda120ls';
+%x = audioread("signals/pdx100.wav");padtype='pdx100';x = x(1:420000, :);
+%x = audioread("signals/pdx100_rimshot.wav");padtype='pdx100';
 %x = audioread("signals/pdx8.wav");padtype='pdx8';
 %x = audioread("signals/pd5.wav");padtype='pd5';
 %x = audioread("signals/pd6.wav");padtype='pd6';
@@ -59,6 +65,7 @@ x = audioread("signals/pda120ls.wav");x=x(:,1);padtype='pda120ls';x = x(1:630000
 %x = audioread("signals/kd8.wav");padtype='kd8';%x = x(177050:178200, :);%
 %x = audioread("signals/kd7.wav");padtype='kd7';%x = x(1:170000, :);
 %x = audioread("signals/kd7_hard_hits.wav");padtype='kd7';x = x(1:3000, :);
+%x = audioread("signals/kt10.wav");padtype='kt10';
 %x = audioread("signals/kd120.wav");padtype='kd120';
 %x = audioread("signals/tp80.wav");padtype='tp80';
 %x = audioread("signals/vh12.wav");padtype='vh12';%x = x(900000:end, :);%x = x(376000:420000, :);%x = x(1:140000, :);
@@ -103,9 +110,10 @@ switch padtype
     pad.hot_spot_attenuation_db = 3;
   case 'pda120ls'
     pad.decay_grad_fact2          = 250;
+    pad.decay_fact_db             = 5;
     pad.pre_scan_time_ms          = 3.5;
     pad.first_peak_diff_thresh_db = 7;
-    pad.pos_low_pass_cutoff       = 370;
+    pad.pos_invert                = true;
   case 'pd80r'
     pad.scan_time_ms                    = 3;
     pad.decay_len_ms2                   = 75;
@@ -116,6 +124,13 @@ switch padtype
     pad.hot_spot_attenuation_db         = 3;
     pad.hot_spot_peak_diff_limit_min_db = 4;
     pad.hot_spot_middle_diff_db         = 5;
+  case 'pdx100'
+    pad.decay_fact_db       = 2;
+    pad.decay_len_ms2       = 65;
+    pad.decay_grad_fact2    = 300;
+    pad.decay_len_ms3       = 350;
+    pad.decay_grad_fact3    = 150;
+    pad.pos_low_pass_cutoff = 120;
   case 'pdx8'
     % note: no changes needed to the default values
   case 'pd5'
@@ -168,6 +183,16 @@ switch padtype
     pad.decay_grad_fact2        = 450;
     pad.decay_len_ms3           = 500;
     pad.decay_grad_fact3        = 45;
+  case 'kt10'
+    pad.scan_time_ms       = 2;
+    pad.decay_est_delay_ms = 8;
+    pad.decay_fact_db      = 5;
+    pad.decay_len_ms1      = 4;
+    pad.decay_grad_fact1   = 30;
+    pad.decay_len_ms2      = 30;
+    pad.decay_grad_fact2   = 350;
+    pad.decay_len_ms3      = 500;
+    pad.decay_grad_fact3   = 100;
   case 'kd120'
     pad.scan_time_ms      = 6;
     pad.decay_fact_db     = 12;

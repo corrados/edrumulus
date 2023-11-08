@@ -13,40 +13,25 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        example: [edrumulus.ino]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Cache pip
-      uses: actions/cache@v2
+    - uses: actions/checkout@v3
+    - uses: actions/cache@v3
       with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-    - name: Cache PlatformIO
-      uses: actions/cache@v2
-      with:
-        path: ~/.platformio
-        key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+        path: |
+          ~/.cache/pip
+          ~/.platformio/.cache
+        key: ${{ runner.os }}-pio
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
 
     - name: Install PlatformIO
       run: |
         python -m pip install --upgrade pip
-        pip install --upgrade platformio
-        
-    - name: Teensy - PlatformIO
-      run: pio ci --lib="." --board=teensy36 --board=teensy40 --board=teensy41
-      env:
-        PLATFORMIO_CI_SRC: ${{ matrix.example }}
-        PLATFORMIO_BUILD_FLAGS: -D USB_MIDI
+        pip install --upgrade platformio setuptools wheel
 
-    - name: ESP32 - PlatformIO
-      run: |
-        pio lib -g install 62
-        pio ci --lib="." --board=esp32doit-devkit-v1 --board=az-delivery-devkit-v4
-      env:
-        PLATFORMIO_CI_SRC: ${{ matrix.example }}
+    - name: Build
+      run: pio ci -c platformio.ini .

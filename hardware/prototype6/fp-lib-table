@@ -1,0 +1,4 @@
+(fp_lib_table
+  (lib (name "edrumulus")(type "KiCad")(uri "${KIPRJMOD}/edrumulus.pretty")(options "")(descr ""))
+  (lib (name "Connectors_UNITRA")(type "KiCad")(uri "${KIPRJMOD}/Connectors_UNITRA.pretty")(options "")(descr ""))
+)

@@ -1,5 +1,5 @@
 %*******************************************************************************
-% Copyright (c) 2020-2022
+% Copyright (c) 2020-2023
 % Author(s): Volker Fischer
 %*******************************************************************************
 % This program is free software; you can redistribute it and/or modify it under
@@ -28,7 +28,7 @@ mixed_prefix  = 'mixed_';
 midi_map_name = [out_kit_name '_midimap'];
 
 % kit select or optional instrument select
-kit_select        = [];%3; % if [], the instrument_select is used otherwise the entire selected kit number
+kit_select        = 3; % if [], the instrument_select is used otherwise the entire selected kit number
 instrument_select = {2, 'snare_rim_shot',  1.0; ... % 5, 'snare_rim_shot', -6.0; ... % 
                      3, 'CrashL',            0; ...
                      3, 'HihatClosed',       0; ...
@@ -37,7 +37,7 @@ instrument_select = {2, 'snare_rim_shot',  1.0; ... % 5, 'snare_rim_shot', -6.0;
                      3, 'KDrumL',          2.5; ...
                      3, 'RideR',             0; ...
                      3, 'RideRBell',         0; ...
-                     4, 'snare-position', -8.0; ... % 5, 'snare',          -6.0; ... % 3, 'Snare',          -3.0; ... % 
+                     4, 'snare-position', -6.0; ... % 5, 'snare',          -6.0; ... % 3, 'Snare',          -3.0; ... % 
                      3, 'Tom1',              0; ...
                      3, 'Tom2',              0; ...
                      3, 'FTom1',             0};
@@ -231,7 +231,7 @@ mkdir(out_kit_path);
 % create kit XML file (only use instruments which are defined in the MIDI map)
 file_id = fopen([out_kit_path out_kit_name '.xml'], 'w');
 fwrite(file_id, ['<?xml version="1.0" encoding="UTF-8"?>' char(10)]);
-fwrite(file_id, ['<drumkit name="' out_kit_name '" description="Mixed Drumgizmo drum kit">' char(10)]);
+fwrite(file_id, ['<drumkit name="' out_kit_name '" description="Mixed Drumgizmo drum kit" islogpower="true">' char(10)]);
 fwrite(file_id, ['  <channels>' char(10)]);
 fwrite(file_id, ['      <channel name="left_channel"/>' char(10)]);
 fwrite(file_id, ['      <channel name="right_channel"/>' char(10)]);
@@ -325,6 +325,16 @@ for instrument_index = 1:length(midi_map)
       if strfind(xml_file{cnt}, '<sample ')
         insert_position = strfind(xml_file{cnt}, ' name="') + length(' name="') - 1;
         xml_file{cnt}   = [xml_file{cnt}(1:insert_position) mixed_prefix xml_file{cnt}(insert_position + 1:end)];
+      end
+
+      % convert the power to log-power
+      if strfind(xml_file{cnt}, '<sample ')
+        start_position = strfind(xml_file{cnt}, ' power="') + length(' power="') - 1;
+        end_position   = start_position + strfind(xml_file{cnt}(1 + start_position:end), '"');
+        end_position   = end_position(1); % in case other " followed
+        power = str2double(xml_file{cnt}(start_position + 1:end_position - 1));
+        logpower = 10 * log10(power) + 100; % make sure result is positive by adding 100 dB (max. assumed dynamic)
+        xml_file{cnt}  = [xml_file{cnt}(1:start_position) num2str(logpower) xml_file{cnt}(end_position:end)];
       end
 
       % exchange names of first two channels (left/right channel)

@@ -8,11 +8,12 @@
 #           sudo sh -c 'echo "@audio   -  rtprio   95" >> /etc/security/limits.conf'
 #           sudo sh -c 'echo "@audio   -  memlock  unlimited" >> /etc/security/limits.conf'
 
-echo "This script prepares a Linux/Raspberry Pi system for Edrumulus usage"
+echo "Edrumulus Linux start script for using Drumgizmo (including setup/installation)"
 
 
 # get environment --------------------------------------------------------------
 NCORES=$(nproc)
+gui_mode="" # GUI is the default (empty mode means that GUI is used)
 
 # check of Teensy USB MIDI
 if aconnect -l|grep -q Edrumulus; then
@@ -21,7 +22,7 @@ if aconnect -l|grep -q Edrumulus; then
 fi
 
 # check if we are running on a Raspberry Pi by checking if the user name is pi
-if [ $USER = "pi" ]; then
+if [ "$USER" == "pi" ]; then
   echo "-> Running on a Raspberry pi"
   is_raspi=true
 fi
@@ -30,17 +31,49 @@ fi
 if [[ "$1" == jamulus ]]; then
   echo "-> Jamulus session mode enabled"
   is_jamulus=true
+  gui_mode="non_block"
+fi
+if [[ "$1" == uartjamulus ]]; then
+  echo "-> Jamulus session mode enabled"
+  is_jamulus=true
+  is_raspi=true # UART connection to ESP32 is only supported on Raspberry Pi
+  is_uart=true
+  gui_mode="non_block"
 fi
 
-# check if the GUI mode shall be used
-if [[ "$1" == gui ]]; then
-  echo "-> GUI mode enabled"
-  is_gui=true
+# check if the no GUI mode shall be used
+if [[ "$1" == no_gui ]]; then
+  echo "-> no GUI mode enabled"
+  gui_mode="no_gui"
+fi
+
+# special mode: UART connection with console GUI
+if [[ "$1" == uartgui ]]; then
+  echo "-> UART GUI mode enabled"
+  is_raspi=true # UART connection to ESP32 is only supported on Raspberry Pi
+  is_uart=true
+  gui_mode="" # empty mode means GUI is used
+fi
+
+# check if the LCD GUI mode shall be used
+if [[ "$1" == lcdgui ]]; then
+  echo "-> LCD GUI mode enabled"
+  is_raspi=true # LCD GUI is only supported on Raspberry Pi
+  is_uart=true
+  gui_mode="lcd"
+fi
+
+# check if the WebUI GUI mode shall be used
+if [[ "$1" == webui ]]; then
+  echo "-> WebUI GUI mode enabled"
+  is_raspi=true # WebUI GUI is only supported on Raspberry Pi
+  is_uart=true
+  gui_mode="webui"
 fi
 
 
 # install required packages ----------------------------------------------------
-pkgs='git htop vim alsamixergui build-essential libasound2-dev jackd2 cmake libglib2.0-dev autoconf automake libtool lv2-dev xorg-dev libsndfile1-dev libjack-jackd2-dev libsmf-dev gettext a2jmidid libncurses5-dev'
+pkgs='git htop vim alsamixergui build-essential libasound2-dev jackd2 cmake libglib2.0-dev autoconf automake libtool lv2-dev xorg-dev libsndfile1-dev libjack-jackd2-dev libsmf-dev gettext a2jmidid libncurses5-dev ardour-lv2-plugins liblilv-dev'
 if ! dpkg -s $pkgs >/dev/null 2>&1; then
   read -p "Do you want to install missing packages? " -n 1 -r
   echo
@@ -89,21 +122,36 @@ else
 fi
 
 
-# compile EdrumulusGUI ---------------------------------------------------------
-if [ ! -f EdrumulusGUI ]; then
-  echo "Compile EdrumulusGUI"
-  gcc edrumulus_gui.cpp -o EdrumulusGUI -lncurses -ljack -lstdc++
+# download and compile ecasound ------------------------------------------------
+if [ -d "ecasound" ]; then
+  echo "The ecasound directory is present, we assume it is compiled and ready to use. If not, delete the ecasound directory and call this script again."
+else
+  git clone https://github.com/kaivehmanen/ecasound.git
+  cd ecasound
+  ./autogen-vc.sh
+  export CXXFLAGS="-g -std=c++11"
+  ./configure
+  make -j${NCORES}
+  cd ..
 fi
 
 
-# TODO automate the creation of the kit: download source kits and call mixdown_kits.m
-echo We assume that you have created the edrumuluskit with edrumulus/tools/mixdown_kits.m
+# drum kit setup ---------------------------------------------------------------
+echo We assume that you have created the edrumuluskit with edrumulus/tools/mixdown_kits.m or PearlMMX is present
 
-if [ -d "edrumuluskit" ]; then
-  KITXML="edrumuluskit/edrumuluskit.xml"
-  KITMIDIMAPXML="edrumuluskit/edrumuluskit_midimap.xml"
-  KITJACKPORTLEFT=DrumGizmo:0-left_channel
-  KITJACKPORTRIGHT=DrumGizmo:1-right_channel
+# if Pearl MMX drum kit is present, use this
+if [ -d "PearlMMX" ]; then
+  KITXML="PearlMMX/PearlMMX.xml"
+  KITMIDIMAPXML="PearlMMX/Midimap.xml"
+  use_ecasound=true
+else
+  # otherwise the default is to use the custom edrumuluskit
+  if [ -d "edrumuluskit" ]; then
+    KITXML="edrumuluskit/edrumuluskit.xml"
+    KITMIDIMAPXML="edrumuluskit/edrumuluskit_midimap.xml"
+    KITJACKPORTLEFT=DrumGizmo:0-left_channel
+    KITJACKPORTRIGHT=DrumGizmo:1-right_channel
+  fi
 fi
 
 
@@ -113,7 +161,7 @@ fi
 #sudo mount -o remount,size=128M /dev/shm
 
 
-# jack deamon ------------------------------------------------------------------
+# start jack deamon ------------------------------------------------------------
 # get first USB audio sound card device
 ADEVICE=$(aplay -l|grep "USB Audio"|tail -1|cut -d' ' -f3)
 echo "Using USB audio device: ${ADEVICE}"
@@ -134,47 +182,72 @@ if [[ -v is_teensy ]]; then
 else
   # start MIDI tool to convert serial MIDI to Jack Audio MIDI
   # note that to get access to /dev/ttyUSB0 you need to be in group tty/dialout
-  mod-ttymidi/ttymidi -b 38400 &
   MIDIJACKPORT=ttymidi:MIDI_in
+
+  if [[ -v is_uart ]]; then
+    mod-ttymidi/ttymidi -s /dev/serial0 -b 115200 &
+    # on prototype 5 the ESP32 has to be started by setting GPIO9 to high
+    sudo systemctl start pigpiod
+    sleep 1
+    pigs modes 9 w
+    pigs w 9 1
+  else
+    if [ -r "/dev/ttyACM0" ]; then
+      mod-ttymidi/ttymidi -b 38400 -s /dev/ttyACM0 & # ESP32-S3
+    else
+      mod-ttymidi/ttymidi -b 38400 &                 # ESP32
+    fi
+  fi
 fi
 
 
 # run Edrumulus ----------------------------------------------------------------
+# maybe use the following for only closed match: -p close=1.0,position=1.0,diverse=0.0,random=0.0
+# maybe use the following for adjusting the defaults a bit: -p close=0.95,position=1.0,diverse=0.1,random=0.04
 if [[ -v is_raspi ]]; then
-  ./drumgizmo/drumgizmo/drumgizmo -l -L max=2,rampdown=0.02 -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
-  sleep 20
+  ./drumgizmo/drumgizmo/drumgizmo -l -L max=2,rampdown=0.02 -p close=1.0,position=1.0,diverse=0.0,random=0.0 -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
 else
-  ./drumgizmo/drumgizmo/drumgizmo -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
-  sleep 5
+  ./drumgizmo/drumgizmo/drumgizmo -p close=1.0,position=1.0,diverse=0.0,random=0.0 -i jackmidi -I midimap=$KITMIDIMAPXML -o jackaudio $KITXML &
 fi
 
-jack_connect $KITJACKPORTLEFT system:playback_1
-jack_connect $KITJACKPORTRIGHT system:playback_2
+# wait for Drumgizmo to be fully loaded and available (check for jack audio ports)
+while [[ $(jack_lsp) != *"DrumGizmo"* ]]; do sleep 0.1; done
 
+if [[ -v use_ecasound ]]; then
+  ./ecasound/ecasound/ecasound --server -q -s settings/*.ecs &
+else
+  jack_connect $KITJACKPORTLEFT system:playback_1
+  jack_connect $KITJACKPORTRIGHT system:playback_2
+fi
+jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
 
-# either use direct MIDI connection or through EdrumulusGUI
-if [[ -v is_gui ]]; then
-  ./EdrumulusGUI DrumGizmo:drumgizmo_midiin
-elif [[ -v is_jamulus ]]; then
-  jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
-  jack_disconnect $KITJACKPORTLEFT system:playback_1
-  jack_disconnect $KITJACKPORTRIGHT system:playback_2
+# Edrumulus GUI must always be called even if no GUI is selected to load/store settings
+./edrumulus_gui.py ${gui_mode}
+
+if [[ -v is_jamulus ]]; then
   if [ -z "$2" ]; then
     ./../../jamulus/Jamulus -n -i ../../jamulus/Jamulus.ini -c anygenre1.jamulus.io &
   else
     ./../../jamulus/Jamulus -n -i ../../jamulus/Jamulus.ini -c $2 &
   fi
   sleep 5
-  jack_connect $KITJACKPORTLEFT "Jamulus:input left"
-  jack_connect $KITJACKPORTRIGHT "Jamulus:input right"
+  if [[ -v use_ecasound ]]; then
+    jack_disconnect ecasound:out_1 system:playback_1
+    jack_disconnect ecasound:out_2 system:playback_2
+    jack_connect ecasound:out_1 "Jamulus:input left"
+    jack_connect ecasound:out_2 "Jamulus:input right"
+  else
+    jack_disconnect $KITJACKPORTLEFT system:playback_1
+    jack_disconnect $KITJACKPORTRIGHT system:playback_2
+    jack_connect $KITJACKPORTLEFT "Jamulus:input left"
+    jack_connect $KITJACKPORTRIGHT "Jamulus:input right"
+  fi
   echo "###---------- PRESS ANY KEY TO TERMINATE THE EDRUMULUS/JAMULUS SESSION ---------###"
-  read -n 1 -s -r -p ""
-else
-  jack_connect "$MIDIJACKPORT" DrumGizmo:drumgizmo_midiin
-  echo "###---------- PRESS ANY KEY TO TERMINATE THE EDRUMULUS SESSION ---------###"
   read -n 1 -s -r -p ""
 fi
 
+
+# clean up ---------------------------------------------------------------------
 killall drumgizmo
 
 if [[ -v is_jamulus ]]; then
@@ -185,5 +258,13 @@ if [[ -v is_teensy ]]; then
   killall a2jmidid
 else
   killall ttymidi
+fi
+
+if [[ -v is_uart ]]; then
+  sudo systemctl stop pigpiod
+fi
+
+if [[ -v use_ecasound ]]; then
+  killall ecasound
 fi
 

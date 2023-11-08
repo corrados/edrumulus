@@ -1,5 +1,5 @@
 %*******************************************************************************
-% Copyright (c) 2020-2022
+% Copyright (c) 2020-2023
 % Author(s): Volker Fischer
 %*******************************************************************************
 % This program is free software; you can redistribute it and/or modify it under
@@ -48,13 +48,16 @@ pos_sense_metric             = calc_pos_sense_metric(x(:, 1), Fs, all_first_peak
 
 % plot results
 figure
-plot(10 * log10([mask_region, scan_region, pre_scan_region, decay_est_rng, hot_spot_region]), 'LineWidth', 20);
+%plot(10 * log10([mask_region, scan_region, pre_scan_region, decay_est_rng, hot_spot_region]), 'LineWidth', 20);
+plot(10 * log10([mask_region, scan_region, pre_scan_region, decay_est_rng]), 'LineWidth', 20);
 grid on; hold on; set(gca, 'ColorOrderIndex', 1); % reset color order so that x trace is blue and so on
 plot(10 * log10([x(:, 1) .^ 2, x_filt, decay_all, x_filt_decay]));
+% TEST indicate sign of x signal with different color
+x_sign = nan(size(x)); x_sign(x > 0) = x(x > 0); plot(10 * log10(x_sign(:, 1) .^ 2), 'y-.');
 plot(all_first_peaks, 10 * log10(x(all_first_peaks, 1) .^ 2), 'b*');
-plot(all_hot_spots, 10 * log10(x(all_hot_spots, 1) .^ 2) - pad.hot_spot_attenuation_db, 'c*', "markersize", 15);
+%plot(all_hot_spots, 10 * log10(x(all_hot_spots, 1) .^ 2) - pad.hot_spot_attenuation_db, 'c*', "markersize", 15);
 plot(all_peaks, 10 * log10(x(all_peaks, 1) .^ 2), 'g*');
-plot(all_peaks_filt, 10 * log10(x_filt(all_peaks_filt)), 'y*');
+plot(all_peaks_filt, 10 * log10(x_filt(all_peaks_filt)), 'c*');
 plot(all_first_peaks, pos_sense_metric + 40, 'k*');
 plot(all_peaks, rim_metric_db + 40, '*-');
 plot(all_peaks(is_rim_shot), rim_metric_db(is_rim_shot) + 40, '*');
@@ -177,8 +180,9 @@ while ~no_more_peak
   peak_idx_after_initial = find((x_sq(2 + first_peak_idx:end) < x_sq(1 + first_peak_idx:end - 1)) & ...
     (x_sq(1 + first_peak_idx:end - 1) >= x_sq(first_peak_idx:end - 2)));
 
-  scan_peaks_idx     = first_peak_idx + peak_idx_after_initial(peak_idx_after_initial <= total_scan_time);
-  all_scan_peaks_idx = [all_scan_peaks_idx; scan_peaks_idx]; % only for debugging
+  first_peak_to_total_scan_time = total_scan_time - (first_peak_idx - above_thresh_start + pre_scan_time);
+  scan_peaks_idx                = first_peak_idx + peak_idx_after_initial(peak_idx_after_initial <= first_peak_to_total_scan_time);
+  all_scan_peaks_idx            = [all_scan_peaks_idx; scan_peaks_idx]; % only for debugging
 
   % if a peak in the scan time is much higher than the initial peak, use that one
   for i = 1:length(scan_peaks_idx)

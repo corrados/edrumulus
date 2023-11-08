@@ -1,5 +1,5 @@
 /******************************************************************************\
- * Copyright (c) 2020-2022
+ * Copyright (c) 2020-2023
  * Author(s): Volker Fischer
  ******************************************************************************
  * This program is free software; you can redistribute it and/or modify it under
@@ -31,32 +31,31 @@ enum Espikestate
 };
 
 #define MAX_NUM_PADS         12  // a maximum of 12 pads are supported
-#define MAX_NUM_PAD_INPUTS   2   // a maximum of 2 sensors per pad is supported
+#define MAX_NUM_PAD_INPUTS   5   // a maximum of 5 sensors per pad is supported (where one is rim and one is the sum of three)
 #define MAX_EEPROM_SIZE      512 // bytes (Teensy 4.0: max 1024 bytes)
 #define MAX_NUM_SET_PER_PAD  30  // maximum number of settings which can be stored per pad
 
 
 // -----------------------------------------------------------------------------
-// Teensy 4.0/4.1/3.6 ----------------------------------------------------------
+// Teensy 4.0/4.1 --------------------------------------------------------------
 // -----------------------------------------------------------------------------
 #ifdef TEENSYDUINO
 
 #include <ADC.h>
 
 #define BOARD_LED_PIN        13    // pin number of the LED on the Teensy 4.0 board
-
-#ifdef ARDUINO_TEENSY36
-# define ADC_MAX_RANGE       65536 // Teensy 3.6 ADC has 16 bits -> 0..65535
-# define ADC_MAX_NOISE_AMPL  20    // highest assumed ADC noise amplitude in the ADC input range unit (measured)
-#else
-# define ADC_MAX_RANGE       4096  // Teensy 4.0/4.1 ADC has 12 bits -> 0..4095
-# define ADC_MAX_NOISE_AMPL  8     // highest assumed ADC noise amplitude in the ADC input range unit (measured)
-#endif
+#define ADC_MAX_RANGE        4096  // Teensy 4.0/4.1 ADC has 12 bits -> 0..4095
+#define ADC_MAX_NOISE_AMPL   8     // highest assumed ADC noise amplitude in the ADC input range unit (measured)
 
 class Edrumulus_hardware
 {
 public:
   Edrumulus_hardware();
+
+  static int get_prototype_pins ( int** analog_pins,
+                                  int** analog_pins_rimshot,
+                                  int*  number_pins,
+                                  int*  status_LED_pin );
 
   void setup ( const int conf_Fs,
                const int number_pads,
@@ -68,10 +67,11 @@ public:
                          int       analog_pin[][MAX_NUM_PAD_INPUTS],
                          int       sample_org[][MAX_NUM_PAD_INPUTS] );
 
-  float cancel_ADC_spikes ( const float input,
-                            const int   pad_index,
-                            const int   input_channel_index,
-                            const int   level );
+  void cancel_ADC_spikes ( float&    signal,
+                           int&      overload_detected,
+                           const int pad_index,
+                           const int input_channel_index,
+                           const int level );
 
   void write_setting ( const int pad_index, const int address, const byte value );
   byte read_setting  ( const int pad_index, const int address );
@@ -96,6 +96,10 @@ protected:
   float       prev_input2[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   float       prev_input3[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   float       prev_input4[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  int         prev_overload1[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  int         prev_overload2[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  int         prev_overload3[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  int         prev_overload4[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
 };
 
 #endif
@@ -107,7 +111,12 @@ protected:
 #ifdef ESP_PLATFORM
 
 #include "soc/sens_reg.h"
-#include "driver/dac.h"
+#include "driver/adc.h"
+#ifdef CONFIG_IDF_TARGET_ESP32
+# include "driver/dac.h"
+#else // CONFIG_IDF_TARGET_ESP32S3
+# include "hal/adc_hal.h"
+#endif
 
 #define BOARD_LED_PIN        2    // pin number of the LED on the ESP32 board
 #define ADC_MAX_RANGE        4096 // ESP32 ADC has 12 bits -> 0..4095
@@ -117,6 +126,11 @@ class Edrumulus_hardware
 {
 public:
   Edrumulus_hardware();
+
+  static int get_prototype_pins ( int** analog_pins,
+                                  int** analog_pins_rimshot,
+                                  int*  number_pins,
+                                  int*  status_LED_pin );
 
   void setup ( const int conf_Fs,
                const int number_pads,
@@ -128,13 +142,14 @@ public:
                          int       analog_pin[][MAX_NUM_PAD_INPUTS],
                          int       sample_org[][MAX_NUM_PAD_INPUTS] );
 
-  float cancel_ADC_spikes ( const float input,
-                            const int   pad_index,
-                            const int   input_channel_index,
-                            const int   level );
+  void cancel_ADC_spikes ( float&    signal,
+                           int&      overload_detected,
+                           const int pad_index,
+                           const int input_channel_index,
+                           const int level );
 
-  void write_setting ( const int pad_index, const int address, const byte value );
-  byte read_setting  ( const int pad_index, const int address );
+  void write_setting ( const int, const int, const byte ) {}; // not supported
+  byte read_setting  ( const int, const int ) { return 0; };  // not supported
 
 protected:
   int                        Fs;
@@ -144,13 +159,13 @@ protected:
   static void IRAM_ATTR      on_timer();
   static void                start_timer_core0_task ( void* param );
 
-  void     setup_timer ( const bool clear_timer = false );
+  void     setup_timer();
   void     init_my_analogRead();
   uint16_t my_analogRead ( const uint8_t pin );
-  void my_analogRead_parallel ( const uint32_t channel_adc1_bitval,
-                                const uint32_t channel_adc2_bitval,
-                                uint16_t&      out_adc1,
-                                uint16_t&      out_adc2 );
+  void     my_analogRead_parallel ( const uint32_t channel_adc1_bitval,
+                                    const uint32_t channel_adc2_bitval,
+                                    uint16_t&      out_adc1,
+                                    uint16_t&      out_adc2 );
 
   int         total_number_inputs;
   int         input_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
@@ -174,6 +189,10 @@ protected:
   float       prev_input2[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   float       prev_input3[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   float       prev_input4[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  int         prev_overload1[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  int         prev_overload2[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  int         prev_overload3[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  int         prev_overload4[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
 };
 
 #endif
