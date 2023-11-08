@@ -26,6 +26,7 @@ import socket
 import time
 import threading
 import math
+from pathlib import Path
 use_rtmidi  = "rtmidi"    in sys.argv # use rtmidi instead of jack audio
 no_gui      = "no_gui"    in sys.argv # no GUI but blocking (just settings management)
 non_block   = "non_block" in sys.argv # no GUI and non-blocking (just settings management)
@@ -389,7 +390,8 @@ if use_webui:
 ################################################################################
 def store_settings():
   global database
-  with open("settings/trigger_settings_current.txt", "w") as f:
+  settings_file = Path(__file__).parent.joinpath("settings", "trigger_settings_current.txt")
+  with settings_file.open("w") as f:
     for (pad_index, pad) in enumerate(pad_names):
       database = [-1] * len(cmd_val) # set database to invalid values
       send_value_to_edrumulus(108, pad_index)
@@ -397,12 +399,13 @@ def store_settings():
         time.sleep(0.001)
       for (idx, midi_id) in enumerate(cmd_val):
         f.write("%d,%d,%d\n" % (pad_index, midi_id, database[idx]))
-  os.rename("settings/trigger_settings_current.txt", "settings/trigger_settings.txt") # fixes Issue #108 (settings file empty)
+  settings_file.replace(Path(__file__).parent.joinpath("settings", "trigger_settings.txt")) # fixes Issue #108 (settings file empty)
 
 def load_settings():
   global database, is_load_settings
   is_load_settings = True # to update database of current command
-  with open("settings/trigger_settings.txt", "r") as f:
+  settings_file = Path(__file__).parent.joinpath("settings", "trigger_settings.txt")
+  with settings_file.open("r") as f:
     cur_pad = -1 # initialize with illegal index
     while True:
       line = f.readline()
