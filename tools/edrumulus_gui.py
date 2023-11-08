@@ -597,7 +597,7 @@ if use_rtmidi: # initialize rtmidi (only Teensy board supported)
     midiout, port_name_out = open_midioutput([s for s in rtmidi.MidiOut().get_ports() if out_name in s][0], client_name="EdrumulusGUI")
     midiin.set_callback(MidiInputHandler(port_name_in))
   except:
-    raise Exception("No Teensy Edrumulus device found")
+    raise Exception("No native Edrumulus USB device (e.g., Teensy) nor loopMIDI driver found.")
 else: # initialize jack midi
   client.activate()
   try:
