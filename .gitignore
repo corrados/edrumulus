@@ -75,3 +75,4 @@ hardware/prototype6/output/
 
 # platformio
 .pio
+.vscode/
