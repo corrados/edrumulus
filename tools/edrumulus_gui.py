@@ -142,6 +142,8 @@ def ncurses_init():
   mainwin.keypad(True)  # enable the keypad for non-char keys
   mainwin.nodelay(True) # we want a non-blocking getch()
   curses.curs_set(0)    # suppress cursor
+  mainwin.addstr(row_start, col_start, "Trying to connect to Edrumulus device...")
+  mainwin.refresh()
 
 def ncurses_cleanup():
   mainwin.keypad(False)
