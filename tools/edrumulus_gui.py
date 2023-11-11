@@ -21,18 +21,21 @@
 
 import os
 import sys
+import time
+import math
 import signal
 import socket
-import time
+import platform
 import threading
-import math
 from pathlib import Path
+
 use_rtmidi  = "rtmidi"    in sys.argv # use rtmidi instead of jack audio
 no_gui      = "no_gui"    in sys.argv # no GUI but blocking (just settings management)
 non_block   = "non_block" in sys.argv # no GUI and non-blocking (just settings management)
 use_lcd     = "lcd"       in sys.argv # LCD GUI mode on Raspberry Pi
 use_webui   = "webui"     in sys.argv # web UI GUI mode on Raspberry Pi
 use_ncurses = not no_gui and not non_block and not use_lcd and not use_webui # normal console GUI mode (default)
+
 if use_rtmidi:
   import rtmidi
   from rtmidi.midiutil import open_midiinput
@@ -160,7 +163,10 @@ def ncurses_update_param_outputs():
   else:
     mainwin.addstr(row_start + 4, col_start, "                             ")
   if version_major >= 0 and version_minor >= 0:
-    mainwin.addstr(row_start - 1, col_start, "Edrumulus v{0}.{1}".format(version_major, version_minor))
+    edrumulus_version = f"Edrumulus v{version_major}.{version_minor}"
+    py_version = f"Python {platform.python_version()}"
+    os_name = platform.system()
+    mainwin.addstr(row_start - 1, col_start, f"{edrumulus_version} ({py_version}, {os_name})")
   if selected_kit:
     mainwin.addstr(row_start - 1, col_start + 30, selected_kit + ", Kit-Vol: " + kit_vol_str if kit_vol_str else selected_kit)
   mainwin.addstr(row_start, col_start, "Press a key (q:quit; s,S:sel pad; c,C:sel command; a,A: auto pad sel; up,down: change param; r: reset)")
