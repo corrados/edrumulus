@@ -42,7 +42,7 @@ of the Edrumulus project can be found in the [TODO file](doc/TODO.md).
 
 ## Documentation
 
-- [Getting started](doc/manual.md)
+- [Manual](doc/manual.md)
 - [Algorithm](doc/algorithm.md)
 
 
