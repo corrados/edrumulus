@@ -170,8 +170,10 @@ void Edrumulus::Pad::apply_preset_pad_settings()
 
     case FD8:
       pad_settings.is_control           = true;
-      pad_settings.velocity_threshold   = 5;
-      pad_settings.velocity_sensitivity = 0;
+      pad_settings.pos_threshold        = 5;
+      pad_settings.pos_sensitivity      = 0;
+      pad_settings.velocity_threshold   = 9;  // pedal stomp configuration
+      pad_settings.velocity_sensitivity = 11; // pedal stomp configuration
       break;
 
     case VH12: // dual trigger
@@ -190,9 +192,9 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case VH12CTRL:
-      pad_settings.is_control           = true;
-      pad_settings.velocity_threshold   = 19;
-      pad_settings.velocity_sensitivity = 28;
+      pad_settings.is_control      = true;
+      pad_settings.pos_threshold   = 19;
+      pad_settings.pos_sensitivity = 28;
       break;
 
     case KD7: // single trigger

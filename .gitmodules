@@ -1,0 +1,3 @@
+[submodule "tools/xtalk"]
+	path = tools/xtalk
+	url = https://github.com/3hhh/xtalk.git
