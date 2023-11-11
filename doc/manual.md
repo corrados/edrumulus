@@ -38,7 +38,7 @@ Now open the edrumulus.ino file in the Arduino IDE and compile and upload.
 - Start Hairless MIDI and set:
   - MIDI Out to `EdrumulusIn`
   - MIDI In to `EdrumulusOut`
-- Start Python and run:
+- Start the Edrumulus user interface with:
   - `python edrumulus/tools/edrumulus_gui.py rtmidi`
 
 Example:
