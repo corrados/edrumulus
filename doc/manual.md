@@ -31,12 +31,19 @@ Install the Arduino IDE and add the ESP32 Board Manager according to
 Now open the edrumulus.ino file in the Arduino IDE and compile and upload.
 
 ### Use Edrumulus in your DAW under Windows
-- Start loopMIDI and create two loopback MIDI-ports:
-  - EdrumulusIn
-  - EdrumulusOut
-- Start Hairless MIDI and set MIDI Out to EdrumulusIn and MIDI In to EdrumulusOut.
-- Start Python and run `edrumulus/tools/edrumulus_gui.py rtmidi`
 
+- Start loopMIDI and create two loopback MIDI-ports:
+  - `EdrumulusIn`
+  - `EdrumulusOut`
+- Start Hairless MIDI and set:
+  - MIDI Out to `EdrumulusIn`
+  - MIDI In to `EdrumulusOut`
+- Start the Edrumulus user interface with:
+  - `python edrumulus/tools/edrumulus_gui.py rtmidi`
+
+Example:
+
+![Screenshot of a typical Windows setup](/doc/images/win_setup.png)
 
 ## How to support new pieces of hardware
 
