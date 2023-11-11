@@ -560,7 +560,7 @@ void Edrumulus::Pad::initialize()
   control_range     = ( ADC_MAX_RANGE - control_threshold ) * ( 32 - pad_settings.pos_sensitivity ) / 32;
 
   // hi-hat pedal stomp action parameters
-  ctrl_velocity_range_fact = pow ( 10.0f, pad_settings.velocity_sensitivity / 1.8f / 10.0f );   // linear range of 1..53
+  ctrl_velocity_range_fact = pow ( 10.0f, pad_settings.velocity_sensitivity / 10.0f );   // linear range of 1..1259
   ctrl_velocity_threshold  = pow ( 10.0f, pad_settings.velocity_threshold / 3.0f / 10.0f ) - 1; // linear range of 0..10
 
   // positional sensing low-pass filter properties

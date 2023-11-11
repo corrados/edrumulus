@@ -192,7 +192,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
     case VH12CTRL:
       pad_settings.is_control           = true;
       pad_settings.velocity_threshold   = 19;
-      pad_settings.velocity_sensitivity = 28;
+      pad_settings.velocity_sensitivity = 15;
       break;
 
     case KD7: // single trigger
