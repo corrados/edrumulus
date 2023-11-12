@@ -353,7 +353,7 @@ def lcd_update():
     elif lcd_menu_id == 1: # trigger menu
       lcd.write_string(("A:" if auto_pad_sel else "") + "%s:%s" % (pad_names[sel_pad], cmd_names[sel_cmd]))
       lcd.cursor_pos = (1, 4)
-      lcd.write_string("<%s>" % parse_cmd_param(sel_cmd))
+      lcd.write_string("<%s>" % parse_cmd_param(sel_cmd).split(" ")[0]) # split to only show pad type short name
 
 def lcd_init():
   global lcd
