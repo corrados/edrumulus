@@ -110,7 +110,7 @@ def process_user_input(ch):
     sel_cmd -= 1
   elif (ch == chr(259) or ch == "U"): # 259: up key
     if cmd_names[sel_cmd] == "type": # special order for types needed, derived from dictionary
-      linear_idx = pad_types_dict_list.index([k for k, v in pad_types_dict.items() if v == database[sel_cmd]][0])
+      linear_idx = get_linear_pad_type_index(database[sel_cmd])
       if linear_idx < cmd_val_rng[sel_cmd]:
         linear_idx += 1
         database[sel_cmd] = pad_types_dict[pad_types_dict_list[linear_idx]]
@@ -121,7 +121,7 @@ def process_user_input(ch):
         send_value_to_edrumulus(cmd_val[sel_cmd], database[sel_cmd])
   elif (ch == chr(258) or ch == "D"): # 258: down key
     if cmd_names[sel_cmd] == "type": # special order for types needed, derived from dictionary
-      linear_idx = pad_types_dict_list.index([k for k, v in pad_types_dict.items() if v == database[sel_cmd]][0])
+      linear_idx = get_linear_pad_type_index(database[sel_cmd])
       if linear_idx > 0:
         linear_idx -= 1
         database[sel_cmd] = pad_types_dict[pad_types_dict_list[linear_idx]]
@@ -136,6 +136,9 @@ def process_user_input(ch):
     ecasound_switch_chains(ch == "k")
   elif (ch == "v" or ch == "V") and not use_rtmidi: # kit volume (only for jack audio mode)
     ecasound_kit_volume(ch == "v")
+
+def get_linear_pad_type_index(d):
+  return pad_types_dict_list.index([k for k, v in pad_types_dict.items() if v == d][0])
 
 def parse_cmd_param(cmd):
   # check for "pad type" and "curve type" special cases, otherwise convert integer in string
