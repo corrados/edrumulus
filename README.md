@@ -40,6 +40,12 @@ of the Edrumulus project can be found in the [TODO file](doc/TODO.md).
   - **Teensy 4.0/4.1**
 
 
+## Documentation
+
+- [Manual](doc/manual.md)
+- [Algorithm](doc/algorithm.md)
+
+
 ## Prototype hardware
 
   We want to capture the entire signal without non-linear analog preprocessing.
@@ -54,11 +60,6 @@ of the Edrumulus project can be found in the [TODO file](doc/TODO.md).
 
   *DISCLAIMER* All these circuit diagrams are used for my first prototypes and work fine for me. Use them
   at your own risk. In particular the circuits may not work for currently unsupported pieces of hardware.
-
-
-## Documentation
-
-The algorithms are described in [this document](doc/algorithm.md).
 
 
 ## Links
