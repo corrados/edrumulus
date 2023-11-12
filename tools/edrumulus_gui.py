@@ -48,21 +48,29 @@ elif use_webui:
   import http.server
 
 # tables
-pad_types    = ["PD120", "PD80R",  "PD8", "FD8", "VH12", "VH12CTRL", "KD7", "TP80",     "CY6",    "CY8", "DIABOLO12", \
-                "CY5",   "HD1TOM", "PD6", "KD8", "PDX8", "KD120",    "PD5", "PDA120LS", "PDX100", "KT10"]
+pad_types_dict = {"PDA120LS Roland Mesh Pad":18, "PDX100 Roland Mesh Pad":19, "PD120 Roland Mesh Pad":0, \
+                    "PD85 Roland Mesh Pad":1, "PDX8 Roland Mesh Pad":15, "DIABOLO12 drum-tec Mesh Pad":10, \
+                  "PD8 Roland Rubber Pad":2, "PD6 Roland Rubber Pad":13, "PD5 Roland Rubber Pad":17, \
+                    "HD1TOM Roland Rubber Pad":12, "TP80 Yamaha Rubber Pad":7, \
+                  "CY8 Roland Cymbal":9, "CY6 Roland Cymbal":8, "CY5 Roland Cymbal":11, "VH12 Roland Cymbal":4, \
+                  "KD120 Roland Mesh Kick Pad":16, "KD8 Roland Kick Pad":14, \
+                    "KD7 Roland Kick Pad":6, "KT10 Roland Kick Pedal":20, \
+                  "FD8 Roland Hi-Hat Pedal":3, "VH12CTRL Roland Hi-Hat Pedal":5}
 pad_names    = ["snare", "kick", "hi-hat", "ctrl", "crash", "tom1", "ride", "tom2", "tom3"]
 curve_types  = ["LINEAR", "EXP1", "EXP2", "LOG1", "LOG2"]
-cmd_names    = [            "type", "thresh", "sens", "pos thres", "pos sens", "rim thres", "mask",              "curve"]
-cmd_val      = [               102,      103,    104,         105,        106,         107,    118,                  109]
-cmd_val_rng  = [len(pad_types) - 1,       31,     31,          31,         31,          31,     63, len(curve_types) - 1]
+cmd_names    = [                 "type", "thresh", "sens", "pos thres", "pos sens", "rim thres", "mask",              "curve"]
+cmd_val      = [                    102,      103,    104,         105,        106,         107,    118,                  109]
+cmd_val_rng  = [len(pad_types_dict) - 1,       31,     31,          31,         31,          31,     63, len(curve_types) - 1]
 cmd_names   += ["rim/pos", "rim boost", "cross", "note", "note rim", "note2", "note2 rim",         "coupling", "spike (GLOBAL)"]
 cmd_val     += [      111,         119,     114,    112,        113,     116,         117,                120,              110]
 cmd_val_rng += [        3,          31,      31,    127,        127,     127,         127, len(pad_names) - 1,                4]
 midi_map     = {38: "snare", 40: "snare", 36: "kick", 22: "hi-hat", 26: "hi-hat", 44: "pedal", \
                 49: "crash", 55: "crash", 51: "ride", 48: "tom1",   50: "tom1", \
                 45: "tom2",  47: "tom2",  43: "tom3", 58: "tom3"}
-database     = [0] * len(cmd_val)
-hi_hat_ctrl  = 0  # current hi-hat control value
+database                = [0] * len(cmd_val)
+pad_types_dict_list     = list(pad_types_dict)
+pad_types               = list(dict(sorted(pad_types_dict.items(), key=lambda item: item[1]))) # sorted as in Edrumulus enumeration
+hi_hat_ctrl             = 0  # current hi-hat control value
 sel_pad                 = 0
 sel_cmd                 = 0
 version_major           = -1
@@ -100,12 +108,28 @@ def process_user_input(ch):
     sel_cmd += 1
   elif ch == "C" and sel_cmd > 0:
     sel_cmd -= 1
-  elif (ch == chr(259) or ch == "U") and database[sel_cmd] < cmd_val_rng[sel_cmd]: # 259: up key
-    database[sel_cmd] += 1
-    send_value_to_edrumulus(cmd_val[sel_cmd], database[sel_cmd])
-  elif (ch == chr(258) or ch == "D") and database[sel_cmd] > 0: # 258: down key
-    database[sel_cmd] -= 1
-    send_value_to_edrumulus(cmd_val[sel_cmd], database[sel_cmd])
+  elif (ch == chr(259) or ch == "U"): # 259: up key
+    if cmd_names[sel_cmd] == "type": # special order for types needed, derived from dictionary
+      linear_idx = pad_types_dict_list.index([k for k, v in pad_types_dict.items() if v == database[sel_cmd]][0])
+      if linear_idx < cmd_val_rng[sel_cmd]:
+        linear_idx += 1
+        database[sel_cmd] = pad_types_dict[pad_types_dict_list[linear_idx]]
+        send_value_to_edrumulus(cmd_val[sel_cmd], database[sel_cmd])
+    else:
+      if database[sel_cmd] < cmd_val_rng[sel_cmd]:
+        database[sel_cmd] += 1
+        send_value_to_edrumulus(cmd_val[sel_cmd], database[sel_cmd])
+  elif (ch == chr(258) or ch == "D"): # 258: down key
+    if cmd_names[sel_cmd] == "type": # special order for types needed, derived from dictionary
+      linear_idx = pad_types_dict_list.index([k for k, v in pad_types_dict.items() if v == database[sel_cmd]][0])
+      if linear_idx > 0:
+        linear_idx -= 1
+        database[sel_cmd] = pad_types_dict[pad_types_dict_list[linear_idx]]
+        send_value_to_edrumulus(cmd_val[sel_cmd], database[sel_cmd])
+    else:
+      if database[sel_cmd] > 0:
+        database[sel_cmd] -= 1
+        send_value_to_edrumulus(cmd_val[sel_cmd], database[sel_cmd])
   elif ch == "a" or ch == "A": # enable/disable auto pad selection
     auto_pad_sel = ch == "a" # capital "A" disables auto pad selection
   elif (ch == "k" or ch == "K") and not use_rtmidi: # kit selection (only for jack audio mode)
@@ -168,7 +192,7 @@ def ncurses_update_param_outputs():
     mainwin.addstr(row_start + 2, col_start, "Selected pad (auto):       {:2d} ({:s})      ".format(sel_pad, pad_names[sel_pad]))
   else:
     mainwin.addstr(row_start + 2, col_start, "Selected pad:              {:2d} ({:s})      ".format(sel_pad, pad_names[sel_pad]))
-  mainwin.addstr(row_start + 3, col_start, "Parameter: {:>15s}: {:s}             ".format(cmd_names[sel_cmd], parse_cmd_param(sel_cmd)))
+  mainwin.addstr(row_start + 3, col_start, "Parameter: {:>15s}: {:s}                       ".format(cmd_names[sel_cmd], parse_cmd_param(sel_cmd)))
   mainwin.refresh()
   midiwin.box() # in this box the received note-on MIDI notes are shown
   midiwin.addstr(0, 8, "MIDI-IN")
@@ -490,7 +514,7 @@ def act_on_midi_in(status, key, value):
   if status == 0x80: # act on control messages (0x80: Note Off)
     if key in cmd_val:
       cur_cmd = cmd_val.index(key)
-      # do not update command which was just changed to avoid the value jumps back to old value
+      # do not update command which was just changed to avoid the value jumps back to the old value
       if (midi_previous_send_cmd != key) or is_load_settings:
         database[cur_cmd] = max(0, min(cmd_val_rng[cur_cmd], value));
         do_update_midi_in = True;
