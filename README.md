@@ -47,18 +47,23 @@ of the Edrumulus project can be found in the [TODO file](doc/TODO.md).
 
 ## Prototype hardware
 
-  We want to capture the entire signal without non-linear analog preprocessing.
-  Since micro controllers usually only convert analog signals in the range of 0 to 3.3 V,
-  we have to move the point of operation in the middle of the voltage range.
+We want to capture the entire signal without non-linear analog preprocessing.
+Since micro controllers usually only convert analog signals in the range of 0 to 3.3 V,
+we have to move the point of operation in the middle of the voltage range.
 
-  A circuit diagram of a simplified prototype which only supports a mono piezo pad and
-  a hi-hat controller input is given in the following picture:
-  <br/><img src="doc/images/edrumulus_testing.png" width="400"><br/>
+A circuit diagram of a simplified prototype which only supports a mono piezo pad and
+a hi-hat controller input is given in the following picture:
+<br/><img src="doc/images/edrumulus_testing.png" width="400"><br/>
 
-  The full circuit diagram of Prototype2 is given in [this PDF file](hardware/prototype2/edrumulus.pdf).
+The full circuit diagram of Prototype2 is given in [this PDF file](hardware/prototype2/edrumulus.pdf).
 
-  *DISCLAIMER* All these circuit diagrams are used for my first prototypes and work fine for me. Use them
-  at your own risk. In particular the circuits may not work for currently unsupported pieces of hardware.
+*DISCLAIMER* All these circuit diagrams are used for my first prototypes and work fine for me. Use them
+at your own risk. In particular the circuits may not work for currently unsupported pieces of hardware.
+
+
+## Gallery
+
+A gallery of user implementations of Edrumulus prototypes [can be found here](doc/gallery.md).
 
 
 ## Links
