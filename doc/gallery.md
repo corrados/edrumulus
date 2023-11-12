@@ -4,6 +4,8 @@
 
 <br/>![thijstriemstra Prototype](images/gallery_thijstriemstra1.jpg)
 
+<br/>![thijstriemstra Prototype Inside](images/gallery_thijstriemstra2.jpg)
+
 <br/>[<img src="https://img.youtube.com/vi/YWE1LgwQbbQ/0.jpg" width="500">](https://www.youtube.com/watch?v=YWE1LgwQbbQ)
 
 
