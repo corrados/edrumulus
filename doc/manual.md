@@ -2,11 +2,12 @@
 
 Edrumulus is a high quality open source e-drum trigger module software. To use Edrumulus, you need to have:
 
-- A supported micro controller developer board (see the README file for supported micro controllers)
-- An analog front end circuit to connect the trigger pads to the micro controller (soldering skills are needed)
-- The [Arduino](https://www.arduino.cc/en/software) or [PlatformIO](https://platformio.org/) IDE for flashing the micro controller firmware
-- Some other software tools like [Hairless MIDI](https://projectgus.github.io/hairless-midiserial) and
-  [loopMIDI](https://www.tobias-erichsen.de/software/loopmidi.html), etc., for using the Edrumulus MIDI output signal
+- a supported micro controller developer board (see the README file for supported micro controllers),
+- an analog front end circuit to connect the trigger pads to the micro controller (either a bread board is
+  used or soldering skills are needed),
+- the [Arduino](https://www.arduino.cc/en/software) or [PlatformIO](https://platformio.org/) IDE for flashing the micro controller firmware,
+- on Windows OS, some software tools like [Hairless MIDI](https://projectgus.github.io/hairless-midiserial) and
+  [loopMIDI](https://www.tobias-erichsen.de/software/loopmidi.html) for enabling the Edrumulus MIDI communication,
 - [Python](https://www.python.org) to control Edrumulus trigger parameters in real-time.
   - Install the Python PIP packages python-rtmidi and windows-curses.
 
@@ -16,12 +17,7 @@ If Edrumulus is installed on the micro controller and there is no analog front e
 you will get a lot of false triggering (i.e. a lot of MIDI notes). For the Edrumulus system to work correctly,
 all configured ADC inputs must have the analog front end circuit attached.
 
-There is some debugging available in the Edrumulus firmware to check the analog front end. E.g., you can
-undefine USE_MIDI and enable the code in `Edrumulus::process()` which is called "TEST check DC offset values".
-If you flash that version of the Edrumulus firmware and open the Arduino serial plotter, you can see the
-DC offset of all configured ADC inputs. They must all be at around half the available value range of the ADC.
-This would be around 2048 for a 12 bit ADC. Make sure to revert your changes if you want to run Edrumulus
-in normal mode again.
+If an analog front end for a configured input is missing or faulty, Edrumulus will report a DC offset error.
 
 
 ## Setup for ESP32 under Windows
