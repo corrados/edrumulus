@@ -1,4 +1,6 @@
 # Edrumulus specific
+build/
+
 tools/artstar/
 tools/aasimonster2/
 tools/DRSKit/
