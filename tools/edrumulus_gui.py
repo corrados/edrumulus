@@ -487,8 +487,7 @@ def ecasound_switch_chains(do_increment):
     chain_index = chain_index % len(chain_setups)
     selected_kit = chain_setups[chain_index]
     ecasound_socket.sendall("engine-halt\r\ncs-select {0}\r\ncs-connect {0}\r\nengine-launch\r\nstart\r\n".format(selected_kit).encode("utf8"))
-    ecasound_socket.sendall("c-select Master\r\ncop-set 1,1,{0}\r\n".format(kit_volume).encode("utf8")) # update kit volume
-    kit_vol_str = str(kit_volume) + " dB"
+    ecasound_apply_kit_volume()
 
 def ecasound_kit_volume(do_increment):
   global kit_volume, kit_vol_str
@@ -496,8 +495,12 @@ def ecasound_kit_volume(do_increment):
     # now modify and apply new volume value
     kit_volume = kit_volume + 1 if do_increment else kit_volume - 1
     kit_volume = max(min(kit_volume, 30), -30)
-    ecasound_socket.sendall("c-select Master\r\ncop-set 1,1,{0}\r\n".format(kit_volume).encode("utf8"))
-    kit_vol_str = str(kit_volume) + " dB"
+    ecasound_apply_kit_volume()
+
+def ecasound_apply_kit_volume():
+  global kit_vol_str
+  ecasound_socket.sendall("c-select Master\r\ncop-set 1,1,{0}\r\n".format(kit_volume).encode("utf8"))
+  kit_vol_str = str(kit_volume) + " dB"
 
 
 ################################################################################
