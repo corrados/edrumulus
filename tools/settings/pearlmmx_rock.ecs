@@ -7,36 +7,36 @@
 #-a:KDrum -elv2:urn:ardour:a-comp,22,70,0,7,-27,4.3,0,1
 #-a:KDrum -eca:69,0.07,0.25,0.5
 -a:KDrum -elv2:urn:ardour:a-eq,80,6,65,10.9,1.230,6147,12.6,1.2,256,-15.7,0.766,909,-9.3,0.622,8088,-7.4,2.5,1,1,1,1,1,1,1
--a:KDrum -chcopy:1,2 -eadb:3 -epp:50
+-a:KDrum -chcopy:1,2 -eadb:-3 -epp:50
 
 -a:Snare -f:,1, -i jack,DrumGizmo:1-Snare,1-Snare
 -a:Snare -elv2:urn:ardour:a-eq,28,-20,86,3.1,1,194,-4.9,0.38,2500,0,1,660,-3.5,0.32,1947,1.9,1.5,1,1,1,1,1,1,1
--a:Snare -chcopy:1,2 -eadb:5 -epp:50
+-a:Snare -chcopy:1,2 -eadb:-1 -epp:50
 -a:Snare -elv2:urn:ardour:a-reverb,0.3,0.5,1
 
 -a:Hihat -f:,1, -i jack,DrumGizmo:2-Hihat,2-Hihat
 -a:Hihat -elv2:urn:ardour:a-eq,315,-20,300,0,1,1000,0,1,2500,0,1,6000,0,1,9664,18.6,-6.0,1,1,1,1,1,1,1
--a:Hihat -chcopy:1,2 -eadb:-5 -epp:30
+-a:Hihat -chcopy:1,2 -eadb:-11 -epp:30
 
 -a:Tom1 -f:,1, -i jack,DrumGizmo:3-Tom1,3-Tom1
 -a:Tom1 -elv2:urn:ardour:a-eq,160,0,300,0,1,106,11.5,0.9,829,-3.1,2.26,5204,13.6,1,9000,0,1.5,1,1,1,1,1,1,1
--a:Tom1 -chcopy:1,2 -eadb:-5 -epp:40
+-a:Tom1 -chcopy:1,2 -eadb:-11 -epp:40
 
 -a:Tom2 -f:,1, -i jack,DrumGizmo:4-Tom2,4-Tom2
 -a:Tom2 -elv2:urn:ardour:a-eq,160,0,251,0,1,95,10.5,1.12,829,0,2.26,4676,13,1.08,9000,0,-1.0,1,1,1,1,1,1,1
--a:Tom2 -chcopy:1,2 -eadb:-5 -epp:60
+-a:Tom2 -chcopy:1,2 -eadb:-11 -epp:60
 
 -a:Tom3 -f:,1, -i jack,DrumGizmo:5-Tom3,5-Tom3
 -a:Tom3 -elv2:urn:ardour:a-eq,160,0,300,0,1,86,11.5,1.04,829,-3.5,2.26,4355,14.6,1.55,9000,0,2.0,1,1,1,1,1,1,1
--a:Tom3 -chcopy:1,2 -eadb:-5 -epp:70
+-a:Tom3 -chcopy:1,2 -eadb:-11 -epp:70
 
 -a:OHLeft -f:,1, -i jack,DrumGizmo:6-OHLeft,6-OHLeft
 -a:OHLeft -elv2:urn:ardour:a-eq,160,0,300,0,1,100,0,1,2500,0,1,6000,0,1,3321,6,-12.0,1,1,1,1,1,1,1
--a:OHLeft -chcopy:1,2 -eadb:0 -epp:0
+-a:OHLeft -chcopy:1,2 -eadb:-6 -epp:0
 
 -a:OHRight -f:,1, -i jack,DrumGizmo:7-OHRight,7-OHRight
 -a:OHRight -elv2:urn:ardour:a-eq,160,0,300,0,1,100,0,1,2500,0,1,6000,0,1,3321,6,-12.0,1,1,1,1,1,1,1
--a:OHRight -chcopy:1,2 -eadb:0 -epp:100
+-a:OHRight -chcopy:1,2 -eadb:-6 -epp:100
 
 -a:all -f:,2, -o loop,master
 #-a Master -elv2:urn:ardour:a-reverb,0.2,0.5,1

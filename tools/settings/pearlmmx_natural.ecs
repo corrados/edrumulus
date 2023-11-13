@@ -3,31 +3,31 @@
 -n:PearlMMX_Natural
 
 -a:KDrum -f:,1, -i jack,DrumGizmo:0-KDrum,0-KDrum
--a:KDrum -chcopy:1,2 -eadb:4 -epp:50
+-a:KDrum -chcopy:1,2 -eadb:14 -epp:50
 
 -a:Snare -f:,1, -i jack,DrumGizmo:1-Snare,1-Snare
--a:Snare -chcopy:1,2 -eadb:-1 -epp:50
+-a:Snare -chcopy:1,2 -eadb:9 -epp:50
 
 -a:Hihat -f:,1, -i jack,DrumGizmo:2-Hihat,2-Hihat
--a:Hihat -chcopy:1,2 -eadb:-5 -epp:30
+-a:Hihat -chcopy:1,2 -eadb:5 -epp:30
 
 -a:Tom1 -f:,1, -i jack,DrumGizmo:3-Tom1,3-Tom1
--a:Tom1 -chcopy:1,2 -eadb:4 -epp:40
+-a:Tom1 -chcopy:1,2 -eadb:14 -epp:40
 
 -a:Tom2 -f:,1, -i jack,DrumGizmo:4-Tom2,4-Tom2
--a:Tom2 -chcopy:1,2 -eadb:4 -epp:60
+-a:Tom2 -chcopy:1,2 -eadb:14 -epp:60
 
 -a:Tom3 -f:,1, -i jack,DrumGizmo:5-Tom3,5-Tom3
--a:Tom3 -chcopy:1,2 -eadb:4 -epp:70
+-a:Tom3 -chcopy:1,2 -eadb:14 -epp:70
 
 -a:OHLeft -f:,1, -i jack,DrumGizmo:6-OHLeft,6-OHLeft
--a:OHLeft -chcopy:1,2 -eadb:-4 -epp:0
+-a:OHLeft -chcopy:1,2 -eadb:6 -epp:0
 
 -a:OHRight -f:,1, -i jack,DrumGizmo:7-OHRight,7-OHRight
--a:OHRight -chcopy:1,2 -eadb:-4 -epp:100
+-a:OHRight -chcopy:1,2 -eadb:6 -epp:100
 
 -a:all -f:,2, -o loop,master
--a:Master -eadb:16 -i loop,master
+-a:Master -eadb:0 -i loop,master
 
 -a:Master -o jack,system
 
