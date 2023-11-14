@@ -26,7 +26,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
   pad_settings.mask_time_ms              = 6;  // 0..31 (ms)
   pad_settings.pos_threshold             = 9;  // 0..31
   pad_settings.pos_sensitivity           = 14; // 0..31
-  pad_settings.rim_shot_treshold         = 12; // 0..31
+  pad_settings.rim_shot_threshold        = 12; // 0..31
   pad_settings.rim_shot_boost            = 15; // 0..31
   pad_settings.cancellation              = 0;  // 0..31
   pad_settings.coupled_pad_idx           = 0;  // 0..[number of pads - 1] (0 means disabled)
@@ -62,7 +62,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.velocity_sensitivity = 6;
       pad_settings.pos_threshold        = 7;
       pad_settings.pos_sensitivity      = 14;
-      pad_settings.rim_shot_treshold    = 24;
+      pad_settings.rim_shot_threshold   = 24;
       pad_settings.pos_sense_is_used    = true;
       pad_settings.rim_shot_is_used     = true;
       break;
@@ -72,7 +72,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.velocity_sensitivity      = 7;
       pad_settings.pos_threshold             = 31;
       pad_settings.pos_sensitivity           = 16;
-      pad_settings.rim_shot_treshold         = 30;
+      pad_settings.rim_shot_threshold        = 30;
       pad_settings.decay_grad_fact2          = 250.0f;
       pad_settings.decay_fact_db             = 5.0f;
       pad_settings.pre_scan_time_ms          = 3.5f;
@@ -84,7 +84,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
 
     case PD80R: // dual trigger
       pad_settings.velocity_sensitivity = 1;
-      pad_settings.rim_shot_treshold    = 10;
+      pad_settings.rim_shot_threshold   = 10;
       pad_settings.pos_threshold        = 11;
       pad_settings.pos_sensitivity      = 10;
       pad_settings.scan_time_ms         = 3.0f;
@@ -102,7 +102,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.velocity_sensitivity = 5;
       pad_settings.pos_threshold        = 9;
       pad_settings.pos_sensitivity      = 16;
-      pad_settings.rim_shot_treshold    = 24;
+      pad_settings.rim_shot_threshold   = 24;
       pad_settings.decay_fact_db        = 2.0f;
       pad_settings.decay_len2_ms        = 65.0f;
       pad_settings.decay_grad_fact2     = 300.0f;
@@ -116,7 +116,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
     case PDX8:
       pad_settings.velocity_threshold   = 6;
       pad_settings.velocity_sensitivity = 4;
-      pad_settings.rim_shot_treshold    = 14;
+      pad_settings.rim_shot_threshold   = 14;
       pad_settings.pos_threshold        = 21;
       pad_settings.pos_sensitivity      = 27;
       pad_settings.pos_sense_is_used    = true;
@@ -140,7 +140,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.velocity_sensitivity  = 3;
       pad_settings.pos_threshold         = 26;
       pad_settings.pos_sensitivity       = 11;
-      pad_settings.rim_shot_treshold     = 22;
+      pad_settings.rim_shot_threshold    = 22;
       pad_settings.mask_time_ms          = 7;
       pad_settings.scan_time_ms          = 1.3f;
       pad_settings.decay_est_delay_ms    = 6.0f;
@@ -180,7 +180,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
 // TODO if the Hi-Hat is open just a little bit, we get double triggers
       pad_settings.is_rim_switch        = true;
       pad_settings.velocity_sensitivity = 5;
-      pad_settings.rim_shot_treshold    = 23;
+      pad_settings.rim_shot_threshold   = 23;
       pad_settings.rim_shot_boost       = 0;
       pad_settings.scan_time_ms         = 4.0f;
       pad_settings.decay_est_delay_ms   = 9.0f;
@@ -245,7 +245,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.is_rim_switch        = true;
       pad_settings.velocity_threshold   = 6;
       pad_settings.velocity_sensitivity = 4;
-      pad_settings.rim_shot_treshold    = 12;
+      pad_settings.rim_shot_threshold   = 12;
       pad_settings.rim_shot_boost       = 0;
       pad_settings.scan_time_ms         = 3.0f;
       pad_settings.mask_time_ms         = 8.0f;
@@ -256,7 +256,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
     case CY6: // dual trigger
       pad_settings.is_rim_switch        = true;
       pad_settings.velocity_sensitivity = 6;
-      pad_settings.rim_shot_treshold    = 12;
+      pad_settings.rim_shot_threshold   = 12;
       pad_settings.rim_shot_boost       = 0;
       pad_settings.scan_time_ms         = 6.0f;
       pad_settings.decay_len2_ms        = 150.0f;
@@ -270,7 +270,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.is_rim_switch        = true;
       pad_settings.velocity_threshold   = 10;
       pad_settings.velocity_sensitivity = 5;
-      pad_settings.rim_shot_treshold    = 10;
+      pad_settings.rim_shot_threshold   = 10;
       pad_settings.rim_shot_boost       = 0;
       pad_settings.curve_type           = LOG2;
       pad_settings.scan_time_ms         = 6.0f;

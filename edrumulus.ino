@@ -294,9 +294,9 @@ void loop()
       // controller 107: rim shot threshold
       if ( controller == 107 )
       {
-        edrumulus.set_rim_shot_treshold ( selected_pad,    value );
-        edrumulus.write_setting         ( selected_pad, 5, value );
-        confirm_setting                 ( controller,      value, false );
+        edrumulus.set_rim_shot_threshold ( selected_pad,    value );
+        edrumulus.write_setting          ( selected_pad, 5, value );
+        confirm_setting                  ( controller,      value, false );
       }
 
       // controller 108: select pad
@@ -448,7 +448,7 @@ void confirm_setting ( const int  controller,
     MYMIDI.sendNoteOff ( 104, edrumulus.get_velocity_sensitivity ( selected_pad ), 1 );
     MYMIDI.sendNoteOff ( 105, edrumulus.get_pos_threshold ( selected_pad ), 1 );
     MYMIDI.sendNoteOff ( 106, edrumulus.get_pos_sensitivity ( selected_pad ), 1 );
-    MYMIDI.sendNoteOff ( 107, edrumulus.get_rim_shot_treshold ( selected_pad ), 1 );
+    MYMIDI.sendNoteOff ( 107, edrumulus.get_rim_shot_threshold ( selected_pad ), 1 );
     MYMIDI.sendNoteOff ( 108, selected_pad, 1 );
     MYMIDI.sendNoteOff ( 109, static_cast<int> ( edrumulus.get_curve ( selected_pad ) ), 1 );
     MYMIDI.sendNoteOff ( 110, edrumulus.get_spike_cancel_level(), 1 );
@@ -484,7 +484,7 @@ void read_settings()
     edrumulus.set_velocity_sensitivity ( i,                                      edrumulus.read_setting ( i, 2 ) );
     edrumulus.set_pos_threshold        ( i,                                      edrumulus.read_setting ( i, 3 ) );
     edrumulus.set_pos_sensitivity      ( i,                                      edrumulus.read_setting ( i, 4 ) );
-    edrumulus.set_rim_shot_treshold    ( i,                                      edrumulus.read_setting ( i, 5 ) );
+    edrumulus.set_rim_shot_threshold   ( i,                                      edrumulus.read_setting ( i, 5 ) );
     edrumulus.set_curve                ( i, static_cast<Edrumulus::Ecurvetype> ( edrumulus.read_setting ( i, 6 ) ) );
     edrumulus.set_rim_shot_is_used     ( i,                                      edrumulus.read_setting ( i, 7 ) );
     edrumulus.set_pos_sense_is_used    ( i,                                      edrumulus.read_setting ( i, 8 ) );
@@ -510,7 +510,7 @@ void write_all_settings()
     edrumulus.write_setting ( i, 2,  edrumulus.get_velocity_sensitivity ( i ) );
     edrumulus.write_setting ( i, 3,  edrumulus.get_pos_threshold        ( i ) );
     edrumulus.write_setting ( i, 4,  edrumulus.get_pos_sensitivity      ( i ) );
-    edrumulus.write_setting ( i, 5,  edrumulus.get_rim_shot_treshold    ( i ) );
+    edrumulus.write_setting ( i, 5,  edrumulus.get_rim_shot_threshold   ( i ) );
     edrumulus.write_setting ( i, 6,  edrumulus.get_curve                ( i ) );
     edrumulus.write_setting ( i, 7,  edrumulus.get_rim_shot_is_used     ( i ) );
     edrumulus.write_setting ( i, 8,  edrumulus.get_pos_sense_is_used    ( i ) );

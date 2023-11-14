@@ -506,10 +506,10 @@ void Edrumulus::Pad::initialize()
   decay_est_delay          = round ( pad_settings.decay_est_delay_ms * 1e-3f * Fs );
   decay_est_len            = round ( pad_settings.decay_est_len_ms   * 1e-3f * Fs );
   decay_est_fact           = pow ( 10.0f, pad_settings.decay_est_fact_db / 10 );
-  rim_shot_treshold        = pow ( 10.0f, ( static_cast<float> ( pad_settings.rim_shot_treshold ) - 44 ) / 10 ); // linear rim shot threshold
+  rim_shot_threshold       = pow ( 10.0f, ( static_cast<float> ( pad_settings.rim_shot_threshold ) - 44 ) / 10 ); // linear rim shot threshold
   rim_shot_window_len      = round ( pad_settings.rim_shot_window_len_ms * 1e-3f * Fs );             // window length (e.g. 5 ms)
   rim_shot_boost           = pow ( 10.0f, static_cast<float> ( pad_settings.rim_shot_boost ) / 40 ); // boost / 4 -> dB value
-  rim_switch_treshold      = -pow ( 10.0f, pad_settings.rim_shot_treshold / 10.0f ); // rim switch linear threshold, where 10^(31/10)=1259 which is approx 4096/3 (10 bit ADC)
+  rim_switch_threshold     = -pow ( 10.0f, pad_settings.rim_shot_threshold / 10.0f ); // rim switch linear threshold, where 10^(31/10)=1259 which is approx 4096/3 (10 bit ADC)
   rim_switch_on_cnt_thresh = round ( 10.0f * 1e-3f * Fs );                                           // number of on samples until we detect a choke
   rim_max_power_low_limit  = ADC_MAX_NOISE_AMPL * ADC_MAX_NOISE_AMPL / 31.0f; // lower limit on detected rim power, 15 dB below max noise amplitude
   x_rim_hist_len           = x_sq_hist_len + rim_shot_window_len;
@@ -1112,13 +1112,13 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
       if ( get_is_rim_switch() )
       {
         // as a quick hack we re-use the length parameter for the switch on detection
-        const bool rim_switch_on = ( input[1] < rim_switch_treshold );
+        const bool rim_switch_on = ( input[1] < rim_switch_threshold );
         s.x_rim_switch_hist.add ( rim_switch_on );
 
         if ( use_second_rim && ( input_len > 2 ) )
         {
           // the second rim signal is on third input signal
-          s.x_sec_rim_switch_hist.add ( input[2] < rim_switch_treshold );
+          s.x_sec_rim_switch_hist.add ( input[2] < rim_switch_threshold );
         }
 
         // at the end of the scan time search the history buffer for any switch on
@@ -1242,7 +1242,7 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
             }
 
             const float rim_metric  = rim_max_pow / s.peak_val;
-            const bool  is_rim_shot = ( rim_metric > rim_shot_treshold ) && ( rim_max_pow > rim_max_power_low_limit );
+            const bool  is_rim_shot = ( rim_metric > rim_shot_threshold ) && ( rim_max_pow > rim_max_power_low_limit );
             s.rim_state             = is_rim_shot ? RIM_SHOT : NO_RIM;
             s.rim_shot_cnt          = 0;
             s.was_rim_shot_ready    = true;

@@ -178,8 +178,8 @@ public:
   int  get_pos_sensitivity      ( const int pad_idx )                                 { return pad[pad_idx].get_pos_sensitivity(); }
   void set_mask_time            ( const int pad_idx, const int        new_time )      { pad[pad_idx].set_mask_time ( new_time ); }
   int  get_mask_time            ( const int pad_idx )                                 { return pad[pad_idx].get_mask_time(); }
-  void set_rim_shot_treshold    ( const int pad_idx, const int        new_threshold ) { pad[pad_idx].set_rim_shot_treshold ( new_threshold ); }
-  int  get_rim_shot_treshold    ( const int pad_idx )                                 { return pad[pad_idx].get_rim_shot_treshold(); }
+  void set_rim_shot_threshold   ( const int pad_idx, const int        new_threshold ) { pad[pad_idx].set_rim_shot_threshold ( new_threshold ); }
+  int  get_rim_shot_threshold   ( const int pad_idx )                                 { return pad[pad_idx].get_rim_shot_threshold(); }
   void set_rim_shot_boost       ( const int pad_idx, const int        new_boost )     { pad[pad_idx].set_rim_shot_boost ( new_boost ); }
   int  get_rim_shot_boost       ( const int pad_idx )                                 { return pad[pad_idx].get_rim_shot_boost(); }
   void set_curve                ( const int pad_idx, const Ecurvetype new_curve )     { pad[pad_idx].set_curve ( new_curve ); }
@@ -264,8 +264,8 @@ protected:
       int  get_pos_sensitivity      ()                                 { return pad_settings.pos_sensitivity; }
       void set_mask_time            ( const int        new_time_ms )   { pad_settings.mask_time_ms = new_time_ms; sched_init(); }
       int  get_mask_time            ()                                 { return pad_settings.mask_time_ms; }
-      void set_rim_shot_treshold    ( const int        new_threshold ) { pad_settings.rim_shot_treshold = new_threshold; sched_init(); }
-      int  get_rim_shot_treshold    ()                                 { return pad_settings.rim_shot_treshold; }
+      void set_rim_shot_threshold   ( const int        new_threshold ) { pad_settings.rim_shot_threshold = new_threshold; sched_init(); }
+      int  get_rim_shot_threshold   ()                                 { return pad_settings.rim_shot_threshold; }
       void set_rim_shot_boost       ( const int        new_boost )     { pad_settings.rim_shot_boost = new_boost; sched_init(); }
       int  get_rim_shot_boost       ()                                 { return pad_settings.rim_shot_boost; }
       void set_curve                ( const Ecurvetype new_curve )     { pad_settings.curve_type = new_curve; sched_init(); }
@@ -295,7 +295,7 @@ protected:
         int        mask_time_ms;         // 0..31 (ms)
         int        pos_threshold;        // 0..31
         int        pos_sensitivity;      // 0..31, high values give higher sensitivity
-        int        rim_shot_treshold;    // 0..31
+        int        rim_shot_threshold;   // 0..31
         int        rim_shot_boost;       // 0..31
         int        cancellation;         // 0..31
         int        coupled_pad_idx;      // 0..[number of pads - 1]
@@ -436,9 +436,9 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       float        decay_mask_fact;
       int          x_rim_hist_len;
       int          rim_shot_window_len;
-      float        rim_shot_treshold;
+      float        rim_shot_threshold;
       float        rim_shot_boost;
-      float        rim_switch_treshold;
+      float        rim_switch_threshold;
       int          rim_switch_on_cnt_thresh;
       int          lp_filt_len;
       int          x_low_hist_len;
