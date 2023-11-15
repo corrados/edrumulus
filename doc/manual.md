@@ -55,3 +55,14 @@ Example:
    - To get it fully working, the new type has to be added at multiple places, e.g. in the GUI python script, too.
 4. Test the parameters in practice. Modify the available real-time parameters for hopefully better results. Possibly go back to previous steps.
 
+## Hardware-specific comments
+
+### Millenium MPS-750X
+
+- recommended circuit: [Rs=10k, Rp=10k, Cp=0](https://github.com/corrados/edrumulus/discussions/98)
+- TRS pins:
+  - toms: hit piezo = T, rim piezo = R, GND = S
+  - cymbals incl. hi-hat: bow piezo = S, rim switch = R (none for hi-hat), GND = T
+- ride and crash cymbals draw some current
+- the ride rim switch differs from the ride bell switch by a 5k resistor
+- set all MPS750X potis to maximum output with a screw driver (sometimes the direction appears to be indicated incorrectly)

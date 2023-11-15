@@ -115,7 +115,14 @@ public:
     PD5       = 17,
     PDA120LS  = 18,
     PDX100    = 19,
-    KT10      = 20
+    KT10      = 20,
+    MPS750X_TOM    = 21,
+    MPS750X_SNARE  = 22,
+    MPS750X_KICK   = 23,
+    MPS750X_RIDE   = 24,
+    MPS750X_CRASH  = 25,
+    LEHHS12C       = 26,
+    LEHHS12C_CTRL  = 27
   };
 
   enum Ecurvetype // note that the enums need assigned integers for MIDI settings transfer
