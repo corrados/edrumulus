@@ -58,48 +58,48 @@ void Edrumulus::Pad::apply_preset_pad_settings()
   switch ( pad_settings.pad_type )
   {
     case LEHHS12C: // dual trigger
-      pad_settings.is_rim_switch           = true;
-      pad_settings.scan_time_ms            = 4.0f;
-      pad_settings.decay_fact_db           = 5.0f;
-      pad_settings.decay_len2_ms           = 600.0f;
-      pad_settings.decay_grad_fact2        = 100.0f;
-      pad_settings.rim_shot_is_used        = true;
-      pad_settings.rim_shot_threshold      = 25;
-      pad_settings.rim_shot_boost          = 0;
-      pad_settings.velocity_threshold      = 18;
-      pad_settings.velocity_sensitivity    = 6;
+      pad_settings.is_rim_switch        = true;
+      pad_settings.scan_time_ms         = 4.0f;
+      pad_settings.decay_fact_db        = 5.0f;
+      pad_settings.decay_len2_ms        = 600.0f;
+      pad_settings.decay_grad_fact2     = 100.0f;
+      pad_settings.rim_shot_is_used     = true;
+      pad_settings.rim_shot_threshold   = 25;
+      pad_settings.rim_shot_boost       = 0;
+      pad_settings.velocity_threshold   = 18;
+      pad_settings.velocity_sensitivity = 6;
       break;
 
     case LEHHS12C_CTRL: // 0-35k poti
-      pad_settings.is_control              = true;
-      pad_settings.pos_threshold           = 6;
-      pad_settings.pos_sensitivity         = 23;
-      pad_settings.velocity_threshold      = 0;
-      pad_settings.velocity_sensitivity    = 22;
+      pad_settings.is_control           = true;
+      pad_settings.pos_threshold        = 6;
+      pad_settings.pos_sensitivity      = 23;
+      pad_settings.velocity_threshold   = 0;
+      pad_settings.velocity_sensitivity = 22;
       break;
 
     case MPS750X_TOM: // dual trigger
-      pad_settings.scan_time_ms            = 6.0f;
-      pad_settings.pre_scan_time_ms        = 3.5f;
-      pad_settings.decay_grad_fact2        = 150.0f;
-      pad_settings.decay_len2_ms           = 450.0f;
-      pad_settings.rim_shot_is_used        = false;
-      pad_settings.velocity_threshold      = 2;
-      pad_settings.velocity_sensitivity    = 3;
+      pad_settings.scan_time_ms         = 6.0f;
+      pad_settings.pre_scan_time_ms     = 3.5f;
+      pad_settings.decay_grad_fact2     = 150.0f;
+      pad_settings.decay_len2_ms        = 450.0f;
+      pad_settings.rim_shot_is_used     = false;
+      pad_settings.velocity_threshold   = 2;
+      pad_settings.velocity_sensitivity = 3;
       break;
 
     case MPS750X_SNARE: // dual trigger
-      pad_settings.scan_time_ms            = 6.0f;
-      pad_settings.pre_scan_time_ms        = 3.5f;
-      pad_settings.decay_grad_fact2        = 150.0f;
-      pad_settings.decay_len2_ms           = 450.0f;
-      pad_settings.rim_use_low_freq_bp     = false;
-      pad_settings.rim_shot_is_used        = true;
-      pad_settings.rim_shot_threshold      = 12;
-      pad_settings.velocity_threshold      = 2;
-      pad_settings.velocity_sensitivity    = 6;
-      pad_settings.pos_sense_is_used       = true;
-      pad_settings.pos_sensitivity         = 3;
+      pad_settings.scan_time_ms         = 6.0f;
+      pad_settings.pre_scan_time_ms     = 3.5f;
+      pad_settings.decay_grad_fact2     = 150.0f;
+      pad_settings.decay_len2_ms        = 450.0f;
+      pad_settings.rim_use_low_freq_bp  = false;
+      pad_settings.rim_shot_is_used     = true;
+      pad_settings.rim_shot_threshold   = 12;
+      pad_settings.velocity_threshold   = 2;
+      pad_settings.velocity_sensitivity = 6;
+      pad_settings.pos_sense_is_used    = true;
+      pad_settings.pos_sensitivity      = 3;
       break;
 
     case MPS750X_KICK: // single trigger
@@ -114,31 +114,31 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case MPS750X_RIDE: // 3-zone
-      pad_settings.is_rim_switch             = true;
-      pad_settings.scan_time_ms              = 3.0f;
-      pad_settings.decay_est_delay_ms        = 1.0f;
-      pad_settings.decay_grad_fact2          = 150.0f;
-      pad_settings.decay_len2_ms             = 450.0f;
-      pad_settings.rim_use_low_freq_bp       = false;
-      pad_settings.rim_shot_is_used          = true;
-      pad_settings.rim_shot_threshold        = 18;
-      pad_settings.rim_shot_boost            = 0;
-      pad_settings.velocity_threshold        = 12;
-      pad_settings.velocity_sensitivity      = 6;
+      pad_settings.is_rim_switch        = true;
+      pad_settings.scan_time_ms         = 3.0f;
+      pad_settings.decay_est_delay_ms   = 1.0f;
+      pad_settings.decay_grad_fact2     = 150.0f;
+      pad_settings.decay_len2_ms        = 450.0f;
+      pad_settings.rim_use_low_freq_bp  = false;
+      pad_settings.rim_shot_is_used     = true;
+      pad_settings.rim_shot_threshold   = 18;
+      pad_settings.rim_shot_boost       = 0;
+      pad_settings.velocity_threshold   = 12;
+      pad_settings.velocity_sensitivity = 6;
       break;
 
     case MPS750X_CRASH: // 2-zone
-      pad_settings.is_rim_switch             = true;
-      pad_settings.scan_time_ms              = 3.0f;
-      pad_settings.decay_est_delay_ms        = 1.0f;
-      pad_settings.decay_grad_fact2          = 150.0f;
-      pad_settings.decay_len2_ms             = 450.0f;
-      pad_settings.rim_use_low_freq_bp       = false;
-      pad_settings.rim_shot_is_used          = true;
-      pad_settings.rim_shot_threshold        = 20;
-      pad_settings.rim_shot_boost            = 0;
-      pad_settings.velocity_threshold        = 12;
-      pad_settings.velocity_sensitivity      = 6;
+      pad_settings.is_rim_switch        = true;
+      pad_settings.scan_time_ms         = 3.0f;
+      pad_settings.decay_est_delay_ms   = 1.0f;
+      pad_settings.decay_grad_fact2     = 150.0f;
+      pad_settings.decay_len2_ms        = 450.0f;
+      pad_settings.rim_use_low_freq_bp  = false;
+      pad_settings.rim_shot_is_used     = true;
+      pad_settings.rim_shot_threshold   = 20;
+      pad_settings.rim_shot_boost       = 0;
+      pad_settings.velocity_threshold   = 12;
+      pad_settings.velocity_sensitivity = 6;
       break;
 
     case PD120: // dual trigger
@@ -169,8 +169,8 @@ void Edrumulus::Pad::apply_preset_pad_settings()
     case PD80R: // dual trigger
       pad_settings.velocity_sensitivity = 1;
       pad_settings.rim_shot_threshold   = 10;
-      pad_settings.pos_threshold        = 11;
-      pad_settings.pos_sensitivity      = 10;
+      pad_settings.pos_threshold        = 9;
+      pad_settings.pos_sensitivity      = 15;
       pad_settings.scan_time_ms         = 3.0f;
       pad_settings.decay_len2_ms        = 75.0f;
       pad_settings.decay_grad_fact2     = 300.0f;
