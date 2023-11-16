@@ -70,6 +70,13 @@ x = audioread("signals/pd85rimshotpossense.wav");padtype='pd80r';
 %x = audioread("signals/tp80.wav");padtype='tp80';
 %x = audioread("signals/vh12.wav");padtype='vh12';%x = x(900000:end, :);%x = x(376000:420000, :);%x = x(1:140000, :);
 %x = audioread("signals/drumtec_diabolo12.wav");x=x(:,1);padtype='diabolo12';
+%x = audioread("signals/mps750x_tom.wav");padtype='mps750x_tom';x = x(156000:end, :); %until press rolls: 1:156000, press rolls: 156000:end
+%x = audioread("signals/mps750x_snare.wav");padtype='mps750x_tom';x = x(1:172000, :); %until press rolls: 1:172000, press rolls: 172000:end
+%x = audioread("signals/mps750x_snare_rim.wav");padtype='mps750x_tom';
+%x = audioread("signals/mps750x_kick.wav");padtype='mps750x_kick';
+%x = audioread("signals/mps750x_ride_all.wav");padtype='mps750x_cymbal';
+%x = audioread("signals/mps750x_crash_all.wav");padtype='mps750x_cymbal';
+%x = audioread("signals/lehhs12c_all.wav");padtype='lehhs12c';
 
 
 % scale to the ESP32 input range to match the signal level of the ESP32
@@ -108,6 +115,31 @@ switch padtype
   case 'pd120'
     % note: the PRESET settings are from the PD120 pad
     pad.hot_spot_attenuation_db = 3;
+  case 'lehhs12c'
+    pad.scan_time_ms              = 4;
+    pad.decay_fact_db             = 5;
+    pad.decay_len_ms2             = 600;
+    pad.decay_grad_fact2          = 100;
+  case 'mps750x_tom'
+    pad.scan_time_ms              = 6;
+    pad.pre_scan_time_ms          = 3.5;
+    pad.decay_grad_fact2          = 150;
+    pad.decay_len_ms2             = 450;
+    pad.rim_use_low_freq_bp       = false;
+  case 'mps750x_kick'
+    pad.first_peak_diff_thresh_db = 3;
+    pad.scan_time_ms              = 6;
+    pad.pre_scan_time_ms          = 3.5;
+    pad.decay_grad_fact2          = 150;
+    pad.decay_len_ms2             = 450;
+    pad.threshold_db              = 30;
+  case 'mps750x_cymbal'
+    pad.scan_time_ms              = 3;
+    pad.decay_est_delay_ms        = 1;
+    pad.decay_grad_fact2          = 150;
+    pad.decay_len_ms2             = 450;
+    pad.threshold_db              = 30;
+    pad.rim_use_low_freq_bp       = false;
   case 'pda120ls'
     pad.decay_grad_fact2          = 250;
     pad.decay_fact_db             = 5;
