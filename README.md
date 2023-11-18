@@ -80,8 +80,6 @@ A gallery of user implementations of Edrumulus prototypes [can be found here](do
 
 - [aDrums](https://github.com/josuelopezv/aDrums)
 
-- [Drum Master](https://github.com/thebiguno/microcontroller-projects/tree/master/projects/drummaster/rev2/src)
-
 - Forum: [How to solve a system of hyperbola equations](https://math.stackexchange.com/questions/3373011/how-to-solve-this-system-of-hyperbola-equations)
 
 - Forum: [E-Drum Technik-Thread (für Elektrotechnik- und Informatik-Interessierte)](https://www.drummerforum.de/forum/71415-e-drum-technik-thread-f%C3%BCr-elektrotechnik-und-informatik-interessierte.html)
