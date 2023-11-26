@@ -27,16 +27,20 @@ import time
 import threading
 import math
 from pathlib import Path
-use_rtmidi  = "rtmidi"    in sys.argv # use rtmidi instead of jack audio
+
+use_rtmidi  = "rtmidi"    in sys.argv # use this for native USB MIDI devices like Teensy
+use_serial  = "serial"    in sys.argv # use this for direct ESP32 connection via serial
 no_gui      = "no_gui"    in sys.argv # no GUI but blocking (just settings management)
 non_block   = "non_block" in sys.argv # no GUI and non-blocking (just settings management)
 use_lcd     = "lcd"       in sys.argv # LCD GUI mode on Raspberry Pi
 use_webui   = "webui"     in sys.argv # web UI GUI mode on Raspberry Pi
 use_ncurses = not no_gui and not non_block and not use_lcd and not use_webui # normal console GUI mode (default)
+use_jack    = not use_rtmidi and not use_serial
 if use_rtmidi:
   import rtmidi
-  from rtmidi.midiutil import open_midiinput
-  from rtmidi.midiutil import open_midioutput
+elif use_serial:
+  import serial
+  import rtmidi # serial needs rtmidi out port
 else:
   import jack
 if use_lcd:
@@ -91,7 +95,7 @@ selected_kit            = ""
 kit_vol_str             = ""
 
 # initialize jack audio for MIDI
-if not use_rtmidi:
+if use_jack:
   client      = jack.Client("EdrumulusGUI")
   input_port  = client.midi_inports.register("MIDI_in")
   output_port = client.midi_outports.register("MIDI_out")
@@ -134,9 +138,9 @@ def process_user_input(ch):
         send_value_to_edrumulus(cmd_val[sel_cmd], database[sel_cmd])
   elif ch == "a" or ch == "A": # enable/disable auto pad selection
     auto_pad_sel = ch == "a" # capital "A" disables auto pad selection
-  elif (ch == "k" or ch == "K") and not use_rtmidi: # kit selection (only for jack audio mode)
+  elif (ch == "k" or ch == "K") and use_jack: # kit selection (only for jack audio mode)
     ecasound_switch_chains(ch == "k")
-  elif (ch == "v" or ch == "V") and not use_rtmidi: # kit volume (only for jack audio mode)
+  elif (ch == "v" or ch == "V") and use_jack: # kit volume (only for jack audio mode)
     ecasound_kit_volume(ch == "v")
 
 def get_linear_pad_type_index(d):
@@ -559,7 +563,7 @@ def act_on_midi_in(status, key, value):
 ################################################################################
 # MIDI handling (via jack audio) ###############################################
 ################################################################################
-if not use_rtmidi:
+if use_jack:
   def send_value_to_edrumulus(command, value):
     global midi_send_cmd, midi_send_val
     (midi_send_cmd, midi_send_val) = (command, value);
@@ -601,6 +605,34 @@ if use_rtmidi:
 
 
 ################################################################################
+# MIDI handling (via serial) ###################################################
+################################################################################
+if use_serial:
+  serial_message = []
+  def send_value_to_edrumulus(command, value):
+    global midi_send_cmd, midi_send_val
+    (midi_send_cmd, midi_send_val) = (command, value);
+    ser.write(bytearray([185, midi_send_cmd, midi_send_val]))
+    midi_previous_send_cmd = midi_send_cmd # store previous value
+    midi_send_cmd          = -1 # invalidate current command to prepare for next command
+
+  def receive_from_serial():
+    global serial_message
+    while ser.isOpen():
+      try:
+        data = ser.read()
+        if (data[0] & 0x80) != 0:
+          serial_message = [data[0]] # status byte is first on message
+        else:
+          serial_message.append(data[0])
+        if len(serial_message) == 3: # we only support three bytes commands
+          act_on_midi_in(serial_message[0], serial_message[1], serial_message[2])
+          midiout.send_message(serial_message)
+      except:
+        pass
+
+
+################################################################################
 # Main function ################################################################
 ################################################################################
 # initialize GUI (16x2 LCD or ncurses GUI)
@@ -620,11 +652,20 @@ if use_rtmidi: # initialize rtmidi (only Teensy board supported)
   try:
     in_name  = "EdrumulusIn" if [s for s in rtmidi.MidiIn().get_ports() if "EdrumulusIn" in s] else "Edrumulus"
     out_name = "EdrumulusOut" if [s for s in rtmidi.MidiOut().get_ports() if "EdrumulusOut" in s] else "Edrumulus"
-    midiin, port_name_in   = open_midiinput([s for s in rtmidi.MidiIn().get_ports() if in_name in s][0], client_name="EdrumulusGUI")
-    midiout, port_name_out = open_midioutput([s for s in rtmidi.MidiOut().get_ports() if out_name in s][0], client_name="EdrumulusGUI")
+    midiin, port_name_in   = rtmidi.open_midiinput([s for s in rtmidi.MidiIn().get_ports() if in_name in s][0], client_name="EdrumulusGUI")
+    midiout, port_name_out = rtmidi.open_midioutput([s for s in rtmidi.MidiOut().get_ports() if out_name in s][0], client_name="EdrumulusGUI")
     midiin.set_callback(MidiInputHandler(port_name_in))
   except:
     raise Exception("No native Edrumulus USB device (e.g., Teensy) nor loopMIDI driver found.")
+elif use_serial:
+  try:
+    midiout = rtmidi.MidiOut() # somehow we need to call this twice: once with error and once with success
+  except:
+    midiout = rtmidi.MidiOut()
+  midiout.open_virtual_port("EdrumulusOut")
+  # TODO do not use fix values here
+  ser = serial.Serial("/dev/ttyUSB0", 38400)
+  threading.Thread(target = receive_from_serial).start()
 else: # initialize jack midi
   client.activate()
   try:
@@ -647,7 +688,7 @@ time.sleep(0.2)
 do_update_display = True
 
 # it takes time for ecasound to start up -> we need a timer thread for socket connection
-if not use_rtmidi: # ecasound is only supported for jack audio mode
+if use_jack: # ecasound is only supported for jack audio mode
   threading.Timer(0.0, ecasound_connection).start()
 
 # main loop
@@ -675,6 +716,9 @@ elif use_webui:
   web_server.server_close()
 if use_rtmidi:
   midiin.delete()
+  midiout.delete()
+elif use_serial:
+  ser.close()
   midiout.delete()
 else:
   client.deactivate()

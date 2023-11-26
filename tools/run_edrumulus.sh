@@ -47,6 +47,13 @@ if [[ "$1" == no_gui ]]; then
   gui_mode="no_gui"
 fi
 
+# check if direct serial connection to ESP32 shall be used
+if [[ "$1" == serial ]]; then
+  echo "-> direct serial connection mode enabled"
+  is_serial=true
+  gui_mode="serial"
+fi
+
 # special mode: UART connection with console GUI
 if [[ "$1" == uartgui ]]; then
   echo "-> UART GUI mode enabled"
@@ -192,10 +199,12 @@ else
     pigs modes 9 w
     pigs w 9 1
   else
-    if [ -r "/dev/ttyACM0" ]; then
-      mod-ttymidi/ttymidi -b 38400 -s /dev/ttyACM0 & # ESP32-S3
-    else
-      mod-ttymidi/ttymidi -b 38400 &                 # ESP32
+    if [[ -z is_serial ]]; then
+      if [ -r "/dev/ttyACM0" ]; then
+        mod-ttymidi/ttymidi -b 38400 -s /dev/ttyACM0 & # ESP32-S3
+      else
+        mod-ttymidi/ttymidi -b 38400 &                 # ESP32
+      fi
     fi
   fi
 fi
