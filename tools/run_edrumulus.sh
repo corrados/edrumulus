@@ -266,7 +266,9 @@ fi
 if [[ -v is_teensy ]]; then
   killall a2jmidid
 else
-  killall ttymidi
+  if [[ ! -v is_serial ]]; then
+    killall ttymidi
+  fi
 fi
 
 if [[ -v is_uart ]]; then

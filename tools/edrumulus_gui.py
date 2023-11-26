@@ -559,6 +559,11 @@ def act_on_midi_in(status, key, value):
       hi_hat_ctrl       = value
       do_update_midi_in = True
 
+def store_and_invalide_midi_cmd():
+  global midi_previous_send_cmd, midi_send_cmd
+  midi_previous_send_cmd = midi_send_cmd # store previous value
+  midi_send_cmd          = -1 # invalidate current command to prepare for next command
+
 
 ################################################################################
 # MIDI handling (via jack audio) ###############################################
@@ -573,7 +578,7 @@ if use_jack:
   # jack audio callback function
   @client.set_process_callback
   def process(frames):
-    global midi_send_cmd, midi_previous_send_cmd
+    global midi_send_cmd
     output_port.clear_buffer()
     for offset, data in input_port.incoming_midi_events():
       if len(data) == 3:
@@ -581,8 +586,7 @@ if use_jack:
 
     if midi_send_cmd >= 0:
       output_port.write_midi_event(0, (185, midi_send_cmd, midi_send_val))
-      midi_previous_send_cmd = midi_send_cmd # store previous value
-      midi_send_cmd          = -1 # invalidate current command to prepare for next command
+      store_and_invalide_midi_cmd()
 
 
 ################################################################################
@@ -593,8 +597,7 @@ if use_rtmidi:
     global midi_send_cmd, midi_send_val
     (midi_send_cmd, midi_send_val) = (command, value);
     midiout.send_message([185, midi_send_cmd, midi_send_val])
-    midi_previous_send_cmd = midi_send_cmd # store previous value
-    midi_send_cmd          = -1 # invalidate current command to prepare for next command
+    store_and_invalide_midi_cmd()
 
   class MidiInputHandler(object):
     def __init__(self, port):
@@ -613,8 +616,7 @@ if use_serial:
     global midi_send_cmd, midi_send_val
     (midi_send_cmd, midi_send_val) = (command, value);
     ser.write(bytearray([185, midi_send_cmd, midi_send_val]))
-    midi_previous_send_cmd = midi_send_cmd # store previous value
-    midi_send_cmd          = -1 # invalidate current command to prepare for next command
+    store_and_invalide_midi_cmd()
 
   def receive_from_serial():
     global serial_message
@@ -627,7 +629,7 @@ if use_serial:
           serial_message.append(data[0])
         if len(serial_message) == 3: # we only support three bytes commands
           act_on_midi_in(serial_message[0], serial_message[1], serial_message[2])
-          midiout.send_message(serial_message)
+          midiout.send_message(serial_message) # MIDI through from serial to MIDI device for DAW usage
       except:
         pass
 
