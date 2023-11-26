@@ -199,7 +199,7 @@ else
     pigs modes 9 w
     pigs w 9 1
   else
-    if [[ -z is_serial ]]; then
+    if [[ ! -v is_serial ]]; then
       if [ -r "/dev/ttyACM0" ]; then
         mod-ttymidi/ttymidi -b 38400 -s /dev/ttyACM0 & # ESP32-S3
       else
