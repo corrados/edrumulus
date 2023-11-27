@@ -559,7 +559,7 @@ def act_on_midi_in(status, key, value):
       hi_hat_ctrl       = value
       do_update_midi_in = True
 
-def store_and_invalide_midi_cmd():
+def store_and_invalidate_midi_cmd():
   global midi_previous_send_cmd, midi_send_cmd
   midi_previous_send_cmd = midi_send_cmd # store previous value
   midi_send_cmd          = -1 # invalidate current command to prepare for next command
@@ -586,7 +586,7 @@ if use_jack:
 
     if midi_send_cmd >= 0:
       output_port.write_midi_event(0, (185, midi_send_cmd, midi_send_val))
-      store_and_invalide_midi_cmd()
+      store_and_invalidate_midi_cmd()
 
 
 ################################################################################
@@ -597,7 +597,7 @@ if use_rtmidi:
     global midi_send_cmd, midi_send_val
     (midi_send_cmd, midi_send_val) = (command, value);
     midiout.send_message([185, midi_send_cmd, midi_send_val])
-    store_and_invalide_midi_cmd()
+    store_and_invalidate_midi_cmd()
 
   class MidiInputHandler(object):
     def __init__(self, port):
@@ -616,7 +616,7 @@ if use_serial:
     global midi_send_cmd, midi_send_val
     (midi_send_cmd, midi_send_val) = (command, value);
     ser.write(bytearray([185, midi_send_cmd, midi_send_val]))
-    store_and_invalide_midi_cmd()
+    store_and_invalidate_midi_cmd()
 
   def receive_from_serial():
     global serial_message
