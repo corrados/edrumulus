@@ -179,7 +179,7 @@ sleep 1
 
 
 # preparations -----------------------------------------------------------------
-if [[ -v is_teensy ]]; then
+if [[ -v is_teensy ]] || [[ -v is_serial ]]; then
   # connect ALSA MIDI to Jack Audio MIDI
   a2jmidid -e >/dev/null 2>&1 &
   sleep 1
@@ -199,12 +199,10 @@ else
     pigs modes 9 w
     pigs w 9 1
   else
-    if [[ ! -v is_serial ]]; then
-      if [ -r "/dev/ttyACM0" ]; then
-        mod-ttymidi/ttymidi -b 38400 -s /dev/ttyACM0 & # ESP32-S3
-      else
-        mod-ttymidi/ttymidi -b 38400 &                 # ESP32
-      fi
+    if [ -r "/dev/ttyACM0" ]; then
+      mod-ttymidi/ttymidi -b 38400 -s /dev/ttyACM0 & # ESP32-S3
+    else
+      mod-ttymidi/ttymidi -b 38400 &                 # ESP32
     fi
   fi
 fi
@@ -263,12 +261,10 @@ if [[ -v is_jamulus ]]; then
   killall Jamulus
 fi
 
-if [[ -v is_teensy ]]; then
+if [[ -v is_teensy ]] || [[ -v is_serial ]]; then
   killall a2jmidid
 else
-  if [[ ! -v is_serial ]]; then
-    killall ttymidi
-  fi
+  killall ttymidi
 fi
 
 if [[ -v is_uart ]]; then
