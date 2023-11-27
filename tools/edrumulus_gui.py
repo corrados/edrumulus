@@ -637,18 +637,6 @@ if use_serial:
 ################################################################################
 # Main function ################################################################
 ################################################################################
-# initialize GUI (16x2 LCD or ncurses GUI)
-if use_lcd:
-  lcd_init()
-elif use_ncurses:
-  ncurses_init()
-elif use_webui:
-  web_server = http.server.HTTPServer(("", 8080), WebUI)
-  web_server.timeout = 1
-
-# ctrl+c quits the application
-original_sigint_handler = signal.signal(signal.SIGINT, signal_handler)
-
 # initialize MIDI
 if use_rtmidi: # initialize rtmidi (only Teensy board supported)
   try:
@@ -681,6 +669,18 @@ else: # initialize jack midi
       output_port.connect(teensy_out[0]) # Teensy
     except:
       pass # if no Edrumulus hardware was found, no jack is started
+
+# initialize GUI (16x2 LCD or ncurses GUI)
+if use_lcd:
+  lcd_init()
+elif use_ncurses:
+  ncurses_init()
+elif use_webui:
+  web_server = http.server.HTTPServer(("", 8080), WebUI)
+  web_server.timeout = 1
+
+# ctrl+c quits the application
+original_sigint_handler = signal.signal(signal.SIGINT, signal_handler)
 
 # load settings from file
 load_settings()
