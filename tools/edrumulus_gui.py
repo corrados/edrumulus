@@ -41,6 +41,7 @@ if use_rtmidi:
 elif use_serial:
   import serial
   import rtmidi # serial needs rtmidi out port
+  serial_dev = "/dev/ttyUSB0" if len(sys.argv) <= sys.argv.index("serial") + 1 else sys.argv[sys.argv.index("serial") + 1]
 else:
   import jack
 if use_lcd:
@@ -653,8 +654,7 @@ elif use_serial:
   except:
     midiout = rtmidi.MidiOut()
   midiout.open_virtual_port("EdrumulusOut")
-  # TODO do not use fix values here
-  ser = serial.Serial("/dev/ttyUSB0", 38400)
+  ser = serial.Serial(serial_dev, 38400)
   threading.Thread(target = receive_from_serial).start()
 else: # initialize jack midi
   client.activate()
