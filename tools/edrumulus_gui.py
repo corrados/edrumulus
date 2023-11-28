@@ -77,11 +77,10 @@ midi_map     = {38: "snare", 40: "snare", 36: "kick", 22: "hi-hat", 26: "hi-hat"
 database                = [0] * len(cmd_val)
 pad_types_dict_list     = list(pad_types_dict)
 pad_types               = list(dict(sorted(pad_types_dict.items(), key=lambda item: item[1]))) # sorted as in Edrumulus enumeration
-hi_hat_ctrl             = 0  # current hi-hat control value
-sel_pad                 = 0
-sel_cmd                 = 0
-version_major           = -1
-version_minor           = -1
+hi_hat_ctrl             = 0 # current hi-hat control value
+(sel_pad, sel_cmd)      = (0, 0)
+(v_major, v_minor)      = (-1, -1)
+(sel_kit, kit_vol_str)  = ("", "")
 do_update_midi_in       = False
 do_update_display       = False
 SIGINT_received         = False
@@ -92,8 +91,6 @@ midi_send_val           = -1
 auto_pad_sel            = False; # no auto pad selection per default
 is_load_settings        = False
 error_value             = 0
-selected_kit            = ""
-kit_vol_str             = ""
 
 # initialize jack audio for MIDI
 if use_jack:
@@ -193,10 +190,10 @@ def ncurses_update_param_outputs():
     mainwin.addstr(row_start + 4, col_start, "SAMPLING RATE TOO LOW WARNING")
   else:
     mainwin.addstr(row_start + 4, col_start, "                             ")
-  if version_major >= 0 and version_minor >= 0:
-    mainwin.addstr(row_start - 1, col_start, "Edrumulus v{0}.{1}".format(version_major, version_minor))
-  if selected_kit:
-    mainwin.addstr(row_start - 1, col_start + 30, selected_kit + ", Kit-Vol: " + kit_vol_str if kit_vol_str else selected_kit)
+  if v_major >= 0 and v_minor >= 0:
+    mainwin.addstr(row_start - 1, col_start, "Edrumulus v{0}.{1}".format(v_major, v_minor))
+  if sel_kit:
+    mainwin.addstr(row_start - 1, col_start + 30, sel_kit + ", Kit-Vol: " + kit_vol_str if kit_vol_str else sel_kit)
   mainwin.addstr(row_start, col_start, "Press a key (q:quit; s,S:sel pad; c,C:sel command; a,A: auto pad sel; up,down: change param; r: reset)")
   if auto_pad_sel:
     mainwin.addstr(row_start + 2, col_start, "Selected pad (auto):       {:2d} ({:s})      ".format(sel_pad, pad_names[sel_pad]))
@@ -355,8 +352,8 @@ def lcd_update():
     lcd.clear()
     lcd.cursor_pos = (0, 0)
     if lcd_menu_id == 0: # main menu
-      if selected_kit: # only show main menu if selected kit name is available
-        lcd.write_string(selected_kit)
+      if sel_kit: # only show main menu if selected kit name is available
+        lcd.write_string(sel_kit)
         if kit_vol_str: # only show kit volume if available
           lcd.cursor_pos = (1, 0)
           lcd.write_string("Vol: %s" % kit_vol_str)
@@ -488,12 +485,12 @@ def ecasound_connection():
       threading.Timer(0.5, ecasound_connection).start()
 
 def ecasound_switch_chains(do_increment):
-  global chain_setups, chain_index, selected_kit, kit_vol_str
+  global chain_setups, chain_index, sel_kit, kit_vol_str
   if ecasound_connect_try_cnt == 0:
     chain_index = chain_index + 1 if do_increment else chain_index - 1
     chain_index = chain_index % len(chain_setups)
-    selected_kit = chain_setups[chain_index]
-    ecasound_socket.sendall("engine-halt\r\ncs-select {0}\r\ncs-connect {0}\r\nengine-launch\r\nstart\r\n".format(selected_kit).encode("utf8"))
+    sel_kit = chain_setups[chain_index]
+    ecasound_socket.sendall("engine-halt\r\ncs-select {0}\r\ncs-connect {0}\r\nengine-launch\r\nstart\r\n".format(sel_kit).encode("utf8"))
     ecasound_apply_kit_volume()
 
 def ecasound_kit_volume(do_increment):
@@ -515,7 +512,7 @@ def ecasound_apply_kit_volume():
 ################################################################################
 def act_on_midi_in(status, key, value):
   global database, midi_send_val, midi_send_cmd, midi_previous_send_cmd, do_update_midi_in, \
-         version_major, version_minor, hi_hat_ctrl, sel_pad, do_update_display, error_value
+         v_major, v_minor, hi_hat_ctrl, sel_pad, do_update_display, error_value
 
   if status == 0x80: # act on control messages (0x80: Note Off)
     if key in cmd_val:
@@ -528,9 +525,9 @@ def act_on_midi_in(status, key, value):
       error_value       = value
       do_update_display = True
     if key == 127: # check for major version number
-      version_major = value
+      v_major = value
     if key == 126: # check for minor version number
-      version_minor = value
+      v_minor = value
 
   if (status & 0xF0) == 0x90: # display current note-on received value
     try:
