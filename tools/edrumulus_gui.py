@@ -71,9 +71,7 @@ cmd_val_rng  = [len(pad_types_dict) - 1,       31,     31,          31,         
 cmd_names   += ["rim/pos", "rim boost", "cross", "note", "note rim", "note2", "note2 rim",         "coupling", "spike (GLOBAL)"]
 cmd_val     += [      111,         119,     114,    112,        113,     116,         117,                120,              110]
 cmd_val_rng += [        3,          31,      31,    127,        127,     127,         127, len(pad_names) - 1,                4]
-midi_map     = {38: "snare", 40: "snare", 36: "kick", 22: "hi-hat", 26: "hi-hat", 44: "pedal", \
-                49: "crash", 55: "crash", 51: "ride", 48: "tom1",   50: "tom1", \
-                45: "tom2",  47: "tom2",  43: "tom3", 58: "tom3"}
+note_suffix  = {112: "", 113: "r", 116:"2", 117:"2r"}
 database                = [0] * len(cmd_val)
 pad_types_dict_list     = list(pad_types_dict)
 pad_types               = list(dict(sorted(pad_types_dict.items(), key=lambda item: item[1]))) # sorted as in Edrumulus enumeration
@@ -85,6 +83,7 @@ do_update_midi_in       = False
 do_update_display       = False
 SIGINT_received         = False
 original_sigint_handler = []
+midi_map                = {}
 midi_send_cmd           = -1 # invalidate per default
 midi_previous_send_cmd  = -1
 midi_send_val           = -1
@@ -205,7 +204,7 @@ def ncurses_update_param_outputs():
   mainwin.refresh()
   midiwin.box() # in this box the received note-on MIDI notes are shown
   midiwin.addstr(0, 8, "MIDI-IN")
-  midiwin.addstr(1, 2, "note (name) | value")
+  midiwin.addstr(1, 2, "note [name]  | value")
   midiwin.refresh()
   midigwin.box() # in this box the received MIDI velocity graph is shown
   midigwin.addstr(0, 6, "VELOCITY-GRAPH")
@@ -226,7 +225,7 @@ def ncurses_update_param_outputs():
 def ncurses_update_midi_win(key, value, instrument_name):
   midiwin.move(2, 0)
   midiwin.insdelln(1)
-  midiwin.addstr(2, 1, "{:3d} ({:<6s}) | {:3d}".format(key, instrument_name, value))
+  midiwin.addstr(2, 1, "{:3d} {:<9s} | {:3d}".format(key, instrument_name, value))
   midigwin.move(1, 0)
   midigwin.insdelln(1)
   midigwin.move(2, 1)
@@ -436,7 +435,7 @@ def store_settings():
   settings_file_tmp.replace(settings_file) # fixes Issue #108 (settings file empty)
 
 def load_settings():
-  global database, is_load_settings
+  global database, is_load_settings, midi_map
   is_load_settings = True # to update database of current command
   with settings_file.open("r") as f:
     cur_pad = -1 # initialize with illegal index
@@ -452,6 +451,8 @@ def load_settings():
           send_value_to_edrumulus(108, cur_pad)
         send_value_to_edrumulus(int(command), int(value))
         cur_cmd = cmd_val.index(int(command))
+        if int(command) in note_suffix: # update MIDI map from current settings
+          midi_map[int(value)] = " ".join([pad_names[cur_pad], note_suffix[int(command)]])
         while database[cur_cmd] != int(value): # wait for parameter to be applied in Edrumulus
           time.sleep(0.001)
   is_load_settings = False # we are done now
