@@ -121,6 +121,7 @@ def process_user_input(ch):
       if database[sel_cmd] < cmd_val_rng[sel_cmd]:
         database[sel_cmd] += 1
         send_value_to_edrumulus(cmd_val[sel_cmd], database[sel_cmd])
+        update_midi_map()
   elif (ch == chr(258) or ch == "D"): # 258: down key
     if cmd_names[sel_cmd] == "type": # special order for types needed, derived from dictionary
       linear_idx = get_linear_pad_type_index(database[sel_cmd])
@@ -132,6 +133,7 @@ def process_user_input(ch):
       if database[sel_cmd] > 0:
         database[sel_cmd] -= 1
         send_value_to_edrumulus(cmd_val[sel_cmd], database[sel_cmd])
+        update_midi_map()
   elif ch == "a" or ch == "A": # enable/disable auto pad selection
     auto_pad_sel = ch == "a" # capital "A" disables auto pad selection
   elif (ch == "k" or ch == "K") and not use_rtmidi: # kit selection (only for jack audio mode)
@@ -419,6 +421,26 @@ if use_webui:
 ################################################################################
 # Settings handling ############################################################
 ################################################################################
+def update_midi_map(pad=None, command=None, value=None):
+  if pad is None:
+    pad = sel_pad
+  if command is None:
+    command = cmd_val[sel_cmd]
+  if value is None:
+    value = database[sel_cmd]
+
+  if command == 112: #normal note
+    suffix="1"
+  elif command == 113: #rim note
+    suffix="1r"
+  elif command == 116: #normal note #2
+    suffix="2"
+  elif command == 117: #rim note #2
+    suffix="2r"
+  else:
+    return
+  midi_map[value] = ' '.join([pad_names[pad], suffix])
+
 def store_settings():
   global database
   settings_file = Path(__file__).parent.joinpath("settings", "trigger_settings_current.txt")
@@ -450,6 +472,7 @@ def load_settings():
           send_value_to_edrumulus(108, cur_pad)
         send_value_to_edrumulus(int(command), int(value))
         cur_cmd = cmd_val.index(int(command))
+        update_midi_map(cur_pad, int(command), int(value))
         while database[cur_cmd] != int(value): # wait for parameter to be applied in Edrumulus
           time.sleep(0.001)
   is_load_settings = False # we are done now
