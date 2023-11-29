@@ -452,7 +452,7 @@ def load_settings():
             send_value_to_edrumulus(108, cur_pad)
           send_value_to_edrumulus(int(command), int(value))
           cur_cmd = cmd_val.index(int(command))
-          if int(command) in note_suffix: # update MIDI map from current settings
+          if int(command) in note_suffix and not int(value) in midi_map: # update MIDI map from current settings
             midi_map[int(value)] = " ".join([pad_names[cur_pad], note_suffix[int(command)]])
           while database[cur_cmd] != int(value): # wait for parameter to be applied in Edrumulus
             time.sleep(0.001)
@@ -541,7 +541,7 @@ def act_on_midi_in(status, key, value):
     do_update_midi_in = True
     if auto_pad_sel and instrument_name and value > 10: # auto pad selection (velocity threshold of 10)
       try:
-        pad_index = pad_names.index(instrument_name) # throws exception if pad was not found
+        pad_index = pad_names.index(instrument_name.split(" ")[0]) # throws exception if pad was not found
         if sel_pad is not pad_index: # only change pad if it is different from current
           sel_pad           = pad_index
           midi_send_val     = sel_pad # we cannot use send_value_to_edrumulus here
