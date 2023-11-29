@@ -436,26 +436,27 @@ def store_settings():
 
 def load_settings():
   global database, is_load_settings, midi_map
-  is_load_settings = True # to update database of current command
-  with settings_file.open("r") as f:
-    cur_pad = -1 # initialize with illegal index
-    while True:
-      line = f.readline()
-      if len(line) == 0:
-        break
-      (pad, command, value) = line.replace("\n", "").split(",")
-      if int(command) in cmd_val:
-        if cur_pad != int(pad):
-          database = [-1] * len(cmd_val) # set database to invalid values
-          cur_pad  = int(pad)
-          send_value_to_edrumulus(108, cur_pad)
-        send_value_to_edrumulus(int(command), int(value))
-        cur_cmd = cmd_val.index(int(command))
-        if int(command) in note_suffix: # update MIDI map from current settings
-          midi_map[int(value)] = " ".join([pad_names[cur_pad], note_suffix[int(command)]])
-        while database[cur_cmd] != int(value): # wait for parameter to be applied in Edrumulus
-          time.sleep(0.001)
-  is_load_settings = False # we are done now
+  if settings_file.is_file(): # only load if file exists
+    is_load_settings = True # to update database of current command
+    with settings_file.open("r") as f:
+      cur_pad = -1 # initialize with illegal index
+      while True:
+        line = f.readline()
+        if len(line) == 0:
+          break
+        (pad, command, value) = line.replace("\n", "").split(",")
+        if int(command) in cmd_val:
+          if cur_pad != int(pad):
+            database = [-1] * len(cmd_val) # set database to invalid values
+            cur_pad  = int(pad)
+            send_value_to_edrumulus(108, cur_pad)
+          send_value_to_edrumulus(int(command), int(value))
+          cur_cmd = cmd_val.index(int(command))
+          if int(command) in note_suffix: # update MIDI map from current settings
+            midi_map[int(value)] = " ".join([pad_names[cur_pad], note_suffix[int(command)]])
+          while database[cur_cmd] != int(value): # wait for parameter to be applied in Edrumulus
+            time.sleep(0.001)
+    is_load_settings = False # we are done now
 
 
 ################################################################################
