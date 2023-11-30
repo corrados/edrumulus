@@ -36,14 +36,18 @@ use_lcd     = "lcd"       in sys.argv # LCD GUI mode on Raspberry Pi
 use_webui   = "webui"     in sys.argv # web UI GUI mode on Raspberry Pi
 use_ncurses = not no_gui and not non_block and not use_lcd and not use_webui # normal console GUI mode (default)
 use_jack    = not use_rtmidi and not use_serial
+is_windows  = os.name == 'nt'
 if use_rtmidi:
   import rtmidi
   from rtmidi.midiutil import open_midiinput
   from rtmidi.midiutil import open_midioutput
 elif use_serial:
   import serial
-  import rtmidi # serial needs rtmidi out port
-  serial_dev = "/dev/ttyUSB0" if len(sys.argv) <= sys.argv.index("serial") + 1 else sys.argv[sys.argv.index("serial") + 1]
+  if is_windows:
+    import pytemidi
+  else:
+    import rtmidi # serial needs rtmidi out port
+    serial_dev = "/dev/ttyUSB0" if len(sys.argv) <= sys.argv.index("serial") + 1 else sys.argv[sys.argv.index("serial") + 1]
 else:
   import jack
 if use_lcd:
