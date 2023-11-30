@@ -47,7 +47,7 @@ elif use_serial:
     import pytemidi
   else:
     import rtmidi # serial needs rtmidi out port
-    serial_dev = "/dev/ttyUSB0" if len(sys.argv) <= sys.argv.index("serial") + 1 else sys.argv[sys.argv.index("serial") + 1]
+  serial_dev = "/dev/ttyUSB0" if len(sys.argv) <= sys.argv.index("serial") + 1 else sys.argv[sys.argv.index("serial") + 1]
 else:
   import jack
 if use_lcd:
@@ -633,7 +633,10 @@ if use_serial:
           serial_message.append(data[0])
         if len(serial_message) == 3: # we only support three bytes commands
           act_on_midi_in(serial_message[0], serial_message[1], serial_message[2])
-          midiout.send_message(serial_message) # MIDI through from serial to MIDI device for DAW usage
+          if is_windows:
+            pass # TODO
+          else:
+            midiout.send_message(serial_message) # MIDI through from serial to MIDI device for DAW usage
       except:
         pass
 
@@ -652,11 +655,14 @@ if use_rtmidi: # initialize rtmidi (only Teensy board supported)
   except:
     raise Exception("No native Edrumulus USB device (e.g., Teensy) nor loopMIDI driver found.")
 elif use_serial:
-  try:
-    midiout = rtmidi.MidiOut() # somehow we need to call this twice: once with error and once with success
-  except:
-    midiout = rtmidi.MidiOut()
-  midiout.open_virtual_port("EdrumulusOut")
+  if is_windows:
+    pass # TODO
+  else:
+    try:
+      midiout = rtmidi.MidiOut() # somehow we need to call this twice: once with error and once with success
+    except:
+      midiout = rtmidi.MidiOut()
+    midiout.open_virtual_port("EdrumulusOut")
   ser = serial.Serial(serial_dev, 38400)
   threading.Thread(target = receive_from_serial).start()
 else: # initialize jack midi
@@ -724,7 +730,10 @@ if use_rtmidi:
   midiout.delete()
 elif use_serial:
   ser.close()
-  midiout.delete()
+  if is_windows:
+    pass # TODO
+  else:
+    midiout.delete()
 else:
   client.deactivate()
   client.close()
