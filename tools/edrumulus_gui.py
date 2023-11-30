@@ -36,13 +36,17 @@ use_lcd     = "lcd"       in sys.argv # LCD GUI mode on Raspberry Pi
 use_webui   = "webui"     in sys.argv # web UI GUI mode on Raspberry Pi
 use_ncurses = not no_gui and not non_block and not use_lcd and not use_webui # normal console GUI mode (default)
 use_jack    = not use_rtmidi and not use_serial
+is_windows  = os.name == 'nt'
 if use_rtmidi:
   import rtmidi
   from rtmidi.midiutil import open_midiinput
   from rtmidi.midiutil import open_midioutput
 elif use_serial:
   import serial
-  import rtmidi # serial needs rtmidi out port
+  if is_windows:
+    import pytemidi
+  else:
+    import rtmidi # serial needs rtmidi out port
   serial_dev = "/dev/ttyUSB0" if len(sys.argv) <= sys.argv.index("serial") + 1 else sys.argv[sys.argv.index("serial") + 1]
 else:
   import jack
@@ -631,7 +635,10 @@ if use_serial:
           serial_message.append(data[0])
         if len(serial_message) == 3: # we only support three bytes commands
           act_on_midi_in(serial_message[0], serial_message[1], serial_message[2])
-          midiout.send_message(serial_message) # MIDI through from serial to MIDI device for DAW usage
+          if is_windows:
+            midiout.send(bytearray(serial_message))
+          else:
+            midiout.send_message(serial_message) # MIDI through from serial to MIDI device for DAW usage
       except:
         pass
 
@@ -650,11 +657,15 @@ if use_rtmidi: # initialize rtmidi (only Teensy board supported)
   except:
     raise Exception("No native Edrumulus USB device (e.g., Teensy) nor loopMIDI driver found.")
 elif use_serial:
-  try:
-    midiout = rtmidi.MidiOut() # somehow we need to call this twice: once with error and once with success
-  except:
-    midiout = rtmidi.MidiOut()
-  midiout.open_virtual_port("EdrumulusOut")
+  if is_windows:
+    midiout = pytemidi.Device("EdrumulusOut")
+    midiout.create()
+  else:
+    try:
+      midiout = rtmidi.MidiOut() # somehow we need to call this twice: once with error and once with success
+    except:
+      midiout = rtmidi.MidiOut()
+    midiout.open_virtual_port("EdrumulusOut")
   ser = serial.Serial(serial_dev, 38400)
   threading.Thread(target = receive_from_serial).start()
 else: # initialize jack midi
@@ -722,7 +733,10 @@ if use_rtmidi:
   midiout.delete()
 elif use_serial:
   ser.close()
-  midiout.delete()
+  if is_windows:
+    midiout.close()
+  else:
+    midiout.delete()
 else:
   client.deactivate()
   client.close()
