@@ -38,6 +38,8 @@ use_ncurses = not no_gui and not non_block and not use_lcd and not use_webui # n
 use_jack    = not use_rtmidi and not use_serial
 if use_rtmidi:
   import rtmidi
+  from rtmidi.midiutil import open_midiinput
+  from rtmidi.midiutil import open_midioutput
 elif use_serial:
   import serial
   import rtmidi # serial needs rtmidi out port
@@ -642,8 +644,8 @@ if use_rtmidi: # initialize rtmidi (only Teensy board supported)
   try:
     in_name  = "EdrumulusIn" if [s for s in rtmidi.MidiIn().get_ports() if "EdrumulusIn" in s] else "Edrumulus"
     out_name = "EdrumulusOut" if [s for s in rtmidi.MidiOut().get_ports() if "EdrumulusOut" in s] else "Edrumulus"
-    midiin, port_name_in   = rtmidi.open_midiinput([s for s in rtmidi.MidiIn().get_ports() if in_name in s][0], client_name="EdrumulusGUI")
-    midiout, port_name_out = rtmidi.open_midioutput([s for s in rtmidi.MidiOut().get_ports() if out_name in s][0], client_name="EdrumulusGUI")
+    midiin, port_name_in   = open_midiinput([s for s in rtmidi.MidiIn().get_ports() if in_name in s][0], client_name="EdrumulusGUI")
+    midiout, port_name_out = open_midioutput([s for s in rtmidi.MidiOut().get_ports() if out_name in s][0], client_name="EdrumulusGUI")
     midiin.set_callback(MidiInputHandler(port_name_in))
   except:
     raise Exception("No native Edrumulus USB device (e.g., Teensy) nor loopMIDI driver found.")
