@@ -634,7 +634,7 @@ if use_serial:
         if len(serial_message) == 3: # we only support three bytes commands
           act_on_midi_in(serial_message[0], serial_message[1], serial_message[2])
           if is_windows:
-            pass # TODO
+            midiout.send(bytearray(serial_message))
           else:
             midiout.send_message(serial_message) # MIDI through from serial to MIDI device for DAW usage
       except:
@@ -656,7 +656,8 @@ if use_rtmidi: # initialize rtmidi (only Teensy board supported)
     raise Exception("No native Edrumulus USB device (e.g., Teensy) nor loopMIDI driver found.")
 elif use_serial:
   if is_windows:
-    pass # TODO
+    midiout = pytemidi.Device("EdrumulusOut")
+    midiout.create()
   else:
     try:
       midiout = rtmidi.MidiOut() # somehow we need to call this twice: once with error and once with success
@@ -731,7 +732,7 @@ if use_rtmidi:
 elif use_serial:
   ser.close()
   if is_windows:
-    pass # TODO
+    midiout.close()
   else:
     midiout.delete()
 else:
