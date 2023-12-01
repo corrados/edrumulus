@@ -29,6 +29,9 @@ import math
 import platform
 from pathlib import Path
 
+is_windows   = platform.system() == "Windows"
+is_linux     = platform.system() == "Linux"
+
 use_rtmidi   = "rtmidi"    in sys.argv # use this for native USB MIDI devices like Teensy
 use_jack     = "jack"      in sys.argv # if jack audio shall be used
 no_gui       = "no_gui"    in sys.argv # no GUI but blocking (just settings management)
@@ -37,7 +40,8 @@ use_lcd      = "lcd"       in sys.argv # LCD GUI mode on Raspberry Pi
 use_webui    = "webui"     in sys.argv # web UI GUI mode on Raspberry Pi
 use_ncurses  = not no_gui and not non_block and not use_lcd and not use_webui # normal console GUI mode (default)
 use_serial   = not use_rtmidi and not use_jack
-use_pytemidi = platform.system() == "Windows"
+use_pytemidi = is_windows
+
 if use_rtmidi:
   import rtmidi
   from rtmidi.midiutil import open_midiinput
@@ -51,7 +55,7 @@ elif use_serial:
   if "serial" in sys.argv and len(sys.argv) > sys.argv.index("serial") + 1:
     serial_dev = sys.argv[sys.argv.index("serial") + 1]
   else:
-    serial_dev = "/dev/ttyUSB0" if platform.system() == "Linux" else ("COM7" if platform.system() == "Windows" else "/dev/tty.SLAB_USBtoUART")
+    serial_dev = "/dev/ttyUSB0" if is_linux else ("COM7" if is_windows else "/dev/tty.SLAB_USBtoUART")
 else:
   import jack
 if use_lcd:
