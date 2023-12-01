@@ -26,6 +26,7 @@ import socket
 import time
 import threading
 import math
+import platform
 from pathlib import Path
 
 use_rtmidi  = "rtmidi"    in sys.argv # use this for native USB MIDI devices like Teensy
@@ -36,7 +37,7 @@ use_lcd     = "lcd"       in sys.argv # LCD GUI mode on Raspberry Pi
 use_webui   = "webui"     in sys.argv # web UI GUI mode on Raspberry Pi
 use_ncurses = not no_gui and not non_block and not use_lcd and not use_webui # normal console GUI mode (default)
 use_jack    = not use_rtmidi and not use_serial
-is_windows  = os.name == 'nt'
+is_windows  = platform.system() == "Windows"
 if use_rtmidi:
   import rtmidi
   from rtmidi.midiutil import open_midiinput
