@@ -47,11 +47,13 @@ if [[ "$1" == no_gui ]]; then
   gui_mode="no_gui"
 fi
 
-# check if direct serial connection to ESP32 shall be used
+# check if direct serial connection to ESP32 shall be used or the default jack audio
 if [[ "$1" == serial ]]; then
   echo "-> direct serial connection mode enabled"
   is_serial=true
   gui_mode="serial"
+else
+  gui_mode="${gui_mode} jack"
 fi
 
 # special mode: UART connection with console GUI
@@ -59,7 +61,6 @@ if [[ "$1" == uartgui ]]; then
   echo "-> UART GUI mode enabled"
   is_raspi=true # UART connection to ESP32 is only supported on Raspberry Pi
   is_uart=true
-  gui_mode="" # empty mode means GUI is used
 fi
 
 # check if the LCD GUI mode shall be used

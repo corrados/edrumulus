@@ -29,26 +29,29 @@ import math
 import platform
 from pathlib import Path
 
-use_rtmidi  = "rtmidi"    in sys.argv # use this for native USB MIDI devices like Teensy
-use_serial  = "serial"    in sys.argv # use this for direct ESP32 connection via serial
-no_gui      = "no_gui"    in sys.argv # no GUI but blocking (just settings management)
-non_block   = "non_block" in sys.argv # no GUI and non-blocking (just settings management)
-use_lcd     = "lcd"       in sys.argv # LCD GUI mode on Raspberry Pi
-use_webui   = "webui"     in sys.argv # web UI GUI mode on Raspberry Pi
-use_ncurses = not no_gui and not non_block and not use_lcd and not use_webui # normal console GUI mode (default)
-use_jack    = not use_rtmidi and not use_serial
-is_windows  = platform.system() == "Windows"
+use_rtmidi   = "rtmidi"    in sys.argv # use this for native USB MIDI devices like Teensy
+use_jack     = "jack"      in sys.argv # if jack audio shall be used
+no_gui       = "no_gui"    in sys.argv # no GUI but blocking (just settings management)
+non_block    = "non_block" in sys.argv # no GUI and non-blocking (just settings management)
+use_lcd      = "lcd"       in sys.argv # LCD GUI mode on Raspberry Pi
+use_webui    = "webui"     in sys.argv # web UI GUI mode on Raspberry Pi
+use_ncurses  = not no_gui and not non_block and not use_lcd and not use_webui # normal console GUI mode (default)
+use_serial   = not use_rtmidi and not use_jack
+use_pytemidi = platform.system() == "Windows"
 if use_rtmidi:
   import rtmidi
   from rtmidi.midiutil import open_midiinput
   from rtmidi.midiutil import open_midioutput
 elif use_serial:
   import serial
-  if is_windows:
+  if use_pytemidi:
     import pytemidi
   else:
     import rtmidi # serial needs rtmidi out port
-  serial_dev = "/dev/ttyUSB0" if len(sys.argv) <= sys.argv.index("serial") + 1 else sys.argv[sys.argv.index("serial") + 1]
+  if "serial" in sys.argv and len(sys.argv) > sys.argv.index("serial") + 1:
+    serial_dev = sys.argv[sys.argv.index("serial") + 1]
+  else:
+    serial_dev = "/dev/ttyUSB0" if platform.system() == "Linux" else ("COM7" if platform.system() == "Windows" else "/dev/tty.SLAB_USBtoUART")
 else:
   import jack
 if use_lcd:
@@ -636,7 +639,7 @@ if use_serial:
           serial_message.append(data[0])
         if len(serial_message) == 3: # we only support three bytes commands
           act_on_midi_in(serial_message[0], serial_message[1], serial_message[2])
-          if is_windows:
+          if use_pytemidi:
             midiout.send(bytearray(serial_message))
           else:
             midiout.send_message(serial_message) # MIDI through from serial to MIDI device for DAW usage
@@ -658,7 +661,7 @@ if use_rtmidi: # initialize rtmidi (only Teensy board supported)
   except:
     raise Exception("No native Edrumulus USB device (e.g., Teensy) nor loopMIDI driver found.")
 elif use_serial:
-  if is_windows:
+  if use_pytemidi:
     midiout = pytemidi.Device("EdrumulusOut")
     midiout.create()
   else:
@@ -734,7 +737,7 @@ if use_rtmidi:
   midiout.delete()
 elif use_serial:
   ser.close()
-  if is_windows:
+  if use_pytemidi:
     midiout.close()
   else:
     midiout.delete()
