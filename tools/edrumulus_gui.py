@@ -19,14 +19,7 @@
 
 # Edrumulus simple terminal GUI
 
-import os
-import sys
-import signal
-import socket
-import time
-import threading
-import math
-import platform
+import os, sys, signal, socket, time, threading, math, platform
 from pathlib import Path
 
 use_rtmidi   = "rtmidi"    in sys.argv # use this for native USB MIDI devices like Teensy
