@@ -1,6 +1,13 @@
 # Edrumulus Project Log
 
 
+
+## 2023-12-02 Improvements for edrumulus_gui.py
+
+  On Windows it is no longer required to run loopMIDI and HairlessMIDI tools to communicate
+  with Edrumulus ESP32 prototypes. edrumulus_gui.py implements the serial communication
+  and creates a virtual MIDI port now.
+
 ## 2023-07-16 Initial support for 3-zone pads like the Roland CY-12R
 
   There is an initial support for 3-zone pads like the Roland CY-12R implemented now. With a
