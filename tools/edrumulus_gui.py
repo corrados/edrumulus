@@ -19,8 +19,7 @@
 
 # Edrumulus simple terminal GUI
 
-import os, sys, signal, socket, time, threading, math, platform
-from pathlib import Path
+import os, sys, signal, socket, time, threading, math, platform, pathlib
 
 use_rtmidi  = "rtmidi"    in sys.argv # use this for native USB MIDI devices like Teensy
 use_jack    = "jack"      in sys.argv # if jack audio shall be used
@@ -93,8 +92,8 @@ midi_send_val           = -1
 auto_pad_sel            = False; # no auto pad selection per default
 is_load_settings        = False
 error_value             = 0
-settings_file           = Path(__file__).parent.joinpath("settings", "trigger_settings.txt")
-settings_file_tmp       = Path(__file__).parent.joinpath("settings", "trigger_settings_current.txt")
+settings_file           = pathlib.Path(__file__).parent.joinpath("settings", "trigger_settings.txt")
+settings_file_tmp       = pathlib.Path(__file__).parent.joinpath("settings", "trigger_settings_current.txt")
 
 # initialize jack audio for MIDI
 if use_jack:
