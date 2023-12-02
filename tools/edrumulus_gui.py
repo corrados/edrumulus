@@ -60,7 +60,7 @@ pad_types_dict = {"PDA120LS Roland Mesh Pad":18, "PDX100 Roland Mesh Pad":19, "P
                     "MPS-750X Millenium Mesh Tom":21, "MPS-750X Millenium Mesh Snare":22, \
                   "PD8 Roland Rubber Pad":2, "PD6 Roland Rubber Pad":13, "PD5 Roland Rubber Pad":17, \
                     "HD1TOM Roland Rubber Pad":12, "TP80 Yamaha Rubber Pad":7, \
-                  "CY8 Roland Cymbal":9, "CY6 Roland Cymbal":8, "CY5 Roland Cymbal":11, "VH12 Roland Cymbal":4, \
+                  "CY8 Roland Cymbal":9, "CY6 Roland Cymbal":8, "CY5 Roland Cymbal":11, "VH12 Roland Hi-Hat":4, \
                     "MPS-750X Millenium Ride":24, "MPS-750X Millenium Crash":25, "LEHHS12C Lemon Hi-Hat Cymbal":26, \
                   "KD120 Roland Mesh Kick Pad":16, "KD8 Roland Kick Pad":14, \
                     "KD7 Roland Kick Pad":6, "KT10 Roland Kick Pedal":20, "MPS-750X Millenium Kick Pad":23, \
@@ -552,7 +552,7 @@ def act_on_midi_in(status, key, value):
       except:
         pass # pad not found, do nothing
 
-  if (status & 0xF0) == 0xB0: # display current positional sensing received value
+  if (status & 0xF0) == 0xB0: # display current positional sensing/hi-hat controller received value
     if key == 16: # positional sensing
       if use_ncurses:
         ncurses_update_possense_win(value)
@@ -583,7 +583,7 @@ if use_jack:
     global midi_send_cmd
     output_port.clear_buffer()
     for offset, data in input_port.incoming_midi_events():
-      if len(data) == 3:
+      if len(data) == 3: # we only support three bytes commands
         act_on_midi_in(int.from_bytes(data[0], "big"), int.from_bytes(data[1], "big"), int.from_bytes(data[2], "big"))
 
     if midi_send_cmd >= 0:
@@ -605,7 +605,7 @@ if use_rtmidi:
     def __init__(self, port):
       self.port = port
     def __call__(self, event, data=None):
-      if len(event[0]) == 3:
+      if len(event[0]) == 3: # we only support three bytes commands
         act_on_midi_in(event[0][0], event[0][1], event[0][2])
 
 
