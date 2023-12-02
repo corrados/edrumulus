@@ -613,7 +613,6 @@ if use_rtmidi:
 # MIDI handling (via serial) ###################################################
 ################################################################################
 if use_serial:
-  serial_message = []
   def send_value_to_edrumulus(command, value):
     global midi_send_cmd, midi_send_val
     (midi_send_cmd, midi_send_val) = (command, value);
@@ -621,7 +620,7 @@ if use_serial:
     store_and_invalidate_midi_cmd()
 
   def receive_from_serial():
-    global serial_message
+    serial_message = []
     while ser.isOpen():
       try:
         data = ser.read(1)
@@ -678,7 +677,7 @@ else: # initialize jack midi
     except:
       pass # if no Edrumulus hardware was found, no jack is started
 
-# initialize GUI (16x2 LCD or ncurses GUI)
+# initialize GUI
 if use_lcd:
   lcd_init()
 elif use_ncurses:
