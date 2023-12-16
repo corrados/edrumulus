@@ -40,13 +40,6 @@ The road map items are sorted by priority.
 
   The rim boost setting is only supported for pads with just one head sensor.
 
-- [ ] **Testing support for ESP32-S3 with real front-end**
-
-  The initial implementation is done and ADC data from multiple inputs can be processed. Touching the
-  ESP32-S3 developer board gives a lot of MIDI note outputs which makes me believe that everything works
-  as expected. But to make sure it really works, it has to be tested with a real front-end circuit and
-  edrum pads connected which is still outstanding.
-
 - [ ] **For the ESP32 prototype, adjust the ADC_noise_peak_velocity_scaling in edrumulus.h correctly**
 
 - [ ] **Should we consider pre-scan time high peaks for velocity estimation?**
