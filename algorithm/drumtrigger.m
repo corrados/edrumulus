@@ -48,12 +48,28 @@ pos_sense_metric             = calc_pos_sense_metric(x(:, 1), Fs, all_first_peak
 
 % plot results
 figure
+
+if 0 % TEST only show peaks and remove samples in between
+  mask            = any(~isnan([mask_region, scan_region, pre_scan_region]), 2);
+  all_first_peaks = mask_peak_pos(all_first_peaks, mask);
+  all_peaks       = mask_peak_pos(all_peaks, mask);
+  all_peaks_filt  = mask_peak_pos(all_peaks_filt, mask);
+  mask_region     = mask_region(mask);
+  scan_region     = scan_region(mask);
+  pre_scan_region = pre_scan_region(mask);
+  decay_est_rng   = decay_est_rng(mask);
+  x               = x(mask, :);
+  x_filt          = x_filt(mask);
+  decay_all       = decay_all(mask);
+  x_filt_decay    = x_filt_decay(mask);
+end
+
 %plot(10 * log10([mask_region, scan_region, pre_scan_region, decay_est_rng, hot_spot_region]), 'LineWidth', 20);
 plot(10 * log10([mask_region, scan_region, pre_scan_region, decay_est_rng]), 'LineWidth', 20);
 grid on; hold on; set(gca, 'ColorOrderIndex', 1); % reset color order so that x trace is blue and so on
 plot(10 * log10([x(:, 1) .^ 2, x_filt, decay_all, x_filt_decay]));
 % TEST indicate sign of x signal with different color
-x_sign = nan(size(x)); x_sign(x > 0) = x(x > 0); plot(10 * log10(x_sign(:, 1) .^ 2), 'y-.');
+%x_sign = nan(size(x)); x_sign(x > 0) = x(x > 0); plot(10 * log10(x_sign(:, 1) .^ 2), 'y-.');
 plot(all_first_peaks, 10 * log10(x(all_first_peaks, 1) .^ 2), 'b*');
 %plot(all_hot_spots, 10 * log10(x(all_hot_spots, 1) .^ 2) - pad.hot_spot_attenuation_db, 'c*', "markersize", 15);
 plot(all_peaks, 10 * log10(x(all_peaks, 1) .^ 2), 'g*');
@@ -66,6 +82,14 @@ plot([1, length(x_filt)], [pad.threshold_db, pad.threshold_db], '--');
 title('Green marker: level; Black marker: position; Blue marker: first peak'); xlabel('samples'); ylabel('dB');
 ylim([-10, 90]);
 
+end
+
+
+function peaks = mask_peak_pos(peaks, mask)
+peaks_tmp        = false(size(mask));
+peaks_tmp(peaks) = true;
+peaks_tmp        = peaks_tmp(mask);
+peaks            = find(peaks_tmp);
 end
 
 
