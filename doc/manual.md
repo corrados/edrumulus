@@ -49,10 +49,10 @@ Windows, Linux and MacOS.
 
 ### Millenium MPS-750X
 
-- recommended circuit: [Rs=10k, Rp=10k, Cp=0](https://github.com/corrados/edrumulus/discussions/98)
+- Recommended circuit: [Rs=10k, Rp=10k, Cp=0](https://github.com/corrados/edrumulus/discussions/98).
 - TRS pins:
-  - toms: hit piezo = T, rim piezo = R, GND = S
-  - cymbals incl. hi-hat: bow piezo = S, rim switch = R (none for hi-hat), GND = T
-- ride and crash cymbals draw some current
-- the ride rim switch differs from the ride bell switch by a 5k resistor
-- set all MPS750X potis to maximum output with a screw driver (sometimes the direction appears to be indicated incorrectly)
+  - Toms: hit piezo = T, rim piezo = R, GND = S.
+  - Cymbals including Hi-Hat: Bow piezo = S, Rim switch = R (none for Hi-Hat), GND = T.
+- Ride and crash cymbals draw some current.
+- The ride rim switch differs from the ride bell switch by a 5k resistor.
+- Set all MPS750X potis to maximum output with a screw driver (sometimes the direction appears to be indicated incorrectly).
