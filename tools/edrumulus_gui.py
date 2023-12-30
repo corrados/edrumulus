@@ -185,8 +185,9 @@ def ncurses_cleanup():
   curses.endwin()
 
 def ncurses_update_param_outputs():
-  mainwin.move(row_start - 1, col_start) # clear first line
-  mainwin.clrtoeol()                     # clear first line
+  for row in range(6):
+    mainwin.move(row, 0)
+    mainwin.clrtoeol() # clear all rows of header
   if error_value > 63:
     mainwin.addstr(row_start + 4, col_start, "DC OFFSET ERROR ON PAD {:2d}/{:1d}".format((error_value % 64), math.floor((error_value - 64) / 64)))
   elif error_value > 0:
