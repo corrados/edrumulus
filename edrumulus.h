@@ -183,6 +183,10 @@ public:
   int  get_pos_threshold        ( const int pad_idx )                                 { return pad[pad_idx].get_pos_threshold(); }
   void set_pos_sensitivity      ( const int pad_idx, const int        new_velocity )  { pad[pad_idx].set_pos_sensitivity ( new_velocity ); }
   int  get_pos_sensitivity      ( const int pad_idx )                                 { return pad[pad_idx].get_pos_sensitivity(); }
+  void set_rim_pos_threshold    ( const int pad_idx, const int        new_threshold ) { pad[pad_idx].set_rim_pos_threshold ( new_threshold ); }
+  int  get_rim_pos_threshold    ( const int pad_idx )                                 { return pad[pad_idx].get_rim_pos_threshold(); }
+  void set_rim_pos_sensitivity  ( const int pad_idx, const int        new_velocity )  { pad[pad_idx].set_rim_pos_sensitivity ( new_velocity ); }
+  int  get_rim_pos_sensitivity  ( const int pad_idx )                                 { return pad[pad_idx].get_rim_pos_sensitivity(); }
   void set_mask_time            ( const int pad_idx, const int        new_time )      { pad[pad_idx].set_mask_time ( new_time ); }
   int  get_mask_time            ( const int pad_idx )                                 { return pad[pad_idx].get_mask_time(); }
   void set_rim_shot_threshold   ( const int pad_idx, const int        new_threshold ) { pad[pad_idx].set_rim_shot_threshold ( new_threshold ); }
@@ -269,6 +273,10 @@ protected:
       int  get_pos_threshold        ()                                 { return pad_settings.pos_threshold; }
       void set_pos_sensitivity      ( const int        new_velocity )  { pad_settings.pos_sensitivity = new_velocity; sched_init(); }
       int  get_pos_sensitivity      ()                                 { return pad_settings.pos_sensitivity; }
+      void set_rim_pos_threshold    ( const int        new_threshold ) { pad_settings.rim_pos_threshold = new_threshold; sched_init(); }
+      int  get_rim_pos_threshold    ()                                 { return pad_settings.rim_pos_threshold; }
+      void set_rim_pos_sensitivity  ( const int        new_velocity )  { pad_settings.rim_pos_sensitivity = new_velocity; sched_init(); }
+      int  get_rim_pos_sensitivity  ()                                 { return pad_settings.rim_pos_sensitivity; }
       void set_mask_time            ( const int        new_time_ms )   { pad_settings.mask_time_ms = new_time_ms; sched_init(); }
       int  get_mask_time            ()                                 { return pad_settings.mask_time_ms; }
       void set_rim_shot_threshold   ( const int        new_threshold ) { pad_settings.rim_shot_threshold = new_threshold; sched_init(); }
@@ -302,6 +310,8 @@ protected:
         int        mask_time_ms;         // 0..31 (ms)
         int        pos_threshold;        // 0..31
         int        pos_sensitivity;      // 0..31, high values give higher sensitivity
+        int        rim_pos_threshold;    // 0..31
+        int        rim_pos_sensitivity;  // 0..31, high values give higher sensitivity
         int        rim_shot_threshold;   // 0..31
         int        rim_shot_boost;       // 0..31
         int        cancellation;         // 0..31
@@ -407,6 +417,7 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
         int       rim_shot_cnt;
         Erimstate rim_state;
         float     pos_sense_metric;
+        float     rim_pos_sense_metric;
         SResults  sResults;
       };
 
@@ -433,6 +444,8 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       float        velocity_offset;
       float        pos_threshold;
       float        pos_range_db;
+      float        rim_pos_threshold;
+      float        rim_pos_range_db;
       float        control_threshold;
       float        control_range;
       float        first_peak_diff_thresh;

@@ -428,6 +428,22 @@ void loop()
         edrumulus.write_setting       ( selected_pad, 16, value );
         confirm_setting               ( controller,       value, false );
       }
+
+      // controller 121: rim positional sensing threshold
+      if ( controller == 121 )
+      {
+        edrumulus.set_rim_pos_threshold ( selected_pad,     value );
+        edrumulus.write_setting         ( selected_pad, 17, value );
+        confirm_setting                 ( controller,       value, false );
+      }
+
+      // controller 122: rim positional sensing sensitivity
+      if ( controller == 122 )
+      {
+        edrumulus.set_rim_pos_sensitivity ( selected_pad,     value );
+        edrumulus.write_setting           ( selected_pad, 18, value );
+        confirm_setting                   ( controller,       value, false );
+      }
     }
   }
 #endif
@@ -461,6 +477,8 @@ void confirm_setting ( const int  controller,
     MYMIDI.sendNoteOff ( 118, edrumulus.get_mask_time ( selected_pad ), 1 );
     MYMIDI.sendNoteOff ( 119, edrumulus.get_rim_shot_boost ( selected_pad ), 1 );
     MYMIDI.sendNoteOff ( 120, edrumulus.get_coupled_pad_idx ( selected_pad ), 1 );
+    MYMIDI.sendNoteOff ( 121, edrumulus.get_rim_pos_threshold ( selected_pad ), 1 );
+    MYMIDI.sendNoteOff ( 122, edrumulus.get_rim_pos_sensitivity ( selected_pad ), 1 );
     // NOTE: 125 reserved for error message
     MYMIDI.sendNoteOff ( 126, VERSION_MINOR, 1 );
     MYMIDI.sendNoteOff ( 127, VERSION_MAJOR, 1 );
@@ -496,6 +514,8 @@ void read_settings()
     edrumulus.set_mask_time            ( i,                                      edrumulus.read_setting ( i, 14 ) );
     edrumulus.set_rim_shot_boost       ( i,                                      edrumulus.read_setting ( i, 15 ) );
     edrumulus.set_coupled_pad_idx      ( i,                                      edrumulus.read_setting ( i, 16 ) );
+    edrumulus.set_rim_pos_threshold    ( i,                                      edrumulus.read_setting ( i, 17 ) );
+    edrumulus.set_rim_pos_sensitivity  ( i,                                      edrumulus.read_setting ( i, 18 ) );
   }
   edrumulus.set_spike_cancel_level ( edrumulus.read_setting ( number_pads, 0 ) );
 }
@@ -522,6 +542,8 @@ void write_all_settings()
     edrumulus.write_setting ( i, 14, edrumulus.get_mask_time            ( i ) );
     edrumulus.write_setting ( i, 15, edrumulus.get_rim_shot_boost       ( i ) );
     edrumulus.write_setting ( i, 16, edrumulus.get_coupled_pad_idx      ( i ) );
+    edrumulus.write_setting ( i, 17, edrumulus.get_rim_pos_threshold    ( i ) );
+    edrumulus.write_setting ( i, 18, edrumulus.get_rim_pos_sensitivity  ( i ) );
   }
   edrumulus.write_setting ( number_pads, 0, edrumulus.get_spike_cancel_level() );
 }

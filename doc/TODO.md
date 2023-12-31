@@ -2,12 +2,6 @@
 
 The road map items are sorted by priority.
 
-- [ ] **Support positional sensing for rim shots**
-
-  A test signal *pd85rimshotpossense.wav* is available in the signal directory. Unfortunately, the
-  current positional sensing algorithm does not work correctly. A deeper inspection of the first
-  peaks of a strike should be done to find the source of the issue.
-
 - [ ] **Cross talk cancellation doesn't work reliably (Github Issue [#109](https://github.com/corrados/edrumulus/issues/109))**
 
   User 3hhh observed that cross talk spikes may actually arrive before the spike of the pad he actually hit.
@@ -21,6 +15,17 @@ The road map items are sorted by priority.
 - [ ] **Support direct rim strike**
 
   See https://github.com/corrados/edrumulus/discussions/84.
+
+- [ ] **Hot spot suppression on mesh pads with center piezo**
+
+  Striking directly on the piezo results in detected velocity values which are much too high.
+
+- [ ] **Change rim shot/positinal sensing counters**
+
+  Taken from the code:
+    - only use one counter instead of rim_shot_cnt and pos_sense_cnt
+    - as long as counter is not finished, do check "hil_filt_new > threshold" again to see if we have a higher peak in that
+      time window -> if yes, restart everything using the new detected peak
 
 - [ ] **Create a super simple default drum kit in the git repo so that run_edrumulus.sh runs successfully without any other dependencies**
 
@@ -43,10 +48,6 @@ The road map items are sorted by priority.
 - [ ] **For the ESP32 prototype, adjust the ADC_noise_peak_velocity_scaling in edrumulus.h correctly**
 
 - [ ] **Should we consider pre-scan time high peaks for velocity estimation?**
-
-- [ ] **Hot spot suppression on mesh pads with center piezo**
-
-  Striking directly on the piezo results in detected velocity values which are much too high.
 
 - [ ] **Documentation (user manual)**
 

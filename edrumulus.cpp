@@ -555,6 +555,12 @@ void Edrumulus::Pad::initialize()
   const float max_pos_range_db = 11; // dB (found by analyzing pd120_pos_sense2.wav test signal)
   pos_range_db                 = max_pos_range_db * ( 32 - pad_settings.pos_sensitivity ) / 32;
 
+  // positional sensing for rim shots MIDI assignment parameters
+  const float rim_pos_threshold_db = pad_settings.rim_pos_threshold;           // gives us a threshold range of 0..31 dB
+  rim_pos_threshold                = pow ( 10.0f, rim_pos_threshold_db / 10 ); // linear power threshold
+  const float max_rim_pos_range_db = 11; // TOD adjust value
+  rim_pos_range_db                 = max_rim_pos_range_db * ( 32 - pad_settings.rim_pos_sensitivity ) / 32;
+
   // control MIDI assignment gives us a range of 410-2867 (FD-8: 3300-0, VH-12: 2200-1900 (press: 1770))
   control_threshold = pad_settings.pos_threshold / 31.0f * ( 0.6f * ADC_MAX_RANGE ) + ( 0.1f * ADC_MAX_RANGE );
   control_range     = ( ADC_MAX_RANGE - control_threshold ) * ( 32 - pad_settings.pos_sensitivity ) / 32;
@@ -1246,6 +1252,10 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
             s.rim_state             = is_rim_shot ? RIM_SHOT : NO_RIM;
             s.rim_shot_cnt          = 0;
             s.was_rim_shot_ready    = true;
+
+            // rim power is assumed to be constant for each rim shot but distance to center mounted piezo
+            // will change power and therefore the rim metric can be used for positional sensing for rim shots
+            s.rim_pos_sense_metric = rim_metric;
           }
         }
       }
@@ -1270,17 +1280,28 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
       int current_midi_pos = static_cast<int> ( ( 10 * log10 ( s.pos_sense_metric / pos_threshold ) / pos_range_db ) * 127 );
       current_midi_pos     = max ( 0, min ( 127, current_midi_pos ) );
 
-// TODO:
-// - in case of signal clipping, we cannot use the positional sensing results (overloads will
-//   only happen if the strike is located near the middle of the pad)
-// - positional sensing must be adjusted if a rim shot is detected (note that this must be done BEFORE the MIDI clipping!)
-// - only use one counter instead of rim_shot_cnt and pos_sense_cnt
-// - as long as counter is not finished, do check "hil_filt_new > threshold" again to see if we have a higher peak in that
-//   time window -> if yes, restart everything using the new detected peak
-if ( s.is_overloaded_state || ( s.rim_state != NO_RIM ) )
-{
-  current_midi_pos = 0; // as a quick hack, disable positional sensing if a rim shot is detected
-}
+      // positional sensing must be adjusted if a rim shot is detected (note that this must be done BEFORE the MIDI clipping!)
+      if ( s.rim_state != NO_RIM )
+      {
+        // positional sensing for rim shots (no rim only and side stick) is only supported for rim piezos
+        if ( ( s.rim_state == RIM_SHOT ) && !get_is_rim_switch() )
+        {
+          // rim shot positional sensing MIDI mapping with clipping to allowed MIDI value range
+          current_midi_pos = static_cast<int> ( ( 10 * log10 ( s.rim_pos_sense_metric / rim_pos_threshold ) / rim_pos_range_db ) * 127 );
+          current_midi_pos = max ( 0, min ( 127, current_midi_pos ) );
+        }
+        else
+        {
+          current_midi_pos = 0; // rim shot positional sensing not supported
+        }
+      }
+
+      // in case of signal clipping, we cannot use the positional sensing results (overloads will
+      // only happen if the strike is located near the middle of the pad)
+      if ( s.is_overloaded_state )
+      {
+        current_midi_pos = 0; // set to middle position
+      }
 
       if ( number_head_sensors == 1 )
       {

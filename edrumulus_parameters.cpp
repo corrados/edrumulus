@@ -26,6 +26,8 @@ void Edrumulus::Pad::apply_preset_pad_settings()
   pad_settings.mask_time_ms              = 6;  // 0..31 (ms)
   pad_settings.pos_threshold             = 9;  // 0..31
   pad_settings.pos_sensitivity           = 14; // 0..31
+  pad_settings.rim_pos_threshold         = 9;  // 0..31
+  pad_settings.rim_pos_sensitivity       = 14; // 0..31
   pad_settings.rim_shot_threshold        = 12; // 0..31
   pad_settings.rim_shot_boost            = 15; // 0..31
   pad_settings.cancellation              = 0;  // 0..31
