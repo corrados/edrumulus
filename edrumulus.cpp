@@ -556,9 +556,9 @@ void Edrumulus::Pad::initialize()
   pos_range_db                 = max_pos_range_db * ( 32 - pad_settings.pos_sensitivity ) / 32;
 
   // positional sensing for rim shots MIDI assignment parameters
-  const float rim_pos_threshold_db = pad_settings.rim_pos_threshold;           // gives us a threshold range of 0..31 dB
+  const float rim_pos_threshold_db = pad_settings.rim_pos_threshold - 40;      // gives us a threshold range of -40..-9 dB
   rim_pos_threshold                = pow ( 10.0f, rim_pos_threshold_db / 10 ); // linear power threshold
-  const float max_rim_pos_range_db = 11; // TOD adjust value
+  const float max_rim_pos_range_db = 11; // db (found by testing with PD-80R)
   rim_pos_range_db                 = max_rim_pos_range_db * ( 32 - pad_settings.rim_pos_sensitivity ) / 32;
 
   // control MIDI assignment gives us a range of 410-2867 (FD-8: 3300-0, VH-12: 2200-1900 (press: 1770))
