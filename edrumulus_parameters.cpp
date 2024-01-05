@@ -148,6 +148,8 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.velocity_sensitivity = 6;
       pad_settings.pos_threshold        = 7;
       pad_settings.pos_sensitivity      = 14;
+      pad_settings.rim_pos_threshold    = 20;
+      pad_settings.rim_pos_sensitivity  = 10;
       pad_settings.rim_shot_threshold   = 24;
       pad_settings.pos_sense_is_used    = true;
       pad_settings.rim_shot_is_used     = true;
