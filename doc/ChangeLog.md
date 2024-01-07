@@ -1,6 +1,12 @@
 # Edrumulus Project Log
 
+## 2024-01-07 Initial support for positional sensing for rim shots
 
+  The normal positional sensing algorithm did not work correctly if a rim shot was played.
+  A new simple algorithm is now implemented which uses the same metric as the rim shot
+  detection. This algorithm is only used in case a rim shot was detected. The idea is that
+  if the strike gets farer away from the center piezo, the power ratio between the maximum
+  peak of the center piezo to the rim shot piezo becomes lower.
 
 ## 2023-12-02 Improvements for edrumulus_gui.py
 
