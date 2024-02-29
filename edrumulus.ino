@@ -35,7 +35,13 @@ const int number_pads4 = 8; // example: do not use tom3 and shrink number of pad
 #ifdef USE_MIDI
 # ifdef ESP_PLATFORM
 #  include <MIDI.h>
-MIDI_CREATE_DEFAULT_INSTANCE();
+#  ifdef USE_TINYUSB
+#    include <Adafruit_TinyUSB.h>
+     Adafruit_USBD_MIDI usb_midi; 
+     MIDI_CREATE_INSTANCE(Adafruit_USBD_MIDI, usb_midi, MIDI);
+#  else
+     MIDI_CREATE_DEFAULT_INSTANCE();
+#  endif
 #  define MYMIDI                     MIDI
 #  define MIDI_CONTROL_CHANGE_TYPE   midi::ControlChange
 #  define MIDI_SEND_AFTER_TOUCH      sendAfterTouch
@@ -76,6 +82,9 @@ void setup()
   number_pads = min ( number_pads, 7 ); // only max. 7 pads are supported for ESP32 serial debug plotting
 #endif
 #ifdef USE_MIDI
+# ifdef USE_TINYUSB
+    TinyUSBDevice.setProductDescriptor("Edrumulus");
+# endif
   MYMIDI.begin();
 #endif
 #ifdef MIDI_SERIAL
