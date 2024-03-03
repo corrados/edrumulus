@@ -18,8 +18,6 @@
 #pragma once
 
 #include "Arduino.h"
-#include "EEPROM.h"
-
 
 // Global hardware enums and definitions ---------------------------------------
 enum Espikestate
@@ -41,6 +39,7 @@ enum Espikestate
 // -----------------------------------------------------------------------------
 #ifdef TEENSYDUINO
 
+#include "EEPROM.h"
 #include <ADC.h>
 
 #define BOARD_LED_PIN        13    // pin number of the LED on the Teensy 4.0 board
@@ -110,6 +109,7 @@ protected:
 // -----------------------------------------------------------------------------
 #ifdef ESP_PLATFORM
 
+#include <Preferences.h>
 #include "soc/sens_reg.h"
 #include "driver/adc.h"
 #ifdef CONFIG_IDF_TARGET_ESP32
@@ -148,12 +148,12 @@ public:
                            const int input_channel_index,
                            const int level );
 
-  void write_setting ( const int, const int, const byte ) {}; // not supported
-  byte read_setting  ( const int, const int ) { return 0; };  // not supported
+  void write_setting ( const int pad_index, const int address, const byte value );
+  byte read_setting  ( const int pad_index, const int address );
 
 protected:
   int                        Fs;
-  EEPROMClass                eeprom_settings;
+  Preferences                preferences_settings;
   volatile SemaphoreHandle_t timer_semaphore;
   hw_timer_t*                timer = nullptr;
   static void IRAM_ATTR      on_timer();
