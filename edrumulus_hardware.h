@@ -153,7 +153,7 @@ public:
 
 protected:
   int                        Fs;
-  Preferences                preferences_settings;
+  Preferences                settings;
   volatile SemaphoreHandle_t timer_semaphore;
   hw_timer_t*                timer = nullptr;
   static void IRAM_ATTR      on_timer();
