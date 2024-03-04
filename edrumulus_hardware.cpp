@@ -241,7 +241,8 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
 {
   // set essential parameters
   Fs = conf_Fs;
-  settings.begin ( "Settings", false); 
+  char preferences_namespace[16] = "Edrumulus";
+  settings.begin (preferences_namespace, false); 
   // create linear vectors containing the pin/ADC information for each pad and pad-input
   bool input_is_used[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
   int  input_adc[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
