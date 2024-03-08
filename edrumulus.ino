@@ -70,9 +70,9 @@ void setup()
   int* analog_pins         = analog_pins4;         // initialize with the default setup
   int* analog_pins_rimshot = analog_pins_rimshot4; // initialize with the default setup
   const int prototype = Edrumulus_hardware::get_prototype_pins ( &analog_pins,
-                                                                 &analog_pins_rimshot,
-                                                                 &number_pads,
-                                                                 &status_LED_pin );
+   &analog_pins_rimshot,
+   &number_pads,
+   &status_LED_pin );
 
   // initialize GPIO port for status LED and set it to on during setup
   pinMode ( status_LED_pin, OUTPUT );
@@ -102,11 +102,7 @@ void setup()
 
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
   digitalWrite ( status_LED_pin, LOW ); // set board LED to low right after setup is done
-#ifdef ESP_PLATFORM
-  preset_settings(); // for ESP32, the load/save of settings is not supported, preset instead
-#else
   read_settings();
-#endif
 }
 
 
