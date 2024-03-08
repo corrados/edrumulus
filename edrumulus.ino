@@ -83,7 +83,7 @@ void setup()
 #endif
 #ifdef USE_MIDI
 # ifdef USE_TINYUSB
-    TinyUSBDevice.setProductDescriptor("Edrumulus");
+    TinyUSBDevice.setProductDescriptor ( "Edrumulus" );
 # endif
   MYMIDI.begin();
 #endif
