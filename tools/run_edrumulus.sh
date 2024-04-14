@@ -76,7 +76,7 @@ if [[ "$1" == webui ]]; then
   echo "-> WebUI GUI mode enabled"
   is_raspi=true # WebUI GUI is only supported on Raspberry Pi
   is_uart=true
-  gui_mode="webui"
+  gui_mode="webui jack"
 fi
 
 
