@@ -422,7 +422,15 @@ if use_webui:
                            <td><button type='submit' name='key' value='U'>UP</button></td></tr><br>
         </table><table><tr><td>""", "utf-8"))
       self.wfile.write(bytes("%s: %s: %s" % (pad_names[sel_pad], cmd_names[sel_cmd], parse_cmd_param(sel_cmd)), "utf-8"))
-      self.wfile.write(bytes("</td></tr></table><br><br><br><button type='submit' name='key' value='askshutdown'>SHUTDOWN</button></form></body>", "utf-8"))
+      self.wfile.write(bytes("""</td></tr></table><table>
+        <tr><td>Kit:</td><td><button type='submit' name='key' value='K'>DOWN</button></td>
+                                <td><button type='submit' name='key' value='k'>UP</button></td></tr>
+        <tr><td>Volume:</td><td><button type='submit' name='key' value='V'>DOWN</button></td>
+                            <td><button type='submit' name='key' value='v'>UP</button></td></tr><br>
+        </table><table><tr><td>""", "utf-8"))
+      if sel_kit:
+        self.wfile.write(bytes(sel_kit + ", Kit Volume: " + kit_vol_str if kit_vol_str else sel_kit, "utf-8"))
+      self.wfile.write(bytes("</td></tr></table><br><br><button type='submit' name='key' value='askshutdown'>SHUTDOWN</button></form></body>", "utf-8"))
 
 
 ################################################################################
