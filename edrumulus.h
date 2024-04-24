@@ -94,7 +94,6 @@ class Edrumulus
 public:
   enum Epadtype // note that the enums need assigned integers for MIDI settings transfer
   {
-// TODO if new pads are added, check if get_is_control() and get_is_rim_switch() must be updated
     PD120         = 0,
     PD80R         = 1,
     PD8           = 2,
