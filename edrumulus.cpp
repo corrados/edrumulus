@@ -582,11 +582,18 @@ void Edrumulus::Pad::initialize()
   x_low_hist_len        = x_sq_hist_len + lp_filt_len;
 
   // clipping compensation initialization
-  for ( int i = 0; i < length_ampmap; i++ )
+  length_ampmap = 0;
+  for ( int i = 0; i < max_length_ampmap; i++ )
   {
-    // never to higher than 5
-    amplification_mapping[i] = min ( 5.0f, pow ( 10.0f, ( i * pad_settings.clip_comp_ampmap_step ) *
-                                                        ( i * pad_settings.clip_comp_ampmap_step ) ) );
+    const float amp_map_val = pow ( 10.0f, ( i * pad_settings.clip_comp_ampmap_step ) *
+                                           ( i * pad_settings.clip_comp_ampmap_step ) );
+
+    // never to higher than 5 but at least two values
+    if ( ( length_ampmap < 2 ) || ( amp_map_val <= 5.0f ) )
+    {
+      amplification_mapping[i] = amp_map_val;
+      length_ampmap++;
+    }
   }
 
   // pre-calculate equations needed for 3 sensor get position function
@@ -996,7 +1003,7 @@ float Edrumulus::Pad::process_sample ( const float* input,
             mean_neighbor = sqrt ( right_neighbor ); // only right neighbor available
           }
 
-          const float a_low                      = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples )];
+          const float a_low                      = amplification_mapping[min ( length_ampmap - 2, number_overloaded_samples )];
           const float a_high                     = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples + 1 )];
           const float a_diff                     = a_high - a_low;
           const float a_diff_abs                 = a_diff * peak_val_sqrt / a_low;

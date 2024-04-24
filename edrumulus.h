@@ -342,7 +342,7 @@ protected:
       void initialize(); // this function should not be called directly but use sched_init() instead
       void sched_init() { init_delay_cnt = init_delay_value; }; // schedule initialization function (for delayed initialization)
       const float      init_delay_value_s = 0.2; // init delay value in seconds
-      static const int length_ampmap      = 20;  // maxmimum number of amplification mappings for clipping compensation
+      static const int max_length_ampmap  = 20;  // maxmimum number of amplification mappings for clipping compensation
       static const int ctrl_history_len   = 10;  // (MUST BE AN EVEN VALUE) control history length; the longer, the more noise reduction but more delay
 
       // band-pass filter coefficients (they are constant and must not be changed)
@@ -430,7 +430,8 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       int          init_delay_value;
       int          overload_hist_len;
       int          max_num_overloads;
-      float        amplification_mapping[length_ampmap];
+      int          length_ampmap;
+      float        amplification_mapping[max_length_ampmap];
       int          scan_time;
       int          pre_scan_time;
       int          total_scan_time;
