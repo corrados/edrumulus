@@ -45,7 +45,7 @@ pigs w 9 1
 #esptool.py -p /dev/serial0 erase_flash
 
 
-esptool.py --chip esp32 --port /dev/serial0 write_flash -z --flash_mode dio --flash_freq 80m --flash_size detect 0xe000 flash_esp32_bin/boot_app0.bin 0x1000 flash_esp32_bin/bootloader_dio_80m.bin 0x10000 flash_esp32_bin/edrumulus.ino.doitESP32devkitV1.bin 0x8000 flash_esp32_bin/edrumulus.ino.partitions.bin
+esptool.py --chip esp32 --port /dev/serial0 write_flash -z --flash_mode dio --flash_freq 80m --flash_size detect 0xe000 flash_esp32_bin/boot_app0.bin 0x1000 flash_esp32_bin/bootloader_dio_80m.bin 0x10000 flash_esp32_bin/edrumulus.ino.bin 0x8000 flash_esp32_bin/edrumulus.ino.partitions.bin
 
 
 # set IO0 to non-flash mode and reboot ESP32 -----------------------------------
