@@ -1,5 +1,6 @@
 # Edrumulus specific
 build/
+tools/flash_esp32_bin/edrumulus.ino.bin
 
 tools/artstar/
 tools/aasimonster2/
