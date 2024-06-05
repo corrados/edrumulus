@@ -46,7 +46,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd80r_hot_spot.wav");padtype='pd80r';%x = x(191700:192400, :);%
 %x = audioread("signals/pd80r_no_hot_spot.wav");padtype='pd80r';
 %x = audioread("signals/pd80r_rimshot_issue.wav");padtype='pd80r';
-x = audioread("signals/pd85rimshotpossense.wav");padtype='pd80r';
+%x = audioread("signals/pd85rimshotpossense.wav");padtype='pd80r';
 %x = audioread("signals/pda120ls.wav");x=x(:,1);padtype='pda120ls';x = x(1:630000, :);%x = x(1.06e6:end, :);%x = x(840000:930000, :);%
 %x = audioread("signals/pda120ls_2.wav");x=x(:,1);padtype='pda120ls';x = x(1:210000, :);
 %x = audioread("signals/pda120ls_multpiezotest.wav");padtype='pda120ls';
@@ -77,6 +77,7 @@ x = audioread("signals/pd85rimshotpossense.wav");padtype='pd80r';
 %x = audioread("signals/mps750x_ride_all.wav");padtype='mps750x_cymbal';
 %x = audioread("signals/mps750x_crash_all.wav");padtype='mps750x_cymbal';
 %x = audioread("signals/lehhs12c_all.wav");padtype='lehhs12c';
+x = audioread("signals/mps850_meshpad_10.wav");padtype='pd80r';
 
 
 % scale to the ESP32 input range to match the signal level of the ESP32
