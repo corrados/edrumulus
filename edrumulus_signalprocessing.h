@@ -77,3 +77,32 @@ protected:
   int    pointer;
   int    fifo_length;
 };
+
+
+// Multiple head sensor management ---------------------------------------------
+
+class MultiHeadSensor
+{
+public:
+  void initialize();
+  void calculate ( const bool sensor0_has_results,
+                   SSensor*   sSensor );
+
+protected:
+  int multiple_sensor_cnt;
+
+  float           get_pos_x0;
+  float           get_pos_y0;
+  float           get_pos_x1;
+  float           get_pos_y1;
+  float           get_pos_x2;
+  float           get_pos_y2;
+  float           get_pos_x0_sq_plus_y0_sq;
+  float           get_pos_a1;
+  float           get_pos_b1;
+  float           get_pos_a2;
+  float           get_pos_b2;
+  float           get_pos_div1_fact;
+  float           get_pos_div2_fact;
+  float           get_pos_rim_radius;
+};
