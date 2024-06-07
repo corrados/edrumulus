@@ -158,15 +158,15 @@ void Edrumulus_hardware::write_setting ( const int  pad_index,
                                          const int  address,
                                          const byte value )
 {
-  const char* key = String(pad_index * MAX_NUM_SET_PER_PAD + address).c_str();
-  settings.putUChar( key, value );
+  const char* key = String ( pad_index * MAX_NUM_SET_PER_PAD + address ).c_str();
+  settings.putUChar ( key, value );
 }
 
 byte Edrumulus_hardware::read_setting ( const int pad_index,
                                         const int address )
 {
-  const char* key = String(pad_index * MAX_NUM_SET_PER_PAD + address).c_str();
-  return settings.getUChar( key, 0 );
+  const char* key = String ( pad_index * MAX_NUM_SET_PER_PAD + address ).c_str();
+  return settings.getUChar ( key, 0 );
 }
 
 int Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
@@ -222,7 +222,7 @@ int Edrumulus_hardware::get_prototype_pins ( int** analog_pins,
   *status_LED_pin = BOARD_LED_PIN;
   return 4;
 #else // CONFIG_IDF_TARGET_ESP32S3
-// analog pins setup:                 snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3  
+  // analog pins setup:                 snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3  
   static int analog_pins_s3[]         = {  4,     6,      7,        9,         10,     12,    13,    15,    16 };
   static int analog_pins_rimshot_s3[] = {  5,    -1,      8,       -1,         11,     -1,    14,    -1,    -1 };
   *analog_pins         = analog_pins_s3;
@@ -240,9 +240,10 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
                                  int       analog_pin[][MAX_NUM_PAD_INPUTS] )
 {
   // set essential parameters
-  Fs = conf_Fs;
+  Fs                             = conf_Fs;
   char preferences_namespace[16] = "Edrumulus";
-  settings.begin (preferences_namespace, false); 
+  settings.begin ( preferences_namespace, false );
+
   // create linear vectors containing the pin/ADC information for each pad and pad-input
   bool input_is_used[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
   int  input_adc[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
