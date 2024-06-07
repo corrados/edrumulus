@@ -101,8 +101,8 @@ void setup()
 #endif
 
   edrumulus.setup ( number_pads, analog_pins, analog_pins_rimshot );
-  digitalWrite ( status_LED_pin, LOW ); // set board LED to low right after setup is done
   read_settings();
+  digitalWrite ( status_LED_pin, LOW ); // set board LED to low right after setup is done
 }
 
 
