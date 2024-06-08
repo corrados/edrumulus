@@ -19,6 +19,118 @@
 #include "edrumulus.h"
 
 
+// Pad -------------------------------------------------------------------------
+void Edrumulus::Pad::overload_correction ( FastWriteFIFO& x_sq_hist,
+                                           FastWriteFIFO& overload_hist,
+                                           const int      first_peak_idx,
+                                           const int      peak_velocity_idx,
+                                           bool&          is_overloaded_state,
+                                           float&         peak_val )
+{
+  // if the first peak is overloaded, use this position as the maximum peak
+  int       peak_velocity_idx_ovhist                    = peak_velocity_idx;
+  const int first_peak_velocity_idx_in_overload_history = overload_hist_len - total_scan_time + first_peak_idx;
+
+  if ( overload_hist[first_peak_velocity_idx_in_overload_history] > 0.0f )
+  {
+    // overwrite peak value and index in history
+    peak_val                 = x_sq_hist[x_sq_hist_len - total_scan_time + first_peak_idx];
+    peak_velocity_idx_ovhist = scan_time - x_sq_hist_len + first_peak_idx;
+  }
+
+  float     right_neighbor, left_neighbor;
+  const int peak_velocity_idx_in_overload_history = overload_hist_len - scan_time + peak_velocity_idx_ovhist;
+  const int peak_velocity_idx_in_x_sq_hist        = x_sq_hist_len - scan_time + peak_velocity_idx_ovhist;
+  int       number_overloaded_samples             = 1; // we check for overload history at peak position is > 0 below -> start with one
+  bool      left_neighbor_ok                      = true; // initialize with ok
+  bool      right_neighbor_ok                     = true; // initialize with ok
+
+  // check overload status and correct the peak if necessary
+  if ( overload_hist[peak_velocity_idx_in_overload_history] > 0.0f )
+  {
+    // NOTE: the static_cast<int> is a workaround for the ESP32 compiler issue: "unknown opcode or format name 'lsiu'"
+    // run to the right to find same overloads
+    int cur_idx      = peak_velocity_idx_in_overload_history;
+    int cur_idx_x_sq = peak_velocity_idx_in_x_sq_hist;
+    while ( ( cur_idx < overload_hist_len - 1 ) && ( static_cast<int> ( overload_hist[cur_idx] ) == static_cast<int> ( overload_hist[cur_idx + 1] ) ) )
+    {
+      cur_idx++;
+      cur_idx_x_sq++;
+      number_overloaded_samples++;
+    }
+    if ( cur_idx_x_sq + 1 < x_sq_hist_len )
+    {
+      right_neighbor = x_sq_hist[cur_idx_x_sq + 1];
+    }
+    else
+    {
+      right_neighbor_ok = false;
+    }
+
+    // run to the left to find same overloads
+    cur_idx      = peak_velocity_idx_in_overload_history;
+    cur_idx_x_sq = peak_velocity_idx_in_x_sq_hist;
+    while ( ( cur_idx > 1 ) && ( static_cast<int> ( overload_hist[cur_idx] ) == static_cast<int> ( overload_hist[cur_idx - 1] ) ) )
+    {
+      cur_idx--;
+      cur_idx_x_sq--;
+      number_overloaded_samples++;
+    }
+    if ( cur_idx_x_sq - 1 >= 0 )
+    {
+      left_neighbor = x_sq_hist[cur_idx_x_sq - 1];
+    }
+    else
+    {
+      left_neighbor_ok = false;
+    }
+
+    is_overloaded_state = ( number_overloaded_samples > max_num_overloads );
+
+    // clipping compensation (see tools/misc/clipping_compensation.m)
+    const float peak_val_sqrt = sqrt ( peak_val );
+    float       mean_neighbor = peak_val_sqrt; // if no neighbor can be calculated, use safest value, i.e., lowest resulting correction            
+
+    if ( left_neighbor_ok && right_neighbor_ok )
+    {
+      mean_neighbor = ( sqrt ( left_neighbor ) + sqrt ( right_neighbor ) ) / 2.0f;
+    }
+    else if ( left_neighbor_ok )
+    {
+      mean_neighbor = sqrt ( left_neighbor ); // only left neighbor available
+    }
+    else if ( right_neighbor_ok )
+    {
+      mean_neighbor = sqrt ( right_neighbor ); // only right neighbor available
+    }
+
+    const float a_low                      = amplification_mapping[min ( length_ampmap - 2, number_overloaded_samples )];
+    const float a_high                     = amplification_mapping[min ( length_ampmap - 1, number_overloaded_samples + 1 )];
+    const float a_diff                     = a_high - a_low;
+    const float a_diff_abs                 = a_diff * peak_val_sqrt / a_low;
+    float       neighbor_to_limit_abs      = mean_neighbor - ( peak_val_sqrt - a_diff_abs );
+    neighbor_to_limit_abs                  = max ( 0.0f, min ( a_diff_abs, neighbor_to_limit_abs ) );
+    const float amplification_compensation = a_low + neighbor_to_limit_abs / a_diff_abs * a_diff;
+    peak_val                              *= amplification_compensation * amplification_compensation;
+/*
+String overload_string = "";
+for ( int ov_cnt = 0; ov_cnt < overload_hist_len; ov_cnt++ )
+{
+overload_string += String ( overload_hist[ov_cnt] ) + " ";
+}
+Serial.println ( overload_string );
+Serial.println ( String ( peak_velocity_idx_in_x_sq_hist ) + " " +
+                 String ( x_sq_hist_len ) + " " + String ( peak_velocity_idx_in_overload_history ) + " " +
+                 String ( overload_hist_len ) + " " + String ( first_peak_idx ) );
+Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right_neighbor ) ) + " " +
+                 String ( number_overloaded_samples ) + " " + String ( mean_neighbor ) + " " +
+                 String ( mean_neighbor - ( peak_val_sqrt - a_diff_abs ) ) + " " + String ( neighbor_to_limit_abs ) + " " +
+                 String ( amplification_compensation ) + " " + String ( sqrt ( peak_val ) ) );
+*/
+  }
+}
+
+
 // Multiple head sensor management ---------------------------------------------
 void Edrumulus::Pad::MultiHeadSensor::initialize()
 {

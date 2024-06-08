@@ -281,6 +281,14 @@ protected:
       void manage_delayed_initialization();
       void initialize(); // this function should not be called directly but use sched_init() instead
       void sched_init() { init_delay_cnt = init_delay_value; }; // schedule initialization function (for delayed initialization)
+
+      void overload_correction ( FastWriteFIFO& x_sq_hist,
+                                 FastWriteFIFO& overload_hist,
+                                 const int      first_peak_idx,
+                                 const int      peak_velocity_idx,
+                                 bool&          is_overloaded_state,
+                                 float&         peak_val );
+
       const float      init_delay_value_s = 0.2; // init delay value in seconds
       static const int max_length_ampmap  = 20;  // maxmimum number of amplification mappings for clipping compensation
       static const int ctrl_history_len   = 10;  // (MUST BE AN EVEN VALUE) control history length; the longer, the more noise reduction but more delay
