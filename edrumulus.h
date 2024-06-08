@@ -364,6 +364,13 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
       {
       public:
         void initialize();
+
+        void calculate_subsample_peak_value ( FastWriteFIFO& x_sq_hist,
+                                              const int      x_sq_hist_len,
+                                              const int      total_scan_time,
+                                              const int      first_peak_idx,
+                                              float&         first_peak_sub_sample );
+
         void calculate ( SSensor*   sSensor,
                          const bool sensor0_has_results,
                          const int  number_head_sensors,

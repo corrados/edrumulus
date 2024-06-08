@@ -20,7 +20,6 @@
 
 
 // Multiple head sensor management ---------------------------------------------
-
 void Edrumulus::Pad::MultiHeadSensor::initialize()
 {
   multiple_sensor_cnt = 0;
@@ -37,6 +36,39 @@ void Edrumulus::Pad::MultiHeadSensor::initialize()
   get_pos_b2               = 2 * ( get_pos_y0 - get_pos_y2 );
   get_pos_div1_fact        = 1.0f / ( get_pos_a1 * get_pos_b2 - get_pos_a2 * get_pos_b1 );
   get_pos_div2_fact        = 1.0f / ( get_pos_a2 * get_pos_b1 - get_pos_a1 * get_pos_b2 );
+}
+
+
+void Edrumulus::Pad::MultiHeadSensor::calculate_subsample_peak_value ( FastWriteFIFO& x_sq_hist,
+                                                                       const int      x_sq_hist_len,
+                                                                       const int      total_scan_time,
+                                                                       const int      first_peak_idx,
+                                                                       float&         first_peak_sub_sample )
+{
+  // calculate sub-sample first peak value using simplified metric:
+  // m = (x_sq[2] - x_sq[0]) / (x_sq[1] - x_sq[0]) -> sub_sample = m * m / 2
+  first_peak_sub_sample = 0.0; // in case no sub-sample value can be calculated
+  const int cur_index   = x_sq_hist_len - total_scan_time + first_peak_idx;
+
+  if ( ( cur_index > 0 ) && ( cur_index < x_sq_hist_len - 1 ) )
+  {
+    if ( x_sq_hist[cur_index - 1] > x_sq_hist[cur_index + 1] )
+    {
+      // sample left of main peak is bigger than right sample
+      const float sub_sample_metric = ( x_sq_hist[cur_index - 1] - x_sq_hist[cur_index + 1] ) /
+                                      ( x_sq_hist[cur_index]     - x_sq_hist[cur_index + 1] );
+
+      first_peak_sub_sample = sub_sample_metric * sub_sample_metric / 2;
+    }
+    else
+    {
+      // sample right of main peak is bigger than left sample
+      const float sub_sample_metric = ( x_sq_hist[cur_index + 1] - x_sq_hist[cur_index - 1] ) /
+                                      ( x_sq_hist[cur_index]     - x_sq_hist[cur_index - 1] );
+
+      first_peak_sub_sample = -sub_sample_metric * sub_sample_metric / 2;
+    }
+  }
 }
 
 

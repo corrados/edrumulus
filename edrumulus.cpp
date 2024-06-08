@@ -866,32 +866,14 @@ float Edrumulus::Pad::process_sample ( const float* input,
           }
         }
 
-        // calculate sub-sample first peak value using simplified metric:
-        // m = (x_sq[2] - x_sq[0]) / (x_sq[1] - x_sq[0]) -> sub_sample = m * m / 2
+        // calculate sub-sample first peak value
         if ( number_head_sensors > 1 )
         {
-          s.sResults.first_peak_sub_sample = 0.0; // in case no sub-sample value can be calculated
-          const int cur_index              = x_sq_hist_len - total_scan_time + first_peak_idx;
-
-          if ( ( cur_index > 0 ) && ( cur_index < x_sq_hist_len - 1 ) )
-          {
-            if ( s_x_sq_hist[cur_index - 1] > s_x_sq_hist[cur_index + 1] )
-            {
-              // sample left of main peak is bigger than right sample
-              const float sub_sample_metric = ( s_x_sq_hist[cur_index - 1] - s_x_sq_hist[cur_index + 1] ) /
-                                              ( s_x_sq_hist[cur_index]     - s_x_sq_hist[cur_index + 1] );
-
-              s.sResults.first_peak_sub_sample = sub_sample_metric * sub_sample_metric / 2;
-            }
-            else
-            {
-              // sample right of main peak is bigger than left sample
-              const float sub_sample_metric = ( s_x_sq_hist[cur_index + 1] - s_x_sq_hist[cur_index - 1] ) /
-                                              ( s_x_sq_hist[cur_index]     - s_x_sq_hist[cur_index - 1] );
-
-              s.sResults.first_peak_sub_sample = -sub_sample_metric * sub_sample_metric / 2;
-            }
-          }
+          multi_head_sensor.calculate_subsample_peak_value ( s_x_sq_hist,
+                                                             x_sq_hist_len,
+                                                             total_scan_time,
+                                                             first_peak_idx,
+                                                             s.sResults.first_peak_sub_sample );
         }
 
         // get the maximum velocity in the scan time using the unfiltered signal
