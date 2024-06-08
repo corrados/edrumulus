@@ -1328,7 +1328,15 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
   // signal processing for multiple head sensor pads
   if ( number_head_sensors > 1 )
   {
-    multi_head_sensor.calculate(sensor0_has_results);
+    multi_head_sensor.calculate ( sSensor,
+                                  sensor0_has_results,
+                                  number_head_sensors,
+                                  pad_settings.pos_sensitivity,
+                                  pad_settings.pos_threshold,
+                                  peak_found,
+                                  midi_velocity,
+                                  midi_pos,
+                                  rim_state );
   }
 
   DEBUG_ADD_VALUES ( input[0] * input[0], x_filt, sSensor[0].scan_time_cnt > 0 ? 0.5 : sSensor[0].mask_back_cnt > 0 ? 0.2 : cur_decay, threshold );

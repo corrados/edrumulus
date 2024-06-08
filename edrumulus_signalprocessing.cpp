@@ -16,11 +16,12 @@
 \******************************************************************************/
 
 #include "edrumulus_signalprocessing.h"
+#include "edrumulus.h"
 
 
 // Multiple head sensor management ---------------------------------------------
 
-void MultiHeadSensor::initialize()
+void Edrumulus::Pad::MultiHeadSensor::initialize()
 {
   multiple_sensor_cnt = 0;
 
@@ -39,8 +40,15 @@ void MultiHeadSensor::initialize()
 }
 
 
-void MultiHeadSensor::calculate ( const bool sensor0_has_results,
-                                  SSensor*   sSensor )
+void Edrumulus::Pad::MultiHeadSensor::calculate ( SSensor*   sSensor,
+                                                  const bool sensor0_has_results,
+                                                  const int  number_head_sensors,
+                                                  const int  pos_sensitivity,
+                                                  const int  pos_threshold,
+                                                  bool&      peak_found,
+                                                  int&       midi_velocity,
+                                                  int&       midi_pos,
+                                                  Erimstate& rim_state )
 {
 
 // TODO do not use hard coded "17" at the three places here but define a pad specific value and use that instead
@@ -138,7 +146,7 @@ if ( abs ( sSensor[head_sensor_cnt].sResults.first_peak_delay - sensor0_first_pe
 //Serial.println ( String ( diff_1_0 ) + "," + String ( diff_2_0 ) + "," + String ( diff_2_1 ) + "," );
 //const int max_abs_diff = ( max ( max ( abs ( diff_1_0 ), abs ( diff_2_0 ) ), abs ( diff_2_1 ) ) );
 
-        midi_pos = min ( 127, max ( 0, pad_settings.pos_sensitivity * ( max_abs_diff - pad_settings.pos_threshold ) ) );
+        midi_pos = min ( 127, max ( 0, pos_sensitivity * ( max_abs_diff - pos_threshold ) ) );
 
         // use average MIDI velocity
         midi_velocity = velocity_sum / number_sensors_with_results;

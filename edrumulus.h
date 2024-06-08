@@ -360,6 +360,38 @@ const float ADC_noise_peak_velocity_scaling = 1.0f / 6.0f;
         SResults  sResults;
       };
 
+      class MultiHeadSensor
+      {
+      public:
+        void initialize();
+        void calculate ( SSensor*   sSensor,
+                         const bool sensor0_has_results,
+                         const int  number_head_sensors,
+                         const int  pos_sensitivity,
+                         const int  pos_threshold,
+                         bool&      peak_found,
+                         int&       midi_velocity,
+                         int&       midi_pos,
+                         Erimstate& rim_state );
+
+      protected:
+        int   multiple_sensor_cnt;
+        float get_pos_x0;
+        float get_pos_y0;
+        float get_pos_x1;
+        float get_pos_y1;
+        float get_pos_x2;
+        float get_pos_y2;
+        float get_pos_x0_sq_plus_y0_sq;
+        float get_pos_a1;
+        float get_pos_b1;
+        float get_pos_a2;
+        float get_pos_b2;
+        float get_pos_div1_fact;
+        float get_pos_div2_fact;
+        float get_pos_rim_radius;
+      };
+
       SSensor         sSensor[MAX_NUM_PAD_INPUTS];
       bool            use_head_sensor_coupling;
       bool            use_second_rim;
