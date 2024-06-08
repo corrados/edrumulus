@@ -447,12 +447,12 @@ void Edrumulus_hardware::init_my_analogRead()
   for ( int channel = 0; channel < 10; channel++ ) // 10 channels per ADC
   {
     // configure the attenuation and let the get_raw() do all the ADC initialization for us...
-    adc1_config_channel_atten ( static_cast<adc1_channel_t> ( channel ), ADC_ATTEN_DB_11 );
-    adc2_config_channel_atten ( static_cast<adc2_channel_t> ( channel ), ADC_ATTEN_DB_11 );
+    adc1_config_channel_atten ( static_cast<adc1_channel_t> ( channel ), ADC_ATTEN_DB_12 );
+    adc2_config_channel_atten ( static_cast<adc2_channel_t> ( channel ), ADC_ATTEN_DB_12 );
     adc1_get_raw              ( static_cast<adc1_channel_t> ( channel ) );
     adc2_get_raw              ( static_cast<adc2_channel_t> ( channel ), ADC_WIDTH_BIT_12, &cur_sample );
   }
-  adc_power_on();
+  adc_power_acquire();
 #endif
 }
 
