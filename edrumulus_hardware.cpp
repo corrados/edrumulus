@@ -316,21 +316,15 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
 void Edrumulus_hardware::setup_timer()
 {
   // prepare timer at a rate of given sampling rate
-#if ESP_IDF_VERSION_MAJOR<5
+#if ESP_IDF_VERSION_MAJOR < 5
   timer = timerBegin ( 0, 80, true ); // prescaler of 80 (i.e. below we have 1 MHz instead of 80 MHz)
   timerAttachInterrupt ( timer, &on_timer, true );
   timerAlarmWrite      ( timer, 1000000 / Fs, true ); // here we define the sampling rate (1 MHz / Fs)
   timerAlarmEnable     ( timer );
 #else
-  // TODO
-
-
-timer = timerBegin ( 0, 80, true ); // prescaler of 80 (i.e. below we have 1 MHz instead of 80 MHz)
-timerAttachInterrupt ( timer, &on_timer, true );
-timerAlarmWrite      ( timer, 1000000 / Fs, true ); // here we define the sampling rate (1 MHz / Fs)
-timerAlarmEnable     ( timer );
-
-
+  timer = timerBegin ( 1000000 );
+  timerAttachInterrupt ( timer, &on_timer );
+  timerAlarm ( timer, 1000000 / Fs, true, 0 );
 #endif
 }
 
