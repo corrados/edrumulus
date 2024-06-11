@@ -305,21 +305,23 @@ void Edrumulus_hardware::setup ( const int conf_Fs,
 
   // create task pinned to core 0 for creating the timer interrupt so that the
   // timer function is not running in our working core 1
-#ifdef CONFIG_IDF_TARGET_ESP32
-  xTaskCreatePinnedToCore ( start_timer_core0_task, "start_timer_core0_task", 800, this, 1, NULL, 0 );
-#else // CONFIG_IDF_TARGET_ESP32S3
   xTaskCreatePinnedToCore ( start_timer_core0_task, "start_timer_core0_task", 1000, this, 1, NULL, 0 );
-#endif
 }
 
 
 void Edrumulus_hardware::setup_timer()
 {
   // prepare timer at a rate of given sampling rate
+#if ESP_IDF_VERSION_MAJOR < 5
   timer = timerBegin ( 0, 80, true ); // prescaler of 80 (i.e. below we have 1 MHz instead of 80 MHz)
   timerAttachInterrupt ( timer, &on_timer, true );
   timerAlarmWrite      ( timer, 1000000 / Fs, true ); // here we define the sampling rate (1 MHz / Fs)
   timerAlarmEnable     ( timer );
+#else
+  timer = timerBegin ( 1000000 );
+  timerAttachInterrupt ( timer, &on_timer );
+  timerAlarm ( timer, 1000000 / Fs, true, 0 );
+#endif
 }
 
 
