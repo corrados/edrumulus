@@ -22,15 +22,6 @@
 #include "edrumulus_util.h"
 
 
-// Global hardware enums and definitions ---------------------------------------
-enum Espikestate
-{
-  ST_NOISE,
-  ST_SPIKE_HIGH,
-  ST_SPIKE_LOW,
-  ST_OTHER
-};
-
 #define MAX_EEPROM_SIZE      512 // bytes (Teensy 4.0: max 1024 bytes)
 #define MAX_NUM_SET_PER_PAD  30  // maximum number of settings which can be stored per pad
 
