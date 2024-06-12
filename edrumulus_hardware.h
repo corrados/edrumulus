@@ -19,6 +19,7 @@
 
 #include "Arduino.h"
 #include "EEPROM.h"
+#include "edrumulus_util.h"
 
 
 // Global hardware enums and definitions ---------------------------------------
@@ -30,8 +31,6 @@ enum Espikestate
   ST_OTHER
 };
 
-#define MAX_NUM_PADS         12  // a maximum of 12 pads are supported
-#define MAX_NUM_PAD_INPUTS   5   // a maximum of 5 sensors per pad is supported (where one is rim and one is the sum of three)
 #define MAX_EEPROM_SIZE      512 // bytes (Teensy 4.0: max 1024 bytes)
 #define MAX_NUM_SET_PER_PAD  30  // maximum number of settings which can be stored per pad
 
@@ -67,12 +66,6 @@ public:
                          int       analog_pin[][MAX_NUM_PAD_INPUTS],
                          int       sample_org[][MAX_NUM_PAD_INPUTS] );
 
-  void cancel_ADC_spikes ( float&    signal,
-                           int&      overload_detected,
-                           const int pad_index,
-                           const int input_channel_index,
-                           const int level );
-
   void write_setting ( const int pad_index, const int address, const byte value );
   byte read_setting  ( const int pad_index, const int address );
 
@@ -86,20 +79,6 @@ protected:
   int      total_number_inputs;
   int      input_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
   uint16_t input_sample[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
-
-  Espikestate prev1_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  Espikestate prev2_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  Espikestate prev3_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  Espikestate prev4_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  Espikestate prev5_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  float       prev_input1[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  float       prev_input2[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  float       prev_input3[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  float       prev_input4[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  int         prev_overload1[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  int         prev_overload2[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  int         prev_overload3[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  int         prev_overload4[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
 };
 
 #endif
@@ -142,12 +121,6 @@ public:
                          int       analog_pin[][MAX_NUM_PAD_INPUTS],
                          int       sample_org[][MAX_NUM_PAD_INPUTS] );
 
-  void cancel_ADC_spikes ( float&    signal,
-                           int&      overload_detected,
-                           const int pad_index,
-                           const int input_channel_index,
-                           const int level );
-
   void write_setting ( const int, const int, const byte ) {}; // not supported
   byte read_setting  ( const int, const int ) { return 0; };  // not supported
 
@@ -179,20 +152,6 @@ protected:
 
   int         num_pin_single;
   int         single_index[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
-
-  Espikestate prev1_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  Espikestate prev2_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  Espikestate prev3_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  Espikestate prev4_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  Espikestate prev5_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  float       prev_input1[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  float       prev_input2[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  float       prev_input3[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  float       prev_input4[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  int         prev_overload1[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  int         prev_overload2[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  int         prev_overload3[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
-  int         prev_overload4[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
 };
 
 #endif

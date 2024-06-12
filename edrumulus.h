@@ -17,11 +17,6 @@
 
 #pragma once
 
-#define VERSION_MAJOR   0
-#define VERSION_MINOR   9
-
-//#define USE_SERIAL_DEBUG_PLOTTING
-
 #include "Arduino.h"
 #include "edrumulus_pad.h"
 #include "edrumulus_util.h"
@@ -114,6 +109,12 @@ public:
   byte read_setting  ( const int pad_index, const int address )                   { return edrumulus_hardware.read_setting ( pad_index, address ); }
 
 protected:
+  void cancel_ADC_spikes ( float&    signal,
+                           int&      overload_detected,
+                           const int pad_index,
+                           const int input_channel_index,
+                           const int level );
+
   // constant definitions
   const int   Fs                       = 8000;  // this is the most fundamental system parameter: system sampling rate
   const float dc_offset_est_len_s      = 1.25f; // length of initial DC offset estimation in seconds
@@ -179,4 +180,18 @@ protected:
   int                cancel_cnt;
   int                cancel_MIDI_velocity;
   int                cancel_pad_index;
+
+  Espikestate prev1_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  Espikestate prev2_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  Espikestate prev3_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  Espikestate prev4_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  Espikestate prev5_input_state[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  float       prev_input1[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  float       prev_input2[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  float       prev_input3[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  float       prev_input4[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  int         prev_overload1[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  int         prev_overload2[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  int         prev_overload3[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  int         prev_overload4[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
 };
