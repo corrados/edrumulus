@@ -15,17 +15,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 \******************************************************************************/
 
-#include "edrumulus_signalprocessing.h"
-#include "edrumulus.h"
+#include "edrumulus_util.h"
+#include "edrumulus_pad.h"
 
 
 // Pad -------------------------------------------------------------------------
-void Edrumulus::Pad::overload_correction ( FastWriteFIFO& x_sq_hist,
-                                           FastWriteFIFO& overload_hist,
-                                           const int      first_peak_idx,
-                                           const int      peak_velocity_idx,
-                                           bool&          is_overloaded_state,
-                                           float&         peak_val )
+void Pad::overload_correction ( FastWriteFIFO& x_sq_hist,
+                                FastWriteFIFO& overload_hist,
+                                const int      first_peak_idx,
+                                const int      peak_velocity_idx,
+                                bool&          is_overloaded_state,
+                                float&         peak_val )
 {
   // if the first peak is overloaded, use this position as the maximum peak
   int       peak_velocity_idx_ovhist                    = peak_velocity_idx;
@@ -132,7 +132,7 @@ Serial.println ( String ( sqrt ( left_neighbor ) ) + " " + String ( sqrt ( right
 
 
 // Multiple head sensor management ---------------------------------------------
-void Edrumulus::Pad::MultiHeadSensor::initialize()
+void Pad::MultiHeadSensor::initialize()
 {
   multiple_sensor_cnt = 0;
 
@@ -151,11 +151,11 @@ void Edrumulus::Pad::MultiHeadSensor::initialize()
 }
 
 
-void Edrumulus::Pad::MultiHeadSensor::calculate_subsample_peak_value ( FastWriteFIFO& x_sq_hist,
-                                                                       const int      x_sq_hist_len,
-                                                                       const int      total_scan_time,
-                                                                       const int      first_peak_idx,
-                                                                       float&         first_peak_sub_sample )
+void Pad::MultiHeadSensor::calculate_subsample_peak_value ( FastWriteFIFO& x_sq_hist,
+                                                            const int      x_sq_hist_len,
+                                                            const int      total_scan_time,
+                                                            const int      first_peak_idx,
+                                                            float&         first_peak_sub_sample )
 {
   // calculate sub-sample first peak value using simplified metric:
   // m = (x_sq[2] - x_sq[0]) / (x_sq[1] - x_sq[0]) -> sub_sample = m * m / 2
@@ -184,15 +184,15 @@ void Edrumulus::Pad::MultiHeadSensor::calculate_subsample_peak_value ( FastWrite
 }
 
 
-void Edrumulus::Pad::MultiHeadSensor::calculate ( SSensor*   sSensor,
-                                                  const bool sensor0_has_results,
-                                                  const int  number_head_sensors,
-                                                  const int  pos_sensitivity,
-                                                  const int  pos_threshold,
-                                                  bool&      peak_found,
-                                                  int&       midi_velocity,
-                                                  int&       midi_pos,
-                                                  Erimstate& rim_state )
+void Pad::MultiHeadSensor::calculate ( SSensor*   sSensor,
+                                       const bool sensor0_has_results,
+                                       const int  number_head_sensors,
+                                       const int  pos_sensitivity,
+                                       const int  pos_threshold,
+                                       bool&      peak_found,
+                                       int&       midi_velocity,
+                                       int&       midi_pos,
+                                       Erimstate& rim_state )
 {
 
 // TODO do not use hard coded "17" at the three places here but define a pad specific value and use that instead

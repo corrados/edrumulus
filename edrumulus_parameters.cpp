@@ -18,7 +18,7 @@
 #include "edrumulus.h"
 
 
-void Edrumulus::Pad::apply_preset_pad_settings()
+void Pad::apply_preset_pad_settings()
 {
   // apply PRESET settings (might be overwritten by pad-specific properties)
   pad_settings.velocity_threshold        = 8;  // 0..31

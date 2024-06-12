@@ -125,15 +125,15 @@ void preset_settings()
   edrumulus.set_midi_notes      ( 8, 43, 58 ); // tom 3
 
   // default drum kit setup
-  edrumulus.set_pad_type ( 0, Edrumulus::PD8 );  // snare
-  edrumulus.set_pad_type ( 1, Edrumulus::KD7 );  // kick
-  edrumulus.set_pad_type ( 2, Edrumulus::PD6 );  // Hi-Hat
-  edrumulus.set_pad_type ( 3, Edrumulus::FD8 );  // Hi-Hat-ctrl
-  edrumulus.set_pad_type ( 4, Edrumulus::CY6 );  // crash
-  edrumulus.set_pad_type ( 5, Edrumulus::TP80 ); // tom 1
-  edrumulus.set_pad_type ( 6, Edrumulus::CY8 );  // ride
-  edrumulus.set_pad_type ( 7, Edrumulus::TP80 ); // tom 2
-  edrumulus.set_pad_type ( 8, Edrumulus::TP80 ); // tom 3
+  edrumulus.set_pad_type ( 0, Pad::PD8 );  // snare
+  edrumulus.set_pad_type ( 1, Pad::KD7 );  // kick
+  edrumulus.set_pad_type ( 2, Pad::PD6 );  // Hi-Hat
+  edrumulus.set_pad_type ( 3, Pad::FD8 );  // Hi-Hat-ctrl
+  edrumulus.set_pad_type ( 4, Pad::CY6 );  // crash
+  edrumulus.set_pad_type ( 5, Pad::TP80 ); // tom 1
+  edrumulus.set_pad_type ( 6, Pad::CY8 );  // ride
+  edrumulus.set_pad_type ( 7, Pad::TP80 ); // tom 2
+  edrumulus.set_pad_type ( 8, Pad::TP80 ); // tom 3
 }
 
 
@@ -261,7 +261,7 @@ void loop()
       // controller 102: pad type
       if ( controller == 102 )
       {
-        edrumulus.set_pad_type  ( selected_pad,    static_cast<Edrumulus::Epadtype> ( value ) );
+        edrumulus.set_pad_type  ( selected_pad,    static_cast<Pad::Epadtype> ( value ) );
         edrumulus.write_setting ( selected_pad, 0, value );
 
         // on a pad type change, return all parameters of the selected pad
@@ -320,7 +320,7 @@ void loop()
       // controller 109: MIDI curve type
       if ( controller == 109 )
       {
-        edrumulus.set_curve     ( selected_pad,    static_cast<Edrumulus::Ecurvetype> ( value ) );
+        edrumulus.set_curve     ( selected_pad,    static_cast<Pad::Ecurvetype> ( value ) );
         edrumulus.write_setting ( selected_pad, 6, value );
         confirm_setting         ( controller,      value, false );
       }
@@ -506,25 +506,25 @@ void read_settings()
   for ( int i = 0; i < number_pads; i++ )
   {
     // NOTE that it is important that set_pad_type() is called first because it resets all other parameters
-    edrumulus.set_pad_type             ( i, static_cast<Edrumulus::Epadtype> (   edrumulus.read_setting ( i, 0 ) ) );
-    edrumulus.set_velocity_threshold   ( i,                                      edrumulus.read_setting ( i, 1 ) );
-    edrumulus.set_velocity_sensitivity ( i,                                      edrumulus.read_setting ( i, 2 ) );
-    edrumulus.set_pos_threshold        ( i,                                      edrumulus.read_setting ( i, 3 ) );
-    edrumulus.set_pos_sensitivity      ( i,                                      edrumulus.read_setting ( i, 4 ) );
-    edrumulus.set_rim_shot_threshold   ( i,                                      edrumulus.read_setting ( i, 5 ) );
-    edrumulus.set_curve                ( i, static_cast<Edrumulus::Ecurvetype> ( edrumulus.read_setting ( i, 6 ) ) );
-    edrumulus.set_rim_shot_is_used     ( i,                                      edrumulus.read_setting ( i, 7 ) );
-    edrumulus.set_pos_sense_is_used    ( i,                                      edrumulus.read_setting ( i, 8 ) );
-    edrumulus.set_midi_note_norm       ( i,                                      edrumulus.read_setting ( i, 9 ) );
-    edrumulus.set_midi_note_rim        ( i,                                      edrumulus.read_setting ( i, 10 ) );
-    edrumulus.set_cancellation         ( i,                                      edrumulus.read_setting ( i, 11 ) );
-    edrumulus.set_midi_note_open_norm  ( i,                                      edrumulus.read_setting ( i, 12 ) );
-    edrumulus.set_midi_note_open_rim   ( i,                                      edrumulus.read_setting ( i, 13 ) );
-    edrumulus.set_mask_time            ( i,                                      edrumulus.read_setting ( i, 14 ) );
-    edrumulus.set_rim_shot_boost       ( i,                                      edrumulus.read_setting ( i, 15 ) );
-    edrumulus.set_coupled_pad_idx      ( i,                                      edrumulus.read_setting ( i, 16 ) );
-    edrumulus.set_rim_pos_threshold    ( i,                                      edrumulus.read_setting ( i, 17 ) );
-    edrumulus.set_rim_pos_sensitivity  ( i,                                      edrumulus.read_setting ( i, 18 ) );
+    edrumulus.set_pad_type             ( i, static_cast<Pad::Epadtype> (   edrumulus.read_setting ( i, 0 ) ) );
+    edrumulus.set_velocity_threshold   ( i,                                edrumulus.read_setting ( i, 1 ) );
+    edrumulus.set_velocity_sensitivity ( i,                                edrumulus.read_setting ( i, 2 ) );
+    edrumulus.set_pos_threshold        ( i,                                edrumulus.read_setting ( i, 3 ) );
+    edrumulus.set_pos_sensitivity      ( i,                                edrumulus.read_setting ( i, 4 ) );
+    edrumulus.set_rim_shot_threshold   ( i,                                edrumulus.read_setting ( i, 5 ) );
+    edrumulus.set_curve                ( i, static_cast<Pad::Ecurvetype> ( edrumulus.read_setting ( i, 6 ) ) );
+    edrumulus.set_rim_shot_is_used     ( i,                                edrumulus.read_setting ( i, 7 ) );
+    edrumulus.set_pos_sense_is_used    ( i,                                edrumulus.read_setting ( i, 8 ) );
+    edrumulus.set_midi_note_norm       ( i,                                edrumulus.read_setting ( i, 9 ) );
+    edrumulus.set_midi_note_rim        ( i,                                edrumulus.read_setting ( i, 10 ) );
+    edrumulus.set_cancellation         ( i,                                edrumulus.read_setting ( i, 11 ) );
+    edrumulus.set_midi_note_open_norm  ( i,                                edrumulus.read_setting ( i, 12 ) );
+    edrumulus.set_midi_note_open_rim   ( i,                                edrumulus.read_setting ( i, 13 ) );
+    edrumulus.set_mask_time            ( i,                                edrumulus.read_setting ( i, 14 ) );
+    edrumulus.set_rim_shot_boost       ( i,                                edrumulus.read_setting ( i, 15 ) );
+    edrumulus.set_coupled_pad_idx      ( i,                                edrumulus.read_setting ( i, 16 ) );
+    edrumulus.set_rim_pos_threshold    ( i,                                edrumulus.read_setting ( i, 17 ) );
+    edrumulus.set_rim_pos_sensitivity  ( i,                                edrumulus.read_setting ( i, 18 ) );
   }
   edrumulus.set_spike_cancel_level ( edrumulus.read_setting ( number_pads, 0 ) );
 }

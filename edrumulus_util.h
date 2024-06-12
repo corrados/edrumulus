@@ -18,8 +18,6 @@
 #pragma once
 
 
-// Utility functions -----------------------------------------------------------------
-
 inline void update_fifo ( const float input,
                           const int   fifo_length,
                           float*      fifo_memory )
