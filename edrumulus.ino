@@ -30,7 +30,7 @@ const int number_pads4 = 8; // example: do not use tom3 and shrink number of pad
 //const int number_pads4 = 1; // example: just one single pad
 
 
-#include "edrumulus.h"
+#include "src/edrumulus.h"
 
 #ifdef USE_MIDI
 # ifdef ESP_PLATFORM
