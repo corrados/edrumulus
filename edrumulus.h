@@ -18,9 +18,9 @@
 #pragma once
 
 #include "Arduino.h"
-#include "edrumulus_pad.h"
-#include "edrumulus_util.h"
-#include "edrumulus_hardware.h"
+#include "common.h"
+#include "pad.h"
+#include "hardware.h"
 
 
 class Edrumulus

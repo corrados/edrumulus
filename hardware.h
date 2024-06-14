@@ -19,7 +19,7 @@
 
 #include "Arduino.h"
 #include "EEPROM.h"
-#include "edrumulus_util.h"
+#include "common.h"
 
 
 #define MAX_EEPROM_SIZE      512 // bytes (Teensy 4.0: max 1024 bytes)

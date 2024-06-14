@@ -17,8 +17,8 @@
 
 #pragma once
 
-#include "edrumulus_hardware.h"
-#include "edrumulus_util.h"
+#include "common.h"
+#include "hardware.h"
 
 
 class Pad

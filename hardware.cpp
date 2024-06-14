@@ -15,7 +15,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 \******************************************************************************/
 
-#include "edrumulus_hardware.h"
+#include "hardware.h"
 
 Edrumulus_hardware* edrumulus_hardware_pointer = nullptr;
 

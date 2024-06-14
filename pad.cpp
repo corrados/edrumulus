@@ -15,7 +15,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 \******************************************************************************/
 
-#include "edrumulus_pad.h"
+#include "pad.h"
 
 
 void Pad::setup ( const int conf_Fs )
