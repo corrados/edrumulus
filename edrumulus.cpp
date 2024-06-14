@@ -251,10 +251,15 @@ Serial.println ( serial_print );
             }
             sample[0] = ( sample[2] + sample[3] + sample[4] ) / 3; // sum is on channel 0
 
-            pad[coupled_pad_idx_primary].process_sample ( sample, 5,                            overload_detected,
-                                                          peak_found[coupled_pad_idx_primary],  midi_velocity[coupled_pad_idx_primary],
-                                                          midi_pos[coupled_pad_idx_primary],    rim_state[coupled_pad_idx_primary],
-                                                          is_choke_on[coupled_pad_idx_primary], is_choke_off[coupled_pad_idx_primary] );
+            pad[coupled_pad_idx_primary].process_sample ( sample,
+                                                          5,
+                                                          overload_detected,
+                                                          peak_found[coupled_pad_idx_primary],
+                                                          midi_velocity[coupled_pad_idx_primary],
+                                                          midi_pos[coupled_pad_idx_primary],
+                                                          rim_state[coupled_pad_idx_primary],
+                                                          is_choke_on[coupled_pad_idx_primary],
+                                                          is_choke_off[coupled_pad_idx_primary] );
           }
         }
 
@@ -285,19 +290,30 @@ Serial.println ( serial_print );
               overload_detected[0] = stored_overload_detected_coupled_rim[0];
             }
 
-            pad[coupled_pad_idx_rim_primary].process_sample ( sample, 3,                                overload_detected,
-                                                              peak_found[coupled_pad_idx_rim_primary],  midi_velocity[coupled_pad_idx_rim_primary],
-                                                              midi_pos[coupled_pad_idx_rim_primary],    rim_state[coupled_pad_idx_rim_primary],
-                                                              is_choke_on[coupled_pad_idx_rim_primary], is_choke_off[coupled_pad_idx_rim_primary] );
+            pad[coupled_pad_idx_rim_primary].process_sample ( sample,
+                                                              3,
+                                                              overload_detected,
+                                                              peak_found[coupled_pad_idx_rim_primary],
+                                                              midi_velocity[coupled_pad_idx_rim_primary],
+                                                              midi_pos[coupled_pad_idx_rim_primary],
+                                                              rim_state[coupled_pad_idx_rim_primary],
+                                                              is_choke_on[coupled_pad_idx_rim_primary],
+                                                              is_choke_off[coupled_pad_idx_rim_primary] );
           }
         }
       }
       else
       {
         // normal case: process samples directly
-        pad[i].process_sample ( sample,        number_inputs[i], overload_detected,
-                                peak_found[i], midi_velocity[i], midi_pos[i],
-                                rim_state[i],  is_choke_on[i],   is_choke_off[i] );
+        pad[i].process_sample ( sample,
+                                number_inputs[i],
+                                overload_detected,
+                                peak_found[i],
+                                midi_velocity[i],
+                                midi_pos[i],
+                                rim_state[i],
+                                is_choke_on[i],
+                                is_choke_off[i] );
       }
     }
   }
