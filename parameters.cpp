@@ -17,8 +17,7 @@
 
 #include "edrumulus.h"
 
-
-void Edrumulus::Pad::apply_preset_pad_settings()
+void Pad::apply_preset_pad_settings()
 {
   // apply PRESET settings (might be overwritten by pad-specific properties)
   pad_settings.velocity_threshold        = 8;  // 0..31
@@ -57,7 +56,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
   pad_settings.rim_shot_window_len_ms    = 3.5f;   // pad specific parameter: window length for rim shot detection
   pad_settings.clip_comp_ampmap_step     = 0.08f;  // pad specific parameter: clipping compensation amplitude mapping step, conservative value from PD80R as default
 
-  switch ( pad_settings.pad_type )
+  switch (pad_settings.pad_type)
   {
     // Mesh pads ---------------------------------------------------------------
     case PD120: // dual trigger
@@ -167,7 +166,6 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.velocity_sensitivity = 3;
       break;
 
-
     // Rubber pads -------------------------------------------------------------
     case PD5: // single trigger
       pad_settings.scan_time_ms     = 4.0f;
@@ -222,7 +220,6 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.decay_grad_fact2     = 300.0f;
       pad_settings.pos_low_pass_cutoff  = 300.0f;
       break;
-
 
     // Kick drum pads ----------------------------------------------------------
     case KD7: // single trigger
@@ -280,7 +277,6 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.curve_type                = LOG2;
       break;
 
-
     // Cymbal pads -------------------------------------------------------------
     case CY5: // dual trigger
       pad_settings.is_rim_switch        = true;
@@ -325,7 +321,7 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       break;
 
     case VH12: // dual trigger
-// TODO if the Hi-Hat is open just a little bit, we get double triggers
+               // TODO if the Hi-Hat is open just a little bit, we get double triggers
       pad_settings.is_rim_switch        = true;
       pad_settings.velocity_sensitivity = 5;
       pad_settings.rim_shot_threshold   = 23;
@@ -379,7 +375,6 @@ void Edrumulus::Pad::apply_preset_pad_settings()
       pad_settings.velocity_threshold   = 12;
       pad_settings.velocity_sensitivity = 6;
       break;
-
 
     // Hi-hat controllers ------------------------------------------------------
     case FD8:
