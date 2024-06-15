@@ -1,0 +1,26 @@
+BasedOnStyle: Google
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
+BreakBeforeBraces: Allman
+ColumnLimit: 0
+SpaceBeforeParens: ControlStatements
+SpaceAfterCStyleCast: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+SpacesInContainerLiterals: false
+AlignAfterOpenBracket: DontAlign
+AlignTrailingComments: true
+BinPackArguments: false
+BinPackParameters: false
+PenaltyBreakBeforeFirstCallParameter: 0
+
+AllowShortCaseLabelsOnASingleLine: true
+AlignConsecutiveAssignments: true
+SpacesBeforeTrailingComments: 1
+AlignOperands: true
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowShortFunctionsOnASingleLine: All
+IndentPPDirectives: AfterHash
+#AllowShortLiteralsOnASingleLine: true
+#BracketAlignmentStyle: BAS_Align
