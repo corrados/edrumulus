@@ -434,12 +434,12 @@ class Pad
 
   // real-time debugging support
 #ifdef USE_SERIAL_DEBUG_PLOTTING
-#ifdef TEENSYDUINO // MIDI+Serial possible with the Teensy
+#  ifdef TEENSYDUINO // MIDI+Serial possible with the Teensy
   static const int debug_buffer_size = 500;
-#else
-#undef USE_MIDI // only MIDI or Serial possible with the ESP32
+#  else
+#    undef USE_MIDI // only MIDI or Serial possible with the ESP32
   static const int debug_buffer_size = 400; // smaller size needed for ESP32
-#endif
+#  endif
   static const int number_debug_buffers = 4;
   int debug_buffer_idx                  = 0;
   int debug_out_cnt                     = 0;

@@ -66,11 +66,11 @@ void Edrumulus_hardware::setup(const int conf_Fs,
       input_pin[total_number_inputs] = analog_pin[i][j];
       total_number_inputs++;
 
-#if defined(ARDUINO_TEENSY40) || defined(ARDUINO_TEENSY41) // Teensy 4.0/4.1 specific code
+#  if defined(ARDUINO_TEENSY40) || defined(ARDUINO_TEENSY41) // Teensy 4.0/4.1 specific code
       // disable MIMXRT1062DVL6A "keeper" on all Teensy 4.0/4.1 ADC input pins
       // NOTE: pinMode() needs absolute pin numbers, e.g. 0 for A0 will not work
       pinMode(analog_pin[i][j], INPUT_DISABLE);
-#endif
+#  endif
     }
   }
 
@@ -154,7 +154,7 @@ int Edrumulus_hardware::get_prototype_pins(int** analog_pins,
     int* number_pins,
     int* status_LED_pin)
 {
-#ifdef CONFIG_IDF_TARGET_ESP32
+#  ifdef CONFIG_IDF_TARGET_ESP32
   // Definition:
   // - Pin 5 is "input enabled, pull-up resistor" -> if read value is 1, we know that we have a
   //   legacy or custom board. Boards which support the identification set this pin to low.
@@ -209,7 +209,7 @@ int Edrumulus_hardware::get_prototype_pins(int** analog_pins,
   // default: assume that analog pins are set outside this function, only update board LED pin
   *status_LED_pin = BOARD_LED_PIN;
   return 4;
-#else // CONFIG_IDF_TARGET_ESP32S3
+#  else // CONFIG_IDF_TARGET_ESP32S3
   // clang-format off
   // analog pins setup:                 snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
   static int analog_pins_s3[]         = {  4,     6,      7,        9,         10,     12,    13,    15,    16 };
@@ -220,7 +220,7 @@ int Edrumulus_hardware::get_prototype_pins(int** analog_pins,
   *number_pins         = sizeof(analog_pins_s3) / sizeof(int);
   *status_LED_pin      = BOARD_LED_PIN;
   return 4;
-#endif
+#  endif
 }
 
 void Edrumulus_hardware::setup(const int conf_Fs,
@@ -252,7 +252,7 @@ void Edrumulus_hardware::setup(const int conf_Fs,
   // find ADC pairs, i.e., one pin uses ADC1 and the other uses ADC2
   num_pin_pairs = 0; // we use it as a counter, too
 
-#ifdef CONFIG_IDF_TARGET_ESP32
+#  ifdef CONFIG_IDF_TARGET_ESP32
   for (int i = 0; i < total_number_inputs - 1; i++)
   {
     if (!input_is_used[i])
@@ -287,7 +287,7 @@ void Edrumulus_hardware::setup(const int conf_Fs,
       }
     }
   }
-#endif
+#  endif
 
   // find remaining single pins which we cannot create an ADC pair with
   num_pin_single = 0; // we use it as a counter, too
@@ -315,16 +315,16 @@ void Edrumulus_hardware::setup(const int conf_Fs,
 void Edrumulus_hardware::setup_timer()
 {
   // prepare timer at a rate of given sampling rate
-#if ESP_IDF_VERSION_MAJOR < 5
+#  if ESP_IDF_VERSION_MAJOR < 5
   timer = timerBegin(0, 80, true); // prescaler of 80 (i.e. below we have 1 MHz instead of 80 MHz)
   timerAttachInterrupt(timer, &on_timer, true);
   timerAlarmWrite(timer, 1000000 / Fs, true); // here we define the sampling rate (1 MHz / Fs)
   timerAlarmEnable(timer);
-#else
+#  else
   timer = timerBegin(1000000);
   timerAttachInterrupt(timer, &on_timer);
   timerAlarm(timer, 1000000 / Fs, true, 0);
-#endif
+#  endif
 }
 
 void Edrumulus_hardware::start_timer_core0_task(void* param)
@@ -395,7 +395,7 @@ void Edrumulus_hardware::capture_samples(const int number_pads,
 // As a workaround, we had to write our own analogRead function.
 void Edrumulus_hardware::init_my_analogRead()
 {
-#ifdef CONFIG_IDF_TARGET_ESP32
+#  ifdef CONFIG_IDF_TARGET_ESP32
   // if the GIOP 25/26 are used, we have to set the DAC to 0 to get correct DC offset
   // estimates and reduce the number of large spikes
   dac_i2s_enable();
@@ -444,7 +444,7 @@ void Edrumulus_hardware::init_my_analogRead()
   {
     pinMode(input_pin[i], ANALOG);
   }
-#else // CONFIG_IDF_TARGET_ESP32S3
+#  else // CONFIG_IDF_TARGET_ESP32S3
   int cur_sample;
   for (int channel = 0; channel < 10; channel++) // 10 channels per ADC
   {
@@ -455,7 +455,7 @@ void Edrumulus_hardware::init_my_analogRead()
     adc2_get_raw(static_cast<adc2_channel_t>(channel), ADC_WIDTH_BIT_12, &cur_sample);
   }
   adc_power_acquire();
-#endif
+#  endif
 }
 
 uint16_t Edrumulus_hardware::my_analogRead(const uint8_t pin)
@@ -465,39 +465,39 @@ uint16_t Edrumulus_hardware::my_analogRead(const uint8_t pin)
   if (channel > 9)
   {
     const int8_t channel_modified = channel - 10;
-#ifdef CONFIG_IDF_TARGET_ESP32
+#  ifdef CONFIG_IDF_TARGET_ESP32
     CLEAR_PERI_REG_MASK(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_START_SAR_M);
     SET_PERI_REG_BITS(SENS_SAR_MEAS_START2_REG, SENS_SAR2_EN_PAD, (1 << channel_modified), SENS_SAR2_EN_PAD_S);
     SET_PERI_REG_MASK(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_START_SAR_M);
     while (GET_PERI_REG_MASK(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DONE_SAR) == 0)
       ;
     return GET_PERI_REG_BITS2(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DATA_SAR, SENS_MEAS2_DATA_SAR_S);
-#else // CONFIG_IDF_TARGET_ESP32S3
+#  else // CONFIG_IDF_TARGET_ESP32S3
     SENS.sar_meas2_ctrl2.meas2_start_sar = 0;
     SENS.sar_meas2_ctrl2.sar2_en_pad     = (1 << channel_modified);
     SENS.sar_meas2_ctrl2.meas2_start_sar = 1;
     while (!SENS.sar_meas2_ctrl2.meas2_done_sar)
       ;
     return HAL_FORCE_READ_U32_REG_FIELD(SENS.sar_meas2_ctrl2, meas2_data_sar);
-#endif
+#  endif
   }
   else
   {
-#ifdef CONFIG_IDF_TARGET_ESP32
+#  ifdef CONFIG_IDF_TARGET_ESP32
     CLEAR_PERI_REG_MASK(SENS_SAR_MEAS_START1_REG, SENS_MEAS1_START_SAR_M);
     SET_PERI_REG_BITS(SENS_SAR_MEAS_START1_REG, SENS_SAR1_EN_PAD, (1 << channel), SENS_SAR1_EN_PAD_S);
     SET_PERI_REG_MASK(SENS_SAR_MEAS_START1_REG, SENS_MEAS1_START_SAR_M);
     while (GET_PERI_REG_MASK(SENS_SAR_MEAS_START1_REG, SENS_MEAS1_DONE_SAR) == 0)
       ;
     return GET_PERI_REG_BITS2(SENS_SAR_MEAS_START1_REG, SENS_MEAS1_DATA_SAR, SENS_MEAS1_DATA_SAR_S);
-#else // CONFIG_IDF_TARGET_ESP32S3
+#  else // CONFIG_IDF_TARGET_ESP32S3
     SENS.sar_meas1_ctrl2.meas1_start_sar = 0;
     SENS.sar_meas1_ctrl2.sar1_en_pad     = (1 << channel);
     SENS.sar_meas1_ctrl2.meas1_start_sar = 1;
     while (!SENS.sar_meas1_ctrl2.meas1_done_sar)
       ;
     return HAL_FORCE_READ_U32_REG_FIELD(SENS.sar_meas1_ctrl2, meas1_data_sar);
-#endif
+#  endif
   }
 }
 
@@ -506,7 +506,7 @@ void Edrumulus_hardware::my_analogRead_parallel(const uint32_t channel_adc1_bitv
     uint16_t& out_adc1,
     uint16_t& out_adc2)
 {
-#ifdef CONFIG_IDF_TARGET_ESP32
+#  ifdef CONFIG_IDF_TARGET_ESP32
   // start ADC1
   CLEAR_PERI_REG_MASK(SENS_SAR_MEAS_START1_REG, SENS_MEAS1_START_SAR_M);
   SET_PERI_REG_BITS(SENS_SAR_MEAS_START1_REG, SENS_SAR1_EN_PAD, channel_adc1_bitval, SENS_SAR1_EN_PAD_S);
@@ -526,7 +526,7 @@ void Edrumulus_hardware::my_analogRead_parallel(const uint32_t channel_adc1_bitv
   while (GET_PERI_REG_MASK(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DONE_SAR) == 0)
     ;
   out_adc2 = GET_PERI_REG_BITS2(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DATA_SAR, SENS_MEAS2_DATA_SAR_S);
-#endif
+#  endif
 }
 
 #endif

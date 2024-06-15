@@ -29,11 +29,11 @@
 // -----------------------------------------------------------------------------
 #ifdef TEENSYDUINO
 
-#include <ADC.h>
+#  include <ADC.h>
 
-#define BOARD_LED_PIN 13     // pin number of the LED on the Teensy 4.0 board
-#define ADC_MAX_RANGE 4096   // Teensy 4.0/4.1 ADC has 12 bits -> 0..4095
-#define ADC_MAX_NOISE_AMPL 8 // highest assumed ADC noise amplitude in the ADC input range unit (measured)
+#  define BOARD_LED_PIN 13     // pin number of the LED on the Teensy 4.0 board
+#  define ADC_MAX_RANGE 4096   // Teensy 4.0/4.1 ADC has 12 bits -> 0..4095
+#  define ADC_MAX_NOISE_AMPL 8 // highest assumed ADC noise amplitude in the ADC input range unit (measured)
 
 class Edrumulus_hardware
 {
@@ -77,17 +77,17 @@ class Edrumulus_hardware
 // -----------------------------------------------------------------------------
 #ifdef ESP_PLATFORM
 
-#include "driver/adc.h"
-#include "soc/sens_reg.h"
-#ifdef CONFIG_IDF_TARGET_ESP32
-#include "driver/dac.h"
-#else // CONFIG_IDF_TARGET_ESP32S3
-#include "hal/adc_hal.h"
-#endif
+#  include "driver/adc.h"
+#  include "soc/sens_reg.h"
+#  ifdef CONFIG_IDF_TARGET_ESP32
+#    include "driver/dac.h"
+#  else // CONFIG_IDF_TARGET_ESP32S3
+#    include "hal/adc_hal.h"
+#  endif
 
-#define BOARD_LED_PIN 2      // pin number of the LED on the ESP32 board
-#define ADC_MAX_RANGE 4096   // ESP32 ADC has 12 bits -> 0..4095
-#define ADC_MAX_NOISE_AMPL 8 // highest assumed ADC noise amplitude in the ADC input range unit (measured)
+#  define BOARD_LED_PIN 2      // pin number of the LED on the ESP32 board
+#  define ADC_MAX_RANGE 4096   // ESP32 ADC has 12 bits -> 0..4095
+#  define ADC_MAX_NOISE_AMPL 8 // highest assumed ADC noise amplitude in the ADC input range unit (measured)
 
 class Edrumulus_hardware
 {
