@@ -57,7 +57,7 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 
 // local variables and defines
 Edrumulus edrumulus;
-const int midi_channel      = 10;           // default for edrums is 10
+const int midi_channel = 10;           // default for edrums is 10
 const int hihat_pad_idx     = 2;            // this definition should not be changed
 const int hihatctrl_pad_idx = 3;            // this definition should not be changed
 int number_pads             = number_pads4; // initialization value, may be overwritten by get_prototype_pins()
