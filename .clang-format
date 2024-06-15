@@ -21,4 +21,5 @@ SpacesBeforeTrailingComments: 1
 AlignOperands: true
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowShortFunctionsOnASingleLine: All
+#AllowShortLiteralsOnASingleLine: true
 #BracketAlignmentStyle: BAS_Align
