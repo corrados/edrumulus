@@ -23,7 +23,7 @@
 //#define USE_SERIAL_DEBUG_PLOTTING
 
 #include "Arduino.h"
-#include "edrumulus_hardware.h"
+#include "hardware.h"
 
 
 // Utility functions -----------------------------------------------------------------
