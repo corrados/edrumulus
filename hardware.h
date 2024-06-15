@@ -79,6 +79,8 @@ class Edrumulus_hardware
 #ifdef ESP_PLATFORM
 
 #  include <Preferences.h>
+#  define PREFERENCES_RW_MODE false
+#  define PREFERENCES_RO_MODE true
 
 #  include "driver/adc.h"
 #  include "soc/sens_reg.h"
