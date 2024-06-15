@@ -20,9 +20,11 @@
 // ESP32 default pin definition ("-1" means that this channel is unused):
 // For older prototypes or custom implementations, simply change the GPIO numbers in the table below
 // to match your hardware (note that the GPIO assignment of Prototype 2 is the same as Prototype 4).
+// clang-format off
 // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
-static int analog_pins4[]         = {36, 33, 32, 25, 34, 39, 27, 12, 15};
-static int analog_pins_rimshot4[] = {35, -1, 26, -1, 14, -1, 13, -1, -1};
+static int analog_pins4[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    15 };
+static int analog_pins_rimshot4[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1 };
+// clang-format on
 
 // if you want to use less number of pads, simply adjust number_pads4 value
 // const int number_pads4 = sizeof ( analog_pins4 ) / sizeof ( int ); // example: use all inputs defined in analog_pins4
@@ -152,11 +154,13 @@ void loop()
         const int dc_offset_error_channel = edrumulus.get_status_dc_offset_error_channel();
         if (dc_offset_error_channel >= 0)
         {
-          MYMIDI.sendNoteOff(125, 64 + dc_offset_error_channel, 1); // > 63 means DC offset error and pad/input index is coded in one value
+          // > 63 means DC offset error and pad/input index is coded in one value
+          MYMIDI.sendNoteOff(125, 64 + dc_offset_error_channel, 1);
         }
         else
         {
-          MYMIDI.sendNoteOff(125, 1, 1); // 1 means to set error state
+          // 1 means to set error state
+          MYMIDI.sendNoteOff(125, 1, 1);
         }
       }
 #endif

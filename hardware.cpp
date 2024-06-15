@@ -35,13 +35,15 @@ int Edrumulus_hardware::get_prototype_pins(int** analog_pins,
     int* number_pins,
     int* status_LED_pin)
 {
+  // clang-format off
   // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
-  static int analog_pins1[]         = {A10, A11, A12, A13, A1, A6, A4, A5};
-  static int analog_pins_rimshot1[] = {A9, -1, A0, -1, A3, A8, A2, A7};
-  *analog_pins                      = analog_pins1;
-  *analog_pins_rimshot              = analog_pins_rimshot1;
-  *number_pins                      = sizeof(analog_pins1) / sizeof(int);
-  *status_LED_pin                   = BOARD_LED_PIN;
+  static int analog_pins1[]         = { A10,   A11,   A12,        A13,       A1,     A6,    A4,    A5 };
+  static int analog_pins_rimshot1[] = {  A9,    -1,    A0,         -1,       A3,     A8,    A2,    A7 };
+  // clang-format on
+  *analog_pins         = analog_pins1;
+  *analog_pins_rimshot = analog_pins_rimshot1;
+  *number_pins         = sizeof(analog_pins1) / sizeof(int);
+  *status_LED_pin      = BOARD_LED_PIN;
   return 0;
 }
 
@@ -177,25 +179,29 @@ int Edrumulus_hardware::get_prototype_pins(int** analog_pins,
     if ((bit1 == 0) && (bit2 == 0) && (bit3 == 0) && (bit4 == 0))
     {
       // Prototype 5: 0, 0, 0, 0 -----------------------------------------------
+      // clang-format off
       // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
-      static int analog_pins5[]         = {12, 2, 33, 4, 34, 15, 35, 27, 32};
-      static int analog_pins_rimshot5[] = {14, -1, 26, -1, 36, 13, 25, -1, -1};
-      *analog_pins                      = analog_pins5;
-      *analog_pins_rimshot              = analog_pins_rimshot5;
-      *number_pins                      = sizeof(analog_pins5) / sizeof(int);
-      *status_LED_pin                   = 21; // LED is connected to IO21 on prototype 5
+      static int analog_pins5[]         = { 12,     2,     33,        4,         34,     15,    35,    27,    32 };
+      static int analog_pins_rimshot5[] = { 14,    -1,     26,       -1,         36,     13,    25,    -1,    -1 };
+      // clang-format on
+      *analog_pins         = analog_pins5;
+      *analog_pins_rimshot = analog_pins_rimshot5;
+      *number_pins         = sizeof(analog_pins5) / sizeof(int);
+      *status_LED_pin      = 21; // LED is connected to IO21 on prototype 5
       return 5;
     }
     else if ((bit1 > 0) && (bit2 == 0) && (bit3 == 0) && (bit4 == 0))
     {
       // Prototype 6: 1, 0, 0, 0 -----------------------------------------------
+      // clang-format off
       // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
-      static int analog_pins6[]         = {36, 33, 32, 25, 34, 39, 27, 12, 15};
-      static int analog_pins_rimshot6[] = {35, -1, 26, -1, 14, -1, 13, -1, -1};
-      *analog_pins                      = analog_pins6;
-      *analog_pins_rimshot              = analog_pins_rimshot6;
-      *number_pins                      = sizeof(analog_pins6) / sizeof(int);
-      *status_LED_pin                   = BOARD_LED_PIN;
+      static int analog_pins6[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    15 };
+      static int analog_pins_rimshot6[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1 };
+      // clang-format on
+      *analog_pins         = analog_pins6;
+      *analog_pins_rimshot = analog_pins_rimshot6;
+      *number_pins         = sizeof(analog_pins6) / sizeof(int);
+      *status_LED_pin      = BOARD_LED_PIN;
       return 6;
     }
   }
@@ -204,13 +210,15 @@ int Edrumulus_hardware::get_prototype_pins(int** analog_pins,
   *status_LED_pin = BOARD_LED_PIN;
   return 4;
 #else // CONFIG_IDF_TARGET_ESP32S3
+  // clang-format off
   // analog pins setup:                 snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
-  static int analog_pins_s3[]         = {4, 6, 7, 9, 10, 12, 13, 15, 16};
-  static int analog_pins_rimshot_s3[] = {5, -1, 8, -1, 11, -1, 14, -1, -1};
-  *analog_pins                        = analog_pins_s3;
-  *analog_pins_rimshot                = analog_pins_rimshot_s3;
-  *number_pins                        = sizeof(analog_pins_s3) / sizeof(int);
-  *status_LED_pin                     = BOARD_LED_PIN;
+  static int analog_pins_s3[]         = {  4,     6,      7,        9,         10,     12,    13,    15,    16 };
+  static int analog_pins_rimshot_s3[] = {  5,    -1,      8,       -1,         11,     -1,    14,    -1,    -1 };
+  // clang-format on
+  *analog_pins         = analog_pins_s3;
+  *analog_pins_rimshot = analog_pins_rimshot_s3;
+  *number_pins         = sizeof(analog_pins_s3) / sizeof(int);
+  *status_LED_pin      = BOARD_LED_PIN;
   return 4;
 #endif
 }
