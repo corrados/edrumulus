@@ -33,5 +33,13 @@ jobs:
         python -m pip install --upgrade pip
         pip install --upgrade platformio setuptools wheel
 
+    - name: Install clang-format
+      run: sudo apt-get install clang-format
+
+    - name: Check clang-format
+      run: |
+        # Only check the format of the files in the root directory
+        clang-format --dry-run --Werror *.c *.cpp *.h *.ino
+
     - name: Build
       run: pio ci -c platformio.ini .
