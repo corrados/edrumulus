@@ -20,7 +20,7 @@
 //#define USE_SERIAL_DEBUG_PLOTTING
 
 #define VERSION_MAJOR 0
-#define VERSION_MINOR 9
+#define VERSION_MINOR 10
 
 #define MAX_NUM_PADS 12      // a maximum of 12 pads are supported
 #define MAX_NUM_PAD_INPUTS 5 // a maximum of 5 sensors per pad is supported (where one is rim and one is the sum of three)
