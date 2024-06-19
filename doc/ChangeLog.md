@@ -1,5 +1,10 @@
 # Edrumulus Project Log
 
+## 2024-06-19 [[r0.9](https://github.com/corrados/edrumulus/releases/tag/r0_9)] Introduce clang format
+
+  Too much time spend for formatting the source code. We let the clang format tool do this
+  from now on. The correct format is now checked in the Github workflow.
+
 ## 2024-01-07 Initial support for positional sensing for rim shots
 
   The normal positional sensing algorithm did not work correctly if a rim shot was played.
