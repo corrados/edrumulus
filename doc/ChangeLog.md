@@ -3,7 +3,8 @@
 ## 2024-06-19 [[r0.9](https://github.com/corrados/edrumulus/releases/tag/r0_9)] Introduce clang format
 
   Too much time spend for formatting the source code. We let the clang format tool do this
-  from now on. The correct format is now checked in the Github workflow.
+  from now on. The correct format is now checked in the Github workflow.<br/>
+  To format the code use: `clang-format -i *.cpp *.c *.h *.ino`
 
 ## 2024-01-07 Initial support for positional sensing for rim shots
 
