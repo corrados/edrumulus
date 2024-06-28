@@ -223,14 +223,30 @@ int Edrumulus_hardware::get_prototype_pins(int** analog_pins,
 #  endif
 }
 
+void Edrumulus_hardware::write_setting(const int pad_index,
+    const int address,
+    const byte value)
+{
+  const char* key = String(pad_index * MAX_NUM_SET_PER_PAD + address).c_str();
+  settings.putUChar(key, value);
+}
+
+byte Edrumulus_hardware::read_setting(const int pad_index,
+    const int address)
+{
+  const char* key = String(pad_index * MAX_NUM_SET_PER_PAD + address).c_str();
+  return settings.getUChar(key, 0);
+}
+
 void Edrumulus_hardware::setup(const int conf_Fs,
     const int number_pads,
     const int number_inputs[],
     int analog_pin[][MAX_NUM_PAD_INPUTS])
 {
   // set essential parameters
-  Fs = conf_Fs;
-  eeprom_settings.begin((number_pads + 1) * MAX_NUM_SET_PER_PAD); // "+ 1" for pad-independent global settings
+  Fs                             = conf_Fs;
+  char preferences_namespace[16] = "Edrumulus";
+  settings.begin(preferences_namespace, false);
 
   // create linear vectors containing the pin/ADC information for each pad and pad-input
   bool input_is_used[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];

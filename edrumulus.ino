@@ -102,12 +102,8 @@ void setup()
 #endif
 
   edrumulus.setup(number_pads, analog_pins, analog_pins_rimshot);
-  digitalWrite(status_LED_pin, LOW); // set board LED to low right after setup is done
-#ifdef ESP_PLATFORM
-  preset_settings(); // for ESP32, the load/save of settings is not supported, preset instead
-#else
   read_settings();
-#endif
+  digitalWrite(status_LED_pin, LOW); // set board LED to low right after setup is done
 }
 
 void preset_settings()

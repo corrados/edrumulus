@@ -18,7 +18,6 @@
 #pragma once
 
 #include "Arduino.h"
-#include "EEPROM.h"
 #include "common.h"
 
 #define MAX_EEPROM_SIZE 512    // bytes (Teensy 4.0: max 1024 bytes)
@@ -30,6 +29,8 @@
 #ifdef TEENSYDUINO
 
 #  include <ADC.h>
+
+#  include "EEPROM.h"
 
 #  define BOARD_LED_PIN 13     // pin number of the LED on the Teensy 4.0 board
 #  define ADC_MAX_RANGE 4096   // Teensy 4.0/4.1 ADC has 12 bits -> 0..4095
@@ -77,6 +78,8 @@ class Edrumulus_hardware
 // -----------------------------------------------------------------------------
 #ifdef ESP_PLATFORM
 
+#  include <Preferences.h>
+
 #  include "driver/adc.h"
 #  include "soc/sens_reg.h"
 #  ifdef CONFIG_IDF_TARGET_ESP32
@@ -109,12 +112,12 @@ class Edrumulus_hardware
       int analog_pin[][MAX_NUM_PAD_INPUTS],
       int sample_org[][MAX_NUM_PAD_INPUTS]);
 
-  void write_setting(const int, const int, const byte){}; // not supported
-  byte read_setting(const int, const int) { return 0; };  // not supported
+  void write_setting(const int pad_index, const int address, const byte value);
+  byte read_setting(const int pad_index, const int address);
 
  protected:
   int Fs;
-  EEPROMClass eeprom_settings;
+  Preferences settings;
   volatile SemaphoreHandle_t timer_semaphore;
   hw_timer_t* timer = nullptr;
   static void IRAM_ATTR on_timer();
