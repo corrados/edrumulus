@@ -41,19 +41,19 @@ class Edrumulus_hardware
   Edrumulus_hardware();
 
   static int get_prototype_pins(int** analog_pins,
-      int** analog_pins_rimshot,
-      int* number_pins,
-      int* status_LED_pin);
+                                int** analog_pins_rimshot,
+                                int* number_pins,
+                                int* status_LED_pin);
 
   void setup(const int conf_Fs,
-      const int number_pads,
-      const int number_inputs[],
-      int analog_pin[][MAX_NUM_PAD_INPUTS]);
+             const int number_pads,
+             const int number_inputs[],
+             int analog_pin[][MAX_NUM_PAD_INPUTS]);
 
   void capture_samples(const int number_pads,
-      const int number_inputs[],
-      int analog_pin[][MAX_NUM_PAD_INPUTS],
-      int sample_org[][MAX_NUM_PAD_INPUTS]);
+                       const int number_inputs[],
+                       int analog_pin[][MAX_NUM_PAD_INPUTS],
+                       int sample_org[][MAX_NUM_PAD_INPUTS]);
 
   void write_setting(const int pad_index, const int address, const byte value);
   byte read_setting(const int pad_index, const int address);
@@ -95,19 +95,19 @@ class Edrumulus_hardware
   Edrumulus_hardware();
 
   static int get_prototype_pins(int** analog_pins,
-      int** analog_pins_rimshot,
-      int* number_pins,
-      int* status_LED_pin);
+                                int** analog_pins_rimshot,
+                                int* number_pins,
+                                int* status_LED_pin);
 
   void setup(const int conf_Fs,
-      const int number_pads,
-      const int number_inputs[],
-      int analog_pin[][MAX_NUM_PAD_INPUTS]);
+             const int number_pads,
+             const int number_inputs[],
+             int analog_pin[][MAX_NUM_PAD_INPUTS]);
 
   void capture_samples(const int number_pads,
-      const int number_inputs[],
-      int analog_pin[][MAX_NUM_PAD_INPUTS],
-      int sample_org[][MAX_NUM_PAD_INPUTS]);
+                       const int number_inputs[],
+                       int analog_pin[][MAX_NUM_PAD_INPUTS],
+                       int sample_org[][MAX_NUM_PAD_INPUTS]);
 
   void write_setting(const int, const int, const byte){}; // not supported
   byte read_setting(const int, const int) { return 0; };  // not supported
@@ -124,9 +124,9 @@ class Edrumulus_hardware
   void init_my_analogRead();
   uint16_t my_analogRead(const uint8_t pin);
   void my_analogRead_parallel(const uint32_t channel_adc1_bitval,
-      const uint32_t channel_adc2_bitval,
-      uint16_t& out_adc1,
-      uint16_t& out_adc2);
+                              const uint32_t channel_adc2_bitval,
+                              uint16_t& out_adc1,
+                              uint16_t& out_adc2);
 
   int total_number_inputs;
   int input_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];

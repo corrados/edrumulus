@@ -55,8 +55,8 @@ Edrumulus::Edrumulus()
 }
 
 void Edrumulus::setup(const int conf_num_pads,
-    const int* conf_analog_pins,
-    const int* conf_analog_pins_rim_shot)
+                      const int* conf_analog_pins,
+                      const int* conf_analog_pins_rim_shot)
 {
   number_pads = min(conf_num_pads, MAX_NUM_PADS);
 
@@ -74,9 +74,9 @@ void Edrumulus::setup(const int conf_num_pads,
   // setup the ESP32 specific object, this has to be done after assigning the analog
   // pin numbers and before using the analog read function (as in the DC offset estimator)
   edrumulus_hardware.setup(Fs,
-      number_pads,
-      number_inputs,
-      analog_pin);
+                           number_pads,
+                           number_inputs,
+                           analog_pin);
 
   // estimate the DC offset for all inputs
   float dc_offset_sum[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
@@ -84,9 +84,9 @@ void Edrumulus::setup(const int conf_num_pads,
   for (int k = 0; k < dc_offset_est_len; k++)
   {
     edrumulus_hardware.capture_samples(number_pads,
-        number_inputs,
-        analog_pin,
-        sample_org);
+                                       number_inputs,
+                                       analog_pin,
+                                       sample_org);
 
     for (int i = 0; i < number_pads; i++)
     {
@@ -131,9 +131,9 @@ void Edrumulus::process()
   // Query samples -------------------------------------------------------------
   // note that this is a blocking function
   edrumulus_hardware.capture_samples(number_pads,
-      number_inputs,
-      analog_pin,
-      sample_org);
+                                     number_inputs,
+                                     analog_pin,
+                                     sample_org);
 
   /*
   // TEST for plotting all captures samples in the serial plotter (but with low sampling rate)
@@ -207,7 +207,7 @@ void Edrumulus::process()
       // process sample
       if (any_coupling_used && // note: short-cut for speed optimization of normal non-coupling mode
           (((coupled_pad_idx_primary >= 0) && ((i == coupled_pad_idx_secondary) || (i == coupled_pad_idx_primary))) ||
-              ((coupled_pad_idx_rim_primary >= 0) && ((i == coupled_pad_idx_rim_secondary) || (i == coupled_pad_idx_rim_primary)))))
+           ((coupled_pad_idx_rim_primary >= 0) && ((i == coupled_pad_idx_rim_secondary) || (i == coupled_pad_idx_rim_primary)))))
       {
         // special case: couple pad inputs for multiple head sensor capturing (assume that both pads have dual-inputs)
         if ((i == coupled_pad_idx_primary) || (i == coupled_pad_idx_secondary))
@@ -246,14 +246,14 @@ void Edrumulus::process()
             sample[0] = (sample[2] + sample[3] + sample[4]) / 3; // sum is on channel 0
 
             pad[coupled_pad_idx_primary].process_sample(sample,
-                5,
-                overload_detected,
-                peak_found[coupled_pad_idx_primary],
-                midi_velocity[coupled_pad_idx_primary],
-                midi_pos[coupled_pad_idx_primary],
-                rim_state[coupled_pad_idx_primary],
-                is_choke_on[coupled_pad_idx_primary],
-                is_choke_off[coupled_pad_idx_primary]);
+                                                        5,
+                                                        overload_detected,
+                                                        peak_found[coupled_pad_idx_primary],
+                                                        midi_velocity[coupled_pad_idx_primary],
+                                                        midi_pos[coupled_pad_idx_primary],
+                                                        rim_state[coupled_pad_idx_primary],
+                                                        is_choke_on[coupled_pad_idx_primary],
+                                                        is_choke_off[coupled_pad_idx_primary]);
           }
         }
 
@@ -285,14 +285,14 @@ void Edrumulus::process()
             }
 
             pad[coupled_pad_idx_rim_primary].process_sample(sample,
-                3,
-                overload_detected,
-                peak_found[coupled_pad_idx_rim_primary],
-                midi_velocity[coupled_pad_idx_rim_primary],
-                midi_pos[coupled_pad_idx_rim_primary],
-                rim_state[coupled_pad_idx_rim_primary],
-                is_choke_on[coupled_pad_idx_rim_primary],
-                is_choke_off[coupled_pad_idx_rim_primary]);
+                                                            3,
+                                                            overload_detected,
+                                                            peak_found[coupled_pad_idx_rim_primary],
+                                                            midi_velocity[coupled_pad_idx_rim_primary],
+                                                            midi_pos[coupled_pad_idx_rim_primary],
+                                                            rim_state[coupled_pad_idx_rim_primary],
+                                                            is_choke_on[coupled_pad_idx_rim_primary],
+                                                            is_choke_off[coupled_pad_idx_rim_primary]);
           }
         }
       }
@@ -300,14 +300,14 @@ void Edrumulus::process()
       {
         // normal case: process samples directly
         pad[i].process_sample(sample,
-            number_inputs[i],
-            overload_detected,
-            peak_found[i],
-            midi_velocity[i],
-            midi_pos[i],
-            rim_state[i],
-            is_choke_on[i],
-            is_choke_off[i]);
+                              number_inputs[i],
+                              overload_detected,
+                              peak_found[i],
+                              midi_velocity[i],
+                              midi_pos[i],
+                              rim_state[i],
+                              is_choke_on[i],
+                              is_choke_off[i]);
       }
     }
   }
@@ -438,10 +438,10 @@ void Edrumulus::set_coupled_pad_idx(const int pad_idx, const int new_idx)
 }
 
 void Edrumulus::cancel_ADC_spikes(float& signal,
-    int& overload_detected,
-    const int pad_index,
-    const int input_channel_index,
-    const int level)
+                                  int& overload_detected,
+                                  const int pad_index,
+                                  const int input_channel_index,
+                                  const int level)
 {
   // remove single/dual sample spikes by checking if right before and right after the
   // detected spike(s) we only have noise and no useful signal (since the ESP32 spikes

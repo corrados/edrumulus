@@ -121,7 +121,7 @@ void Pad::initialize()
   }
 
   velocity_factor = 126.0f / ((pow(curve_param, 126.0f) - 1) * curve_param *
-                                 pow(threshold, 1270.0f / velocity_range_db * log10(curve_param)));
+                              pow(threshold, 1270.0f / velocity_range_db * log10(curve_param)));
 
   velocity_exponent = 1270.0f / velocity_range_db * log10(curve_param);
   velocity_offset   = 1.0f - 126.0f / (pow(curve_param, 126.0f) - 1);
@@ -281,14 +281,14 @@ void Pad::initialize()
 }
 
 float Pad::process_sample(const float* input,
-    const int input_len,
-    const int* overload_detected,
-    bool& peak_found,
-    int& midi_velocity,
-    int& midi_pos,
-    Erimstate& rim_state,
-    bool& is_choke_on,
-    bool& is_choke_off)
+                          const int input_len,
+                          const int* overload_detected,
+                          bool& peak_found,
+                          int& midi_velocity,
+                          int& midi_pos,
+                          Erimstate& rim_state,
+                          bool& is_choke_on,
+                          bool& is_choke_off)
 {
   // initialize return parameters and configuration parameters
   peak_found                    = false;
@@ -443,10 +443,10 @@ float Pad::process_sample(const float* input,
         if (number_head_sensors > 1)
         {
           multi_head_sensor.calculate_subsample_peak_value(s_x_sq_hist,
-              x_sq_hist_len,
-              total_scan_time,
-              first_peak_idx,
-              s.sResults.first_peak_sub_sample);
+                                                           x_sq_hist_len,
+                                                           total_scan_time,
+                                                           first_peak_idx,
+                                                           s.sResults.first_peak_sub_sample);
         }
 
         // get the maximum velocity in the scan time using the unfiltered signal
@@ -469,11 +469,11 @@ float Pad::process_sample(const float* input,
 
         // overload correction
         overload_correction(s_x_sq_hist,
-            s.overload_hist,
-            first_peak_idx,
-            peak_velocity_idx,
-            s.is_overloaded_state,
-            s.peak_val);
+                            s.overload_hist,
+                            first_peak_idx,
+                            peak_velocity_idx,
+                            s.is_overloaded_state,
+                            s.peak_val);
       }
 
       // end condition of mask time
@@ -785,27 +785,27 @@ float Pad::process_sample(const float* input,
   if (number_head_sensors > 1)
   {
     multi_head_sensor.calculate(sSensor,
-        sensor0_has_results,
-        number_head_sensors,
-        pad_settings.pos_sensitivity,
-        pad_settings.pos_threshold,
-        peak_found,
-        midi_velocity,
-        midi_pos,
-        rim_state);
+                                sensor0_has_results,
+                                number_head_sensors,
+                                pad_settings.pos_sensitivity,
+                                pad_settings.pos_threshold,
+                                peak_found,
+                                midi_velocity,
+                                midi_pos,
+                                rim_state);
   }
 
   DEBUG_ADD_VALUES(input[0] * input[0], x_filt, sSensor[0].scan_time_cnt > 0 ? 0.5 : sSensor[0].mask_back_cnt > 0 ? 0.2
                                                                                                                   : cur_decay,
-      threshold);
+                   threshold);
   return x_filt; // here, you can return debugging values for verification with Ocatve
 }
 
 void Pad::process_control_sample(const int* input,
-    bool& change_found,
-    int& midi_ctrl_value,
-    bool& peak_found,
-    int& midi_velocity)
+                                 bool& change_found,
+                                 int& midi_ctrl_value,
+                                 bool& peak_found,
+                                 int& midi_velocity)
 {
   manage_delayed_initialization();
 

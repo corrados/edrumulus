@@ -13,5 +13,5 @@ SpacesBeforeTrailingComments: 1
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowShortFunctionsOnASingleLine: All
 IndentPPDirectives: AfterHash
+AlignAfterOpenBracket: Align
 #AllowShortLiteralsOnASingleLine: true
-#BracketAlignmentStyle: BAS_Align

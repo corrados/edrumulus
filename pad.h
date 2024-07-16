@@ -75,20 +75,20 @@ class Pad
   void setup(const int conf_Fs);
 
   float process_sample(const float* input,
-      const int input_len,
-      const int* overload_detected,
-      bool& peak_found,
-      int& midi_velocity,
-      int& midi_pos,
-      Erimstate& rim_state,
-      bool& is_choke_on,
-      bool& is_choke_off);
+                       const int input_len,
+                       const int* overload_detected,
+                       bool& peak_found,
+                       int& midi_velocity,
+                       int& midi_pos,
+                       Erimstate& rim_state,
+                       bool& is_choke_on,
+                       bool& is_choke_off);
 
   void process_control_sample(const int* input,
-      bool& change_found,
-      int& midi_ctrl_value,
-      bool& peak_found,
-      int& midi_velocity);
+                              bool& change_found,
+                              int& midi_ctrl_value,
+                              bool& peak_found,
+                              int& midi_velocity);
 
   void set_pad_type(const Epadtype new_pad_type);
   Epadtype get_pad_type() { return pad_settings.pad_type; }
@@ -252,11 +252,11 @@ class Pad
   void sched_init() { init_delay_cnt = init_delay_value; }; // schedule initialization function (for delayed initialization)
 
   void overload_correction(FastWriteFIFO& x_sq_hist,
-      FastWriteFIFO& overload_hist,
-      const int first_peak_idx,
-      const int peak_velocity_idx,
-      bool& is_overloaded_state,
-      float& peak_val);
+                           FastWriteFIFO& overload_hist,
+                           const int first_peak_idx,
+                           const int peak_velocity_idx,
+                           bool& is_overloaded_state,
+                           float& peak_val);
 
   const float init_delay_value_s     = 0.2; // init delay value in seconds
   static const int max_length_ampmap = 20;  // maxmimum number of amplification mappings for clipping compensation
@@ -343,20 +343,20 @@ class Pad
     void initialize();
 
     void calculate_subsample_peak_value(FastWriteFIFO& x_sq_hist,
-        const int x_sq_hist_len,
-        const int total_scan_time,
-        const int first_peak_idx,
-        float& first_peak_sub_sample);
+                                        const int x_sq_hist_len,
+                                        const int total_scan_time,
+                                        const int first_peak_idx,
+                                        float& first_peak_sub_sample);
 
     void calculate(SSensor* sSensor,
-        const bool sensor0_has_results,
-        const int number_head_sensors,
-        const int pos_sensitivity,
-        const int pos_threshold,
-        bool& peak_found,
-        int& midi_velocity,
-        int& midi_pos,
-        Erimstate& rim_state);
+                   const bool sensor0_has_results,
+                   const int number_head_sensors,
+                   const int pos_sensitivity,
+                   const int pos_threshold,
+                   bool& peak_found,
+                   int& midi_velocity,
+                   int& midi_pos,
+                   Erimstate& rim_state);
 
    protected:
     int multiple_sensor_cnt;
@@ -446,9 +446,9 @@ class Pad
   float debug_buffer[number_debug_buffers][debug_buffer_size];
 
   void DEBUG_ADD_VALUES(const float value0,
-      const float value1,
-      const float value2,
-      const float value3)
+                        const float value1,
+                        const float value2,
+                        const float value3)
   {
     debug_buffer[0][debug_buffer_idx] = value0;
     debug_buffer[1][debug_buffer_idx] = value1;

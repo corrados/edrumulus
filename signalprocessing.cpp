@@ -20,11 +20,11 @@
 
 // Pad -------------------------------------------------------------------------
 void Pad::overload_correction(FastWriteFIFO& x_sq_hist,
-    FastWriteFIFO& overload_hist,
-    const int first_peak_idx,
-    const int peak_velocity_idx,
-    bool& is_overloaded_state,
-    float& peak_val)
+                              FastWriteFIFO& overload_hist,
+                              const int first_peak_idx,
+                              const int peak_velocity_idx,
+                              bool& is_overloaded_state,
+                              float& peak_val)
 {
   // if the first peak is overloaded, use this position as the maximum peak
   int peak_velocity_idx_ovhist                          = peak_velocity_idx;
@@ -152,10 +152,10 @@ void Pad::MultiHeadSensor::initialize()
 }
 
 void Pad::MultiHeadSensor::calculate_subsample_peak_value(FastWriteFIFO& x_sq_hist,
-    const int x_sq_hist_len,
-    const int total_scan_time,
-    const int first_peak_idx,
-    float& first_peak_sub_sample)
+                                                          const int x_sq_hist_len,
+                                                          const int total_scan_time,
+                                                          const int first_peak_idx,
+                                                          float& first_peak_sub_sample)
 {
   // calculate sub-sample first peak value using simplified metric:
   // m = (x_sq[2] - x_sq[0]) / (x_sq[1] - x_sq[0]) -> sub_sample = m * m / 2
@@ -184,14 +184,14 @@ void Pad::MultiHeadSensor::calculate_subsample_peak_value(FastWriteFIFO& x_sq_hi
 }
 
 void Pad::MultiHeadSensor::calculate(SSensor* sSensor,
-    const bool sensor0_has_results,
-    const int number_head_sensors,
-    const int pos_sensitivity,
-    const int pos_threshold,
-    bool& peak_found,
-    int& midi_velocity,
-    int& midi_pos,
-    Erimstate& rim_state)
+                                     const bool sensor0_has_results,
+                                     const int number_head_sensors,
+                                     const int pos_sensitivity,
+                                     const int pos_threshold,
+                                     bool& peak_found,
+                                     int& midi_velocity,
+                                     int& midi_pos,
+                                     Erimstate& rim_state)
 {
   // TODO do not use hard coded "17" at the three places here but define a pad specific value and use that instead
   //      -> use that value also for definition of max_sensor_sample_diff

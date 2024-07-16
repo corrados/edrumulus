@@ -29,8 +29,8 @@ class Edrumulus
 
   // call this function during the Setup function of the main program
   void setup(const int conf_num_pads,
-      const int* conf_analog_pins,
-      const int* conf_analog_pins_rim_shot);
+             const int* conf_analog_pins,
+             const int* conf_analog_pins_rim_shot);
 
   // call the process function during the main loop
   void process();
@@ -179,10 +179,10 @@ class Edrumulus
 
   // ADC spike cancellation
   void cancel_ADC_spikes(float& signal,
-      int& overload_detected,
-      const int pad_index,
-      const int input_channel_index,
-      const int level);
+                         int& overload_detected,
+                         const int pad_index,
+                         const int input_channel_index,
+                         const int level);
 
   enum Espikestate
   {

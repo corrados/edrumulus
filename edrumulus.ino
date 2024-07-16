@@ -71,9 +71,9 @@ void setup()
   int* analog_pins         = analog_pins4;         // initialize with the default setup
   int* analog_pins_rimshot = analog_pins_rimshot4; // initialize with the default setup
   const int prototype      = Edrumulus_hardware::get_prototype_pins(&analog_pins,
-      &analog_pins_rimshot,
-      &number_pads,
-      &status_LED_pin);
+                                                               &analog_pins_rimshot,
+                                                               &number_pads,
+                                                               &status_LED_pin);
 
   // initialize GPIO port for status LED and set it to on during setup
   pinMode(status_LED_pin, OUTPUT);
@@ -462,8 +462,8 @@ void loop()
 #ifdef USE_MIDI
 // give feedback to the controller GUI via MIDI Note Off
 void confirm_setting(const int controller,
-    const int value,
-    const bool send_all)
+                     const int value,
+                     const bool send_all)
 {
   if (send_all)
   {
