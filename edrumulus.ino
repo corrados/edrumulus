@@ -60,17 +60,17 @@ Edrumulus edrumulus;
 const int midi_channel      = 10;           // default for edrums is 10
 const int hihat_pad_idx     = 2;            // this definition should not be changed
 const int hihatctrl_pad_idx = 3;            // this definition should not be changed
-int number_pads             = number_pads4; // initialization value, may be overwritten by get_prototype_pins()
-int status_LED_pin          = 0;            // initialization value, will be set in get_prototype_pins()
-bool is_status_LED_on       = false;        // initialization value
-int selected_pad            = 0;            // initialization value
+int       number_pads       = number_pads4; // initialization value, may be overwritten by get_prototype_pins()
+int       status_LED_pin    = 0;            // initialization value, will be set in get_prototype_pins()
+bool      is_status_LED_on  = false;        // initialization value
+int       selected_pad      = 0;            // initialization value
 
 void setup()
 {
   // get the pin-to-pad assignments
-  int* analog_pins         = analog_pins4;         // initialize with the default setup
-  int* analog_pins_rimshot = analog_pins_rimshot4; // initialize with the default setup
-  const int prototype      = Edrumulus_hardware::get_prototype_pins(&analog_pins,
+  int*      analog_pins         = analog_pins4;         // initialize with the default setup
+  int*      analog_pins_rimshot = analog_pins_rimshot4; // initialize with the default setup
+  const int prototype           = Edrumulus_hardware::get_prototype_pins(&analog_pins,
                                                                &analog_pins_rimshot,
                                                                &number_pads,
                                                                &status_LED_pin);
@@ -186,7 +186,7 @@ void loop()
     {
       // get current MIDI note and velocity (maybe note will be overwritten later on)
       const int midi_velocity = edrumulus.get_midi_velocity(pad_idx);
-      int midi_note           = edrumulus.get_midi_note(pad_idx);
+      int       midi_note     = edrumulus.get_midi_note(pad_idx);
 
       // send midi positional control message if positional sensing is enabled for the current pad
       if (edrumulus.get_pos_sense_is_used(pad_idx))
@@ -198,9 +198,9 @@ void loop()
       // send Hi-Hat control message right before each Hi-Hat pad hit
       if (pad_idx == hihat_pad_idx)
       {
-        const int midi_ctrl_ch    = edrumulus.get_midi_ctrl_ch(hihatctrl_pad_idx);
-        const int midi_ctrl_value = edrumulus.get_midi_ctrl_value(hihatctrl_pad_idx);
-        const bool hi_hat_is_open = edrumulus.get_midi_ctrl_is_open(hihatctrl_pad_idx);
+        const int  midi_ctrl_ch    = edrumulus.get_midi_ctrl_ch(hihatctrl_pad_idx);
+        const int  midi_ctrl_value = edrumulus.get_midi_ctrl_value(hihatctrl_pad_idx);
+        const bool hi_hat_is_open  = edrumulus.get_midi_ctrl_is_open(hihatctrl_pad_idx);
         MYMIDI.sendControlChange(midi_ctrl_ch, midi_ctrl_value, midi_channel);
 
         // if Hi-Hat is open, overwrite MIDI note
@@ -461,8 +461,8 @@ void loop()
 
 #ifdef USE_MIDI
 // give feedback to the controller GUI via MIDI Note Off
-void confirm_setting(const int controller,
-                     const int value,
+void confirm_setting(const int  controller,
+                     const int  value,
                      const bool send_all)
 {
   if (send_all)

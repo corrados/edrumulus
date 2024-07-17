@@ -8,10 +8,10 @@ BinPackArguments: false
 BinPackParameters: false
 PenaltyBreakBeforeFirstCallParameter: 0
 AllowShortCaseLabelsOnASingleLine: true
-AlignConsecutiveAssignments: true
+AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveDeclarations: Consecutive
 SpacesBeforeTrailingComments: 1
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowShortFunctionsOnASingleLine: All
 IndentPPDirectives: AfterHash
 AlignAfterOpenBracket: Align
-#AllowShortLiteralsOnASingleLine: true

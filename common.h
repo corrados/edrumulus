@@ -26,8 +26,8 @@
 #define MAX_NUM_PAD_INPUTS 5 // a maximum of 5 sensors per pad is supported (where one is rim and one is the sum of three)
 
 inline void update_fifo(const float input,
-                        const int fifo_length,
-                        float* fifo_memory)
+                        const int   fifo_length,
+                        float*      fifo_memory)
 {
   // move all values in the history one step back and put new value on the top
   for (int i = 0; i < fifo_length - 1; i++)
@@ -37,7 +37,7 @@ inline void update_fifo(const float input,
   fifo_memory[fifo_length - 1] = input;
 }
 
-inline void allocate_initialize(float** array_memory,
+inline void allocate_initialize(float**   array_memory,
                                 const int array_length)
 {
   // (delete and) allocate memory
@@ -79,6 +79,6 @@ class FastWriteFIFO
 
  protected:
   float* fifo_memory = nullptr;
-  int pointer;
-  int fifo_length;
+  int    pointer;
+  int    fifo_length;
 };

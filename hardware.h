@@ -42,31 +42,31 @@ class Edrumulus_hardware
 
   static int get_prototype_pins(int** analog_pins,
                                 int** analog_pins_rimshot,
-                                int* number_pins,
-                                int* status_LED_pin);
+                                int*  number_pins,
+                                int*  status_LED_pin);
 
   void setup(const int conf_Fs,
              const int number_pads,
              const int number_inputs[],
-             int analog_pin[][MAX_NUM_PAD_INPUTS]);
+             int       analog_pin[][MAX_NUM_PAD_INPUTS]);
 
   void capture_samples(const int number_pads,
                        const int number_inputs[],
-                       int analog_pin[][MAX_NUM_PAD_INPUTS],
-                       int sample_org[][MAX_NUM_PAD_INPUTS]);
+                       int       analog_pin[][MAX_NUM_PAD_INPUTS],
+                       int       sample_org[][MAX_NUM_PAD_INPUTS]);
 
   void write_setting(const int pad_index, const int address, const byte value);
   byte read_setting(const int pad_index, const int address);
 
  protected:
-  int Fs;
+  int           Fs;
   IntervalTimer myTimer;
-  static void on_timer();
+  static void   on_timer();
   volatile bool timer_ready;
-  ADC adc_obj;
+  ADC           adc_obj;
 
-  int total_number_inputs;
-  int input_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+  int      total_number_inputs;
+  int      input_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
   uint16_t input_sample[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
 };
 
@@ -96,45 +96,45 @@ class Edrumulus_hardware
 
   static int get_prototype_pins(int** analog_pins,
                                 int** analog_pins_rimshot,
-                                int* number_pins,
-                                int* status_LED_pin);
+                                int*  number_pins,
+                                int*  status_LED_pin);
 
   void setup(const int conf_Fs,
              const int number_pads,
              const int number_inputs[],
-             int analog_pin[][MAX_NUM_PAD_INPUTS]);
+             int       analog_pin[][MAX_NUM_PAD_INPUTS]);
 
   void capture_samples(const int number_pads,
                        const int number_inputs[],
-                       int analog_pin[][MAX_NUM_PAD_INPUTS],
-                       int sample_org[][MAX_NUM_PAD_INPUTS]);
+                       int       analog_pin[][MAX_NUM_PAD_INPUTS],
+                       int       sample_org[][MAX_NUM_PAD_INPUTS]);
 
   void write_setting(const int, const int, const byte){}; // not supported
   byte read_setting(const int, const int) { return 0; };  // not supported
 
  protected:
-  int Fs;
-  EEPROMClass eeprom_settings;
+  int                        Fs;
+  EEPROMClass                eeprom_settings;
   volatile SemaphoreHandle_t timer_semaphore;
-  hw_timer_t* timer = nullptr;
-  static void IRAM_ATTR on_timer();
-  static void start_timer_core0_task(void* param);
+  hw_timer_t*                timer = nullptr;
+  static void IRAM_ATTR      on_timer();
+  static void                start_timer_core0_task(void* param);
 
-  void setup_timer();
-  void init_my_analogRead();
+  void     setup_timer();
+  void     init_my_analogRead();
   uint16_t my_analogRead(const uint8_t pin);
-  void my_analogRead_parallel(const uint32_t channel_adc1_bitval,
-                              const uint32_t channel_adc2_bitval,
-                              uint16_t& out_adc1,
-                              uint16_t& out_adc2);
+  void     my_analogRead_parallel(const uint32_t channel_adc1_bitval,
+                                  const uint32_t channel_adc2_bitval,
+                                  uint16_t&      out_adc1,
+                                  uint16_t&      out_adc2);
 
-  int total_number_inputs;
-  int input_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+  int      total_number_inputs;
+  int      input_pin[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
   uint16_t input_sample[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
 
-  int num_pin_pairs;
-  int adc1_index[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
-  int adc2_index[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+  int      num_pin_pairs;
+  int      adc1_index[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+  int      adc2_index[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
   uint32_t channel_adc1_bitval[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
   uint32_t channel_adc2_bitval[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
 

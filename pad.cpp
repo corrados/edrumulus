@@ -281,39 +281,39 @@ void Pad::initialize()
 }
 
 float Pad::process_sample(const float* input,
-                          const int input_len,
-                          const int* overload_detected,
-                          bool& peak_found,
-                          int& midi_velocity,
-                          int& midi_pos,
-                          Erimstate& rim_state,
-                          bool& is_choke_on,
-                          bool& is_choke_off)
+                          const int    input_len,
+                          const int*   overload_detected,
+                          bool&        peak_found,
+                          int&         midi_velocity,
+                          int&         midi_pos,
+                          Erimstate&   rim_state,
+                          bool&        is_choke_on,
+                          bool&        is_choke_off)
 {
   // initialize return parameters and configuration parameters
-  peak_found                    = false;
-  midi_velocity                 = 0;
-  midi_pos                      = 0;
-  rim_state                     = NO_RIM;
-  is_choke_on                   = false;
-  is_choke_off                  = false;
-  const bool pos_sense_is_used  = pad_settings.pos_sense_is_used && (number_head_sensors == 1); // can be applied directly without calling initialize()
-  const bool rim_shot_is_used   = pad_settings.rim_shot_is_used && (input_len > 1);             // can be applied directly without calling initialize()
-  const bool pos_sense_inverted = pad_settings.pos_invert;                                      // can be applied directly without calling initialize()
-  float x_filt                  = 0.0f;                                                         // needed for debugging
-  float cur_decay               = 1;                                                            // needed for debugging, initialization value (0 dB) only used for debugging
-  bool sensor0_has_results      = false;
+  peak_found                     = false;
+  midi_velocity                  = 0;
+  midi_pos                       = 0;
+  rim_state                      = NO_RIM;
+  is_choke_on                    = false;
+  is_choke_off                   = false;
+  const bool pos_sense_is_used   = pad_settings.pos_sense_is_used && (number_head_sensors == 1); // can be applied directly without calling initialize()
+  const bool rim_shot_is_used    = pad_settings.rim_shot_is_used && (input_len > 1);             // can be applied directly without calling initialize()
+  const bool pos_sense_inverted  = pad_settings.pos_invert;                                      // can be applied directly without calling initialize()
+  float      x_filt              = 0.0f;                                                         // needed for debugging
+  float      cur_decay           = 1;                                                            // needed for debugging, initialization value (0 dB) only used for debugging
+  bool       sensor0_has_results = false;
 
   manage_delayed_initialization();
 
   for (int head_sensor_cnt = 0; head_sensor_cnt < number_head_sensors; head_sensor_cnt++)
   {
-    const int in               = head_sensor_cnt == 0 ? 0 : head_sensor_cnt + 1; // exclude rim input
-    SSensor& s                 = sSensor[head_sensor_cnt];
-    FastWriteFIFO& s_x_sq_hist = s.x_sq_hist;                 // shortcut for speed optimization
-    int& first_peak_delay      = s.sResults.first_peak_delay; // use value in result struct
-    bool first_peak_found      = false;
-    int peak_delay             = 0;
+    const int      in               = head_sensor_cnt == 0 ? 0 : head_sensor_cnt + 1; // exclude rim input
+    SSensor&       s                = sSensor[head_sensor_cnt];
+    FastWriteFIFO& s_x_sq_hist      = s.x_sq_hist;                 // shortcut for speed optimization
+    int&           first_peak_delay = s.sResults.first_peak_delay; // use value in result struct
+    bool           first_peak_found = false;
+    int            peak_delay       = 0;
     first_peak_delay++; // increment first peak delay for each new sample (wraps only after some hours which is uncritical)
 
     // square input signal and store in FIFO buffer
@@ -698,11 +698,11 @@ float Pad::process_sample(const float* input,
               rim_max_pow = max(rim_max_pow, s.x_rim_hist[s.x_rim_hist_idx + i]);
             }
 
-            const float rim_metric = rim_max_pow / s.peak_val;
-            const bool is_rim_shot = (rim_metric > rim_shot_threshold) && (rim_max_pow > rim_max_power_low_limit);
-            s.rim_state            = is_rim_shot ? RIM_SHOT : NO_RIM;
-            s.rim_shot_cnt         = 0;
-            s.was_rim_shot_ready   = true;
+            const float rim_metric  = rim_max_pow / s.peak_val;
+            const bool  is_rim_shot = (rim_metric > rim_shot_threshold) && (rim_max_pow > rim_max_power_low_limit);
+            s.rim_state             = is_rim_shot ? RIM_SHOT : NO_RIM;
+            s.rim_shot_cnt          = 0;
+            s.was_rim_shot_ready    = true;
 
             // rim power is assumed to be constant for each rim shot but distance to center mounted piezo
             // will change power and therefore the rim metric can be used for positional sensing for rim shots
@@ -802,10 +802,10 @@ float Pad::process_sample(const float* input,
 }
 
 void Pad::process_control_sample(const int* input,
-                                 bool& change_found,
-                                 int& midi_ctrl_value,
-                                 bool& peak_found,
-                                 int& midi_velocity)
+                                 bool&      change_found,
+                                 int&       midi_ctrl_value,
+                                 bool&      peak_found,
+                                 int&       midi_velocity)
 {
   manage_delayed_initialization();
 

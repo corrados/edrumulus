@@ -21,13 +21,13 @@
 // Pad -------------------------------------------------------------------------
 void Pad::overload_correction(FastWriteFIFO& x_sq_hist,
                               FastWriteFIFO& overload_hist,
-                              const int first_peak_idx,
-                              const int peak_velocity_idx,
-                              bool& is_overloaded_state,
-                              float& peak_val)
+                              const int      first_peak_idx,
+                              const int      peak_velocity_idx,
+                              bool&          is_overloaded_state,
+                              float&         peak_val)
 {
   // if the first peak is overloaded, use this position as the maximum peak
-  int peak_velocity_idx_ovhist                          = peak_velocity_idx;
+  int       peak_velocity_idx_ovhist                    = peak_velocity_idx;
   const int first_peak_velocity_idx_in_overload_history = overload_hist_len - total_scan_time + first_peak_idx;
 
   if (overload_hist[first_peak_velocity_idx_in_overload_history] > 0.0f)
@@ -37,12 +37,12 @@ void Pad::overload_correction(FastWriteFIFO& x_sq_hist,
     peak_velocity_idx_ovhist = scan_time - x_sq_hist_len + first_peak_idx;
   }
 
-  float right_neighbor, left_neighbor;
+  float     right_neighbor, left_neighbor;
   const int peak_velocity_idx_in_overload_history = overload_hist_len - scan_time + peak_velocity_idx_ovhist;
   const int peak_velocity_idx_in_x_sq_hist        = x_sq_hist_len - scan_time + peak_velocity_idx_ovhist;
-  int number_overloaded_samples                   = 1;    // we check for overload history at peak position is > 0 below -> start with one
-  bool left_neighbor_ok                           = true; // initialize with ok
-  bool right_neighbor_ok                          = true; // initialize with ok
+  int       number_overloaded_samples             = 1;    // we check for overload history at peak position is > 0 below -> start with one
+  bool      left_neighbor_ok                      = true; // initialize with ok
+  bool      right_neighbor_ok                     = true; // initialize with ok
 
   // check overload status and correct the peak if necessary
   if (overload_hist[peak_velocity_idx_in_overload_history] > 0.0f)
@@ -88,7 +88,7 @@ void Pad::overload_correction(FastWriteFIFO& x_sq_hist,
 
     // clipping compensation (see tools/misc/clipping_compensation.m)
     const float peak_val_sqrt = sqrt(peak_val);
-    float mean_neighbor       = peak_val_sqrt; // if no neighbor can be calculated, use safest value, i.e., lowest resulting correction
+    float       mean_neighbor = peak_val_sqrt; // if no neighbor can be calculated, use safest value, i.e., lowest resulting correction
 
     if (left_neighbor_ok && right_neighbor_ok)
     {
@@ -107,7 +107,7 @@ void Pad::overload_correction(FastWriteFIFO& x_sq_hist,
     const float a_high                     = amplification_mapping[min(length_ampmap - 1, number_overloaded_samples + 1)];
     const float a_diff                     = a_high - a_low;
     const float a_diff_abs                 = a_diff * peak_val_sqrt / a_low;
-    float neighbor_to_limit_abs            = mean_neighbor - (peak_val_sqrt - a_diff_abs);
+    float       neighbor_to_limit_abs      = mean_neighbor - (peak_val_sqrt - a_diff_abs);
     neighbor_to_limit_abs                  = max(0.0f, min(a_diff_abs, neighbor_to_limit_abs));
     const float amplification_compensation = a_low + neighbor_to_limit_abs / a_diff_abs * a_diff;
     peak_val *= amplification_compensation * amplification_compensation;
@@ -152,10 +152,10 @@ void Pad::MultiHeadSensor::initialize()
 }
 
 void Pad::MultiHeadSensor::calculate_subsample_peak_value(FastWriteFIFO& x_sq_hist,
-                                                          const int x_sq_hist_len,
-                                                          const int total_scan_time,
-                                                          const int first_peak_idx,
-                                                          float& first_peak_sub_sample)
+                                                          const int      x_sq_hist_len,
+                                                          const int      total_scan_time,
+                                                          const int      first_peak_idx,
+                                                          float&         first_peak_sub_sample)
 {
   // calculate sub-sample first peak value using simplified metric:
   // m = (x_sq[2] - x_sq[0]) / (x_sq[1] - x_sq[0]) -> sub_sample = m * m / 2
@@ -183,14 +183,14 @@ void Pad::MultiHeadSensor::calculate_subsample_peak_value(FastWriteFIFO& x_sq_hi
   }
 }
 
-void Pad::MultiHeadSensor::calculate(SSensor* sSensor,
+void Pad::MultiHeadSensor::calculate(SSensor*   sSensor,
                                      const bool sensor0_has_results,
-                                     const int number_head_sensors,
-                                     const int pos_sensitivity,
-                                     const int pos_threshold,
-                                     bool& peak_found,
-                                     int& midi_velocity,
-                                     int& midi_pos,
+                                     const int  number_head_sensors,
+                                     const int  pos_sensitivity,
+                                     const int  pos_threshold,
+                                     bool&      peak_found,
+                                     int&       midi_velocity,
+                                     int&       midi_pos,
                                      Erimstate& rim_state)
 {
   // TODO do not use hard coded "17" at the three places here but define a pad specific value and use that instead
@@ -269,7 +269,7 @@ void Pad::MultiHeadSensor::calculate(SSensor* sSensor,
         const float r_2 = (-b - sqrt(b * b - 4 * a * c)) / (2 * a);
         const float x   = d1 * r_2 + e1;
         const float y   = d2 * r_2 + e2;
-        float r         = sqrt(x * x + y * y);
+        float       r   = sqrt(x * x + y * y);
 
         // TEST
         // Serial.println ( String ( x ) + "," + String ( y ) + ",1000.0," );

@@ -32,8 +32,8 @@ Edrumulus_hardware::Edrumulus_hardware()
 
 int Edrumulus_hardware::get_prototype_pins(int** analog_pins,
                                            int** analog_pins_rimshot,
-                                           int* number_pins,
-                                           int* status_LED_pin)
+                                           int*  number_pins,
+                                           int*  status_LED_pin)
 {
   // clang-format off
   // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
@@ -50,7 +50,7 @@ int Edrumulus_hardware::get_prototype_pins(int** analog_pins,
 void Edrumulus_hardware::setup(const int conf_Fs,
                                const int number_pads,
                                const int number_inputs[],
-                               int analog_pin[][MAX_NUM_PAD_INPUTS])
+                               int       analog_pin[][MAX_NUM_PAD_INPUTS])
 {
   // set essential parameters
   Fs = conf_Fs;
@@ -96,8 +96,8 @@ void Edrumulus_hardware::setup(const int conf_Fs,
   myTimer.begin(on_timer, 1000000 / Fs); // here we define the sampling rate (1 MHz / Fs)
 }
 
-void Edrumulus_hardware::write_setting(const int pad_index,
-                                       const int address,
+void Edrumulus_hardware::write_setting(const int  pad_index,
+                                       const int  address,
                                        const byte value)
 {
   EEPROM.update(pad_index * MAX_NUM_SET_PER_PAD + address, value);
@@ -117,8 +117,8 @@ void Edrumulus_hardware::on_timer()
 
 void Edrumulus_hardware::capture_samples(const int number_pads,
                                          const int number_inputs[],
-                                         int analog_pin[][MAX_NUM_PAD_INPUTS],
-                                         int sample_org[][MAX_NUM_PAD_INPUTS])
+                                         int       analog_pin[][MAX_NUM_PAD_INPUTS],
+                                         int       sample_org[][MAX_NUM_PAD_INPUTS])
 {
   // wait for the timer to get the correct sampling rate when reading the analog value
   while (!timer_ready) delayMicroseconds(5);
@@ -151,8 +151,8 @@ void Edrumulus_hardware::capture_samples(const int number_pads,
 
 int Edrumulus_hardware::get_prototype_pins(int** analog_pins,
                                            int** analog_pins_rimshot,
-                                           int* number_pins,
-                                           int* status_LED_pin)
+                                           int*  number_pins,
+                                           int*  status_LED_pin)
 {
 #  ifdef CONFIG_IDF_TARGET_ESP32
   // Definition:
@@ -226,7 +226,7 @@ int Edrumulus_hardware::get_prototype_pins(int** analog_pins,
 void Edrumulus_hardware::setup(const int conf_Fs,
                                const int number_pads,
                                const int number_inputs[],
-                               int analog_pin[][MAX_NUM_PAD_INPUTS])
+                               int       analog_pin[][MAX_NUM_PAD_INPUTS])
 {
   // set essential parameters
   Fs = conf_Fs;
@@ -234,7 +234,7 @@ void Edrumulus_hardware::setup(const int conf_Fs,
 
   // create linear vectors containing the pin/ADC information for each pad and pad-input
   bool input_is_used[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
-  int input_adc[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
+  int  input_adc[MAX_NUM_PADS * MAX_NUM_PAD_INPUTS];
   total_number_inputs = 0; // we use it as a counter, too
 
   for (int i = 0; i < number_pads; i++)
@@ -370,8 +370,8 @@ void IRAM_ATTR Edrumulus_hardware::on_timer()
 
 void Edrumulus_hardware::capture_samples(const int number_pads,
                                          const int number_inputs[],
-                                         int analog_pin[][MAX_NUM_PAD_INPUTS],
-                                         int sample_org[][MAX_NUM_PAD_INPUTS])
+                                         int       analog_pin[][MAX_NUM_PAD_INPUTS],
+                                         int       sample_org[][MAX_NUM_PAD_INPUTS])
 {
   // wait for the timer to get the correct sampling rate when reading the analog value
   if (xSemaphoreTake(timer_semaphore, portMAX_DELAY) == pdTRUE)
@@ -503,8 +503,8 @@ uint16_t Edrumulus_hardware::my_analogRead(const uint8_t pin)
 
 void Edrumulus_hardware::my_analogRead_parallel(const uint32_t channel_adc1_bitval,
                                                 const uint32_t channel_adc2_bitval,
-                                                uint16_t& out_adc1,
-                                                uint16_t& out_adc2)
+                                                uint16_t&      out_adc1,
+                                                uint16_t&      out_adc2)
 {
 #  ifdef CONFIG_IDF_TARGET_ESP32
   // start ADC1

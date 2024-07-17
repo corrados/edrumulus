@@ -54,7 +54,7 @@ Edrumulus::Edrumulus()
   dc_offset_iir_one_minus_gamma = 1.0f - dc_offset_iir_gamma;
 }
 
-void Edrumulus::setup(const int conf_num_pads,
+void Edrumulus::setup(const int  conf_num_pads,
                       const int* conf_analog_pins,
                       const int* conf_analog_pins_rim_shot)
 {
@@ -437,8 +437,8 @@ void Edrumulus::set_coupled_pad_idx(const int pad_idx, const int new_idx)
   }
 }
 
-void Edrumulus::cancel_ADC_spikes(float& signal,
-                                  int& overload_detected,
+void Edrumulus::cancel_ADC_spikes(float&    signal,
+                                  int&      overload_detected,
                                   const int pad_index,
                                   const int input_channel_index,
                                   const int level)
