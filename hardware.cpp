@@ -454,7 +454,6 @@ void Edrumulus_hardware::init_my_analogRead()
     adc1_get_raw(static_cast<adc1_channel_t>(channel));
     adc2_get_raw(static_cast<adc2_channel_t>(channel), ADC_WIDTH_BIT_12, &cur_sample);
   }
-  adc_power_acquire();
 #  endif
 }
 
