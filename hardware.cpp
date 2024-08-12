@@ -309,7 +309,7 @@ void Edrumulus_hardware::setup(const int conf_Fs,
 
   // create task pinned to core 0 for creating the timer interrupt so that the
   // timer function is not running in our working core 1
-  xTaskCreatePinnedToCore(start_timer_core0_task, "start_timer_core0_task", 1000, this, 1, NULL, 0);
+  xTaskCreatePinnedToCore(start_timer_core0_task, "start_timer_core0_task", 1200, this, 1, NULL, 0);
 }
 
 void Edrumulus_hardware::setup_timer()
