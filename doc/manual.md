@@ -6,8 +6,6 @@ Edrumulus is a high quality open source e-drum trigger module software. To use E
 - an analog front end circuit to connect the trigger pads to the micro controller (either a bread board is
   used or soldering skills are needed),
 - the [Arduino](https://www.arduino.cc/en/software) or [PlatformIO](https://platformio.org/) IDE for flashing the micro controller firmware,
-- on Windows OS, some software tools like [Hairless MIDI](https://projectgus.github.io/hairless-midiserial) and
-  [loopMIDI](https://www.tobias-erichsen.de/software/loopmidi.html) for enabling the Edrumulus MIDI communication,
 - [Python](https://www.python.org) to control Edrumulus trigger parameters in real-time.
   - Install the Python PIP packages python-rtmidi and windows-curses.
 
@@ -30,6 +28,10 @@ Now open the edrumulus.ino file in the Arduino IDE and compile and upload.
 Go into edrumulus/tools directory and start edrumulus_gui.py. This tool will connect to Edrumulus and
 creates (virtual) MIDI ports which can be selected in your DAW as a MIDI device. This tool works on
 Windows, Linux and MacOS.
+
+E.g., on Linux simply type `python3 edrumulus_gui.py`. If you have an ESP32-S3, this usually is on a
+different serial port than the normal ESP32. E.g., for an ESP32-S3 on Windows, the following command
+should work: `python edrumulus_gui.py serial COM4`.
 
 ## Hardware-specific comments
 
