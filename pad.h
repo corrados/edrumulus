@@ -207,7 +207,7 @@ class Pad
 
   // definitions which can be used outside the pad class, too
   static const int control_midi_hysteresis       = ADC_MAX_NOISE_AMPL / 2; // MIDI hysteresis for the controller to suppress noise
-  static const int hi_hat_is_open_MIDI_threshold = 100;                    // MIDI values smaller than the limit value are "open hi-hat"
+  static const int hi_hat_is_open_MIDI_threshold = 122;                    // MIDI values smaller than the limit value are "open hi-hat"
 
  protected:
   struct Epadsettings
