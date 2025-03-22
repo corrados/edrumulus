@@ -47,6 +47,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd80r_no_hot_spot.wav");padtype='pd80r';
 %x = audioread("signals/pd80r_rimshot_issue.wav");padtype='pd80r';
 x = audioread("signals/pd85rimshotpossense.wav");padtype='pd80r';
+%x = audioread("signals/hd120.wav");padtype='hd120';x = x(1:75500, :);%x = x(75500:end, :);
 %x = audioread("signals/pda120ls.wav");x=x(:,1);padtype='pda120ls';x = x(1:630000, :);%x = x(1.06e6:end, :);%x = x(840000:930000, :);%
 %x = audioread("signals/pda120ls_2.wav");x=x(:,1);padtype='pda120ls';x = x(1:210000, :);
 %x = audioread("signals/pda120ls_multpiezotest.wav");padtype='pda120ls';
@@ -115,6 +116,12 @@ switch padtype
   case 'pd120'
     % note: the PRESET settings are from the PD120 pad
     pad.hot_spot_attenuation_db = 3;
+  case 'hd120'
+    pad.threshold_db              = 44;
+    pad.scan_time_ms              = 4.5;
+    pad.decay_grad_fact2          = 90;
+    pad.decay_len_ms2             = 500;
+    pad.rim_use_low_freq_bp       = false;
   case 'lehhs12c'
     pad.scan_time_ms              = 4;
     pad.decay_fact_db             = 5;
