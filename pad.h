@@ -488,7 +488,7 @@ class Pad
     debug_out_cnt = debug_buffer_size - debug_buffer_size / 4;
   }
 #else
-  void        DEBUG_ADD_VALUES(const float, const float, const float, const float)
+  void DEBUG_ADD_VALUES(const float, const float, const float, const float)
   {
   }
   void DEBUG_START_PLOTTING() {}

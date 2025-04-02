@@ -109,8 +109,8 @@ class Edrumulus_hardware
                        int       analog_pin[][MAX_NUM_PAD_INPUTS],
                        int       sample_org[][MAX_NUM_PAD_INPUTS]);
 
-  void write_setting(const int, const int, const byte){}; // not supported
-  byte read_setting(const int, const int) { return 0; };  // not supported
+  void write_setting(const int, const int, const byte) {}; // not supported
+  byte read_setting(const int, const int) { return 0; };   // not supported
 
  protected:
   int                        Fs;

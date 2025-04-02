@@ -17,7 +17,7 @@
 
 #pragma once
 
-//#define USE_SERIAL_DEBUG_PLOTTING
+// #define USE_SERIAL_DEBUG_PLOTTING
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 10
@@ -43,7 +43,7 @@ inline void allocate_initialize(float**   array_memory,
   // (delete and) allocate memory
   if (*array_memory != nullptr)
   {
-    delete[] * array_memory;
+    delete[] *array_memory;
   }
 
   *array_memory = new float[array_length];
