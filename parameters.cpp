@@ -278,6 +278,20 @@ void Pad::apply_preset_pad_settings()
       break;
 
     // Cymbal pads -------------------------------------------------------------
+    case HD120: // dual trigger (advertised as single trigger)
+      pad_settings.is_rim_switch        = true;
+      pad_settings.scan_time_ms         = 4.5f;
+      pad_settings.decay_grad_fact2     = 90.0f;
+      pad_settings.decay_len2_ms        = 500.0f;
+      pad_settings.rim_use_low_freq_bp  = false;
+      pad_settings.rim_shot_is_used     = true;
+      pad_settings.rim_shot_threshold   = 24;
+      pad_settings.rim_shot_boost       = 0;
+      pad_settings.velocity_threshold   = 8;
+      pad_settings.velocity_sensitivity = 4;
+      pad_settings.curve_type           = EXP2;
+      break;
+
     case CY5: // dual trigger
       pad_settings.is_rim_switch        = true;
       pad_settings.velocity_threshold   = 6;

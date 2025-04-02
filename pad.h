@@ -52,7 +52,8 @@ class Pad
     MPS750X_RIDE  = 24,
     MPS750X_CRASH = 25,
     LEHHS12C      = 26,
-    LEHHS12C_CTRL = 27
+    LEHHS12C_CTRL = 27,
+    HD120         = 28
   };
 
   enum Ecurvetype // note that the enums need assigned integers for MIDI settings transfer
