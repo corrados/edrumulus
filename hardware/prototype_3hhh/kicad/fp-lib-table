@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "edrumulus")(type "KiCad")(uri "${KIPRJMOD}/edrumulus.pretty")(options "")(descr ""))
+)
