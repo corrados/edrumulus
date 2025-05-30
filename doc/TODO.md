@@ -6,7 +6,9 @@ The road map items are sorted by priority.
 
   This can be used to improve the positional sensing. E.g., if the reliability is low, we could
   use the position of the last detected peak if it is close to the current peak in time (e.g., if
-  we have a fast roll situation).
+  we have a fast roll situation). But the last detected peak is maybe not a good idea to use since
+  we usually have two sticks and the position of the last peak is most probably from the other
+  stick which position is most probably away from the correct position of the current peak.
 
 - [ ] **Support direct rim strike**
 
