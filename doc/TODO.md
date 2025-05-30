@@ -2,6 +2,14 @@
 
 The road map items are sorted by priority.
 
+- [ ] **Hot spot suppression on mesh pads with center piezo**
+
+  Striking directly on the piezo results in detected velocity values which are much too high.
+
+- [ ] **Support direct rim strike**
+
+  See https://github.com/corrados/edrumulus/discussions/84.
+
 - [ ] **Introduce a first peak detection reliability**
 
   This can be used to improve the positional sensing. E.g., if the reliability is low, we could
@@ -9,14 +17,6 @@ The road map items are sorted by priority.
   we have a fast roll situation). But the last detected peak is maybe not a good idea to use since
   we usually have two sticks and the position of the last peak is most probably from the other
   stick which position is most probably away from the correct position of the current peak.
-
-- [ ] **Support direct rim strike**
-
-  See https://github.com/corrados/edrumulus/discussions/84.
-
-- [ ] **Hot spot suppression on mesh pads with center piezo**
-
-  Striking directly on the piezo results in detected velocity values which are much too high.
 
 - [ ] **Change rim shot/positinal sensing counters**
 
