@@ -2,10 +2,6 @@
 
 The road map items are sorted by priority.
 
-- [ ] **Cross talk cancellation doesn't work reliably (Github Issue [#109](https://github.com/corrados/edrumulus/issues/109))**
-
-  User 3hhh observed that cross talk spikes may actually arrive before the spike of the pad he actually hit.
-
 - [ ] **Introduce a first peak detection reliability**
 
   This can be used to improve the positional sensing. E.g., if the reliability is low, we could
@@ -44,6 +40,11 @@ The road map items are sorted by priority.
 - [ ] **Add support for rim boost setting for multiple head sensor pads**
 
   The rim boost setting is only supported for pads with just one head sensor.
+
+- [ ] **Cross talk cancellation doesn't work reliably (Github Issue [#109](https://github.com/corrados/edrumulus/issues/109))**
+
+  User 3hhh observed that cross talk spikes may actually arrive before the spike of the pad he actually hit.
+  -> Can be fixed with the xtalk programm created by 3hhh (see Git submodule in tools directory).
 
 - [ ] **For the ESP32 prototype, adjust the ADC_noise_peak_velocity_scaling in edrumulus.h correctly**
 
