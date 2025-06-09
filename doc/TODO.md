@@ -2,6 +2,13 @@
 
 The road map items are sorted by priority.
 
+- [ ] **Investigate if a neural network (AI) can be used for Edrumulus (Github Issue [168](https://github.com/corrados/edrumulus/issues/168))**
+
+  Challanges:
+  - Make the network as small as possible so that it can be run on, e.g., an ESP32-S3.
+  - What about latency of the algorithm? Can the AI lern to keep the delay below a certain threshold?
+  - Do we have sufficient recordings or are there much more needed to lern the neural network?
+
 - [ ] **Hot spot suppression on mesh pads with center piezo**
 
   Striking directly on the piezo results in detected velocity values which are much too high.
