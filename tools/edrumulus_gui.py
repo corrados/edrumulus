@@ -414,6 +414,8 @@ if use_webui:
           if key_value == "s" or key_value == "S":
             time.sleep(0.01)
 
+      if v_major >= 0 and v_minor >= 0:
+        self.wfile.write(bytes("Edrumulus v{0}.{1}".format(v_major, v_minor), "utf-8"))
       self.wfile.write(bytes("""
         <table><tr><td>Pad:</td><td><button type='submit' name='key' value='S'>DOWN</button></td>
                                 <td><button type='submit' name='key' value='s'>UP</button></td></tr>
