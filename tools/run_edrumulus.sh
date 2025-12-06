@@ -175,7 +175,7 @@ ADEVICE=$(aplay -l|grep "USB Audio"|tail -1|cut -d' ' -f3)
 echo "Using USB audio device: ${ADEVICE}"
 
 # start the jack deamon (exit once all clients are closed with -T)
-jackd -R -T --silent -P70 -t2000 -d alsa -dhw:${ADEVICE} -p 64 -n 4 -r 48000 -s >/dev/null 2>&1 &
+jackd -R -T --silent -P70 -t2000 -d alsa -dhw:${ADEVICE} -p 128 -n 3 -r 48000 -s >/dev/null 2>&1 &
 sleep 1
 
 
