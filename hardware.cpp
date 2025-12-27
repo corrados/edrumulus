@@ -436,8 +436,7 @@ void Edrumulus_hardware::init_my_analogRead()
   SET_PERI_REG_BITS(SENS_SAR_MEAS_WAIT1_REG, SENS_SAR_AMP_WAIT1, 0x1, SENS_SAR_AMP_WAIT1_S);
   SET_PERI_REG_BITS(SENS_SAR_MEAS_WAIT1_REG, SENS_SAR_AMP_WAIT2, 0x1, SENS_SAR_AMP_WAIT2_S);
   SET_PERI_REG_BITS(SENS_SAR_MEAS_WAIT2_REG, SENS_SAR_AMP_WAIT3, 0x1, SENS_SAR_AMP_WAIT3_S);
-  while (GET_PERI_REG_BITS2(SENS_SAR_SLAVE_ADDR1_REG, 0x7, SENS_MEAS_STATUS_S) != 0)
-    ;
+  while (GET_PERI_REG_BITS2(SENS_SAR_SLAVE_ADDR1_REG, 0x7, SENS_MEAS_STATUS_S) != 0);
 
   // configure all pins to analog read
   for (int i = 0; i < total_number_inputs; i++)
@@ -468,15 +467,13 @@ uint16_t Edrumulus_hardware::my_analogRead(const uint8_t pin)
     CLEAR_PERI_REG_MASK(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_START_SAR_M);
     SET_PERI_REG_BITS(SENS_SAR_MEAS_START2_REG, SENS_SAR2_EN_PAD, (1 << channel_modified), SENS_SAR2_EN_PAD_S);
     SET_PERI_REG_MASK(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_START_SAR_M);
-    while (GET_PERI_REG_MASK(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DONE_SAR) == 0)
-      ;
+    while (GET_PERI_REG_MASK(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DONE_SAR) == 0);
     return GET_PERI_REG_BITS2(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DATA_SAR, SENS_MEAS2_DATA_SAR_S);
 #  else // CONFIG_IDF_TARGET_ESP32S3
     SENS.sar_meas2_ctrl2.meas2_start_sar = 0;
     SENS.sar_meas2_ctrl2.sar2_en_pad     = (1 << channel_modified);
     SENS.sar_meas2_ctrl2.meas2_start_sar = 1;
-    while (!SENS.sar_meas2_ctrl2.meas2_done_sar)
-      ;
+    while (!SENS.sar_meas2_ctrl2.meas2_done_sar);
     return HAL_FORCE_READ_U32_REG_FIELD(SENS.sar_meas2_ctrl2, meas2_data_sar);
 #  endif
   }
@@ -486,15 +483,13 @@ uint16_t Edrumulus_hardware::my_analogRead(const uint8_t pin)
     CLEAR_PERI_REG_MASK(SENS_SAR_MEAS_START1_REG, SENS_MEAS1_START_SAR_M);
     SET_PERI_REG_BITS(SENS_SAR_MEAS_START1_REG, SENS_SAR1_EN_PAD, (1 << channel), SENS_SAR1_EN_PAD_S);
     SET_PERI_REG_MASK(SENS_SAR_MEAS_START1_REG, SENS_MEAS1_START_SAR_M);
-    while (GET_PERI_REG_MASK(SENS_SAR_MEAS_START1_REG, SENS_MEAS1_DONE_SAR) == 0)
-      ;
+    while (GET_PERI_REG_MASK(SENS_SAR_MEAS_START1_REG, SENS_MEAS1_DONE_SAR) == 0);
     return GET_PERI_REG_BITS2(SENS_SAR_MEAS_START1_REG, SENS_MEAS1_DATA_SAR, SENS_MEAS1_DATA_SAR_S);
 #  else // CONFIG_IDF_TARGET_ESP32S3
     SENS.sar_meas1_ctrl2.meas1_start_sar = 0;
     SENS.sar_meas1_ctrl2.sar1_en_pad     = (1 << channel);
     SENS.sar_meas1_ctrl2.meas1_start_sar = 1;
-    while (!SENS.sar_meas1_ctrl2.meas1_done_sar)
-      ;
+    while (!SENS.sar_meas1_ctrl2.meas1_done_sar);
     return HAL_FORCE_READ_U32_REG_FIELD(SENS.sar_meas1_ctrl2, meas1_data_sar);
 #  endif
   }
@@ -517,13 +512,11 @@ void Edrumulus_hardware::my_analogRead_parallel(const uint32_t channel_adc1_bitv
   SET_PERI_REG_MASK(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_START_SAR_M);
 
   // wait for ADC1 and read value
-  while (GET_PERI_REG_MASK(SENS_SAR_MEAS_START1_REG, SENS_MEAS1_DONE_SAR) == 0)
-    ;
+  while (GET_PERI_REG_MASK(SENS_SAR_MEAS_START1_REG, SENS_MEAS1_DONE_SAR) == 0);
   out_adc1 = GET_PERI_REG_BITS2(SENS_SAR_MEAS_START1_REG, SENS_MEAS1_DATA_SAR, SENS_MEAS1_DATA_SAR_S);
 
   // wait for ADC2 and read value
-  while (GET_PERI_REG_MASK(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DONE_SAR) == 0)
-    ;
+  while (GET_PERI_REG_MASK(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DONE_SAR) == 0);
   out_adc2 = GET_PERI_REG_BITS2(SENS_SAR_MEAS_START2_REG, SENS_MEAS2_DATA_SAR, SENS_MEAS2_DATA_SAR_S);
 #  endif
 }

@@ -17,6 +17,8 @@ all configured ADC inputs must have the analog front end circuit attached.
 
 If an analog front end for a configured input is missing or faulty, Edrumulus will report a DC offset error.
 
+If you need higher sensitivity for low and medium velocity hits, you can try the MPS-750X circuit from below.
+
 ## Setup for ESP32
 
 Install the Arduino IDE and add the ESP32 Board Manager according to
@@ -51,7 +53,8 @@ should work: `python edrumulus_gui.py serial COM4`.
 
 ### Millenium MPS-750X
 
-- Recommended circuit: [Rs=10k, Rp=10k, Cp=0](https://github.com/corrados/edrumulus/discussions/98).
+- Recommended circuit: [Rs=10k, Rp=10k, Cp=0](https://github.com/corrados/edrumulus/discussions/98) with low forward voltage diodes (e.g. Shottky BAT85) and Rs=100k for the kick drum.
+  - Rs=10k versus Rs=100k increases the sensitivity for low and medium velocity hits at the expense of higher shorting risk for harder hits. This usually does not make sense for pads with low sensitivity needs such as the kick drum. Values between Rs=10k and Rs=100k may be chosen as a compromise.
 - TRS pins:
   - Toms: hit piezo = T, rim piezo = R, GND = S.
   - Cymbals including Hi-Hat: Bow piezo = S, Rim switch = R (none for Hi-Hat), GND = T.

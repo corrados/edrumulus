@@ -75,8 +75,6 @@ A gallery of user implementations of Edrumulus prototypes [can be found here](do
 
 - [open e-drums](https://open-e-drums.com) ([Source code](https://github.com/RyoKosaka/HelloDrum-arduino-Library))
 
-- [Arduino Leanordo Midi Drum Kit](https://hoeser-medien.de/2016/11/arduino-leanordo-midi-drum-kit): Uses some re-trigger cancellation. The source code can be found embedded in the web page.
-
 - [An Arduino based standalone drum kit Hackaday](https://hackaday.io/project/171929-an-arduino-based-standalone-drum-kit) ([Source code](https://hackaday.io/project/171929-an-arduino-based-standalone-drum-kit#menu-files)): Generates audio, too.
 
 - Forum: [How to solve a system of hyperbola equations](https://math.stackexchange.com/questions/3373011/how-to-solve-this-system-of-hyperbola-equations)

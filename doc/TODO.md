@@ -2,23 +2,28 @@
 
 The road map items are sorted by priority.
 
-- [ ] **Cross talk cancellation doesn't work reliably (Github Issue [#109](https://github.com/corrados/edrumulus/issues/109))**
+- [ ] **Investigate if a neural network (AI) can be used for Edrumulus (Github Issue [168](https://github.com/corrados/edrumulus/issues/168))**
 
-  User 3hhh observed that cross talk spikes may actually arrive before the spike of the pad he actually hit.
+  Challanges:
+  - Make the network as small as possible so that it can be run on, e.g., an ESP32-S3.
+  - What about latency of the algorithm? Can the AI lern to keep the delay below a certain threshold?
+  - Do we have sufficient recordings or are there much more needed to lern the neural network?
 
-- [ ] **Introduce a first peak detection reliability**
+- [ ] **Hot spot suppression on mesh pads with center piezo**
 
-  This can be used to improve the positional sensing. E.g., if the reliability is low, we could
-  use the position of the last detected peak if it is close to the current peak in time (e.g., if
-  we have a fast roll situation).
+  Striking directly on the piezo results in detected velocity values which are much too high.
 
 - [ ] **Support direct rim strike**
 
   See https://github.com/corrados/edrumulus/discussions/84.
 
-- [ ] **Hot spot suppression on mesh pads with center piezo**
+- [ ] **Introduce a first peak detection reliability**
 
-  Striking directly on the piezo results in detected velocity values which are much too high.
+  This can be used to improve the positional sensing. E.g., if the reliability is low, we could
+  use the position of the last detected peak if it is close to the current peak in time (e.g., if
+  we have a fast roll situation). But the last detected peak is maybe not a good idea to use since
+  we usually have two sticks and the position of the last peak is most probably from the other
+  stick which position is most probably away from the correct position of the current peak.
 
 - [ ] **Change rim shot/positinal sensing counters**
 
@@ -44,6 +49,11 @@ The road map items are sorted by priority.
 - [ ] **Add support for rim boost setting for multiple head sensor pads**
 
   The rim boost setting is only supported for pads with just one head sensor.
+
+- [ ] **Cross talk cancellation doesn't work reliably (Github Issue [#109](https://github.com/corrados/edrumulus/issues/109))**
+
+  User 3hhh observed that cross talk spikes may actually arrive before the spike of the pad he actually hit.
+  -> Can be fixed with the xtalk programm created by 3hhh (see Git submodule in tools directory).
 
 - [ ] **For the ESP32 prototype, adjust the ADC_noise_peak_velocity_scaling in edrumulus.h correctly**
 

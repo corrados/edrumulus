@@ -62,6 +62,7 @@ pad_types_dict = {"PDA120LS Roland Mesh Pad":18, "PDX100 Roland Mesh Pad":19, "P
                     "HD1TOM Roland Rubber Pad":12, "TP80 Yamaha Rubber Pad":7, \
                   "CY8 Roland Cymbal":9, "CY6 Roland Cymbal":8, "CY5 Roland Cymbal":11, "VH12 Roland Hi-Hat":4, \
                     "MPS-750X Millenium Ride":24, "MPS-750X Millenium Crash":25, "LEHHS12C Lemon Hi-Hat Cymbal":26, \
+                    "HD-120 Millenium Cymbal":28, \
                   "KD120 Roland Mesh Kick Pad":16, "KD8 Roland Kick Pad":14, \
                     "KD7 Roland Kick Pad":6, "KT10 Roland Kick Pedal":20, "MPS-750X Millenium Kick Pad":23, \
                   "FD8 Roland Hi-Hat Pedal":3, "VH12CTRL Roland Hi-Hat Pedal":5, "LEHHS12CCTRL Lemon Hi-Hat Pedal":27}

@@ -1,5 +1,10 @@
 # Edrumulus Gallery of User Implementations
 
+## 3hhh
+
+<br/>![3hhh Prototype](images/gallery_3hhh_1.jpg)
+![3hhh Prototype](images/gallery_3hhh_2.jpg)
+
 ## thijstriemstra
 
 <br/>![thijstriemstra Prototype](images/gallery_thijstriemstra1.jpg)

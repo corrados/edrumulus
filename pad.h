@@ -52,7 +52,8 @@ class Pad
     MPS750X_RIDE  = 24,
     MPS750X_CRASH = 25,
     LEHHS12C      = 26,
-    LEHHS12C_CTRL = 27
+    LEHHS12C_CTRL = 27,
+    HD120         = 28
   };
 
   enum Ecurvetype // note that the enums need assigned integers for MIDI settings transfer
@@ -487,7 +488,7 @@ class Pad
     debug_out_cnt = debug_buffer_size - debug_buffer_size / 4;
   }
 #else
-  void        DEBUG_ADD_VALUES(const float, const float, const float, const float)
+  void DEBUG_ADD_VALUES(const float, const float, const float, const float)
   {
   }
   void DEBUG_START_PLOTTING() {}

@@ -2,7 +2,6 @@ BasedOnStyle: Google
 TabWidth: 2
 BreakBeforeBraces: Allman
 ColumnLimit: 0
-AlignAfterOpenBracket: DontAlign
 AlignTrailingComments: true
 BinPackArguments: false
 BinPackParameters: false
