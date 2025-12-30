@@ -21,12 +21,6 @@ if aconnect -l|grep -q Edrumulus; then
   is_teensy=true
 fi
 
-# check if we are running on a Raspberry Pi by checking if the user name is pi
-if [ "$USER" == "pi" ]; then
-  echo "-> Running on a Raspberry pi"
-  is_raspi=true
-fi
-
 # check if we are in Jamulus session mode
 if [[ "$1" == jamulus ]]; then
   echo "-> Jamulus session mode enabled"
@@ -39,12 +33,6 @@ if [[ "$1" == uartjamulus ]]; then
   is_raspi=true # UART connection to ESP32 is only supported on Raspberry Pi
   is_uart=true
   gui_mode="non_block"
-fi
-
-# check if the no GUI mode shall be used
-if [[ "$1" == no_gui ]]; then
-  echo "-> no GUI mode enabled"
-  gui_mode="no_gui"
 fi
 
 # check if direct serial connection to ESP32 shall be used or the default jack audio
