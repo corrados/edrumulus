@@ -101,6 +101,8 @@ class Edrumulus
   void set_spike_cancel_level(const int new_level) { spike_cancel_level = new_level; }
   int  get_spike_cancel_level() { return spike_cancel_level; }
 
+  void set_enable_load_indicator(const int new_status) { load_indicator = new_status != 0; }
+
   // error and overload handling (implement blinking LED for error using error_LED_blink_time)
   bool get_status_is_error() { return status_is_error && ((error_LED_cnt % error_LED_blink_time) < (error_LED_blink_time / 2)); }
   bool get_status_is_overload() { return status_is_overload; }
@@ -151,6 +153,7 @@ class Edrumulus
   float              dc_offset_iir_gamma;
   float              dc_offset_iir_one_minus_gamma;
   int                spike_cancel_level;
+  bool               load_indicator;
   int                overload_LED_cnt;
   int                overload_LED_on_time;
   int                error_LED_cnt;

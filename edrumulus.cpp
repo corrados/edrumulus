@@ -38,6 +38,7 @@ Edrumulus::Edrumulus()
 #else
   spike_cancel_level = 0; // default
 #endif
+  load_indicator                = false;
   cancel_num_samples            = (cancel_time_ms * Fs) / 1000;
   cancel_cnt                    = 0;
   cancel_MIDI_velocity          = 1;

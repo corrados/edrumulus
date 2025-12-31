@@ -454,6 +454,13 @@ void loop()
         edrumulus.write_setting(selected_pad, 18, value);
         confirm_setting(controller, value, false);
       }
+
+      // controller 123: load indicator
+      if (controller == 123)
+      {
+        edrumulus.set_enable_load_indicator(value);
+        confirm_setting(controller, value, false);
+      }
     }
   }
 #endif

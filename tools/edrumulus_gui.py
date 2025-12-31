@@ -93,7 +93,8 @@ midi_map                = {}
 midi_send_cmd           = -1 # invalidate per default
 midi_previous_send_cmd  = -1
 midi_send_val           = -1
-auto_pad_sel            = False; # no auto pad selection per default
+auto_pad_sel            = False # no auto pad selection per default
+load_indicator          = False
 is_load_settings        = False
 error_value             = 0
 settings_file           = pathlib.Path(__file__).parent.joinpath("settings", "trigger_settings.txt")
@@ -147,6 +148,8 @@ def process_user_input(ch):
     ecasound_switch_chains(ch == "k")
   elif (ch == "v" or ch == "V") and use_jack: # kit volume (only for jack audio mode)
     ecasound_kit_volume(ch == "v")
+  elif ch == "l":
+    send_value_to_edrumulus(123, load_indicator := not load_indicator) # toggle state
 
 def get_linear_pad_type_index(d):
   return pad_types_dict_list.index([k for k, v in pad_types_dict.items() if v == d][0])
