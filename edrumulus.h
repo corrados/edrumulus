@@ -155,8 +155,6 @@ class Edrumulus
   float              dc_offset_iir_gamma;
   float              dc_offset_iir_one_minus_gamma;
   int                spike_cancel_level;
-  bool               use_load_indicator;
-  int                load_indicator;
   int                overload_LED_cnt;
   int                overload_LED_on_time;
   int                error_LED_cnt;
@@ -167,6 +165,8 @@ class Edrumulus
   int                samplerate_max_cnt;
   int                samplerate_prev_micros_cnt;
   unsigned long      samplerate_prev_micros;
+  bool               use_load_indicator;
+  int                load_indicator;
   int                load_indicator_max_cnt;
   int                load_indicator_cnt;
   unsigned long      load_indicator_prev_micros;
