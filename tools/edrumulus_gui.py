@@ -546,15 +546,16 @@ def act_on_midi_in(status, key, value):
       if (midi_previous_send_cmd != key) or is_load_settings:
         database[cur_cmd] = max(0, min(cmd_val_rng[cur_cmd], value));
         do_update_midi_in = True;
-    if key == 125: # check for error state
+    elif key == 124: # check for load indicator value
+      load_indicator_percent = value / 127 * 100 # convert to %, where the value range is 0 to 127
+      do_update_display      = True
+    elif key == 125: # check for error state
       error_value       = value
       do_update_display = True
-    if key == 127: # check for major version number
+    elif key == 127: # check for major version number
       v_major = value
-    if key == 126: # check for minor version number
+    elif key == 126: # check for minor version number
       v_minor = value
-    if key == 123: # check for load indicator value
-      load_indicator_percent = value / 127 * 100 # convert to %, where the value range is 0 to 127
 
   if (status & 0xF0) == 0x90: # display current note-on received value
     try:
