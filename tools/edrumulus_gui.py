@@ -93,7 +93,9 @@ midi_map                = {}
 midi_send_cmd           = -1 # invalidate per default
 midi_previous_send_cmd  = -1
 midi_send_val           = -1
-auto_pad_sel            = False; # no auto pad selection per default
+auto_pad_sel            = False # no auto pad selection per default
+load_indicator          = False
+load_indicator_percent  = -1
 is_load_settings        = False
 error_value             = 0
 settings_file           = pathlib.Path(__file__).parent.joinpath("settings", "trigger_settings.txt")
@@ -110,7 +112,7 @@ if use_jack:
 # Common GUI functions #########################################################
 ################################################################################
 def process_user_input(ch):
-  global sel_pad, sel_cmd, database, auto_pad_sel
+  global sel_pad, sel_cmd, database, auto_pad_sel, load_indicator
   if ch == "s" and sel_pad < len(pad_names) - 1:
     send_value_to_edrumulus(108, sel_pad := sel_pad + 1)
   elif ch == "S" and sel_pad > 0:
@@ -147,6 +149,8 @@ def process_user_input(ch):
     ecasound_switch_chains(ch == "k")
   elif (ch == "v" or ch == "V") and use_jack: # kit volume (only for jack audio mode)
     ecasound_kit_volume(ch == "v")
+  elif ch == "l":
+    send_value_to_edrumulus(123, load_indicator := not load_indicator) # toggle state
 
 def get_linear_pad_type_index(d):
   return pad_types_dict_list.index([k for k, v in pad_types_dict.items() if v == d][0])
@@ -200,9 +204,11 @@ def ncurses_update_param_outputs():
     mainwin.addstr(row_start + 4, col_start, "                             ")
   if v_major >= 0 and v_minor >= 0:
     mainwin.addstr(row_start - 1, col_start, "Edrumulus v{0}.{1}".format(v_major, v_minor))
+  if load_indicator and load_indicator_percent >= 0:
+    mainwin.addstr(row_start - 1, col_start + 30, "Load {:.2f} %".format(load_indicator_percent))
   if sel_kit:
     mainwin.addstr(row_start - 1, col_start + 30, sel_kit + ", Kit-Vol: " + kit_vol_str if kit_vol_str else sel_kit)
-  mainwin.addstr(row_start, col_start, "Press a key (q:quit; s,S:sel pad; c,C:sel command; a,A: auto pad sel; up,down: change param; r: reset)")
+  mainwin.addstr(row_start, col_start, "q:quit; s,S:sel pad; c,C:sel command; a,A: auto pad sel; up,down: change param; r: reset, l:load")
   if auto_pad_sel:
     mainwin.addstr(row_start + 2, col_start, "Selected pad (auto):       {:2d} ({:s})      ".format(sel_pad, pad_names[sel_pad]))
   else:
@@ -531,7 +537,7 @@ def ecasound_apply_kit_volume():
 ################################################################################
 def act_on_midi_in(status, key, value):
   global database, midi_send_val, midi_send_cmd, midi_previous_send_cmd, do_update_midi_in, \
-         v_major, v_minor, hi_hat_ctrl, sel_pad, do_update_display, error_value
+         v_major, v_minor, load_indicator_percent, hi_hat_ctrl, sel_pad, do_update_display, error_value
 
   if status == 0x80: # act on control messages (0x80: Note Off)
     if key in cmd_val:
@@ -540,12 +546,15 @@ def act_on_midi_in(status, key, value):
       if (midi_previous_send_cmd != key) or is_load_settings:
         database[cur_cmd] = max(0, min(cmd_val_rng[cur_cmd], value));
         do_update_midi_in = True;
-    if key == 125: # check for error state
+    elif key == 124: # check for load indicator value
+      load_indicator_percent = value / 127 * 100 # convert to %, where the value range is 0 to 127
+      do_update_display      = True
+    elif key == 125: # check for error state
       error_value       = value
       do_update_display = True
-    if key == 127: # check for major version number
+    elif key == 127: # check for major version number
       v_major = value
-    if key == 126: # check for minor version number
+    elif key == 126: # check for minor version number
       v_minor = value
 
   if (status & 0xF0) == 0x90: # display current note-on received value

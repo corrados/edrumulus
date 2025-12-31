@@ -178,6 +178,12 @@ void loop()
     }
   }
 
+  // load indicator
+  if (const int load = edrumulus.get_load_indicator(); load >= 0)
+  {
+    MYMIDI.sendNoteOff(124, load, 1);
+  }
+
 #ifdef USE_MIDI
   // send MIDI note to drum synthesizer
   for (int pad_idx = 0; pad_idx < number_pads; pad_idx++)
@@ -454,6 +460,13 @@ void loop()
         edrumulus.write_setting(selected_pad, 18, value);
         confirm_setting(controller, value, false);
       }
+
+      // controller 123: load indicator
+      if (controller == 123)
+      {
+        edrumulus.set_enable_load_indicator(value);
+        confirm_setting(controller, value, false);
+      }
     }
   }
 #endif
@@ -488,7 +501,9 @@ void confirm_setting(const int  controller,
     MYMIDI.sendNoteOff(120, edrumulus.get_coupled_pad_idx(selected_pad), 1);
     MYMIDI.sendNoteOff(121, edrumulus.get_rim_pos_threshold(selected_pad), 1);
     MYMIDI.sendNoteOff(122, edrumulus.get_rim_pos_sensitivity(selected_pad), 1);
-    // NOTE: 125 reserved for error message
+    // NOTE: 123 is load indicator setting which is not stored
+    // NOTE: 124 is reserved for load indicator
+    // NOTE: 125 is reserved for error message
     MYMIDI.sendNoteOff(126, VERSION_MINOR, 1);
     MYMIDI.sendNoteOff(127, VERSION_MAJOR, 1);
   }

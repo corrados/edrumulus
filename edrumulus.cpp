@@ -24,13 +24,18 @@ Edrumulus::Edrumulus()
   error_LED_blink_time       = round(error_LED_blink_time_s * Fs);
   dc_offset_est_len          = round(dc_offset_est_len_s * Fs);
   samplerate_max_cnt         = round(samplerate_max_cnt_len_s * Fs);
+  load_indicator_max_cnt     = round(load_indicator_max_cnt_len_s * Fs);
   dc_offset_min_limit        = round(ADC_MAX_RANGE / 2 - ADC_MAX_RANGE * dc_offset_max_rel_error);
   dc_offset_max_limit        = round(ADC_MAX_RANGE / 2 + ADC_MAX_RANGE * dc_offset_max_rel_error);
   overload_LED_cnt           = 0;
-  error_LED_cnt              = 0;
   status_is_overload         = false;
   samplerate_prev_micros_cnt = 0;
   samplerate_prev_micros     = 0;
+  use_load_indicator         = false;
+  load_indicator_cnt         = 0;
+  load_indicator_prev_micros = 0;
+  load_indicator_sum         = 0;
+  load_indicator             = -1; // initialize with invalid result
   status_is_error            = false;
   dc_offset_error_channel    = -1;
 #ifdef ESP_PLATFORM
@@ -134,6 +139,12 @@ void Edrumulus::process()
                                      number_inputs,
                                      analog_pin,
                                      sample_org);
+
+  // for load indicator we need to store current time right after blocking function
+  if (use_load_indicator)
+  {
+    load_indicator_prev_micros = micros();
+  }
 
   /*
   // TEST for plotting all captures samples in the serial plotter (but with low sampling rate)
@@ -347,8 +358,29 @@ void Edrumulus::process()
     status_is_overload = (overload_LED_cnt > 0);
   }
 
+  // Load indicator ------------------------------------------------------------
+  load_indicator = -1; // always default to -1 first
+
+  if (use_load_indicator)
+  {
+    load_indicator_sum += micros() - load_indicator_prev_micros;
+    load_indicator_cnt++;
+
+    if (load_indicator_cnt >= load_indicator_max_cnt)
+    {
+      // calculate load indicator value in range 0 to 127
+      const float avg_micros = static_cast<float>(load_indicator_sum) / load_indicator_max_cnt;
+      load_indicator         = round(avg_micros / 1e6f * Fs * 127.0f);
+      load_indicator         = max(0, min(127, load_indicator));
+      load_indicator_sum     = 0;
+      load_indicator_cnt     = 0;
+    }
+  }
+
   // Sampling rate and DC offset check -----------------------------------------
   // (i.e. if CPU is overloaded, the sample rate will drop which is bad)
+  samplerate_prev_micros_cnt++;
+
   if (samplerate_prev_micros_cnt >= samplerate_max_cnt)
   {
     const unsigned long samplerate_cur_micros = micros();
@@ -386,8 +418,6 @@ void Edrumulus::process()
       }
     }
   }
-  samplerate_prev_micros_cnt++;
-  error_LED_cnt++;
 }
 
 void Edrumulus::set_coupled_pad_idx(const int pad_idx, const int new_idx)
