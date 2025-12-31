@@ -111,7 +111,7 @@ if use_jack:
 # Common GUI functions #########################################################
 ################################################################################
 def process_user_input(ch):
-  global sel_pad, sel_cmd, database, auto_pad_sel
+  global sel_pad, sel_cmd, database, auto_pad_sel, load_indicator
   if ch == "s" and sel_pad < len(pad_names) - 1:
     send_value_to_edrumulus(108, sel_pad := sel_pad + 1)
   elif ch == "S" and sel_pad > 0:
