@@ -208,7 +208,7 @@ def ncurses_update_param_outputs():
     mainwin.addstr(row_start - 1, col_start + 30, "Load {:.2f} %".format(load_indicator_percent))
   if sel_kit:
     mainwin.addstr(row_start - 1, col_start + 30, sel_kit + ", Kit-Vol: " + kit_vol_str if kit_vol_str else sel_kit)
-  mainwin.addstr(row_start, col_start, "Press a key (q:quit; s,S:sel pad; c,C:sel command; a,A: auto pad sel; up,down: change param; r: reset)")
+  mainwin.addstr(row_start, col_start, "q:quit; s,S:sel pad; c,C:sel command; a,A: auto pad sel; up,down: change param; r: reset, l:load")
   if auto_pad_sel:
     mainwin.addstr(row_start + 2, col_start, "Selected pad (auto):       {:2d} ({:s})      ".format(sel_pad, pad_names[sel_pad]))
   else:
