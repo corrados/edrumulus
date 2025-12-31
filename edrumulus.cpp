@@ -134,17 +134,22 @@ void Edrumulus::process()
   */
 
   // Query samples -------------------------------------------------------------
-  // note that this is a blocking function
-  edrumulus_hardware.capture_samples(number_pads,
-                                     number_inputs,
-                                     analog_pin,
-                                     sample_org);
+
+  edrumulus_hardware.capture_samples_wait();
 
   // for load indicator we need to store current time right after blocking function
   if (use_load_indicator)
   {
     load_indicator_prev_micros = micros();
   }
+
+  // note that this is a blocking function
+  edrumulus_hardware.capture_samples(number_pads,
+                                     number_inputs,
+                                     analog_pin,
+                                     sample_org);
+
+
 
   /*
   // TEST for plotting all captures samples in the serial plotter (but with low sampling rate)
@@ -359,11 +364,12 @@ void Edrumulus::process()
   }
 
   // Load indicator ------------------------------------------------------------
-  load_indicator = -1; // default to -1 every frame/loop iteration
+  load_indicator = -1; // always default to -1 first
 
   if (use_load_indicator)
   {
     load_indicator_sum += micros() - load_indicator_prev_micros;
+    load_indicator_cnt++;
 
     if (load_indicator_cnt >= load_indicator_max_cnt)
     {
@@ -374,14 +380,12 @@ void Edrumulus::process()
       load_indicator_sum     = 0;
       load_indicator_cnt     = 0;
     }
-    else
-    {
-      load_indicator_cnt++;
-    }
   }
 
   // Sampling rate and DC offset check -----------------------------------------
   // (i.e. if CPU is overloaded, the sample rate will drop which is bad)
+  samplerate_prev_micros_cnt++;
+
   if (samplerate_prev_micros_cnt >= samplerate_max_cnt)
   {
     const unsigned long samplerate_cur_micros = micros();
@@ -418,10 +422,6 @@ void Edrumulus::process()
         }
       }
     }
-  }
-  else
-  {
-    samplerate_prev_micros_cnt++;
   }
 }
 

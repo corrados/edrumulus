@@ -118,7 +118,7 @@ class Edrumulus
   const int   Fs                           = 8000;  // this is the most fundamental system parameter: system sampling rate
   const float dc_offset_est_len_s          = 1.25f; // length of initial DC offset estimation in seconds
   const float samplerate_max_cnt_len_s     = 1.25f; // time interval for sampling rate estimation in seconds
-  const float load_indicator_max_cnt_len_s = 2.0f;  // time interval for load indicator update in seconds
+  const float load_indicator_max_cnt_len_s = 1.25f; // time interval for load indicator update in seconds
   const int   samplerate_max_error_Hz      = 200;   // tolerate a sample rate deviation of 200 Hz
   const float dc_offset_max_rel_error      = 0.25f; // DC offset limit from ADC middle position, where offset is defined relative to ADC maximum value
   const int   cancel_time_ms               = 30;    // on same stand approx. 10 ms + some margin (20 ms)
