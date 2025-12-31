@@ -100,7 +100,6 @@ class Edrumulus
 
   void set_spike_cancel_level(const int new_level) { spike_cancel_level = new_level; }
   int  get_spike_cancel_level() { return spike_cancel_level; }
-
   void set_enable_load_indicator(const int new_enabled) { use_load_indicator = new_enabled != 0; }
 
   // error and overload handling (implement blinking LED for error using error_LED_blink_time)
