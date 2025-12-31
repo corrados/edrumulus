@@ -369,8 +369,8 @@ void Edrumulus::process()
     {
       // calculate load indicator value in range 0 to 127
       const float avg_micros = static_cast<float>(load_indicator_sum) / load_indicator_max_cnt;
-      load_indicator         = static_cast<int>(avg_micros / 1e6f * Fs * 127.0f);
-      load_indicator         = max(min(load_indicator, 127), 0);
+      load_indicator         = round(avg_micros / 1e6f * Fs * 127.0f);
+      load_indicator         = max(0, min(127, load_indicator));
       load_indicator_sum     = 0;
       load_indicator_cnt     = 0;
     }
