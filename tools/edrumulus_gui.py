@@ -95,7 +95,7 @@ midi_previous_send_cmd  = -1
 midi_send_val           = -1
 auto_pad_sel            = False # no auto pad selection per default
 load_indicator          = False
-load_indicator_value    = -1
+load_indicator_percent  = -1
 is_load_settings        = False
 error_value             = 0
 settings_file           = pathlib.Path(__file__).parent.joinpath("settings", "trigger_settings.txt")
@@ -204,8 +204,8 @@ def ncurses_update_param_outputs():
     mainwin.addstr(row_start + 4, col_start, "                             ")
   if v_major >= 0 and v_minor >= 0:
     mainwin.addstr(row_start - 1, col_start, "Edrumulus v{0}.{1}".format(v_major, v_minor))
-  if load_indicator and load_indicator_value >= 0:
-    mainwin.addstr(row_start - 1, col_start + 30, "Load {0}%".format(load_indicator_value))
+  if load_indicator and load_indicator_percent >= 0:
+    mainwin.addstr(row_start - 1, col_start + 30, "Load {0:.2f} %".format(load_indicator_percent))
   if sel_kit:
     mainwin.addstr(row_start - 1, col_start + 30, sel_kit + ", Kit-Vol: " + kit_vol_str if kit_vol_str else sel_kit)
   mainwin.addstr(row_start, col_start, "Press a key (q:quit; s,S:sel pad; c,C:sel command; a,A: auto pad sel; up,down: change param; r: reset)")
@@ -537,7 +537,7 @@ def ecasound_apply_kit_volume():
 ################################################################################
 def act_on_midi_in(status, key, value):
   global database, midi_send_val, midi_send_cmd, midi_previous_send_cmd, do_update_midi_in, \
-         v_major, v_minor, load_indicator_value, hi_hat_ctrl, sel_pad, do_update_display, error_value
+         v_major, v_minor, load_indicator_percent, hi_hat_ctrl, sel_pad, do_update_display, error_value
 
   if status == 0x80: # act on control messages (0x80: Note Off)
     if key in cmd_val:
@@ -554,7 +554,7 @@ def act_on_midi_in(status, key, value):
     if key == 126: # check for minor version number
       v_minor = value
     if key == 123: # check for load indicator value
-      load_indicator_value = value
+      load_indicator_percent = value / 127 * 100 # convert to %, where the value range is 0 to 127
 
   if (status & 0xF0) == 0x90: # display current note-on received value
     try:
