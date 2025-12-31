@@ -134,22 +134,17 @@ void Edrumulus::process()
   */
 
   // Query samples -------------------------------------------------------------
-
-  edrumulus_hardware.capture_samples_wait();
-
-  // for load indicator we need to store current time right after blocking function
-  if (use_load_indicator)
-  {
-    load_indicator_prev_micros = micros();
-  }
-
   // note that this is a blocking function
   edrumulus_hardware.capture_samples(number_pads,
                                      number_inputs,
                                      analog_pin,
                                      sample_org);
 
-
+  // for load indicator we need to store current time right after blocking function
+  if (use_load_indicator)
+  {
+    load_indicator_prev_micros = micros();
+  }
 
   /*
   // TEST for plotting all captures samples in the serial plotter (but with low sampling rate)

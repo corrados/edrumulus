@@ -104,8 +104,6 @@ class Edrumulus_hardware
              const int number_inputs[],
              int       analog_pin[][MAX_NUM_PAD_INPUTS]);
 
-void capture_samples_wait();
-
   void capture_samples(const int number_pads,
                        const int number_inputs[],
                        int       analog_pin[][MAX_NUM_PAD_INPUTS],

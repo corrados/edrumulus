@@ -368,20 +368,13 @@ void IRAM_ATTR Edrumulus_hardware::on_timer()
   }
 }
 
-void Edrumulus_hardware::capture_samples_wait()
-{
-  if (xSemaphoreTake(timer_semaphore, portMAX_DELAY) == pdTRUE)
-  {
-  }
-}
-
 void Edrumulus_hardware::capture_samples(const int number_pads,
                                          const int number_inputs[],
                                          int       analog_pin[][MAX_NUM_PAD_INPUTS],
                                          int       sample_org[][MAX_NUM_PAD_INPUTS])
 {
   // wait for the timer to get the correct sampling rate when reading the analog value
-  if (true)//xSemaphoreTake(timer_semaphore, portMAX_DELAY) == pdTRUE)
+  if (xSemaphoreTake(timer_semaphore, portMAX_DELAY) == pdTRUE)
   {
     // copy captured samples in pad buffer
     int input_cnt = 0;
