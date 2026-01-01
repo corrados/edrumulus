@@ -1,5 +1,5 @@
 /******************************************************************************\
- * Copyright (c) 2020-2024
+ * Copyright (c) 2020-2026
  * Author(s): Volker Fischer
  ******************************************************************************
  * This program is free software; you can redistribute it and/or modify it under
@@ -30,11 +30,12 @@ inline void update_fifo(const float input,
                         float*      fifo_memory)
 {
   // move all values in the history one step back and put new value on the top
-  for (int i = 0; i < fifo_length - 1; i++)
+  const int fifo_length_minus_one = fifo_length - 1;
+  for (int i = 0; i < fifo_length_minus_one; ++i)
   {
     fifo_memory[i] = fifo_memory[i + 1];
   }
-  fifo_memory[fifo_length - 1] = input;
+  fifo_memory[fifo_length_minus_one] = input;
 }
 
 inline void allocate_initialize(float**   array_memory,

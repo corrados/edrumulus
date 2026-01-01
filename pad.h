@@ -1,5 +1,5 @@
 /******************************************************************************\
- * Copyright (c) 2020-2024
+ * Copyright (c) 2020-2026
  * Author(s): Volker Fischer
  ******************************************************************************
  * This program is free software; you can redistribute it and/or modify it under
@@ -85,11 +85,11 @@ class Pad
                        bool&        is_choke_on,
                        bool&        is_choke_off);
 
-  void process_control_sample(const int* input,
-                              bool&      change_found,
-                              int&       midi_ctrl_value,
-                              bool&      peak_found,
-                              int&       midi_velocity);
+  void process_control_sample(const uint16_t* input,
+                              bool&           change_found,
+                              int&            midi_ctrl_value,
+                              bool&           peak_found,
+                              int&            midi_velocity);
 
   void     set_pad_type(const Epadtype new_pad_type);
   Epadtype get_pad_type() { return pad_settings.pad_type; }

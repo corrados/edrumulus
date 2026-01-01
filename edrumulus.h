@@ -1,5 +1,5 @@
 /******************************************************************************\
- * Copyright (c) 2020-2024
+ * Copyright (c) 2020-2026
  * Author(s): Volker Fischer
  ******************************************************************************
  * This program is free software; you can redistribute it and/or modify it under
@@ -149,9 +149,9 @@ class Edrumulus
   int                stored_overload_detected_coupled_head[MAX_NUM_PAD_INPUTS];
   int                stored_overload_detected_coupled_rim[MAX_NUM_PAD_INPUTS];
   double             dc_offset[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS]; // must be double type for IIR filter
-  int                sample_org[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
+  uint16_t           sample_org[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   int                dc_offset_est_len;
-  float              dc_offset_iir_gamma;
+  double             dc_offset_iir_gamma;
   float              dc_offset_iir_one_minus_gamma;
   int                spike_cancel_level;
   int                overload_LED_cnt;

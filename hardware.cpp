@@ -1,5 +1,5 @@
 /******************************************************************************\
- * Copyright (c) 2020-2024
+ * Copyright (c) 2020-2026
  * Author(s): Volker Fischer
  ******************************************************************************
  * This program is free software; you can redistribute it and/or modify it under
@@ -118,7 +118,7 @@ void Edrumulus_hardware::on_timer()
 void Edrumulus_hardware::capture_samples(const int number_pads,
                                          const int number_inputs[],
                                          int       analog_pin[][MAX_NUM_PAD_INPUTS],
-                                         int       sample_org[][MAX_NUM_PAD_INPUTS])
+                                         uint16_t  sample_org[][MAX_NUM_PAD_INPUTS])
 {
   // wait for the timer to get the correct sampling rate when reading the analog value
   while (!timer_ready) delayMicroseconds(5);
@@ -371,7 +371,7 @@ void IRAM_ATTR Edrumulus_hardware::on_timer()
 void Edrumulus_hardware::capture_samples(const int number_pads,
                                          const int number_inputs[],
                                          int       analog_pin[][MAX_NUM_PAD_INPUTS],
-                                         int       sample_org[][MAX_NUM_PAD_INPUTS])
+                                         uint16_t  sample_org[][MAX_NUM_PAD_INPUTS])
 {
   // wait for the timer to get the correct sampling rate when reading the analog value
   if (xSemaphoreTake(timer_semaphore, portMAX_DELAY) == pdTRUE)

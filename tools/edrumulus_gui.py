@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 #*******************************************************************************
-# Copyright (c) 2022-2024
+# Copyright (c) 2022-2026
 # Author(s): Volker Fischer, Tobias Fischer
 #*******************************************************************************
 # This program is free software; you can redistribute it and/or modify it under
@@ -94,7 +94,7 @@ midi_send_cmd           = -1 # invalidate per default
 midi_previous_send_cmd  = -1
 midi_send_val           = -1
 auto_pad_sel            = False # no auto pad selection per default
-load_indicator          = False
+load_indicator          = False # no load indicator per default
 load_indicator_percent  = -1
 is_load_settings        = False
 error_value             = 0
@@ -143,14 +143,14 @@ def process_user_input(ch):
       if database[sel_cmd] > 0:
         database[sel_cmd] -= 1
         send_value_to_edrumulus(cmd_val[sel_cmd], database[sel_cmd])
-  elif ch == "a" or ch == "A": # enable/disable auto pad selection
-    auto_pad_sel = ch == "a" # capital "A" disables auto pad selection
   elif (ch == "k" or ch == "K") and use_jack: # kit selection (only for jack audio mode)
     ecasound_switch_chains(ch == "k")
   elif (ch == "v" or ch == "V") and use_jack: # kit volume (only for jack audio mode)
     ecasound_kit_volume(ch == "v")
-  elif ch == "l":
-    send_value_to_edrumulus(123, load_indicator := not load_indicator) # toggle state
+  elif ch == "a": # toggle auto pad selection
+    auto_pad_sel = not auto_pad_sel
+  elif ch == "l": # toggle load indicator
+    send_value_to_edrumulus(123, load_indicator := not load_indicator)
 
 def get_linear_pad_type_index(d):
   return pad_types_dict_list.index([k for k, v in pad_types_dict.items() if v == d][0])
@@ -205,10 +205,10 @@ def ncurses_update_param_outputs():
   if v_major >= 0 and v_minor >= 0:
     mainwin.addstr(row_start - 1, col_start, "Edrumulus v{0}.{1}".format(v_major, v_minor))
   if load_indicator and load_indicator_percent >= 0:
-    mainwin.addstr(row_start - 1, col_start + 30, "Load {:.2f} %".format(load_indicator_percent))
+    mainwin.addstr(row_start - 1, col_start + 30, "Load {:.1f} %".format(load_indicator_percent))
   if sel_kit:
     mainwin.addstr(row_start - 1, col_start + 30, sel_kit + ", Kit-Vol: " + kit_vol_str if kit_vol_str else sel_kit)
-  mainwin.addstr(row_start, col_start, "q:quit; s,S:sel pad; c,C:sel command; a,A: auto pad sel; up,down: change param; r: reset, l:load")
+  mainwin.addstr(row_start, col_start, "q:quit; s,S:sel pad; c,C:sel command; ^,v: sel param; a: auto pad sel, l:load; r: reset")
   if auto_pad_sel:
     mainwin.addstr(row_start + 2, col_start, "Selected pad (auto):       {:2d} ({:s})      ".format(sel_pad, pad_names[sel_pad]))
   else:
@@ -254,7 +254,7 @@ def ncurses_update_possense_win(value):
   posgwin.addch(1, 2 + int(float(value) / 128 * 20), curses.ACS_BLOCK)
 
 def ncurses_input_loop():
-  global sel_pad, sel_cmd, database, auto_pad_sel, do_update_display, do_update_midi_in
+  global do_update_display, do_update_midi_in
   # loop until user presses q
   while (ch := mainwin.getch()) != ord("q") and not SIGINT_received:
     if ch != -1:
