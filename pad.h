@@ -433,6 +433,14 @@ class Pad
   float           rim_max_power_low_limit;
   MultiHeadSensor multi_head_sensor;
 
+  void calc_pos_sense(const bool   pos_sense_is_used,
+                      const bool   first_peak_found,
+                      const int    first_peak_delay,
+                      const bool   pos_sense_inverted,
+                      const float* input,
+                      const int    in,
+                      SSensor&     s);
+
   // real-time debugging support
 #ifdef USE_SERIAL_DEBUG_PLOTTING
 #  ifdef TEENSYDUINO // MIDI+Serial possible with the Teensy

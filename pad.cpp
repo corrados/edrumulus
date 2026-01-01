@@ -512,56 +512,13 @@ float Pad::process_sample(const float* input,
     }
 
     // Calculate positional sensing -----------------------------------------------
-    if (pos_sense_is_used)
-    {
-      // low pass filter of the input signal and store results in a FIFO
-      update_fifo(input[in], lp_filt_len, s.lp_filt_hist);
-
-      float x_low = 0.0f;
-      for (int i = 0; i < lp_filt_len; i++)
-      {
-        x_low += (s.lp_filt_hist[i] * lp_filt_b[i]);
-      }
-
-      s.x_low_hist.add(x_low * x_low);
-
-      // start condition of delay process to fill up the required buffers
-      if (first_peak_found && (!s.was_pos_sense_ready) && (s.pos_sense_cnt == 0))
-      {
-        // a peak was found, we now have to start the delay process to fill up the
-        // required buffer length for our metric
-        s.pos_sense_cnt  = max(1, lp_filt_len - first_peak_delay);
-        s.x_low_hist_idx = x_low_hist_len - lp_filt_len - max(0, first_peak_delay - lp_filt_len + 1);
-      }
-
-      if (s.pos_sense_cnt > 0)
-      {
-        s.pos_sense_cnt--;
-
-        // end condition
-        if (s.pos_sense_cnt == 0)
-        {
-          // the buffers are filled, now calculate the metric
-          float peak_energy_low = 0.0f;
-          for (int i = 0; i < lp_filt_len; i++)
-          {
-            peak_energy_low = max(peak_energy_low, s.x_low_hist[s.x_low_hist_idx + i]);
-          }
-
-          if (pos_sense_inverted)
-          {
-            // add offset (dB) to get to similar range as non-inverted metric
-            s.pos_sense_metric = peak_energy_low / s.first_peak_val * 10000.0f;
-          }
-          else
-          {
-            s.pos_sense_metric = s.first_peak_val / peak_energy_low;
-          }
-
-          s.was_pos_sense_ready = true;
-        }
-      }
-    }
+    calc_pos_sense(pos_sense_is_used,
+                   first_peak_found,
+                   first_peak_delay,
+                   pos_sense_inverted,
+                   input,
+                   in,
+                   s);
 
     // Calculate rim shot/choke detection -----------------------------------------
     if (rim_shot_is_used)
@@ -871,5 +828,65 @@ void Pad::process_control_sample(const uint16_t* input,
 
     change_found    = true;
     prev_ctrl_value = midi_ctrl_value;
+  }
+}
+
+void Pad::calc_pos_sense(const bool   pos_sense_is_used,
+                         const bool   first_peak_found,
+                         const int    first_peak_delay,
+                         const bool   pos_sense_inverted,
+                         const float* input,
+                         const int    in,
+                         SSensor&     s)
+{
+  if (pos_sense_is_used)
+  {
+    // low pass filter of the input signal and store results in a FIFO
+    update_fifo(input[in], lp_filt_len, s.lp_filt_hist);
+
+    float x_low = 0.0f;
+    for (int i = 0; i < lp_filt_len; i++)
+    {
+      x_low += (s.lp_filt_hist[i] * lp_filt_b[i]);
+    }
+
+    s.x_low_hist.add(x_low * x_low);
+
+    // start condition of delay process to fill up the required buffers
+    if (first_peak_found && (!s.was_pos_sense_ready) && (s.pos_sense_cnt == 0))
+    {
+      // a peak was found, we now have to start the delay process to fill up the
+      // required buffer length for our metric
+      s.pos_sense_cnt  = max(1, lp_filt_len - first_peak_delay);
+      s.x_low_hist_idx = x_low_hist_len - lp_filt_len - max(0, first_peak_delay - lp_filt_len + 1);
+    }
+
+    if (s.pos_sense_cnt > 0)
+    {
+      s.pos_sense_cnt--;
+
+      // end condition
+      if (s.pos_sense_cnt == 0)
+      {
+        // the buffers are filled, now calculate the metric
+        float peak_energy_low = 0.0f;
+        for (int i = 0; i < lp_filt_len; i++)
+        {
+          peak_energy_low = max(peak_energy_low, s.x_low_hist[s.x_low_hist_idx + i]);
+        }
+
+        if (pos_sense_inverted)
+        {
+          // add offset (dB) to get to similar range as non-inverted metric
+          s.pos_sense_metric = peak_energy_low / s.first_peak_val * 10000.0f;
+        }
+        else
+        {
+          s.pos_sense_metric = s.first_peak_val / peak_energy_low;
+        }
+
+        s.was_pos_sense_ready = true;
+      }
+    }
   }
 }
