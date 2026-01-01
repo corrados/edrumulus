@@ -182,7 +182,7 @@ void Edrumulus::process()
         const bool is_rim_switch_input = (j == 1) && pad[i].get_is_rim_switch(); // rim is always on second channel
 
         // overload detection: check for the lowest/largest possible ADC range values with noise consideration
-        if (sample_org_pad[j] >= (ADC_MAX_RANGE - ADC_MAX_NOISE_AMPL))
+        if (sample_org_pad[j] >= ADC_MAX_RANGE - ADC_MAX_NOISE_AMPL)
         {
           overload_LED_cnt     = overload_LED_on_time;
           overload_detected[j] = 2;
