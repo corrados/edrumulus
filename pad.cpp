@@ -659,6 +659,7 @@ float Pad::process_sample(const float* input,
         // band-pass filter the rim signal (two types are supported)
         update_fifo(input[1], bp_filt_len, s.rim_bp_hist_x);
 
+/*
         float sum_b = 0.0f;
         float sum_a = 0.0f;
         for (int i = 0; i < bp_filt_len; i++)
@@ -670,6 +671,11 @@ float Pad::process_sample(const float* input,
           sum_a += s.rim_bp_hist_y[i] * rim_bp_filt_a[i];
         }
         float x_rim_bp = sum_b - sum_a;
+*/
+
+// TEST
+float x_rim_bp = sum(s.rim_bp_hist_x, rim_bp_filt_b, bp_filt_len) - sum(s.rim_bp_hist_y, rim_bp_filt_a, bp_filt_len - 1);
+
 
         update_fifo(x_rim_bp, bp_filt_len - 1, s.rim_bp_hist_y);
         x_rim_bp = x_rim_bp * x_rim_bp; // calculate power of filter result

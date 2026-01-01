@@ -25,6 +25,19 @@
 #define MAX_NUM_PADS 12      // a maximum of 12 pads are supported
 #define MAX_NUM_PAD_INPUTS 5 // a maximum of 5 sensors per pad is supported (where one is rim and one is the sum of three)
 
+inline float sum(const float* in1,
+                 const float* in2,
+                 const int    len)
+{
+  float result = 0.0f;
+
+  for (int i = 0; i < len; ++i)
+  {
+    result += in1[i] * in2[i];
+  }
+  return result;
+}
+
 inline void update_fifo(const float input,
                         const int   fifo_length,
                         float*      fifo_memory)
