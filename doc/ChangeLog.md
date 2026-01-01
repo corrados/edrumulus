@@ -1,5 +1,12 @@
 # Edrumulus Project Log
 
+## 2026-01-01 Introduce load indicator
+
+  A CPU load indicator is added to the GUI which can be used to get an idea of the available
+  CPU headroom for the current pad settings. Also, it can be used to speed optimize the source
+  code. Be aware that the load indicator does not include all processing so that a load of
+  approx. 95 % already drops the sampling rate.
+
 ## 2024-06-19 [[r0.9](https://github.com/corrados/edrumulus/releases/tag/r0_9)] Introduce clang format
 
   Too much time spend for formatting the source code. We let the clang format tool do this
