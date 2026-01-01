@@ -55,8 +55,8 @@ Edrumulus::Edrumulus()
 
   // calculate DC offset IIR1 low pass filter parameters, see
   // http://www.tsdconseil.fr/tutos/tuto-iir1-en.pdf: gamma = exp(-Ts/tau)
-  dc_offset_iir_gamma           = exp(-1.0f / (Fs * dc_offset_iir_tau_seconds));
-  dc_offset_iir_one_minus_gamma = 1.0f - dc_offset_iir_gamma;
+  dc_offset_iir_gamma           = exp(-1.0 / (Fs * dc_offset_iir_tau_seconds));
+  dc_offset_iir_one_minus_gamma = 1.0f - static_cast<float>(dc_offset_iir_gamma);
 }
 
 void Edrumulus::setup(const int  conf_num_pads,

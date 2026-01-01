@@ -151,7 +151,7 @@ class Edrumulus
   double             dc_offset[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS]; // must be double type for IIR filter
   uint16_t           sample_org[MAX_NUM_PADS][MAX_NUM_PAD_INPUTS];
   int                dc_offset_est_len;
-  float              dc_offset_iir_gamma;
+  double             dc_offset_iir_gamma;
   float              dc_offset_iir_one_minus_gamma;
   int                spike_cancel_level;
   int                overload_LED_cnt;
