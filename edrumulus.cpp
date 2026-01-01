@@ -90,7 +90,6 @@ void Edrumulus::setup(const int  conf_num_pads,
   {
     edrumulus_hardware.capture_samples(number_pads,
                                        number_inputs,
-                                       analog_pin,
                                        sample_org);
 
     for (int i = 0; i < number_pads; i++)
@@ -137,7 +136,6 @@ void Edrumulus::process()
   // note that this is a blocking function
   edrumulus_hardware.capture_samples(number_pads,
                                      number_inputs,
-                                     analog_pin,
                                      sample_org);
 
   // for load indicator we need to store current time right after blocking function
