@@ -31,7 +31,7 @@ inline void update_fifo(const float input,
 {
   // move all values in the history one step back and put new value on the top
   const int fifo_length_minus_one = fifo_length - 1;
-  for (int i = 0; i < fifo_length_minus_one; ++i)
+  for (int i = 0; i < fifo_length_minus_one; i++)
   {
     fifo_memory[i] = fifo_memory[i + 1];
   }
