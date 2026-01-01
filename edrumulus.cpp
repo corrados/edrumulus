@@ -179,6 +179,7 @@ void Edrumulus::process()
       // prepare samples for processing
       for (int j = 0; j < number_inputs[i]; j++)
       {
+        double&    cur_dc_offset       = dc_offset[i][j];
         const bool is_rim_switch_input = (j == 1) && pad[i].get_is_rim_switch(); // rim is always on second channel
 
         // overload detection: check for the lowest/largest possible ADC range values with noise consideration
@@ -202,11 +203,11 @@ void Edrumulus::process()
         // held for a while by the user)
         if (!(is_rim_switch_input && pad[i].get_is_rim_switch_on()))
         {
-          dc_offset[i][j] = dc_offset_iir_gamma * dc_offset[i][j] + dc_offset_iir_one_minus_gamma * sample_org_pad[j];
+          cur_dc_offset = dc_offset_iir_gamma * cur_dc_offset + dc_offset_iir_one_minus_gamma * sample_org_pad[j];
         }
 
         // compensate DC offset
-        sample[j] = sample_org_pad[j] - dc_offset[i][j];
+        sample[j] = sample_org_pad[j] - cur_dc_offset;
 
         // ADC spike cancellation (do not use spike cancellation for rim switches since they have short peaks)
         if ((spike_cancel_level > 0) && !is_rim_switch_input)
@@ -407,7 +408,7 @@ void Edrumulus::process()
       {
         for (int j = 0; j < number_inputs[i]; j++)
         {
-          const float& cur_dc_offset = dc_offset[i][j];
+          const double& cur_dc_offset = dc_offset[i][j];
           // Serial.println ( String ( i ) + ", " + String ( cur_dc_offset ) ); // TEST for plotting all DC offsets
           if ((cur_dc_offset < dc_offset_min_limit) || (cur_dc_offset > dc_offset_max_limit))
           {
