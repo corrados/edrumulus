@@ -386,9 +386,6 @@ void Edrumulus::process()
   {
     const unsigned long samplerate_cur_micros = micros();
 
-    // TEST check the measured sampling rate
-    // Serial.println ( 1.0f / ( samplerate_cur_micros - samplerate_prev_micros ) * samplerate_max_cnt * 1e6f, 7 );
-
     // do not update status if micros() has wrapped around (at about 70 minutes) and if
     // we have the very first measurement after start (previous micros set to 0)
     if ((samplerate_prev_micros != 0) && (samplerate_cur_micros - samplerate_prev_micros > 0))
@@ -408,9 +405,8 @@ void Edrumulus::process()
       {
         for (int j = 0; j < number_inputs[i]; j++)
         {
-          const double& cur_dc_offset = dc_offset[i][j];
-          // Serial.println ( String ( i ) + ", " + String ( cur_dc_offset ) ); // TEST for plotting all DC offsets
-          if ((cur_dc_offset < dc_offset_min_limit) || (cur_dc_offset > dc_offset_max_limit))
+          // Serial.println(String(i) + ", " + String(cur_dc_offset)); // TEST for plotting all DC offsets
+          if ((dc_offset[i][j] < dc_offset_min_limit) || (dc_offset[i][j] > dc_offset_max_limit))
           {
             status_is_error         = true;
             dc_offset_error_channel = i + 32 * j; // 0 to 31: input 0, 32 to 63: input 1
