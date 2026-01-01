@@ -337,7 +337,7 @@ float Pad::process_sample(const float* input,
     x_filt = sum_b - sum_a;
 
     update_fifo(x_filt, bp_filt_len - 1, s.bp_filt_hist_y);
-    x_filt = x_filt * x_filt; // calculate power of filter result
+    x_filt *= x_filt; // calculate power of filter result
 
     // exponential decay assumption
     float x_filt_decay = x_filt;
