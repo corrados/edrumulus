@@ -207,7 +207,7 @@ void Edrumulus::process()
         }
 
         // compensate DC offset
-        sample[j] = sample_org_pad[j] - cur_dc_offset;
+        sample[j] = sample_org_pad[j] - static_cast<float>(cur_dc_offset);
 
         // ADC spike cancellation (do not use spike cancellation for rim switches since they have short peaks)
         if ((spike_cancel_level > 0) && !is_rim_switch_input)
