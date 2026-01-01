@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 #*******************************************************************************
-# Copyright (c) 2023-2024
+# Copyright (c) 2023-2026
 # Author(s): Volker Fischer
 #*******************************************************************************
 # This program is free software; you can redistribute it and/or modify it under
