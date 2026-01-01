@@ -475,12 +475,17 @@ void Edrumulus::cancel_ADC_spikes(float&    signal,
   // mostly are on just one or two sample(s))
   const int max_peak_threshold = 150; // maximum assumed ESP32 spike amplitude
 
-  const float signal_org          = signal;
-  signal                          = prev_input4[pad_index][input_channel_index]; // normal return value in case no spike was detected
-  const int overload_detected_org = overload_detected;
-  overload_detected               = prev_overload4[pad_index][input_channel_index]; // normal return value in case no spike was detected
-  const float input_abs           = abs(signal_org);
-  Espikestate input_state         = ST_OTHER; // initialization value, might be overwritten
+  const float signal_org             = signal;
+  signal                             = prev_input4[pad_index][input_channel_index]; // normal return value in case no spike was detected
+  const int overload_detected_org    = overload_detected;
+  overload_detected                  = prev_overload4[pad_index][input_channel_index]; // normal return value in case no spike was detected
+  const float  input_abs             = abs(signal_org);
+  Espikestate  input_state           = ST_OTHER; // initialization value, might be overwritten
+  Espikestate& cur_prev1_input_state = prev1_input_state[pad_index][input_channel_index];
+  Espikestate& cur_prev2_input_state = prev2_input_state[pad_index][input_channel_index];
+  Espikestate& cur_prev3_input_state = prev3_input_state[pad_index][input_channel_index];
+  Espikestate& cur_prev4_input_state = prev4_input_state[pad_index][input_channel_index];
+  Espikestate& cur_prev5_input_state = prev5_input_state[pad_index][input_channel_index];
 
   if (input_abs < ADC_MAX_NOISE_AMPL)
   {
@@ -496,17 +501,17 @@ void Edrumulus::cancel_ADC_spikes(float&    signal,
   }
 
   // check for single high spike sample case
-  if (((prev5_input_state[pad_index][input_channel_index] == ST_NOISE) || (prev5_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW)) &&
-      (prev4_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH) &&
-      ((prev3_input_state[pad_index][input_channel_index] == ST_NOISE) || (prev3_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW)))
+  if (((cur_prev5_input_state == ST_NOISE) || (cur_prev5_input_state == ST_SPIKE_LOW)) &&
+      (cur_prev4_input_state == ST_SPIKE_HIGH) &&
+      ((cur_prev3_input_state == ST_NOISE) || (cur_prev3_input_state == ST_SPIKE_LOW)))
   {
     signal = 0.0f; // remove single spike
   }
 
   // check for single low spike sample case
-  if (((prev5_input_state[pad_index][input_channel_index] == ST_NOISE) || (prev5_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH)) &&
-      (prev4_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW) &&
-      ((prev3_input_state[pad_index][input_channel_index] == ST_NOISE) || (prev3_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH)))
+  if (((cur_prev5_input_state == ST_NOISE) || (cur_prev5_input_state == ST_SPIKE_HIGH)) &&
+      (cur_prev4_input_state == ST_SPIKE_LOW) &&
+      ((cur_prev3_input_state == ST_NOISE) || (cur_prev3_input_state == ST_SPIKE_HIGH)))
   {
     signal = 0.0f; // remove single spike
   }
@@ -514,20 +519,20 @@ void Edrumulus::cancel_ADC_spikes(float&    signal,
   if (level >= 2)
   {
     // check for two sample spike case
-    if (((prev5_input_state[pad_index][input_channel_index] == ST_NOISE) || (prev5_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW)) &&
-        (prev4_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH) &&
-        (prev3_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH) &&
-        ((prev2_input_state[pad_index][input_channel_index] == ST_NOISE) || (prev2_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW)))
+    if (((cur_prev5_input_state == ST_NOISE) || (cur_prev5_input_state == ST_SPIKE_LOW)) &&
+        (cur_prev4_input_state == ST_SPIKE_HIGH) &&
+        (cur_prev3_input_state == ST_SPIKE_HIGH) &&
+        ((cur_prev2_input_state == ST_NOISE) || (cur_prev2_input_state == ST_SPIKE_LOW)))
     {
       signal                                      = 0.0f; // remove two sample spike
       prev_input3[pad_index][input_channel_index] = 0.0f; // remove two sample spike
     }
 
     // check for two sample low spike case
-    if (((prev5_input_state[pad_index][input_channel_index] == ST_NOISE) || (prev5_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH)) &&
-        (prev4_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW) &&
-        (prev3_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW) &&
-        ((prev2_input_state[pad_index][input_channel_index] == ST_NOISE) || (prev2_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH)))
+    if (((cur_prev5_input_state == ST_NOISE) || (cur_prev5_input_state == ST_SPIKE_HIGH)) &&
+        (cur_prev4_input_state == ST_SPIKE_LOW) &&
+        (cur_prev3_input_state == ST_SPIKE_LOW) &&
+        ((cur_prev2_input_state == ST_NOISE) || (cur_prev2_input_state == ST_SPIKE_HIGH)))
     {
       signal                                      = 0.0f; // remove two sample spike
       prev_input3[pad_index][input_channel_index] = 0.0f; // remove two sample spike
@@ -537,11 +542,11 @@ void Edrumulus::cancel_ADC_spikes(float&    signal,
   if (level >= 3)
   {
     // check for three sample high spike case
-    if (((prev5_input_state[pad_index][input_channel_index] == ST_NOISE) || (prev5_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW)) &&
-        (prev4_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH) &&
-        (prev3_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH) &&
-        (prev2_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH) &&
-        ((prev1_input_state[pad_index][input_channel_index] == ST_NOISE) || (prev1_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW)))
+    if (((cur_prev5_input_state == ST_NOISE) || (cur_prev5_input_state == ST_SPIKE_LOW)) &&
+        (cur_prev4_input_state == ST_SPIKE_HIGH) &&
+        (cur_prev3_input_state == ST_SPIKE_HIGH) &&
+        (cur_prev2_input_state == ST_SPIKE_HIGH) &&
+        ((cur_prev1_input_state == ST_NOISE) || (cur_prev1_input_state == ST_SPIKE_LOW)))
     {
       signal                                      = 0.0f; // remove three sample spike
       prev_input3[pad_index][input_channel_index] = 0.0f; // remove three sample spike
@@ -549,11 +554,11 @@ void Edrumulus::cancel_ADC_spikes(float&    signal,
     }
 
     // check for three sample low spike case
-    if (((prev5_input_state[pad_index][input_channel_index] == ST_NOISE) || (prev5_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH)) &&
-        (prev4_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW) &&
-        (prev3_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW) &&
-        (prev2_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW) &&
-        ((prev1_input_state[pad_index][input_channel_index] == ST_NOISE) || (prev1_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH)))
+    if (((cur_prev5_input_state == ST_NOISE) || (cur_prev5_input_state == ST_SPIKE_HIGH)) &&
+        (cur_prev4_input_state == ST_SPIKE_LOW) &&
+        (cur_prev3_input_state == ST_SPIKE_LOW) &&
+        (cur_prev2_input_state == ST_SPIKE_LOW) &&
+        ((cur_prev1_input_state == ST_NOISE) || (cur_prev1_input_state == ST_SPIKE_HIGH)))
     {
       signal                                      = 0.0f; // remove three sample spike
       prev_input3[pad_index][input_channel_index] = 0.0f; // remove three sample spike
@@ -564,11 +569,11 @@ void Edrumulus::cancel_ADC_spikes(float&    signal,
   if (level >= 4)
   {
     // check for four sample high spike case
-    if (((prev5_input_state[pad_index][input_channel_index] == ST_NOISE) || (prev5_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW)) &&
-        (prev4_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH) &&
-        (prev3_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH) &&
-        (prev2_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH) &&
-        (prev1_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH) &&
+    if (((cur_prev5_input_state == ST_NOISE) || (cur_prev5_input_state == ST_SPIKE_LOW)) &&
+        (cur_prev4_input_state == ST_SPIKE_HIGH) &&
+        (cur_prev3_input_state == ST_SPIKE_HIGH) &&
+        (cur_prev2_input_state == ST_SPIKE_HIGH) &&
+        (cur_prev1_input_state == ST_SPIKE_HIGH) &&
         ((input_state == ST_NOISE) || (input_state == ST_SPIKE_LOW)))
     {
       signal                                      = 0.0f; // remove four sample spike
@@ -578,11 +583,11 @@ void Edrumulus::cancel_ADC_spikes(float&    signal,
     }
 
     // check for four sample low spike case
-    if (((prev5_input_state[pad_index][input_channel_index] == ST_NOISE) || (prev5_input_state[pad_index][input_channel_index] == ST_SPIKE_HIGH)) &&
-        (prev4_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW) &&
-        (prev3_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW) &&
-        (prev2_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW) &&
-        (prev1_input_state[pad_index][input_channel_index] == ST_SPIKE_LOW) &&
+    if (((cur_prev5_input_state == ST_NOISE) || (cur_prev5_input_state == ST_SPIKE_HIGH)) &&
+        (cur_prev4_input_state == ST_SPIKE_LOW) &&
+        (cur_prev3_input_state == ST_SPIKE_LOW) &&
+        (cur_prev2_input_state == ST_SPIKE_LOW) &&
+        (cur_prev1_input_state == ST_SPIKE_LOW) &&
         ((input_state == ST_NOISE) || (input_state == ST_SPIKE_HIGH)))
     {
       signal                                      = 0.0f; // remove four sample spike
@@ -594,35 +599,35 @@ void Edrumulus::cancel_ADC_spikes(float&    signal,
 
   // update five-step input signal memory where we store the last five states of
   // the input signal and four previous untouched input samples
-  prev5_input_state[pad_index][input_channel_index] = prev4_input_state[pad_index][input_channel_index];
-  prev4_input_state[pad_index][input_channel_index] = prev3_input_state[pad_index][input_channel_index];
-  prev3_input_state[pad_index][input_channel_index] = prev2_input_state[pad_index][input_channel_index];
-  prev2_input_state[pad_index][input_channel_index] = prev1_input_state[pad_index][input_channel_index];
-  prev_input4[pad_index][input_channel_index]       = prev_input3[pad_index][input_channel_index];
-  prev_input3[pad_index][input_channel_index]       = prev_input2[pad_index][input_channel_index];
-  prev_input2[pad_index][input_channel_index]       = prev_input1[pad_index][input_channel_index];
-  prev_overload4[pad_index][input_channel_index]    = prev_overload3[pad_index][input_channel_index];
-  prev_overload3[pad_index][input_channel_index]    = prev_overload2[pad_index][input_channel_index];
-  prev_overload2[pad_index][input_channel_index]    = prev_overload1[pad_index][input_channel_index];
+  cur_prev5_input_state                          = cur_prev4_input_state;
+  cur_prev4_input_state                          = cur_prev3_input_state;
+  cur_prev3_input_state                          = cur_prev2_input_state;
+  cur_prev2_input_state                          = cur_prev1_input_state;
+  prev_input4[pad_index][input_channel_index]    = prev_input3[pad_index][input_channel_index];
+  prev_input3[pad_index][input_channel_index]    = prev_input2[pad_index][input_channel_index];
+  prev_input2[pad_index][input_channel_index]    = prev_input1[pad_index][input_channel_index];
+  prev_overload4[pad_index][input_channel_index] = prev_overload3[pad_index][input_channel_index];
+  prev_overload3[pad_index][input_channel_index] = prev_overload2[pad_index][input_channel_index];
+  prev_overload2[pad_index][input_channel_index] = prev_overload1[pad_index][input_channel_index];
 
   // adjust the latency of the algorithm according to the spike cancellation
   // level, i.e., the higher the level, the higher the latency
   if (level >= 3)
   {
-    prev1_input_state[pad_index][input_channel_index] = input_state;
-    prev_input1[pad_index][input_channel_index]       = signal_org;
-    prev_overload1[pad_index][input_channel_index]    = overload_detected_org;
+    cur_prev1_input_state                          = input_state;
+    prev_input1[pad_index][input_channel_index]    = signal_org;
+    prev_overload1[pad_index][input_channel_index] = overload_detected_org;
   }
   else if (level >= 2)
   {
-    prev2_input_state[pad_index][input_channel_index] = input_state;
-    prev_input2[pad_index][input_channel_index]       = signal_org;
-    prev_overload2[pad_index][input_channel_index]    = overload_detected_org;
+    cur_prev2_input_state                          = input_state;
+    prev_input2[pad_index][input_channel_index]    = signal_org;
+    prev_overload2[pad_index][input_channel_index] = overload_detected_org;
   }
   else
   {
-    prev3_input_state[pad_index][input_channel_index] = input_state;
-    prev_input3[pad_index][input_channel_index]       = signal_org;
-    prev_overload3[pad_index][input_channel_index]    = overload_detected_org;
+    cur_prev3_input_state                          = input_state;
+    prev_input3[pad_index][input_channel_index]    = signal_org;
+    prev_overload3[pad_index][input_channel_index] = overload_detected_org;
   }
 }
