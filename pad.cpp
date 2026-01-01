@@ -801,11 +801,11 @@ float Pad::process_sample(const float* input,
   return x_filt; // here, you can return debugging values for verification with Ocatve
 }
 
-void Pad::process_control_sample(const int* input,
-                                 bool&      change_found,
-                                 int&       midi_ctrl_value,
-                                 bool&      peak_found,
-                                 int&       midi_velocity)
+void Pad::process_control_sample(const uint16_t* input,
+                                 bool&           change_found,
+                                 int&            midi_ctrl_value,
+                                 bool&           peak_found,
+                                 int&            midi_velocity)
 {
   manage_delayed_initialization();
 

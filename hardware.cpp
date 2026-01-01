@@ -118,7 +118,7 @@ void Edrumulus_hardware::on_timer()
 void Edrumulus_hardware::capture_samples(const int number_pads,
                                          const int number_inputs[],
                                          int       analog_pin[][MAX_NUM_PAD_INPUTS],
-                                         int       sample_org[][MAX_NUM_PAD_INPUTS])
+                                         uint16_t  sample_org[][MAX_NUM_PAD_INPUTS])
 {
   // wait for the timer to get the correct sampling rate when reading the analog value
   while (!timer_ready) delayMicroseconds(5);
@@ -368,13 +368,20 @@ void IRAM_ATTR Edrumulus_hardware::on_timer()
   }
 }
 
+void Edrumulus_hardware::capture_samples_wait()
+{
+  if (xSemaphoreTake(timer_semaphore, portMAX_DELAY) == pdTRUE)
+  {
+  }
+}
+
 void Edrumulus_hardware::capture_samples(const int number_pads,
                                          const int number_inputs[],
                                          int       analog_pin[][MAX_NUM_PAD_INPUTS],
-                                         int       sample_org[][MAX_NUM_PAD_INPUTS])
+                                         uint16_t  sample_org[][MAX_NUM_PAD_INPUTS])
 {
   // wait for the timer to get the correct sampling rate when reading the analog value
-  if (xSemaphoreTake(timer_semaphore, portMAX_DELAY) == pdTRUE)
+  if (true)//xSemaphoreTake(timer_semaphore, portMAX_DELAY) == pdTRUE)
   {
     // copy captured samples in pad buffer
     int input_cnt = 0;
@@ -386,6 +393,39 @@ void Edrumulus_hardware::capture_samples(const int number_pads,
         sample_org[i][j] = input_sample[input_cnt++];
       }
     }
+
+
+/*
+    // copy captured samples in pad buffer
+    int input_cnt = 0;
+
+    for (int i = 0; i < number_pads; ++i)
+    {
+      const int cur_number_inputs  = number_inputs[i];
+      uint16_t* sample_org_pointer = sample_org[i];
+
+      for (int j = 0; j < cur_number_inputs; ++j)
+      {
+        *sample_org_pointer++ = input_sample[input_cnt++];
+      }
+    }
+*/
+
+/*
+    int input_cnt = 0;
+
+    for (int i = 0; i < number_pads; i++) {
+        // Calculate the number of bytes to copy
+        size_t bytes_to_copy = number_inputs[i] * sizeof(uint16_t);
+
+        // Directly copy the memory block
+        memcpy(sample_org[i], &input_sample[input_cnt], bytes_to_copy);
+
+        // Increment the source counter by the number of inputs processed
+        input_cnt += number_inputs[i];
+    }
+*/
+
   }
 }
 
