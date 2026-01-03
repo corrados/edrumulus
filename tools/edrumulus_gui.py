@@ -23,10 +23,9 @@ import os, sys, signal, socket, time, threading, math, platform, pathlib
 
 use_rtmidi  = "rtmidi"    in sys.argv # use this for native USB MIDI devices like Teensy
 use_jack    = "jack"      in sys.argv # if jack audio shall be used
-no_gui      = "no_gui"    in sys.argv # no GUI but blocking (just settings management)
 non_block   = "non_block" in sys.argv # no GUI and non-blocking (just settings management)
 use_webui   = "webui"     in sys.argv # web UI GUI mode on Raspberry Pi
-use_ncurses = not no_gui and not non_block and not use_webui # normal console GUI mode (default)
+use_ncurses = not non_block and not use_webui # normal console GUI mode (default)
 use_serial  = not use_rtmidi and not use_jack # serial connection (default)
 is_windows  = platform.system() == "Windows"
 if use_rtmidi:
@@ -602,17 +601,14 @@ if use_jack: # ecasound is only supported for jack audio mode
   threading.Timer(0.0, ecasound_connection).start()
 
 # main loop
-if no_gui:
-  print("press Return to quit")
-  input() # wait until a key is pressed to quit the application
-elif use_ncurses:
+if use_ncurses:
   ncurses_input_loop()
 elif use_webui:
   while not SIGINT_received:
     web_server.handle_request()
 
 # store settings in file
-if not no_gui and not non_block:
+if not non_block:
   store_settings()
 
 # clean up and exit
