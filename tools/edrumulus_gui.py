@@ -25,9 +25,8 @@ use_rtmidi  = "rtmidi"    in sys.argv # use this for native USB MIDI devices lik
 use_jack    = "jack"      in sys.argv # if jack audio shall be used
 no_gui      = "no_gui"    in sys.argv # no GUI but blocking (just settings management)
 non_block   = "non_block" in sys.argv # no GUI and non-blocking (just settings management)
-use_lcd     = "lcd"       in sys.argv # LCD GUI mode on Raspberry Pi
 use_webui   = "webui"     in sys.argv # web UI GUI mode on Raspberry Pi
-use_ncurses = not no_gui and not non_block and not use_lcd and not use_webui # normal console GUI mode (default)
+use_ncurses = not no_gui and not non_block and not use_webui # normal console GUI mode (default)
 use_serial  = not use_rtmidi and not use_jack # serial connection (default)
 is_windows  = platform.system() == "Windows"
 if use_rtmidi:
@@ -46,10 +45,7 @@ elif use_serial:
     serial_dev = "/dev/ttyUSB0" if platform.system() == "Linux" else ("COM7" if is_windows else "/dev/tty.SLAB_USBtoUART")
 else:
   import jack
-if use_lcd:
-  import RPi.GPIO as GPIO
-  from RPLCD.gpio import CharLCD
-elif use_ncurses:
+if use_ncurses:
   import curses
 elif use_webui:
   import http.server
@@ -274,123 +270,6 @@ def ncurses_input_loop():
       ncurses_update_param_outputs()
       do_update_display = False
       do_update_midi_in = False
-
-
-################################################################################
-# LCD GUI implementation #######################################################
-################################################################################
-button_name          = {25: "back", 11: "OK", 8: "down", 7: "up", 12: "left", 13: "right"}
-lcd_menu_id          = 0 # 0: main menu, 1: trigger menu
-lcd_shutdown_confirm = False
-
-def lcd_button_handler(pin):
-  global lcd_menu_id
-  if GPIO.input(pin) == 0: # note that button is inverted
-    name       = button_name[pin] # current button name
-    start_time = time.time()
-    # auto press functionality for up/down/left/right buttons
-    if (name == "left") or (name == "down") or (name == "up") or (name == "right"):
-      lcd_on_button_pressed(name, False) # initial button press action
-      auto_press_index = 0
-      while GPIO.input(pin) == 0: # wait for the button up
-        time.sleep(0.01)
-        if time.time() - start_time - 0.7 - auto_press_index * 0.1 > 0: # after 0.7 s, auto press every 100 ms
-          lcd_on_button_pressed(name, False)
-          auto_press_index += 1
-    else:
-      while GPIO.input(pin) == 0 and time.time() - start_time < 0.7: # wait for the button up or time-out
-        time.sleep(0.01)
-      lcd_on_button_pressed(name, time.time() - start_time > 0.7)
-
-def lcd_on_button_pressed(button_name, is_long_press):
-  global lcd_menu_id, lcd_shutdown_confirm, auto_pad_sel
-  if lcd_menu_id == 0: # main menu #####
-    if button_name == "up":
-      process_user_input("k") # change kit
-    elif button_name == "down":
-      process_user_input("K")
-    elif button_name == "right":
-      process_user_input("v") # change kit volume
-    elif button_name == "left":
-      process_user_input("V")
-    elif button_name == "OK" and not is_long_press:
-      if lcd_shutdown_confirm:
-        lcd_shutdown()
-      else:
-        lcd_menu_id = 1 # go into trigger menu
-    elif button_name == "back" and not is_long_press:
-      lcd_shutdown_confirm = False # cancel shutdown procedure
-    elif button_name == "back" and is_long_press:
-      lcd_shutdown()
-  elif lcd_menu_id == 1: # trigger menu #####
-    if button_name == "OK" and not is_long_press:
-      process_user_input("s") # select pad
-    if button_name == "OK" and is_long_press:
-      auto_pad_sel = not auto_pad_sel # toggle auto pad selection
-    elif button_name == "back" and not is_long_press:
-      process_user_input("S")
-    elif button_name == "back" and is_long_press:
-      lcd_menu_id = 0 # long press of "back" returns in main menu
-    elif button_name == "up":
-      process_user_input("c") # select trigger parameter
-    elif button_name == "down":
-      process_user_input("C")
-    elif button_name == "right":
-      process_user_input(chr(259)) # change trigger parameter
-    elif button_name == "left":
-      process_user_input(chr(258))
-  lcd_update()
-
-def lcd_shutdown():
-  global lcd_shutdown_confirm
-  if not lcd_shutdown_confirm:
-    lcd.clear()
-    lcd.cursor_pos = (0, 0)
-    lcd.write_string("Really Shutdown?")
-    lcd_shutdown_confirm = True
-  else:
-    lcd.clear()
-    store_settings()
-    os.system("sudo shutdown -h now")
-
-def lcd_loop():
-  global do_update_display
-  while not SIGINT_received:
-    if do_update_display:
-      lcd_update()
-      do_update_display = False
-    time.sleep(0.1)
-
-def lcd_update():
-  if not lcd_shutdown_confirm: # do not overwrite shutdown question text
-    lcd.clear()
-    lcd.cursor_pos = (0, 0)
-    if lcd_menu_id == 0: # main menu
-      if sel_kit: # only show main menu if selected kit name is available
-        lcd.write_string(sel_kit)
-        if kit_vol_str: # only show kit volume if available
-          lcd.cursor_pos = (1, 0)
-          lcd.write_string("Vol: %s" % kit_vol_str)
-    elif lcd_menu_id == 1: # trigger menu
-      lcd.write_string(("A:" if auto_pad_sel else "") + "%s:%s" % (pad_names[sel_pad], cmd_names[sel_cmd]))
-      lcd.cursor_pos = (1, 4)
-      lcd.write_string("<%s>" % parse_cmd_param(sel_cmd).split(" ")[0]) # split to only show pad type short name
-
-def lcd_init():
-  global lcd
-  lcd = CharLCD(pin_rs = 27, pin_rw = None, pin_e = 17, pins_data = [22, 23, 24, 10],
-                numbering_mode = GPIO.BCM, cols = 16, rows = 2, auto_linebreaks = False)
-  # startup message on LCD
-  lcd.clear()
-  lcd.cursor_pos = (0, 3)
-  lcd.write_string("Edrumulus")
-  lcd.cursor_pos = (1, 2)
-  lcd.write_string("Prototype 5")
-  # buttons initialization
-  GPIO.setmode(GPIO.BCM)
-  for pin in list(button_name.keys()):
-    GPIO.setup(pin, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-    GPIO.add_event_detect(pin, GPIO.BOTH, callback = lcd_button_handler, bouncetime = 20)
 
 
 ################################################################################
@@ -702,9 +581,7 @@ else: # initialize jack midi
       pass # if no Edrumulus hardware was found, no jack is started
 
 # initialize GUI
-if use_lcd:
-  lcd_init()
-elif use_ncurses:
+if use_ncurses:
   ncurses_init()
 elif use_webui:
   web_server = http.server.HTTPServer(("", 8080), WebUI)
@@ -728,8 +605,6 @@ if use_jack: # ecasound is only supported for jack audio mode
 if no_gui:
   print("press Return to quit")
   input() # wait until a key is pressed to quit the application
-elif use_lcd:
-  lcd_loop()
 elif use_ncurses:
   ncurses_input_loop()
 elif use_webui:
@@ -741,9 +616,7 @@ if not no_gui and not non_block:
   store_settings()
 
 # clean up and exit
-if use_lcd:
-  lcd.close() # just this single call is needed
-elif use_ncurses:
+if use_ncurses:
   ncurses_cleanup()
 elif use_webui:
   web_server.server_close()
