@@ -264,14 +264,14 @@ class Pad
   static const int ctrl_history_len   = 10;  // (MUST BE AN EVEN VALUE) control history length; the longer, the more noise reduction but more delay
 
   // band-pass filter coefficients (they are constant and must not be changed)
-  static constexpr int   bp_filt_len           = 5;
-  static constexpr float bp_filt_a[4]          = {0.6704579059531744f, -2.930427216820138f, 4.846289804288025f, -3.586239808116909f};
-  static constexpr float bp_filt_b[5]          = {0.01658193166930305f, 0.0f, -0.0331638633386061f, 0.0f, 0.01658193166930305f};
-  const float            rim_bp_low_freq_a[4]  = {0.8008026466657076f, -3.348944421626415f, 5.292099516163272f, -3.743650976941178f};
-  const float            rim_bp_low_freq_b[5]  = {0.005542717210280682f, 0.0f, -0.01108543442056136f, 0.0f, 0.005542717210280682f};
-  const float            rim_bp_high_freq_a[4] = {0.8008026466657077f, -3.021126408169798f, 4.637919662489649f, -3.377196335768073f};
-  const float            rim_bp_high_freq_b[5] = {0.00554271721028068f, 0.0f, -0.01108543442056136f, 0.0f, 0.00554271721028068f};
-  const int              x_filt_delay          = 5;
+  static inline constexpr int   bp_filt_len           = 5;
+  static inline constexpr float bp_filt_a[4]          = {0.6704579059531744f, -2.930427216820138f, 4.846289804288025f, -3.586239808116909f};
+  static inline constexpr float bp_filt_b[5]          = {0.01658193166930305f, 0.0f, -0.0331638633386061f, 0.0f, 0.01658193166930305f};
+  const float                   rim_bp_low_freq_a[4]  = {0.8008026466657076f, -3.348944421626415f, 5.292099516163272f, -3.743650976941178f};
+  const float                   rim_bp_low_freq_b[5]  = {0.005542717210280682f, 0.0f, -0.01108543442056136f, 0.0f, 0.005542717210280682f};
+  const float                   rim_bp_high_freq_a[4] = {0.8008026466657077f, -3.021126408169798f, 4.637919662489649f, -3.377196335768073f};
+  const float                   rim_bp_high_freq_b[5] = {0.00554271721028068f, 0.0f, -0.01108543442056136f, 0.0f, 0.00554271721028068f};
+  const int                     x_filt_delay          = 5;
 
   // ADC noise scaling after band-pass filtering (e.g., for the Teensy ADC the noise has high
   // energy at high frequencies which are cut by the band-pass filter) -> hardware dependend parameter
