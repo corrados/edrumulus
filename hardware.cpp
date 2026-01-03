@@ -117,7 +117,6 @@ void Edrumulus_hardware::on_timer()
 
 void Edrumulus_hardware::capture_samples(const int number_pads,
                                          const int number_inputs[],
-                                         int       analog_pin[][MAX_NUM_PAD_INPUTS],
                                          uint16_t  sample_org[][MAX_NUM_PAD_INPUTS])
 {
   // wait for the timer to get the correct sampling rate when reading the analog value
@@ -370,7 +369,6 @@ void IRAM_ATTR Edrumulus_hardware::on_timer()
 
 void Edrumulus_hardware::capture_samples(const int number_pads,
                                          const int number_inputs[],
-                                         int       analog_pin[][MAX_NUM_PAD_INPUTS],
                                          uint16_t  sample_org[][MAX_NUM_PAD_INPUTS])
 {
   // wait for the timer to get the correct sampling rate when reading the analog value

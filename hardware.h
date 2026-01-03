@@ -52,7 +52,6 @@ class Edrumulus_hardware
 
   void capture_samples(const int number_pads,
                        const int number_inputs[],
-                       int       analog_pin[][MAX_NUM_PAD_INPUTS],
                        uint16_t  sample_org[][MAX_NUM_PAD_INPUTS]);
 
   void write_setting(const int pad_index, const int address, const byte value);
@@ -106,7 +105,6 @@ class Edrumulus_hardware
 
   void capture_samples(const int number_pads,
                        const int number_inputs[],
-                       int       analog_pin[][MAX_NUM_PAD_INPUTS],
                        uint16_t  sample_org[][MAX_NUM_PAD_INPUTS]);
 
   void write_setting(const int, const int, const byte) {}; // not supported
