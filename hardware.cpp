@@ -278,9 +278,6 @@ void Edrumulus_hardware::setup(const int conf_Fs,
           channel_adc1_bitval[num_pin_pairs] = (1 << channel_adc1);
           channel_adc2_bitval[num_pin_pairs] = (1 << channel_adc2);
 
-Serial.println("adc1_index: " + String(adc1_index[num_pin_pairs]));
-Serial.println("adc2_index: " + String(adc2_index[num_pin_pairs]));
-
           num_pin_pairs++;
           input_is_used[i] = true;
           input_is_used[j] = true;
@@ -299,9 +296,6 @@ Serial.println("adc2_index: " + String(adc2_index[num_pin_pairs]));
     if (!input_is_used[i])
     {
       single_index[num_pin_single] = i;
-
-Serial.println("single_index: " + String(single_index[num_pin_single]));
-
       num_pin_single++;
     }
   }
