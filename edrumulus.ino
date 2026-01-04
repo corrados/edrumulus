@@ -178,13 +178,13 @@ void loop()
     }
   }
 
+#ifdef USE_MIDI
   // load indicator
   if (const int load = edrumulus.get_load_indicator(); load >= 0)
   {
     MYMIDI.sendNoteOff(124, load, 1);
   }
 
-#ifdef USE_MIDI
   // send MIDI note to drum synthesizer
   for (int pad_idx = 0; pad_idx < number_pads; pad_idx++)
   {
