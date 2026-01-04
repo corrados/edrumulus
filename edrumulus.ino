@@ -101,7 +101,6 @@ void setup()
   Serial.begin(115200);
 #endif
 
-Serial.println("edrumulus.setup: " + String(number_pads));
   edrumulus.setup(number_pads, analog_pins, analog_pins_rimshot);
   digitalWrite(status_LED_pin, LOW); // set board LED to low right after setup is done
 #ifdef ESP_PLATFORM
