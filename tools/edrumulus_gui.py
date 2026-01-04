@@ -61,7 +61,7 @@ pad_types_dict = {"PDA120LS Roland Mesh Pad":18, "PDX100 Roland Mesh Pad":19, "P
                   "KD120 Roland Mesh Kick Pad":16, "KD8 Roland Kick Pad":14, \
                     "KD7 Roland Kick Pad":6, "KT10 Roland Kick Pedal":20, "MPS-750X Millenium Kick Pad":23, \
                   "FD8 Roland Hi-Hat Pedal":3, "VH12CTRL Roland Hi-Hat Pedal":5, "LEHHS12CCTRL Lemon Hi-Hat Pedal":27}
-pad_names    = ["snare", "kick", "hi-hat", "ctrl", "crash", "tom1", "ride", "tom2", "tom3"]
+pad_names    = ["snare", "kick", "hi-hat", "ctrl", "crash", "tom1", "ride", "tom2", "tom3", "crash2"]
 curve_types  = ["LINEAR", "EXP1", "EXP2", "LOG1", "LOG2"]
 cmd_names    = [                 "type", "thresh", "sens", "pos thres", "pos sens", "rim thres", "mask"]
 cmd_val      = [                    102,      103,    104,         105,        106,         107,    118]
