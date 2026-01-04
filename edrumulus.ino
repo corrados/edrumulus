@@ -15,20 +15,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 \******************************************************************************/
 
-#define USE_MIDI
+//#define USE_MIDI
 
 // ESP32 default pin definition ("-1" means that this channel is unused):
 // For older prototypes or custom implementations, simply change the GPIO numbers in the table below
 // to match your hardware (note that the GPIO assignment of Prototype 2 is the same as Prototype 4).
 // clang-format off
 // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3 | crash2
-static int analog_pins4[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    15,      4 };
-static int analog_pins_rimshot4[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1,      2 };
+static int analog_pins4[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    15,     4 };
+static int analog_pins_rimshot4[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1,     2 };
 // clang-format on
 
 // if you want to use less number of pads, simply adjust number_pads4 value
 const int number_pads4 = sizeof(analog_pins4) / sizeof(int); // example: use all inputs defined in analog_pins4
-// const int number_pads4 = 8; // example: do not use tom3 and shrink number of pads from 9 to 8
+// const int number_pads4 = 9; // example: do not use crash2 and shrink number of pads from 10 to 9
 // const int number_pads4 = 1; // example: just one single pad
 
 #include "edrumulus.h"
@@ -101,6 +101,7 @@ void setup()
   Serial.begin(115200);
 #endif
 
+Serial.println("edrumulus.setup: " + String(number_pads));
   edrumulus.setup(number_pads, analog_pins, analog_pins_rimshot);
   digitalWrite(status_LED_pin, LOW); // set board LED to low right after setup is done
 #ifdef ESP_PLATFORM
