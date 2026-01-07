@@ -36,7 +36,7 @@ int Edrumulus_hardware::get_prototype_pins(int** analog_pins,
                                            int*  status_LED_pin)
 {
   // clang-format off
-  // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
+  // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3 | crash2
   static int analog_pins1[]         = { A10,   A11,   A12,        A13,       A1,     A6,    A4,    A5 };
   static int analog_pins_rimshot1[] = {  A9,    -1,    A0,         -1,       A3,     A8,    A2,    A7 };
   // clang-format on
@@ -179,9 +179,9 @@ int Edrumulus_hardware::get_prototype_pins(int** analog_pins,
     {
       // Prototype 5: 0, 0, 0, 0 -----------------------------------------------
       // clang-format off
-      // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
-      static int analog_pins5[]         = { 12,     2,     33,        4,         34,     15,    35,    27,    32 };
-      static int analog_pins_rimshot5[] = { 14,    -1,     26,       -1,         36,     13,    25,    -1,    -1 };
+      // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3 | crash2
+      static int analog_pins5[]         = { 12,     2,     33,        4,         34,     15,    35,    27,    32,     39 };
+      static int analog_pins_rimshot5[] = { 14,    -1,     26,       -1,         36,     13,    25,    -1,    -1,     -1 };
       // clang-format on
       *analog_pins         = analog_pins5;
       *analog_pins_rimshot = analog_pins_rimshot5;
@@ -193,7 +193,7 @@ int Edrumulus_hardware::get_prototype_pins(int** analog_pins,
     {
       // Prototype 6: 1, 0, 0, 0 -----------------------------------------------
       // clang-format off
-      // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
+      // analog pins setup:               snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3 | crash2
       static int analog_pins6[]         = { 36,    33,     32,       25,         34,     39,    27,    12,    15 };
       static int analog_pins_rimshot6[] = { 35,    -1,     26,       -1,         14,     -1,    13,    -1,    -1 };
       // clang-format on
@@ -210,7 +210,7 @@ int Edrumulus_hardware::get_prototype_pins(int** analog_pins,
   return 4;
 #  else // CONFIG_IDF_TARGET_ESP32S3
   // clang-format off
-  // analog pins setup:                 snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3
+  // analog pins setup:                 snare | kick | hi-hat | hi-hat-ctrl | crash | tom1 | ride | tom2 | tom3 | crash2
   static int analog_pins_s3[]         = {  4,     6,      7,        9,         10,     12,    13,    15,    16 };
   static int analog_pins_rimshot_s3[] = {  5,    -1,      8,       -1,         11,     -1,    14,    -1,    -1 };
   // clang-format on
