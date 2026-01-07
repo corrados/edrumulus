@@ -72,12 +72,12 @@ ylim([-10, 90]);
 % TEST
 p = all_peaks;%all_hot_spots;%setdiff(all_peaks, all_hot_spots);%
 p = p(1:4);
-r = (-6:28); % (-3:13);%  range
+r = (7:13);%(-6:28);% (-3:13);%  range
 for i = 1:length(p)
   x_fft = x(p(i) + r, 1);
   figure; title(num2str(i));
-  subplot(2,1,1), plot(10 * log10(abs(x_fft)))
-  subplot(2,1,2), plot(10 * log10(abs(fft(x_fft))))
+  subplot(2,1,1), plot(10 * log10(abs(x_fft)));
+  subplot(2,1,2), plot(10 * log10(abs(fft(x_fft))));% axis([2, length(x_fft), 30, 45]);
 end
 
 end
