@@ -57,7 +57,7 @@ plot(10 * log10([x(:, 1) .^ 2, x_filt, decay_all, x_filt_decay]));
 % TEST indicate sign of x signal with different color
 %x_sign = nan(size(x)); x_sign(x > 0) = x(x > 0); plot(10 * log10(x_sign(:, 1) .^ 2), 'y-.');
 plot(all_first_peaks, 10 * log10(x(all_first_peaks, 1) .^ 2), 'b*');
-%plot(all_hot_spots, 10 * log10(x(all_hot_spots, 1) .^ 2) - pad.hot_spot_attenuation_db, 'c*', "markersize", 15);
+plot(all_hot_spots, 10 * log10(x(all_hot_spots, 1) .^ 2) - pad.hot_spot_attenuation_db, 'c*', "markersize", 15);
 plot(all_peaks, 10 * log10(x(all_peaks, 1) .^ 2), 'g*');
 plot(all_peaks_filt, 10 * log10(x_filt(all_peaks_filt)), 'c*');
 plot(all_first_peaks, pos_sense_metric + 40, 'k*');
@@ -67,6 +67,18 @@ plot(all_peaks(~is_rim_shot), rim_metric_db(~is_rim_shot) + 40, '*');
 plot([1, length(x_filt)], [pad.threshold_db, pad.threshold_db], '--');
 title('Green marker: level; Black marker: position; Blue marker: first peak'); xlabel('samples'); ylabel('dB');
 ylim([-10, 90]);
+
+
+% TEST
+p = all_peaks;%all_hot_spots;%setdiff(all_peaks, all_hot_spots);%
+p = p(1:4);
+r = (-6:28); % (-3:13);%  range
+for i = 1:length(p)
+  x_fft = x(p(i) + r, 1);
+  figure; title(num2str(i));
+  subplot(2,1,1), plot(10 * log10(abs(x_fft)))
+  subplot(2,1,2), plot(10 * log10(abs(fft(x_fft))))
+end
 
 end
 
