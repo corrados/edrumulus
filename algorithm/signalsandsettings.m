@@ -38,7 +38,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd120_single_hits.wav");
 %x = audioread("signals/pd120_roll.wav");%x = x(1:20000, :);%x = x(292410:294749, :);%x = x(311500:317600, :);
 %x = audioread("signals/pd120_middle_velocity.wav");
-%x = audioread("signals/pd120_hot_spot.wav");%x = x(1:5000);%x = x(41500:42200);%
+x = audioread("signals/pd120_hot_spot.wav");%x = x(1:5000);%x = x(41500:42200);%
 %x = audioread("signals/pd120_rimshot.wav");%x=x(7000:15000,:);%x = x(1:100000, :);%x = x(168000:171000, :);%x = x(1:34000, :);%
 %x = audioread("signals/pd120_rimshot_hardsoft.wav");
 %x=audioread("signals/pd120_middle_velocity.wav");x=[x;audioread("signals/pd120_pos_sense2.wav")];x=[x;audioread("signals/pd120_hot_spot.wav")];
@@ -46,7 +46,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd80r_hot_spot.wav");padtype='pd80r';%x = x(191700:192400, :);%
 %x = audioread("signals/pd80r_no_hot_spot.wav");padtype='pd80r';
 %x = audioread("signals/pd80r_rimshot_issue.wav");padtype='pd80r';
-x = audioread("signals/pd85rimshotpossense.wav");padtype='pd80r';
+%x = audioread("signals/pd85rimshotpossense.wav");padtype='pd80r';
 %x = audioread("signals/hd120.wav");padtype='hd120';x = x(1:75500, :);%x = x(75500:end, :);
 %x = audioread("signals/pda120ls.wav");x=x(:,1);padtype='pda120ls';x = x(1:630000, :);%x = x(1.06e6:end, :);%x = x(840000:930000, :);%
 %x = audioread("signals/pda120ls_2.wav");x=x(:,1);padtype='pda120ls';x = x(1:210000, :);
@@ -84,7 +84,7 @@ x = audioread("signals/pd85rimshotpossense.wav");padtype='pd80r';
 x = x * 25000;
 
 
-  
+
 % pad PRESET settings first, then overwrite these with pad specific properties
 pad.threshold_db                    = 17;
 pad.mask_time_ms                    = 6;
