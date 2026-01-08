@@ -115,18 +115,14 @@ Further testing showed that it is important to use the very first peak in time f
 a later peak is used, the positional sensing based on the low-pass filtered signal does not yield
 good results.
 
-For positional sensing when a rim shot is played, we use the rim shot detection metric which gives a
-good indication of the position:
+### Positional sensing if a rim-shot is played
+
+It has shown that the normal positional sensing metric must be adjusted if a rim shot is used.
+In that case, we use the rim shot detection metric instead which gives a good indication of the position:
 <br/>![Positional sensing with rim shots](images/rim_shot_pos_sense.png)<br/>
 The idea is that if the strike is far away from the center mounted piezo,
 the peak in the rim piezo is much higher than that from the center mounted piezo. If the strike is close
 to the middle of the pad, the peak of the center mounted piezo is much higher compared to the rim piezo.
-
-
-### Positional sensing if a rim-shot is played
-
-It has shown that the positional sensing metric must be adjusted if a rim shot is used. Therefore, the
-rim shot detection information has to be used for the positional sensing.
 
 
 ## Rim shot detection
