@@ -3,7 +3,11 @@
 
 #pragma once
 
+#define USE_MIDI
+
 // #define USE_SERIAL_DEBUG_PLOTTING
+// #define USE_OCTAVE_SAMPLE_IMPORT_EXPORT
+// #define USE_LOW_SAMPLING_RATE_SAMPLE_MONITOR
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 10
@@ -69,3 +73,39 @@ class FastWriteFIFO
   int    pointer;
   int    fifo_length;
 };
+
+// Debugging functions ---------------------------------------------------------
+// Debugging: take samples from Octave, process and return result to Octave
+#ifdef USE_OCTAVE_SAMPLE_IMPORT_EXPORT
+#  undef USE_MIDI
+#  define DBG_FCT_OCTAVE_SAMPLE_IMPORT_EXPORT()                                                                                                                   \
+    if (Serial.available() > 0)                                                                                                                                   \
+    {                                                                                                                                                             \
+      static int m = micros();                                                                                                                                    \
+      if (micros() - m > 500000) pad[0].set_velocity_threshold(14.938);                                                                                           \
+      m         = micros();                                                                                                                                       \
+      float fIn = Serial.parseFloat();                                                                                                                            \
+      float y   = pad[0].process_sample(&fIn, 1, overload_detected, peak_found[0], midi_velocity[0], midi_pos[0], rim_state[0], is_choke_on[0], is_choke_off[0]); \
+      Serial.println(y, 7);                                                                                                                                       \
+    }                                                                                                                                                             \
+    return;
+#else
+#  define DBG_FCT_OCTAVE_SAMPLE_IMPORT_EXPORT()
+#endif
+
+// Debugging: for plotting all captures samples in the serial plotter (but with low sampling rate)
+#ifdef USE_LOW_SAMPLING_RATE_SAMPLE_MONITOR
+#  undef USE_MIDI
+#  define DBG_FCT_LOW_SAMPLING_RATE_SAMPLE_MONITOR()     \
+    String serial_print;                                 \
+    for (int i = 0; i < number_pads; i++)                \
+    {                                                    \
+      for (int j = 0; j < number_inputs[i]; j++)         \
+      {                                                  \
+        serial_print += String(sample_org[i][j]) + "\t"; \
+      }                                                  \
+    }                                                    \
+    Serial.println(serial_print);
+#else
+#  define DBG_FCT_LOW_SAMPLING_RATE_SAMPLE_MONITOR()
+#endif

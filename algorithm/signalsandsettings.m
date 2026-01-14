@@ -17,7 +17,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/teensy4_0_pd80r.wav");x=(x-mean(x))*4;padtype='pd80r';%x = x(1:390000, :);%
 %x = audioread("signals/teensy4_0_pd80r_hot_spot.wav");x=(x-mean(x))*4;padtype='pd80r';
 %x = audioread("signals/teensy4_0_pd120_hot_spot.wav");x=(x-mean(x))*4;
-%x = audioread("signals/esp32_pd120.wav");x=x/8;
+x = audioread("signals/esp32_pd120.wav");x=x/8;
 %x = audioread("signals/esp32_pd8.wav");x=x/8;padtype='pd8';
 %x = audioread("signals/pd120_pos_sense.wav");%x=x(10600:15000);%x = x(2900:10000, :);%x = x(55400:58000, :);%
 %x = audioread("signals/pd120_pos_sense2.wav");
@@ -32,7 +32,7 @@ padtype = 'pd120'; % default
 %x = audioread("signals/pd80r_hot_spot.wav");padtype='pd80r';%x = x(191700:192400, :);%
 %x = audioread("signals/pd80r_no_hot_spot.wav");padtype='pd80r';
 %x = audioread("signals/pd80r_rimshot_issue.wav");padtype='pd80r';
-x = audioread("signals/pd85rimshotpossense.wav");padtype='pd80r';
+%x = audioread("signals/pd85rimshotpossense.wav");padtype='pd80r';
 %x = audioread("signals/hd120.wav");padtype='hd120';x = x(1:75500, :);%x = x(75500:end, :);
 %x = audioread("signals/pda120ls.wav");x=x(:,1);padtype='pda120ls';x = x(1:630000, :);%x = x(1.06e6:end, :);%x = x(840000:930000, :);%
 %x = audioread("signals/pda120ls_2.wav");x=x(:,1);padtype='pda120ls';x = x(1:210000, :);
@@ -70,7 +70,7 @@ x = audioread("signals/pd85rimshotpossense.wav");padtype='pd80r';
 x = x * 25000;
 
 
-  
+
 % pad PRESET settings first, then overwrite these with pad specific properties
 pad.threshold_db                    = 17;
 pad.mask_time_ms                    = 6;

@@ -93,12 +93,15 @@ return;
 % prepare serial port
 pkg load instrument-control
 try
-  a = serialport("/dev/ttyACM0", 115200);
+  a = serialport("/dev/ttyUSB0", 115200);
 catch
 end
 flush(a);
 % send the input data vector
 for i = 1:length(x)
+  if mod(i, 100) == 0
+    disp(i);
+  end
   % write sample
   write(a, sprintf('%.5f\n', x(i, 1)), 'char');
   if ( size(x, 2) > 1 )
@@ -116,8 +119,8 @@ for i = 1:length(x)
   y(i) = str2double(char(bytearray));
 end
 %figure; plot(10 * log10(abs(circshift(y, -27)))+40,'*'); grid on;
-%figure; plot(10 * log10(y)); grid on;
-figure; plot(10 * log10(y),'*'); grid on;
+figure; plot(10 * log10(y)); grid on;
+%figure; plot(10 * log10(y),'*'); grid on;
 %figure; plot(20 * log10(abs(y))); grid on;
 %figure; plot(y+40, '*'); grid on;
 %figure; plot(y, '*'); grid on;
