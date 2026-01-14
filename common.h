@@ -78,7 +78,7 @@ class FastWriteFIFO
 // Debugging: take samples from Octave, process and return result to Octave
 #ifdef USE_OCTAVE_SAMPLE_IMPORT_EXPORT
 #  undef USE_MIDI
-#  define DBG_FCT_OCTAVE_SAMPLE_IMPORT_EXPORT(pad)                                                                                                                \
+#  define DBG_FCT_OCTAVE_SAMPLE_IMPORT_EXPORT()                                                                                                                \
     if (Serial.available() > 0)                                                                                                                                   \
     {                                                                                                                                                             \
       static int m = micros();                                                                                                                                    \
@@ -90,7 +90,7 @@ class FastWriteFIFO
     }                                                                                                                                                             \
     return;
 #else
-#  define DBG_FCT_OCTAVE_SAMPLE_IMPORT_EXPORT(pad)
+#  define DBG_FCT_OCTAVE_SAMPLE_IMPORT_EXPORT()
 #endif
 
 // Debugging: for plotting all captures samples in the serial plotter (but with low sampling rate)

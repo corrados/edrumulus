@@ -104,7 +104,7 @@ void Edrumulus::setup(const int  conf_num_pads,
 
 void Edrumulus::process()
 {
-  DBG_FCT_OCTAVE_SAMPLE_IMPORT_EXPORT(pad);
+  DBG_FCT_OCTAVE_SAMPLE_IMPORT_EXPORT();
 
   // Query samples -------------------------------------------------------------
   // note that this is a blocking function
