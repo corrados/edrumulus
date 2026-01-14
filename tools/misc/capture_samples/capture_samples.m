@@ -59,7 +59,7 @@ else
 %flush(a);
 
 % TEST
-number_samples = 200;%50000;
+number_samples = 8000;%50000;
 figure;
 
   out = zeros(number_samples, 1);

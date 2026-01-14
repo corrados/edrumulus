@@ -118,7 +118,7 @@ void Edrumulus::process()
 
 // TEST
 // capture one block of samples
-const int number_samples = 200;
+const int number_samples = 8000;
 static uint16_t s[number_samples];
 static int j = 0;
 s[j] = sample_org[0][0];
