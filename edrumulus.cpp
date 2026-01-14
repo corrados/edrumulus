@@ -104,19 +104,7 @@ void Edrumulus::setup(const int  conf_num_pads,
 
 void Edrumulus::process()
 {
-  /*
-  // TEST for debugging: take samples from Octave, process and return result to Octave
-  if (Serial.available() > 0)
-  {
-    static int m = micros(); if (micros() - m > 500000) pad[0].set_velocity_threshold(14.938); m = micros(); // 17 dB threshold
-    float fIn[2]; fIn[0] = Serial.parseFloat(); fIn[1] = 0.0f;//Serial.parseFloat();
-    bool peak_found_debug, is_rim_shot_debug, is_choke_on_debug, is_choke_off_debug;
-    int  midi_velocity_debug, midi_pos_debug;
-    float y = pad[0].process_sample(fIn, false, peak_found_debug, midi_velocity_debug, midi_pos_debug, is_rim_shot_debug, is_choke_on_debug, is_choke_off_debug);
-    Serial.println(y, 7);
-  }
-  return;
-  */
+  DBG_FCT_OCTAVE_SAMPLE_IMPORT_EXPORT(pad);
 
   // Query samples -------------------------------------------------------------
   // note that this is a blocking function

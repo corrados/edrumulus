@@ -3,7 +3,10 @@
 
 #pragma once
 
+#define USE_MIDI
+
 // #define USE_SERIAL_DEBUG_PLOTTING
+// #define USE_OCTAVE_SAMPLE_IMPORT_EXPORT
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 10
@@ -69,3 +72,22 @@ class FastWriteFIFO
   int    pointer;
   int    fifo_length;
 };
+
+// Debugging functions ---------------------------------------------------------
+// Debugging: take samples from Octave, process and return result to Octave
+#ifdef USE_OCTAVE_SAMPLE_IMPORT_EXPORT
+#  undef USE_MIDI
+#  define DBG_FCT_OCTAVE_SAMPLE_IMPORT_EXPORT(pad)                                                                                                                \
+    if (Serial.available() > 0)                                                                                                                                   \
+    {                                                                                                                                                             \
+      static int m = micros();                                                                                                                                    \
+      if (micros() - m > 500000) pad[0].set_velocity_threshold(14.938);                                                                                           \
+      m         = micros();                                                                                                                                       \
+      float fIn = Serial.parseFloat();                                                                                                                            \
+      float y   = pad[0].process_sample(&fIn, 1, overload_detected, peak_found[0], midi_velocity[0], midi_pos[0], rim_state[0], is_choke_on[0], is_choke_off[0]); \
+      Serial.println(y, 7);                                                                                                                                       \
+    }                                                                                                                                                             \
+    return;
+#else
+#  define DBG_FCT_OCTAVE_SAMPLE_IMPORT_EXPORT(pad)
+#endif

@@ -1,8 +1,6 @@
 // Copyright (c) 2020-2026 Volker Fischer
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#define USE_MIDI
-
 // ESP32 default pin definition ("-1" means that this channel is unused):
 // For older prototypes or custom implementations, simply change the GPIO numbers in the table below
 // to match your hardware (note that the GPIO assignment of Prototype 2 is the same as Prototype 4).
