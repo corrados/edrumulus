@@ -7,6 +7,7 @@
 
 // #define USE_SERIAL_DEBUG_PLOTTING
 // #define USE_OCTAVE_SAMPLE_IMPORT_EXPORT
+// #define USE_LOW_SAMPLING_RATE_SAMPLE_MONITOR
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 10
@@ -90,4 +91,18 @@ class FastWriteFIFO
     return;
 #else
 #  define DBG_FCT_OCTAVE_SAMPLE_IMPORT_EXPORT(pad)
+#endif
+
+// Debugging: for plotting all captures samples in the serial plotter (but with low sampling rate)
+#ifdef USE_LOW_SAMPLING_RATE_SAMPLE_MONITOR
+#  undef USE_MIDI
+#  define DBG_FCT_LOW_SAMPLING_RATE_SAMPLE_MONITOR() String serial_print; \
+    for (int i = 0; i < number_pads; i++) { \
+      for (int j = 0; j < number_inputs[i]; j++) { \
+        serial_print += String(sample_org[i][j]) + "\t"; \
+      } \
+    } \
+    Serial.println(serial_print);
+#else
+#  define DBG_FCT_LOW_SAMPLING_RATE_SAMPLE_MONITOR()
 #endif

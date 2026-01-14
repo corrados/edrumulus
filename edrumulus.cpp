@@ -112,27 +112,13 @@ void Edrumulus::process()
                                      number_inputs,
                                      sample_org);
 
+  DBG_FCT_LOW_SAMPLING_RATE_SAMPLE_MONITOR();
+
   // for load indicator we need to store current time right after blocking function
   if (use_load_indicator)
   {
     load_indicator_prev_micros = micros();
   }
-
-  /*
-  // TEST for plotting all captures samples in the serial plotter (but with low sampling rate)
-  String serial_print;
-  for (int i = 0; i < number_pads; i++)
-  {
-    //if (!pad[i].get_is_control())
-    {
-      for (int j = 0; j < number_inputs[i]; j++)
-      {
-        serial_print += String(sample_org[i][j]) + "\t";
-      }
-    }
-  }
-  Serial.println(serial_print);
-  */
 
   // Process samples -----------------------------------------------------------
   for (int i = 0; i < number_pads; i++)
