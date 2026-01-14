@@ -3,7 +3,7 @@
 
 #pragma once
 
-#define USE_MIDI
+//#define USE_MIDI
 
 // #define USE_SERIAL_DEBUG_PLOTTING
 // #define USE_OCTAVE_SAMPLE_IMPORT_EXPORT

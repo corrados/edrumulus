@@ -48,59 +48,72 @@ else
   % prepare serial port
   try
     a = serialport("/dev/ttyUSB0", 115200);
-    set(a, 'bytesize', 8);
-    set(a, 'parity', 'n');
-    set(a, 'stopbits', 1);
+    %set(a, 'bytesize', 8);
+    %set(a, 'parity', 'n');
+    %set(a, 'stopbits', 1);
   catch
+    disp('error');
   end
 
 % Windows: Enable the flush once and then disable it to get correct results:
 %flush(a);
 
 % TEST
-number_samples = 500;%50000;
+number_samples = 200;%50000;
+figure;
 
-  out = zeros(number_samples, 12);
+  out = zeros(number_samples, 1);
 
-  for i = 1:number_samples
+  for k = 1:10
 
-    % carriage return is 13 + 10 -> use 10 as start and 13 as end marker
-    while fread(a, 1) ~= 10
-    end
+    for i = 1:number_samples
 
-    end_found = false;
-    samples   = '';
-test=[];
-    while ~end_found
-
-      x = fread(a, 1);
-test = [test;x];
-      samples = [samples, char(x)];
-
-      if x == 13
-        end_found = true;
+      % carriage return is 13 + 10 -> use 10 as start and 13 as end marker
+      while fread(a, 1) ~= 10
       end
 
+      end_found = false;
+      samples   = '';
+      while ~end_found
+
+        x = fread(a, 1);
+        samples = [samples, char(x)];
+
+        if x == 13
+          end_found = true;
+        end
+
+      end
+
+      % convert from string to numbers for all channels
+      try
+        y = strsplit(samples, '\t');
+      catch
+        disp(samples)
+        disp(test)
+      end_try_catch
+
+      if length(y) == 1
+        out(i) = str2double(y{1});
+      end
+
+      %for j = 1:length(y)
+      %  out(i, j) = str2double(y{j});
+      %end
+
     end
 
-    % convert from string to numbers for all channels
-    try
-      y = strsplit(samples, '\t');
-    catch
-      disp(samples)
-      disp(test)
-    end_try_catch
-
-    for j = 1:length(y)
-      out(i, j) = str2double(y{j});
-    end
+    plot(out, '.-');
+    drawnow;
 
   end
 
-  figure; plot(out, '.-')
   %disp(out)
 
-  save -ascii 'recording.txt' out
+  %save -ascii 'recording.txt' out
+
+
+  clear a
 
 end
 
