@@ -118,7 +118,7 @@ void Edrumulus::process()
 
 // TEST
 // capture one block of samples
-const int number_samples = 8000;
+const int number_samples = 9000;
 static uint16_t s[number_samples];
 static int cnt = 0;
 if (cnt >= 0)
