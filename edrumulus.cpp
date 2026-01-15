@@ -120,13 +120,16 @@ void Edrumulus::process()
 // capture one block of samples
 const int number_samples = 8000;
 static uint16_t s[number_samples];
-static int j = 0;
-s[j] = sample_org[0][0];
-j++;
-
-if (j >= number_samples)
+static int cnt = 0;
+if (cnt >= 0)
 {
-  j = 0;
+  s[cnt] = sample_org[0][0];
+}
+cnt++;
+
+if (cnt >= number_samples)
+{
+  cnt = 0;
 
   // first, transfer marker
   Serial.println(String(0) + "\t" + String(0));
@@ -134,7 +137,7 @@ if (j >= number_samples)
   // transfer complete buffer
   for (int j = 0; j < number_samples; j++)
   {
-    Serial.println(s[0]);
+    Serial.println(s[j]);
   }
 }
 
