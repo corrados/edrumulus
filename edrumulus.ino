@@ -329,33 +329,10 @@ void loop()
       // controller 111: enable/disable rim shot and positional sensing support
       if (controller == 111)
       {
-        switch (value)
-        {
-          case 0:
-            edrumulus.set_rim_shot_is_used(selected_pad, false);
-            edrumulus.write_setting(selected_pad, 7, false);
-            edrumulus.set_pos_sense_is_used(selected_pad, false);
-            edrumulus.write_setting(selected_pad, 8, false);
-            break;
-          case 1:
-            edrumulus.set_rim_shot_is_used(selected_pad, true);
-            edrumulus.write_setting(selected_pad, 7, true);
-            edrumulus.set_pos_sense_is_used(selected_pad, false);
-            edrumulus.write_setting(selected_pad, 8, false);
-            break;
-          case 2:
-            edrumulus.set_rim_shot_is_used(selected_pad, false);
-            edrumulus.write_setting(selected_pad, 7, false);
-            edrumulus.set_pos_sense_is_used(selected_pad, true);
-            edrumulus.write_setting(selected_pad, 8, true);
-            break;
-          case 3:
-            edrumulus.set_rim_shot_is_used(selected_pad, true);
-            edrumulus.write_setting(selected_pad, 7, true);
-            edrumulus.set_pos_sense_is_used(selected_pad, true);
-            edrumulus.write_setting(selected_pad, 8, true);
-            break;
-        }
+        edrumulus.set_rim_shot_is_used(selected_pad, (value % 2) != 0);        // 0 1 0 1
+        edrumulus.write_setting(selected_pad, 7, (value % 2) != 0);            // 0 1 0 1
+        edrumulus.set_pos_sense_is_used(selected_pad, ((value / 2) % 2) != 0); // 0 0 1 1
+        edrumulus.write_setting(selected_pad, 8, ((value / 2) % 2) != 0);      // 0 0 1 1
         confirm_setting(controller, value, false);
       }
 
