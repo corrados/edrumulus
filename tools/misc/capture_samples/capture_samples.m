@@ -19,7 +19,7 @@ end
 
 figure;
 
-N = 3;
+N = 10;
 out = cell(N, 1);
 
 for k = 1:N
@@ -67,8 +67,14 @@ for k = 1:N
 
 end
 
-disp(out)
+%disp(out)
 %save -ascii 'recording.txt' out
+
+
+fn = strcat('recording', datestr(now, 'yyyy-mm-dd-HH-MM-SS'), '.mat');
+save(fn, 'out');
+
+system('play -q -n synth 0.2 sine 1000');
 
 clear a
 
