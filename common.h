@@ -3,11 +3,12 @@
 
 #pragma once
 
-//#define USE_MIDI
+#define USE_MIDI
 
 // #define USE_SERIAL_DEBUG_PLOTTING
 // #define USE_OCTAVE_SAMPLE_IMPORT_EXPORT
 // #define USE_LOW_SAMPLING_RATE_SAMPLE_MONITOR
+#define USE_CAPTURE_ONE_BLOCK_OF_SAMPLES
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 10
@@ -108,4 +109,26 @@ class FastWriteFIFO
     Serial.println(serial_print);
 #else
 #  define DBG_FCT_LOW_SAMPLING_RATE_SAMPLE_MONITOR()
+#endif
+
+// Debugging: capture one block of samples
+#ifdef USE_CAPTURE_ONE_BLOCK_OF_SAMPLES
+#  undef USE_MIDI
+#  define DBG_FCT_CAPTURE_ONE_BLOCK_OF_SAMPLES()    \
+    const int       number_samples = 9000;          \
+    static uint16_t s[number_samples];              \
+    static int      cnt = 0;                        \
+    if (cnt >= 0) s[cnt] = sample_org[0][0];        \
+    cnt++;                                          \
+    if (cnt >= number_samples)                      \
+    {                                               \
+      cnt = 0;                                      \
+      Serial.println(String(0) + "\t" + String(0)); \
+      for (int j = 0; j < number_samples; j++)      \
+      {                                             \
+        Serial.println(s[j]);                       \
+      }                                             \
+    }
+#else
+#  define DBG_FCT_CAPTURE_ONE_BLOCK_OF_SAMPLES()
 #endif

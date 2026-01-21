@@ -113,39 +113,7 @@ void Edrumulus::process()
                                      sample_org);
 
   DBG_FCT_LOW_SAMPLING_RATE_SAMPLE_MONITOR();
-
-
-
-// TEST
-// capture one block of samples
-const int number_samples = 9000;
-static uint16_t s[number_samples];
-static int cnt = 0;
-if (cnt >= 0)
-{
-  s[cnt] = sample_org[0][0];
-}
-cnt++;
-
-if (cnt >= number_samples)
-{
-  cnt = 0;
-
-  // first, transfer marker
-  Serial.println(String(0) + "\t" + String(0));
-
-  // transfer complete buffer
-  for (int j = 0; j < number_samples; j++)
-  {
-    Serial.println(s[j]);
-  }
-}
-
-
-
-
-
-
+  DBG_FCT_CAPTURE_ONE_BLOCK_OF_SAMPLES();
 
   // for load indicator we need to store current time right after blocking function
   if (use_load_indicator)
