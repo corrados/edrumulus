@@ -113,6 +113,7 @@ void Edrumulus::process()
                                      sample_org);
 
   DBG_FCT_LOW_SAMPLING_RATE_SAMPLE_MONITOR();
+  DBG_FCT_CAPTURE_ONE_BLOCK_OF_SAMPLES();
 
   // for load indicator we need to store current time right after blocking function
   if (use_load_indicator)
