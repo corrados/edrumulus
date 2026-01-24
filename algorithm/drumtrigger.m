@@ -71,8 +71,8 @@ ylim([-10, 90]);
 
 % TEST
 p = all_peaks;%all_hot_spots;%setdiff(all_peaks, all_hot_spots);%
-p = p(1:4);
-r = (7:13);%(-6:28);% (-3:13);%  range
+p = p(1:6);
+r = (-6:28);%(7:13);%(-3:13);% range
 for i = 1:length(p)
   x_fft = x(p(i) + r, 1);
   figure; title(num2str(i));
