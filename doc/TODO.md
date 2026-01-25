@@ -13,6 +13,12 @@ The road map items are sorted by priority.
 
   Striking directly on the piezo results in detected velocity values which are much too high.
 
+  Recent recordings show that there seems to be no direct detection possibility of hot spot situations.
+  It is more likely that we have to use the positional sensing information for this. If a
+  position close to the middle of the pad is detected, we can apply an attenuation in case of
+  hot spot suppression is turned on. But the positional sensing may not be precise enough to
+  result in good detection of a hot spot strike.
+
 - [ ] **Support direct rim strike**
 
   See https://github.com/corrados/edrumulus/discussions/84.
